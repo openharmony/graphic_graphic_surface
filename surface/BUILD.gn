@@ -1,0 +1,116 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/graphic/graphic_2d/graphic_config.gni")
+
+## Build surface.so {{{
+config("surface_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [ "include" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-g3",
+  ]
+}
+
+config("surface_public_config") {
+  include_dirs = [
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
+    "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
+    "//foundation/graphic/graphic_surface/interfaces/inner_api/common",
+    "//foundation/graphic/graphic_surface/interfaces/inner_api/utils",
+    "//foundation/graphic/graphic_surface/sandbox",
+    "//foundation/graphic/graphic_surface/scoped_bytrace/include",
+  ]
+
+  defines = []
+  if (graphic_2d_feature_freemem_enable) {
+    defines += [ "SURFACE_ENABLE_FREEMEM" ]
+  }
+  if (graphic_2d_feature_drivers_interface_display_enable) {
+    defines += [ "DRIVERS_INTERFACE_DISPLAY_ENABLE" ]
+  }
+  defines += gpu_defines
+
+  cflags = [ "-Wno-error=deprecated-declarations" ]
+}
+
+ohos_shared_library("surface") {
+  sources = [
+    "src/buffer_client_producer.cpp",
+    "src/buffer_extra_data_impl.cpp",
+    "src/buffer_manager.cpp",
+    "src/buffer_queue.cpp",
+    "src/buffer_queue_consumer.cpp",
+    "src/buffer_queue_producer.cpp",
+    "src/buffer_utils.cpp",
+    "src/consumer_surface.cpp",
+    "src/native_buffer.cpp",
+    "src/native_window.cpp",
+    "src/producer_surface.cpp",
+    "src/surface_buffer_impl.cpp",
+    "src/surface_delegate.cpp",
+    "src/surface_tunnel_handle.cpp",
+    "src/surface_utils.cpp",
+  ]
+
+  configs = [ ":surface_config" ]
+
+  public_configs = [
+    ":surface_public_config",
+    "//commonlibrary/c_utils/base:utils_config",
+  ]
+
+  deps = [
+    "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
+    "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle",
+    "//foundation/graphic/graphic_surface/scoped_bytrace:scoped_bytrace",
+    "//foundation/graphic/graphic_surface/sandbox:sandbox_utils",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_single",
+  ]
+
+  if (graphic_2d_feature_drivers_interface_display_enable) {
+    external_deps += [
+      "drivers_interface_display:display_buffer_idl_headers",
+      "drivers_interface_display:libdisplay_buffer_hdi_impl",
+    ]
+  }
+
+  symlink_target_name = [
+    "libnative_buffer.so",
+    "libnative_window.so",
+  ]
+
+  innerapi_tags = [
+    "chipsetsdk"
+  ]
+  part_name = "graphic_surface"
+  subsystem_name = "graphic"
+}
+
+group("test") {
+  testonly = true
+  deps = [ "test:test" ]
+}
+## Build surface.so }}}
+

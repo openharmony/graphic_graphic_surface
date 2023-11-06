@@ -85,6 +85,11 @@
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
             }
           }
+        ],
+        "test": [
+          "//foundation/graphic/graphic_surface/surface:test",
+          "//foundation/graphic/graphic_surface/buffer_handle:test",
+          "//foundation/graphic/graphic_surface/sync_fence:test"
         ]
       }
     }

@@ -96,11 +96,6 @@ ohos_shared_library("surface") {
     ]
   }
 
-  symlink_target_name = [
-    "libnative_buffer.so",
-    "libnative_window.so",
-  ]
-
   innerapi_tags = [
     "chipsetsdk"
   ]

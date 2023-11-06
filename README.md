@@ -21,21 +21,25 @@ Surface的跨进程传输使用IPC传输句柄等控制结构（有拷贝），�
 ## 目录<a name="section161941989596"></a>
 
 ```
-/foundation/graphic/surface_lite
-├── frameworks       # 框架代码
-├── interfaces       # 接口
-│   ├── innerkits    # 模块间接口
-│   └── kits         # 对外接口
-└── test             # 测试代码
-    ├── fuzztest     # fuzz测试
-    └── unittest     # 单元测试
+/foundation/graphic/graphic_surface
+├── surface             # 框架代码
+│   ├── include         # surface头文件
+│   ├── src             # surface源码
+│   └── test            # 测试代码
+│       ├── fuzztest    # fuzz测试
+│       └── unittest    # 单元测试
+├── interfaces          # 接口
+│   ├── inner_api       # 模块间接口
+│   └── kits            # 对外接口
+├── buffer_handle       # 依赖的部件
+└── scoped_bytrace      # 依赖的部件
 ```
 
 ## 编译构建<a name="section137768191623"></a>
 
 ```
-# 通过gn编译,在out目录下对应产品的文件夹中生成libsurface.so
-hb build surface_lite
+# 通过gn编译,在out目录下对应产品的文件夹中生成surface.so
+hb build graphic_surface
 ```
 
 ## 说明<a name="section1312121216216"></a>
@@ -63,10 +67,4 @@ hb build surface_lite
 
 [图形子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/%E5%9B%BE%E5%BD%A2%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
 
-[window_window_manager_lite](https://gitee.com/openharmony/window_window_manager_lite/blob/master/README.md)
-
-**graphic_surface_lite**
-
-[arkui_ui_lite](https://gitee.com/openharmony/arkui_ui_lite/blob/master/README.md)
-
-[graphic_graphic_utils_lite](https://gitee.com/openharmony/graphic_graphic_utils_lite/blob/master/README.md)
+[window_window_manager](https://gitee.com/openharmony/window_window_manager/blob/master/README_zh.md)

@@ -21,21 +21,25 @@ A surface transfers data across processes through control structures such as Int
 ## Directory Structure<a name="section161941989596"></a>
 
 ```
-/foundation/graphic/surface_lite
-├── frameworks       # Framework code
-├── interfaces       # APIs
-│   ├── innerkits    # APIs between modules
-│   └── kits         # External APIs
-└── test             # Test code
-    ├── fuzztest     # Fuzzing
-    └── unittest     # Unit testing
+/foundation/graphic/graphic_surface
+├── surface             # Framework code
+│   ├── include         # Header
+│   ├── src             # Source Code
+│   └── test            # Test code
+│       ├── fuzztest    # Fuzzing
+│       └── unittest    # Unit testing
+├── interfaces          # APIs
+│   ├── innerkits       # APIs between modules
+│   └── kits            # External APIs
+├── buffer_handle       # widget storage
+└── scoped_bytrace      # widget storage
 ```
 
 ## Compilation and Building<a name="section137768191623"></a>
 
 ```
-# Generate the libsurface.so file in the out directory of the product folder through GN compilation.
-hb build surface_lite
+# Generate the surface.so file in the out directory of the product folder through GN compilation.
+hb build graphic_surface
 ```
 
 ## Description<a name="section1312121216216"></a>
@@ -63,10 +67,4 @@ For details, see lite  [WMS](https://gitee.com/openharmony/window_window_manager
 
 [Graphic subsystem](https://gitee.com/openharmony/docs/blob/master/en/readme/graphics.md)
 
-[window_window_manager_lite](https://gitee.com/openharmony/window_window_manager_lite/blob/master/README.md)
-
-**graphic_surface_lite**
-
-[arkui_ui_lite](https://gitee.com/openharmony/arkui_ui_lite/blob/master/README.md)
-
-[graphic_graphic_utils_lite](https://gitee.com/openharmony/graphic_graphic_utils_lite/blob/master/README.md)
+[window_window_manager](https://gitee.com/openharmony/window_window_manager/blob/master/README.md)

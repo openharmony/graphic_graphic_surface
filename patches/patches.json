@@ -4,6 +4,17 @@
             "project":"vendor_hihope",
             "path":"vendor/hihope/rk3568",
             "pr_url":"https://gitee.com/openharmony/vendor_hihope/pulls/967"
+        },
+        {
+            "project":"powermgr_battery_manager",
+            "path":"base/powermgr/battery_manager",
+            "pr_url":"https://gitee.com/openharmony/powermgr_battery_manager/pulls/491"
+            
+        },
+        {
+            "project":"drivers_peripheral",
+            "path":"drivers/peripheral",
+            "pr_url":"https://gitee.com/openharmony/drivers_peripheral/pulls/4402"
         }
     ]
 }

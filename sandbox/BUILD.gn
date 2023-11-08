@@ -17,13 +17,9 @@ config("sandbox_utils_config") {
   include_dirs = [ "." ]
 }
 
-ohos_shared_library("sandbox_utils") {
+ohos_static_library("sandbox_utils") {
   sources = [ "sandbox_utils.cpp" ]
   public_configs = [ ":sandbox_utils_config" ]
-
-  innerapi_tags = [
-    "chipsetsdk_indirect"
-  ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"

@@ -116,9 +116,7 @@ static inline bool operator !=(GSError a, GSError b)
     return static_cast<int32_t>(a) / LOWERROR_MAX != static_cast<int32_t>(b) / LOWERROR_MAX;
 }
 
-using WMError = GSError;
 using SurfaceError = GSError;
-using VsyncError = GSError;
 } // namespace OHOS
 #endif // __cplusplus
 

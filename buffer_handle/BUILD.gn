@@ -37,7 +37,7 @@ config("buffer_handle_public_config") {
   ]
 }
 
-ohos_shared_library("buffer_handle") {
+ohos_static_library("buffer_handle") {
   sources = [ "src/buffer_handle.cpp" ]
 
   configs = [
@@ -51,10 +51,6 @@ ohos_shared_library("buffer_handle") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
-  ]
-
-  innerapi_tags = [
-    "chipsetsdk_indirect"
   ]
 
   subsystem_name = "graphic"

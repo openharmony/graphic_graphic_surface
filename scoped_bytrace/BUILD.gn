@@ -28,7 +28,7 @@ config("scoped_bytrace_public_config") {
   include_dirs = [ "include" ]
 }
 
-ohos_shared_library("scoped_bytrace") {
+ohos_static_library("scoped_bytrace") {
   sources = [ "src/scoped_bytrace.cpp" ]
 
   configs = [ ":scoped_bytrace_config" ]
@@ -39,10 +39,6 @@ ohos_shared_library("scoped_bytrace") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
-  ]
-
-  innerapi_tags = [
-    "chipsetsdk_indirect"
   ]
 
   subsystem_name = "graphic"

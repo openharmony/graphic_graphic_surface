@@ -23,6 +23,7 @@
 
 #include "buffer_handle_utils.h"
 #include "surface_type.h"
+#include "egl_data.h"
 #include "buffer_extra_data.h"
 #include "native_buffer.h"
 
@@ -54,6 +55,11 @@ public:
     virtual void SetSurfaceBufferHeight(int32_t width) = 0;
 
     virtual uint32_t GetSeqNum() const = 0;
+
+    // opt EglData
+    virtual sptr<EglData> GetEglData() const = 0;
+    virtual void SetEglData(const sptr<EglData>& data) = 0;
+
     virtual void SetExtraData(const sptr<BufferExtraData> &bedata) = 0;
     virtual const sptr<BufferExtraData>& GetExtraData() const = 0;
     virtual GSError WriteToMessageParcel(MessageParcel &parcel) = 0;

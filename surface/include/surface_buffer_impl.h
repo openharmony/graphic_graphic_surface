@@ -20,7 +20,7 @@
 #include <buffer_handle_parcel.h>
 #include <buffer_handle_utils.h>
 #include <surface_buffer.h>
-//#include "egl_data.h"
+#include "egl_data.h"
 #include "stdint.h"
 
 struct BufferWrapper {};
@@ -64,6 +64,9 @@ public:
     void SetSurfaceBufferHeight(int32_t width) override;
 
     uint32_t GetSeqNum() const override;
+    
+    sptr<EglData> GetEglData() const override;
+    void SetEglData(const sptr<EglData>& data) override;
 
     void SetExtraData(const sptr<BufferExtraData> &bedata) override;
     const sptr<BufferExtraData>& GetExtraData() const override;
@@ -86,7 +89,7 @@ private:
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;
     sptr<BufferExtraData> bedata_ = nullptr;
-    //sptr<EglData> eglData_ = nullptr;
+    sptr<EglData> eglData_ = nullptr;
     GraphicColorGamut surfaceBufferColorGamut_ = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     int32_t surfaceBufferWidth_ = 0;

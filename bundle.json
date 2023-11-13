@@ -1,7 +1,7 @@
 {
     "name": "@ohos/graphic_surface",
     "description": "graphic surface",
-    "version": "3.1",
+    "version": "4.1",
     "license": "Apache License 2.0",
     "publishAs": "code-segment",
     "segment": {

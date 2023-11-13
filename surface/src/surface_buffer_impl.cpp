@@ -185,7 +185,7 @@ GSError SurfaceBufferImpl::Map()
         }
         handle = handle_;
     }
-#ifdef SURFACE_ENABLE_AFBC
+#ifdef RS_ENABLE_AFBC
     handle->usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
 #endif
     void *virAddr = g_displayBuffer->Mmap(*handle);
@@ -491,6 +491,16 @@ OH_NativeBuffer* SurfaceBufferImpl::SurfaceBufferToNativeBuffer()
 uint32_t SurfaceBufferImpl::GetSeqNum() const
 {
     return sequenceNumber_;
+}
+
+sptr<EglData> SurfaceBufferImpl::GetEglData() const
+{
+    return eglData_;
+}
+
+void SurfaceBufferImpl::SetEglData(const sptr<EglData>& data)
+{
+    eglData_ = data;
 }
 
 GSError SurfaceBufferImpl::CheckBufferConfig(int32_t width, int32_t height,

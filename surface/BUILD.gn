@@ -13,6 +13,7 @@
 
 import("//build/ohos.gni")
 import("//foundation/graphic/graphic_2d/graphic_config.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 ## Build surface.so {{{
 config("surface_config") {
@@ -76,10 +77,10 @@ ohos_shared_library("surface") {
   ]
 
   deps = [
-    "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
-    "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle",
-    "//foundation/graphic/graphic_surface/scoped_bytrace:scoped_bytrace",
-    "//foundation/graphic/graphic_surface/sandbox:sandbox_utils",
+    "$graphic_surface_root/buffer_handle:buffer_handle",
+    "$graphic_surface_root/sandbox:sandbox_utils",
+    "$graphic_surface_root/scoped_bytrace:scoped_bytrace",
+    "$graphic_surface_root/sync_fence:sync_fence",
   ]
 
   external_deps = [
@@ -92,13 +93,18 @@ ohos_shared_library("surface") {
   if (graphic_2d_feature_drivers_interface_display_enable) {
     external_deps += [
       "drivers_interface_display:display_buffer_idl_headers",
+      "drivers_interface_display:display_commontype_idl_headers",
       "drivers_interface_display:libdisplay_buffer_hdi_impl",
+      "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_1",
     ]
   }
 
-  innerapi_tags = [
-    "chipsetsdk"
+  symlink_target_name = [
+    "libnative_buffer.so",
+    "libnative_window.so",
   ]
+
+  innerapi_tags = [ "chipsetsdk" ]
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }
@@ -107,5 +113,6 @@ group("test") {
   testonly = true
   deps = [ "test:test" ]
 }
+
 ## Build surface.so }}}
 

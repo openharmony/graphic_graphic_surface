@@ -30,7 +30,7 @@ ohos_unittest("BufferHandleTest") {
   ]
   external_deps = [
     "c_utils:utils",
-    "graphic_2d:buffer_handle",
+    "graphic_surface:buffer_handle",
     "hilog:libhilog",
   ]
 }

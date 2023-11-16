@@ -40,7 +40,7 @@ config("sync_fence_public_config") {
 ohos_shared_library("sync_fence") {
   sources = [
     "src/sync_fence.cpp",
-    #"src/sync_fence_timeline.cpp",
+    "src/sync_fence_timeline.cpp",
     "src/sync_fence_tracker.cpp",
   ]
 
@@ -56,10 +56,8 @@ ohos_shared_library("sync_fence") {
     "ipc:ipc_single",
   ]
 
-  innerapi_tags = [
-    "chipsetsdk"
-  ]
-  
+  innerapi_tags = [ "chipsetsdk" ]
+
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

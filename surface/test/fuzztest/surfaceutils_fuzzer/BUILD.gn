@@ -14,6 +14,7 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 module_output_path = "graphic_surface/surface"
 
 ##############################fuzztest##########################################
@@ -22,7 +23,7 @@ ohos_fuzztest("SurfaceUtilsFuzzTest") {
   module_out_path = module_output_path
 
   include_dirs = [
-    "//foundation/graphic/graphic_2d/frameworks/surface/include",
+    "$graphic_surface_root/surface/include",
     "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
   ]
   cflags = [
@@ -32,7 +33,7 @@ ohos_fuzztest("SurfaceUtilsFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [ "surfaceutils_fuzzer.cpp" ]
-  deps = [ "//foundation/graphic/graphic_2d:libsurface" ]
+  deps = [ "$graphic_surface_root/surface:surface" ]
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",

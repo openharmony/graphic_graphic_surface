@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 module_out_path = "graphic_surface/surface"
 
@@ -31,7 +32,7 @@ ohos_systemtest("native_window_buffer_test") {
   sources = [ "native_window_buffer_test.cpp" ]
 
   include_dirs = [
-    "//foundation/graphic/graphic_2d/frameworks/surface/include",
+    "$graphic_surface_root/surface/include",
     "//base/security/access_token/interfaces/innerkits/nativetoken/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
     "//base/security/access_token/interfaces/innerkits/token_setproc/include",
@@ -46,11 +47,11 @@ ohos_systemtest("native_window_buffer_test") {
   ]
 
   deps = [
+    "$graphic_surface_root/buffer_handle:buffer_handle",
+    "$graphic_surface_root/surface:surface",
     "//base/security/access_token/interfaces/innerkits/accesstoken:libaccesstoken_sdk",
     "//base/security/access_token/interfaces/innerkits/nativetoken:libnativetoken",
     "//base/security/access_token/interfaces/innerkits/token_setproc:libtoken_setproc",
-    "//foundation/graphic/graphic_2d:libsurface",
-    "//foundation/graphic/graphic_2d/utils:libgraphic_utils",
     "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy:samgr_proxy",
     "//third_party/googletest:gtest_main",
   ]
@@ -71,7 +72,7 @@ ohos_systemtest("surface_ipc_test") {
   sources = [ "surface_ipc_test.cpp" ]
 
   include_dirs = [
-    "//foundation/graphic/graphic_2d/frameworks/surface/include",
+    "$graphic_surface_root/surface/include",
     "//base/security/access_token/interfaces/innerkits/nativetoken/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
     "//base/security/access_token/interfaces/innerkits/token_setproc/include",
@@ -84,10 +85,10 @@ ohos_systemtest("surface_ipc_test") {
   ]
 
   deps = [
+    "$graphic_surface_root/surface:surface",
     "//base/security/access_token/interfaces/innerkits/accesstoken:libaccesstoken_sdk",
     "//base/security/access_token/interfaces/innerkits/nativetoken:libnativetoken",
     "//base/security/access_token/interfaces/innerkits/token_setproc:libtoken_setproc",
-    "//foundation/graphic/graphic_2d:libsurface",
     "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy:samgr_proxy",
     "//third_party/googletest:gtest_main",
   ]

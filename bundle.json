@@ -17,23 +17,14 @@
       "ram": "10000KB",
       "deps": {
         "components": [
+          "bytrace",
           "c_utils",
-          "libhilog",
-          "ipc_core",
-          "samgr_proxy",
-          "utils",
-          "libeventhandler",
-          "hdi_display_device",
-          "bytrace_core",
+          "drivers_interface_display",
           "eventhandler",
           "hilog",
           "hitrace",
-          "ipc",
-          "drivers_interface_display",
-          "init"
-        ],
-        "third_party": [
-          "libz"
+          "init",
+          "ipc"
         ]
       },
       "build": {

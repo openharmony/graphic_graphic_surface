@@ -135,7 +135,11 @@ int32_t SyncFence::Wait(uint32_t timeout)
 int SyncFence::SyncMerge(const char *name, int fd1, int fd2)
 {
     int retCode = -1;
-    struct sync_merge_data syncMergeData = {0};
+    struct sync_merge_data syncMergeData;
+    if (memset_s(&syncMergeData, sizeof(struct sync_merge_data), 0, sizeof(struct sync_merge_data)) != EOK) {
+        HiLog::Error(LABEL, "SyncMerge memset sync merge data failed.");
+        return retCode;
+    }
     syncMergeData.fd2 = fd2;
     if (strcpy_s(syncMergeData.name, sizeof(syncMergeData.name), name)) {
         HiLog::Error(LABEL, "SyncMerge ctrcpy fence name failed.");

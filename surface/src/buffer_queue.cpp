@@ -425,16 +425,16 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<Sync
         BLOGN_FAILURE_ID(lastFlusedSequence_, "not found in cache");
         return GSERROR_NO_ENTRY;
     }
-    buffer = bufferQueueCache_[lastFlusedSequence_].buffer;
     auto &state = bufferQueueCache_[lastFlusedSequence_].state;
     if (state == BUFFER_STATE_REQUESTED) {
         BLOGN_FAILURE_ID(lastFlusedSequence_, "invalid state %{public}d", state);
         return GSERROR_NO_ENTRY;
     }
-    if (buffer->GetUsage() & BUFFER_USAGE_PROTECTED) {
+    if (bufferQueueCache_[lastFlusedSequence_].buffer->GetUsage() & BUFFER_USAGE_PROTECTED) {
         BLOGE("Not allowed to obtain protect surface buffer");
         return OHOS::GSERROR_NO_PERMISSION;
     }
+    buffer = bufferQueueCache_[lastFlusedSequence_].buffer;
     fence = lastFlusedFence_;
     Rect damage = {};
     auto utils = SurfaceUtils::GetInstance();
@@ -491,6 +491,9 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData
     bufferQueueCache_[sequence].buffer->SetExtraData(bedata);
     bufferQueueCache_[sequence].fence = fence;
     bufferQueueCache_[sequence].damages = config.damages;
+    lastFlusedSequence_ = sequence;
+    lastFlusedFence_ = fence;
+    lastFlushedTransform_ = transform_;
 
     uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
     if (usage & BUFFER_USAGE_CPU_WRITE) {
@@ -504,9 +507,6 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData
 
     bufferQueueCache_[sequence].timestamp = config.timestamp;
 
-    lastFlusedSequence_ = sequence;
-    lastFlusedFence_ = fence;
-    lastFlushedTransform_ = transform_;
     if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isLocalRender_) {
         static SyncFenceTracker acquireFenceThread("Acquire Fence");
         acquireFenceThread.TrackFence(fence);

@@ -39,12 +39,11 @@
 
 #include <stdint.h>
 #include "buffer_handle.h"
-#include "native_buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+typedef struct OH_NativeBuffer OH_NativeBuffer;
 /**
  * @brief native window.
  * @since 8
@@ -94,7 +93,7 @@ enum NativeWindowOperation {
     /**
      * set native window buffer geometry,
      * variable parameter in function is
-     * [in] int32_t height, [in] int32_t width
+     * [in] int32_t width, [in] int32_t height
      */
     SET_BUFFER_GEOMETRY,
     /**
@@ -355,12 +354,12 @@ int32_t OH_NativeWindow_NativeWindowFlushBuffer(OHNativeWindow *window, OHNative
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.
- * @param buffer Indicates the pointer to an <b>OHNativeWindowBuffer</b> instance.
+ * @param buffer Indicates the pointer to an <b>OHNativeWindowBuffer</b> pointer.
  * @return Returns an error code, 0 is success, otherwise, failed.
  * @since 11
  * @version 1.0
  */
-int32_t OH_NativeWindow_GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer);
+int32_t OH_NativeWindow_GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer);
 
  /**
  * @brief Returns the <b>OHNativeWindowBuffer</b> to the buffer queue through an <b>OHNativeWindow</b> instance, without filling in any content. The <b>OHNativeWindowBuffer</b> can be used for another request.

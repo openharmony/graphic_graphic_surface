@@ -16,25 +16,23 @@
 #include "native_buffer_inner.h"
 
 #include <cinttypes>
-#include <v1_0/cm_color_space.h>
-#include <v1_0/buffer_handle_meta_key_type.h>
-#include <metadata_convertor.h>
 #include "surface_type.h"
 #include "buffer_log.h"
 #include "native_window.h"
 #include "surface_buffer_impl.h"
+#include "metadata_helper.h"
 
 using namespace OHOS;
 using namespace HDI::Display::Graphic::Common::V1_0;
 static std::unordered_map<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType> NATIVE_COLORSPACE_TO_HDI_MAP = {
     {OH_COLORSPACE_NONE, CM_COLORSPACE_NONE},
     {OH_COLORSPACE_BT601_EBU_FULL, CM_BT601_EBU_FULL},
-    {OH_COLORSPACE_BT601_SMPTE_C_FULL, CM_BT601_SMPLE_C_FULL},
+    {OH_COLORSPACE_BT601_SMPTE_C_FULL, CM_BT601_SMPTE_C_FULL},
     {OH_COLORSPACE_BT709_FULL, CM_BT709_FULL},
     {OH_COLORSPACE_BT2020_HLG_FULL, CM_BT2020_HLG_FULL},
     {OH_COLORSPACE_BT2020_PQ_FULL, CM_BT2020_PQ_FULL},
     {OH_COLORSPACE_BT601_EBU_LIMIT, CM_BT601_EBU_LIMIT},
-    {OH_COLORSPACE_BT601_SMPTE_C_LIMIT, CM_BT601_SMPLE_C_LIMIT},
+    {OH_COLORSPACE_BT601_SMPTE_C_LIMIT, CM_BT601_SMPTE_C_LIMIT},
     {OH_COLORSPACE_BT709_LIMIT, CM_BT709_LIMIT},
     {OH_COLORSPACE_BT2020_HLG_LIMIT, CM_BT2020_HLG_LIMIT},
     {OH_COLORSPACE_BT2020_PQ_LIMIT, CM_BT2020_PQ_LIMIT},
@@ -217,12 +215,8 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
         BLOGE("parameter error, please check input parameter");
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
-    SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
-    std::vector<uint8_t> setData;
-    if (MetadataManager::ConvertMetadataToVec(NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace], setData) != GSERROR_OK) {
-        return OHOS::GSERROR_INTERNAL;
-    }
-    GSError ret = sbuffer->SetMetadata(BufferHandleAttrKey::ATTRKEY_COLORSPACE_TYPE, setData);
+    sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    GSError ret = MetadataHelper::SetColorSpaceType(sbuffer, NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::GSERROR_NOT_SUPPORT;
     }

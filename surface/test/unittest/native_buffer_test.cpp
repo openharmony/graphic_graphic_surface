@@ -14,7 +14,6 @@
  */
 #include <gtest/gtest.h>
 #include "iconsumer_surface.h"
-#include <iservice_registry.h>
 #include "native_buffer.h"
 #include "native_buffer_inner.h"
 #include "native_window.h"

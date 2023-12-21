@@ -29,6 +29,7 @@ group("unittest") {
     ":buffer_queue_test",
     ":buffer_shared_test",
     ":consumer_surface_test",
+    ":metadata_helper_test",
     ":native_buffer_test",
     ":native_window_test",
     ":producer_surface_test",
@@ -199,6 +200,7 @@ ohos_unittest("surface_buffer_impl_test") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_display:display_commontype_idl_headers",
     "hilog:libhilog",
   ]
 }
@@ -234,7 +236,6 @@ ohos_unittest("native_window_test") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "c_utils:utils",
-    "graphic_2d:libgraphic_utils",
     "hilog:libhilog",
     "samgr:samgr_proxy",
   ]
@@ -269,7 +270,6 @@ ohos_unittest("native_buffer_test") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_display:display_commontype_idl_headers",
     "hilog:libhilog",
   ]
 }
@@ -278,13 +278,7 @@ ohos_unittest("native_buffer_test") {
 
 ## Build surface_test_common.a {{{
 config("surface_test_common_public_config") {
-  include_dirs = [
-    "../../include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-    "//base/security/access_token/interfaces/innerkits/nativetoken/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
-    "//base/security/access_token/interfaces/innerkits/token_setproc/include",
-  ]
+  include_dirs = [ "../../include" ]
 
   cflags = [
     "-Wall",

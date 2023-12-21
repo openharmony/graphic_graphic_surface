@@ -42,6 +42,8 @@
                 "buffer_extra_data.h",
                 "common_types.h",
                 "external_window.h",
+                "native_buffer.h",
+                "native_buffer_inner.h",
                 "ibuffer_consumer_listener.h",
                 "ibuffer_producer.h",
                 "iconsumer_surface.h",

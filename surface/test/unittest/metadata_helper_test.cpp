@@ -22,7 +22,7 @@ using namespace testing::ext;
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 
 namespace OHOS {
-class MetadataManagerTest : public testing::Test {
+class MetadataHelperTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase() {}
@@ -39,7 +39,7 @@ public:
     static inline sptr<SurfaceBuffer> buffer_ = nullptr;
 };
 
-void MetadataManagerTest::SetUpTestCase()
+void MetadataHelperTest::SetUpTestCase()
 {
     buffer_ = new SurfaceBufferImpl(0);
     auto ret = buffer_->Alloc(requestConfig);
@@ -47,13 +47,13 @@ void MetadataManagerTest::SetUpTestCase()
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test ConvertColorSpaceTypeToInfo
 */
-HWTEST_F(MetadataManagerTest, ConvertColorSpaceTypeToInfoTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, ConvertColorSpaceTypeToInfoTest, Function | SmallTest | Level2)
 {
     CM_ColorSpaceInfo colorSpaceInfo;
     ASSERT_EQ(MetadataHelper::ConvertColorSpaceTypeToInfo(CM_SRGB_FULL, colorSpaceInfo), GSERROR_OK);
@@ -65,13 +65,13 @@ HWTEST_F(MetadataManagerTest, ConvertColorSpaceTypeToInfoTest, Function | SmallT
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test ConvertColorSpaceInfoToType
 */
-HWTEST_F(MetadataManagerTest, ConvertColorSpaceInfoToTypeTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, ConvertColorSpaceInfoToTypeTest, Function | SmallTest | Level2)
 {
     CM_ColorSpaceInfo colorSpaceInfo = {
         .primaries = COLORPRIMARIES_SRGB,
@@ -86,13 +86,13 @@ HWTEST_F(MetadataManagerTest, ConvertColorSpaceInfoToTypeTest, Function | SmallT
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test SetColorSpaceInfo and GetColorSpaceInfo
 */
-HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
 {
     CM_ColorSpaceInfo infoSet = {
         .primaries = COLORPRIMARIES_SRGB,
@@ -117,13 +117,13 @@ HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test SetColorSpaceType and GetColorSpaceType
 */
-HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
 {
     auto retSet = MetadataHelper::SetColorSpaceType(buffer_, CM_SRGB_FULL);
     ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
@@ -138,13 +138,13 @@ HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test SetHDRMetadataType and GetHDRMetadataType
 */
-HWTEST_F(MetadataManagerTest, HDRMetadataTypeTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, HDRMetadataTypeTest, Function | SmallTest | Level2)
 {
     auto retSet = MetadataHelper::SetHDRMetadataType(buffer_, CM_VIDEO_HDR_VIVID);
     ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
@@ -159,13 +159,13 @@ HWTEST_F(MetadataManagerTest, HDRMetadataTypeTest, Function | SmallTest | Level2
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test SetHDRStaticMetadata and GetHDRStaticMetadata
 */
-HWTEST_F(MetadataManagerTest, HDRStaticMetadataTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, HDRStaticMetadataTest, Function | SmallTest | Level2)
 {
     HdrStaticMetadata metadataSet = {
         .smpte2086 = {
@@ -206,13 +206,13 @@ HWTEST_F(MetadataManagerTest, HDRStaticMetadataTest, Function | SmallTest | Leve
 }
 
 /*
-* Function: MetadataManagerTest
+* Function: MetadataHelperTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: test SetHDRDynamicMetadata and GetHDRDynamicMetadata
 */
-HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataHelperTest, HDRDynamicMetadataTest, Function | SmallTest | Level2)
 {
     std::vector<uint8_t> metadataSet{1, 18, 119, 33, 196, 253, 112, 171, 74, 230, 99, 23, 0, 244, 82, 138, 13, 158, 100,
         41, 50, 189, 111, 144, 3, 153, 75, 210, 243, 237, 19, 12, 128};

@@ -55,8 +55,8 @@ using GraphicCompositionType = enum {
     GRAPHIC_COMPOSITION_DEVICE_CLEAR, /**< Device clear composition type, the device will clear the target region. */
     GRAPHIC_COMPOSITION_CLIENT_CLEAR, /**< Client clear composition type, the service will clear the target region. */
     GRAPHIC_COMPOSITION_TUNNEL,       /**< Tunnel composition type, used for tunnel. */
+    GRAPHIC_COMPOSITION_SOLID_COLOR,   /**< used for SetLayerColor. */
     GRAPHIC_COMPOSITION_BUTT,
-    GRAPHIC_COMPOSITION_SOLID_COLOR   /**< used for SetLayerColor. */
 };
 
 using GraphicLayerAlpha = struct {
@@ -87,6 +87,9 @@ using GraphicBlendType = enum {
     GRAPHIC_BLEND_BUTT              /**< Null operation */
 };
 
+/*
+ * @brief Enumeration values are indicated for external consistency.
+ */
 using GraphicPixelFormat = enum {
     GRAPHIC_PIXEL_FMT_CLUT8 = 0,                    /**< CLUT8 format */
     GRAPHIC_PIXEL_FMT_CLUT1 = 1,                    /**< CLUT1 format */
@@ -293,6 +296,71 @@ using GraphicColorGamut = enum {
     GRAPHIC_COLOR_GAMUT_BT2100_PQ = 8,           /**< BT2100 PQ */
     GRAPHIC_COLOR_GAMUT_BT2100_HLG = 9,          /**< BT2100 HLG */
     GRAPHIC_COLOR_GAMUT_DISPLAY_BT2020 = 10,     /**< Display BT2020 */
+};
+
+using GraphicCM_ColorSpaceType = enum {
+    GRAPHIC_CM_COLORSPACE_NONE,
+
+    GRAPHIC_CM_BT601_EBU_FULL      = 2 | (1 << 8) | (2 << 16) | (1 << 21),  // COLORPRIMARIES_BT601_P \n
+    // | (TRANSFUNC_BT709 << 8) | (MATRIX_BT601_P << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_BT601_SMPTE_C_FULL  = 3 | (1 << 8) | (3 << 16) | (1 << 21),  // COLORPRIMARIES_BT601_N \n
+    // | (TRANSFUNC_BT709 << 8) | (MATRIX_BT601_N << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_BT709_FULL          = 1 | (1 << 8) | (1 << 16) | (1 << 21),  // COLORPRIMARIES_BT709   \n
+    // | (TRANSFUNC_BT709 << 8) | (MATRIX_BT709   << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_BT2020_HLG_FULL     = 4 | (5 << 8) | (4 << 16) | (1 << 21),  // COLORPRIMARIES_BT2020  \n
+    // | (TRANSFUNC_HLG   << 8) | (MATRIX_BT2020  << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_BT2020_PQ_FULL      = 4 | (4 << 8) | (4 << 16) | (1 << 21),  // COLORPRIMARIES_BT2020  \n
+    // | (TRANSFUNC_PQ    << 8) | (MATRIX_BT2020  << 16) | (RANGE_FULL << 21)
+
+    GRAPHIC_CM_BT601_EBU_LIMIT     = 2 | (1 << 8) | (2 << 16) | (2 << 21),  // COLORPRIMARIES_BT601_P \n
+    // | (TRANSFUNC_BT709 << 8) | (MATRIX_BT601_P << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_BT601_SMPTE_C_LIMIT = 3 | (1 << 8) | (3 << 16) | (2 << 21),  // COLORPRIMARIES_BT601_N \n
+    // | (TRANSFUNC_BT709 << 8) | (MATRIX_BT601_N << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_BT709_LIMIT         = 1 | (1 << 8) | (1 << 16) | (2 << 21),  // COLORPRIMARIES_BT709   \n
+    // | (TRANSFUNC_BT709 << 8) | (MATRIX_BT709   << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_BT2020_HLG_LIMIT    = 4 | (5 << 8) | (4 << 16) | (2 << 21),  // COLORPRIMARIES_BT2020  \n
+    // | (TRANSFUNC_HLG   << 8) | (MATRIX_BT2020  << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_BT2020_PQ_LIMIT     = 4 | (4 << 8) | (4 << 16) | (2 << 21),  // COLORPRIMARIES_BT2020  \n
+    // | (TRANSFUNC_PQ    << 8) | (MATRIX_BT2020  << 16) | (RANGE_LIMITED << 21)
+
+    GRAPHIC_CM_SRGB_FULL           = 1 | (2 << 8) | (3 << 16) | (1 << 21),  // COLORPRIMARIES_SRGB     \n
+    // | (TRANSFUNC_SRGB     << 8) | (MATRIX_BT601_N  << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_P3_FULL             = 6 | (2 << 8) | (3 << 16) | (1 << 21),  // COLORPRIMARIES_P3_D65   \n
+    // | (TRANSFUNC_SRGB     << 8) | (MATRIX_P3       << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_P3_HLG_FULL         = 6 | (5 << 8) | (3 << 16) | (1 << 21),  // COLORPRIMARIES_P3_D65   \n
+    // | (TRANSFUNC_HLG      << 8) | (MATRIX_P3       << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_P3_PQ_FULL          = 6 | (4 << 8) | (3 << 16) | (1 << 21),  // COLORPRIMARIES_P3_D65   \n
+    // | (TRANSFUNC_PQ       << 8) | (MATRIX_P3       << 16) | (RANGE_FULL << 21)
+    GRAPHIC_CM_ADOBERGB_FULL       = 23 | (6 << 8) | (0 << 16) | (1 << 21), // COLORPRIMARIES_ADOBERGB \n
+    // | (TRANSFUNC_ADOBERGB << 8) | (MATRIX_ADOBERGB << 16) | (RANGE_FULL << 21)
+
+    GRAPHIC_CM_SRGB_LIMIT          = 1 | (2 << 8) | (3 << 16) | (2 << 21),  // COLORPRIMARIES_SRGB     \n
+    // | (TRANSFUNC_SRGB     << 8) | (MATRIX_BT601_N  << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_P3_LIMIT            = 6 | (2 << 8) | (3 << 16) | (2 << 21),  // COLORPRIMARIES_P3_D65   \n
+    // | (TRANSFUNC_SRGB     << 8) | (MATRIX_P3       << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_P3_HLG_LIMIT        = 6 | (5 << 8) | (3 << 16) | (2 << 21),  // COLORPRIMARIES_P3_D65   \n
+    // | (TRANSFUNC_HLG      << 8) | (MATRIX_P3       << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_P3_PQ_LIMIT         = 6 | (4 << 8) | (3 << 16) | (2 << 21),  // COLORPRIMARIES_P3_D65   \n
+    // | (TRANSFUNC_PQ       << 8) | (MATRIX_P3       << 16) | (RANGE_LIMITED << 21)
+    GRAPHIC_CM_ADOBERGB_LIMIT      = 23 | (6 << 8) | (0 << 16) | (2 << 21), // COLORPRIMARIES_ADOBERGB \n
+    // | (TRANSFUNC_ADOBERGB << 8) | (MATRIX_ADOBERGB << 16) | (RANGE_LIMITED << 21)
+
+    GRAPHIC_CM_LINEAR_SRGB         = 1 | (3 << 8),                          // COLORPRIMARIES_SRGB   \n
+    // | (TRANSFUNC_LINEAR << 8)
+    GRAPHIC_CM_LINEAR_BT709        = 1 | (3 << 8),                          // equal to GRAPHIC_CM_LINEAR_SRGB
+    GRAPHIC_CM_LINEAR_P3           = 6 | (3 << 8),                          // COLORPRIMARIES_P3_D65 \n
+    // | (TRANSFUNC_LINEAR << 8)
+    GRAPHIC_CM_LINEAR_BT2020       = 4 | (3 << 8),                          // COLORPRIMARIES_BT2020 \n
+    // | (TRANSFUNC_LINEAR << 8)
+
+    GRAPHIC_CM_DISPLAY_SRGB        = 1 | (2 << 8) | (3 << 16) | (1 << 21),  // equal to GRAPHIC_CM_SRGB_FULL
+    GRAPHIC_CM_DISPLAY_P3_SRGB     = 6 | (2 << 8) | (3 << 16) | (1 << 21),  // equal to GRAPHIC_CM_P3_FULL
+    GRAPHIC_CM_DISPLAY_P3_HLG      = 6 | (5 << 8) | (3 << 16) | (1 << 21),  // equal to GRAPHIC_CM_P3_HLG_FULL
+    GRAPHIC_CM_DISPLAY_P3_PQ       = 6 | (4 << 8) | (3 << 16) | (1 << 21),  // equal to GRAPHIC_CM_P3_PQ_FULL
+    GRAPHIC_CM_DISPLAY_BT2020_SRGB = 4 | (2 << 8) | (4 << 16) | (1 << 21),  // COLORPRIMARIES_BT2020   \n
+    // | (TRANSFUNC_SRGB << 8)     | (MATRIX_BT2020 << 16)   | (RANGE_FULL << 21)
+    GRAPHIC_CM_DISPLAY_BT2020_HLG  = 4 | (5 << 8) | (4 << 16) | (1 << 21),  // equal to GRAPHIC_CM_BT2020_HLG_FULL
+    GRAPHIC_CM_DISPLAY_BT2020_PQ   = 4 | (4 << 8) | (4 << 16) | (1 << 21)   // equal to GRAPHIC_CM_BT2020_PQ_FULL
 };
 
 using GraphicColorDataSpace = enum {

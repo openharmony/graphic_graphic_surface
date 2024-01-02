@@ -39,12 +39,11 @@
 
 #include <stdint.h>
 #include "buffer_handle.h"
-#include "native_buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+typedef struct OH_NativeBuffer OH_NativeBuffer;
 /**
  * @brief native window.
  * @since 8
@@ -280,7 +279,8 @@ typedef struct OHExtDataHandle {
 OHNativeWindow* OH_NativeWindow_CreateNativeWindow(void* pSurface);
 
 /**
- * @brief Decreases the reference count of an <b>OHNativeWindow</b> instance by 1, and when the reference count reaches 0, destroys the instance.
+ * @brief Decreases the reference count of an <b>OHNativeWindow</b> instance by 1, and when the reference count \n
+ * reaches 0, destroys the instance.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.
@@ -290,7 +290,8 @@ OHNativeWindow* OH_NativeWindow_CreateNativeWindow(void* pSurface);
 void OH_NativeWindow_DestroyNativeWindow(OHNativeWindow* window);
 
 /**
- * @brief Creates an <b>OHNativeWindowBuffer</b> instance. A new <b>OHNativeWindowBuffer</b> instance is created each time this function is called.
+ * @brief Creates an <b>OHNativeWindowBuffer</b> instance. A new <b>OHNativeWindowBuffer</b> instance is created \n
+ * each time this function is called.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param pSurfaceBuffer Indicates the pointer to a produce buffer. The type is <b>sptr<OHOS::SurfaceBuffer></b>.
@@ -301,7 +302,8 @@ void OH_NativeWindow_DestroyNativeWindow(OHNativeWindow* window);
 OHNativeWindowBuffer* OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(void* pSurfaceBuffer);
 
 /**
- * @brief Creates an <b>OHNativeWindowBuffer</b> instance. A new <b>OHNativeWindowBuffer</b> instance is created each time this function is called.
+ * @brief Creates an <b>OHNativeWindowBuffer</b> instance. A new <b>OHNativeWindowBuffer</b> instance is created \n
+ * each time this function is called.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param nativeBuffer Indicates the pointer to a native buffer. The type is <b>OH_NativeBuffer*</b>.
@@ -312,7 +314,8 @@ OHNativeWindowBuffer* OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(
 OHNativeWindowBuffer* OH_NativeWindow_CreateNativeWindowBufferFromNativeBuffer(OH_NativeBuffer* nativeBuffer);
 
 /**
- * @brief Decreases the reference count of an <b>OHNativeWindowBuffer</b> instance by 1 and, when the reference count reaches 0, destroys the instance.
+ * @brief Decreases the reference count of an <b>OHNativeWindowBuffer</b> instance by 1 and, when the reference \n
+ * count reaches 0, destroys the instance.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param buffer Indicates the pointer to an <b>OHNativeWindowBuffer</b> instance.
@@ -336,7 +339,8 @@ int32_t OH_NativeWindow_NativeWindowRequestBuffer(OHNativeWindow *window,
     OHNativeWindowBuffer **buffer, int *fenceFd);
 
 /**
- * @brief Flushes the <b>OHNativeWindowBuffer</b> filled with the content to the buffer queue through an <b>OHNativeWindow</b> instance for content consumption.
+ * @brief Flushes the <b>OHNativeWindowBuffer</b> filled with the content to the buffer queue through an \n
+ * <b>OHNativeWindow</b> instance for content consumption.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.
@@ -366,7 +370,8 @@ int32_t OH_NativeWindow_GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWin
     int *fenceFd, float matrix[16]);
 
  /**
- * @brief Returns the <b>OHNativeWindowBuffer</b> to the buffer queue through an <b>OHNativeWindow</b> instance, without filling in any content. The <b>OHNativeWindowBuffer</b> can be used for another request.
+ * @brief Returns the <b>OHNativeWindowBuffer</b> to the buffer queue through an <b>OHNativeWindow</b> instance, \n
+ * without filling in any content. The <b>OHNativeWindowBuffer</b> can be used for another request.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.

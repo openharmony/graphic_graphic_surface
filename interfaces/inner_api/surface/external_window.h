@@ -268,7 +268,8 @@ typedef struct OHExtDataHandle {
 } OHExtDataHandle;
 
 /**
- * @brief Creates an <b>OHNativeWindow</b> instance. A new <b>OHNativeWindow</b> instance is created each time this function is called.
+ * @brief Creates an <b>OHNativeWindow</b> instance.
+ * A new <b>OHNativeWindow</b> instance is created each time this function is called.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param pSurface Indicates the pointer to a <b>ProduceSurface</b>. The type is a pointer to <b>sptr<OHOS::Surface></b>.

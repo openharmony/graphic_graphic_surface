@@ -19,6 +19,10 @@
 #include <consumer_surface.h>
 #include "buffer_consumer_listener.h"
 #include "sync_fence.h"
+#include "producer_surface_delegator.h"
+#include "buffer_queue_consumer.h"
+#include "buffer_queue.h"
+#include "v1_1/buffer_handle_meta_key_type.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -55,6 +59,9 @@ public:
     static inline std::vector<Rect> damages = {};
     static inline sptr<IConsumerSurface> cs = nullptr;
     static inline sptr<Surface> ps = nullptr;
+    static inline sptr<BufferQueue> bq = nullptr;
+    static inline sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
+    static inline sptr<BufferQueueConsumer> consumer_ = nullptr;
 };
 
 void ConsumerSurfaceTest::SetUpTestCase()
@@ -63,7 +70,9 @@ void ConsumerSurfaceTest::SetUpTestCase()
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     cs->RegisterConsumerListener(listener);
     auto p = cs->GetProducer();
+    bq = new BufferQueue("test");
     ps = Surface::CreateSurfaceAsProducer(p);
+    surfaceDelegator = ProducerSurfaceDelegator::Create();
 }
 
 void ConsumerSurfaceTest::TearDownTestCase()
@@ -260,6 +269,102 @@ HWTEST_F(ConsumerSurfaceTest, UserData001, Function | MediumTest | Level2)
         retStr = cs->GetUserData(strs[i]);
         ASSERT_EQ(retStr, "magic");
     }
+}
+
+/*
+* Function: UserDataChangeListen
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. RegisterUserDataChangeListen
+*                  2. SetUserData
+*                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, UserDataChangeListen001, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> csTestUserData = IConsumerSurface::Create();
+    GSError ret1 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    GSError ret2 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    auto func1 = [&ret1](const std::string& key, const std::string& value) {
+        ret1 = OHOS::GSERROR_OK;
+    };
+    auto func2 = [&ret2](const std::string& key, const std::string& value) {
+        ret2 = OHOS::GSERROR_OK;
+    };
+    csTestUserData->RegisterUserDataChangeListener("func1", func1);
+    csTestUserData->RegisterUserDataChangeListener("func2", func2);
+    csTestUserData->RegisterUserDataChangeListener("func3", nullptr);
+    ASSERT_EQ(csTestUserData->RegisterUserDataChangeListener("func2", func2), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    if (csTestUserData->SetUserData("Regist", "OK") == OHOS::GSERROR_OK) {
+        ASSERT_EQ(ret1, OHOS::GSERROR_OK);
+        ASSERT_EQ(ret2, OHOS::GSERROR_OK);
+    }
+
+    ret1 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    ret2 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    csTestUserData->UnRegisterUserDataChangeListener("func1");
+    ASSERT_EQ(csTestUserData->UnRegisterUserDataChangeListener("func1"), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    if (csTestUserData->SetUserData("UnRegist", "INVALID") == OHOS::GSERROR_OK) {
+        ASSERT_EQ(ret1, OHOS::GSERROR_INVALID_ARGUMENTS);
+        ASSERT_EQ(ret2, OHOS::GSERROR_OK);
+    }
+
+    ret1 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    ret2 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    csTestUserData->ClearUserDataChangeListener();
+    csTestUserData->RegisterUserDataChangeListener("func1", func1);
+    if (csTestUserData->SetUserData("Clear", "OK") == OHOS::GSERROR_OK) {
+        ASSERT_EQ(ret1, OHOS::GSERROR_OK);
+        ASSERT_EQ(ret2, OHOS::GSERROR_INVALID_ARGUMENTS);
+    }
+}
+
+/*
+* Function: UserDataChangeListen
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. RegisterUserDataChangeListen
+*                  2. SetUserData
+*                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, UserDataChangeListen002, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> csTestUserData = IConsumerSurface::Create();
+
+    auto func = [&csTestUserData](const std::string& FuncName) {
+        constexpr int32_t RegisterListenerNum = 1000;
+        std::vector<GSError> ret(RegisterListenerNum, OHOS::GSERROR_INVALID_ARGUMENTS);
+        std::string strs[RegisterListenerNum];
+        constexpr int32_t stringLengthMax = 32;
+        char str[stringLengthMax] = {};
+        for (int i = 0; i < RegisterListenerNum; i++) {
+            auto secRet = snprintf_s(str, sizeof(str), sizeof(str) - 1, "%s%d", FuncName.c_str(), i);
+            ASSERT_GT(secRet, 0);
+            strs[i] = str;
+            ASSERT_EQ(csTestUserData->RegisterUserDataChangeListener(strs[i], [i, &ret]
+            (const std::string& key, const std::string& value) {
+                ret[i] = OHOS::GSERROR_OK;
+            }), OHOS::GSERROR_OK);
+        }
+
+        if (csTestUserData->SetUserData("Regist", FuncName) == OHOS::GSERROR_OK) {
+            for (int i = 0; i < RegisterListenerNum; i++) {
+                ASSERT_EQ(ret[i], OHOS::GSERROR_OK);
+            }
+        }
+
+        for (int i = 0; i < RegisterListenerNum; i++) {
+            csTestUserData->UnRegisterUserDataChangeListener(strs[i]);
+        }
+    };
+
+    std::thread t1(func, "thread1");
+    std::thread t2(func, "thread2");
+    t1.join();
+    t2.join();
 }
 
 /*
@@ -862,6 +967,214 @@ HWTEST_F(ConsumerSurfaceTest, ReqCanFluAcqRel005, Function | MediumTest | Level2
     ASSERT_EQ(timestamp, flushConfigWithDamages.timestamp);
     ret = cs->ReleaseBuffer(buffer, -1);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: AttachBuffer001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AttachBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = cs->AttachBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: AttachBuffer002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AttachBuffer002, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    int32_t timeOut = 1;
+    GSError ret = cs->AttachBuffer(buffer, timeOut);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: AttachBuffer003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AttachBuffer003, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = bq->Init();
+    ASSERT_EQ(ret, GSERROR_OK);
+    int32_t timeOut = 1;
+    ret = cs->AttachBuffer(buffer, timeOut);
+    ASSERT_NE(ret, GSERROR_OK);
+}
+
+/*
+* Function: RegisterSurfaceDelegator
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterSurfaceDelegator
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator001, Function | MediumTest | Level2)
+{
+    GSError ret = bq->Init();
+    ASSERT_EQ(ret, GSERROR_OK);
+    ret = cs->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: ConsumerRequestCpuAccess
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. usage does not contain BUFFER_USAGE_CPU_HW_BOTH
+*                  2. call ConsumerRequestCpuAccess(fasle/true)
+*                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess001, Function | MediumTest | Level2)
+{
+    using namespace HDI::Display::Graphic::Common;
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    // test default
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    std::vector<uint8_t> values;
+    buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
+    ASSERT_EQ(values.size(), 0);
+    
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    // test true
+    cSurface->ConsumerRequestCpuAccess(true);
+    ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    values.clear();
+    buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
+    ASSERT_EQ(values.size(), 0);
+    
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    // test false
+    cSurface->ConsumerRequestCpuAccess(true);
+    ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    values.clear();
+    buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
+    ASSERT_EQ(values.size(), 0);
+    
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: ConsumerRequestCpuAccess
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. usage contain BUFFER_USAGE_CPU_HW_BOTH
+*                  2. call ConsumerRequestCpuAccess(true)
+*                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess002, Function | MediumTest | Level2)
+{
+    using namespace HDI::Display::Graphic::Common;
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_CPU_HW_BOTH,
+        .timeout = 0,
+    };
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    // test default
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    std::vector<uint8_t> values;
+    buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
+    if (values.size() == 1) {
+        ASSERT_EQ(values[0], V1_1::HebcAccessType::HEBC_ACCESS_HW_ONLY);
+    }
+    
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    // test true
+    cSurface->ConsumerRequestCpuAccess(true);
+    ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    values.clear();
+    buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
+    if (values.size() == 1) {
+        ASSERT_EQ(values[0], V1_1::HebcAccessType::HEBC_ACCESS_CPU_ACCESS);
+    }
+
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    // test false
+    cSurface->ConsumerRequestCpuAccess(true);
+    ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    values.clear();
+    buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
+    if (values.size() == 1) {
+        ASSERT_EQ(values[0], V1_1::HebcAccessType::HEBC_ACCESS_CPU_ACCESS);
+    }
+
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
 }
 
 }

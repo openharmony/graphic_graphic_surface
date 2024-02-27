@@ -21,10 +21,9 @@
 #include <securec.h>
 #include <sys/mman.h>
 #include "buffer_log.h"
-#include "buffer_manager.h"
 #include "buffer_extra_data_impl.h"
 #include "native_buffer.h"
-#include "v1_0/buffer_handle_meta_key_type.h"
+#include "v1_1/buffer_handle_meta_key_type.h"
 #include "v1_1/include/idisplay_buffer.h"
 
 namespace OHOS {
@@ -536,7 +535,7 @@ void SurfaceBufferImpl::SetBufferWrapper(BufferWrapper wrapper) {}
 
 GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>& value)
 {
-    if (key == 0 || key >= HDI::Display::Graphic::Common::V1_0::ATTRKEY_END) {
+    if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (GetDisplayBuffer() == nullptr) {
@@ -553,13 +552,12 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
 GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value)
 {
-    if (key == 0 || key >= HDI::Display::Graphic::Common::V1_0::ATTRKEY_END) {
+    if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (GetDisplayBuffer() == nullptr) {
@@ -576,7 +574,6 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
@@ -597,13 +594,12 @@ GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
 GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
 {
-    if (key == 0 || key >= HDI::Display::Graphic::Common::V1_0::ATTRKEY_END) {
+    if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (GetDisplayBuffer() == nullptr) {
@@ -620,7 +616,6 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 } // namespace OHOS

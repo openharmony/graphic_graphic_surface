@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,24 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef TRANSACT_SURFACE_DELEGATOR_PROXY_H
+#define TRANSACT_SURFACE_DELEGATOR_PROXY_H
 
-#ifndef FRAMEWORKS_SURFACE_INCLUDE_EGL_CONSUMER_SURFACE_H
-#define FRAMEWORKS_SURFACE_INCLUDE_EGL_CONSUMER_SURFACE_H
-
-#include <string>
-
-#include "consumer_surface.h"
+#include "itransact_surface_delegator.h"
+#include <iremote_proxy.h>
 
 namespace OHOS {
-class EglConsumerSurface : public ConsumerSurface {
+class TransactSurfaceDelegatorProxy : public IRemoteProxy<ITransactSurfaceDelegator> {
 public:
-    EglConsumerSurface(const std::string &name, bool isShared = false);
-    virtual ~EglConsumerSurface();
-    GSError Init();
+    explicit TransactSurfaceDelegatorProxy(const sptr<IRemoteObject> &impl);
+    virtual ~TransactSurfaceDelegatorProxy() noexcept = default;
 
-    GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
-        int64_t &timestamp, Rect &damage) override;
+private:
+    static inline BrokerDelegator<TransactSurfaceDelegatorProxy> delegator_;
 };
 } // namespace OHOS
-
-#endif // FRAMEWORKS_SURFACE_INCLUDE_EGL_CONSUMER_SURFACE_H
+#endif // TRANSACT_SURFACE_DELEGATOR_PROXY_H

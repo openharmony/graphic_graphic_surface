@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -30,12 +30,14 @@ config("surface_config") {
 
 config("surface_public_config") {
   include_dirs = [
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-    "//foundation/graphic/graphic_surface/interfaces/inner_api/surface",
-    "//foundation/graphic/graphic_surface/interfaces/inner_api/common",
-    "//foundation/graphic/graphic_surface/interfaces/inner_api/utils",
-    "//foundation/graphic/graphic_surface/sandbox",
-    "//foundation/graphic/graphic_surface/scoped_bytrace/include",
+    "$graphic_surface_root/utils/frame_report/export",
+    "$graphic_surface_root/surface/include",
+    "$graphic_surface_root/interfaces/inner_api",
+    "$graphic_surface_root/interfaces/inner_api/surface",
+    "$graphic_surface_root/interfaces/inner_api/common",
+    "$graphic_surface_root/interfaces/inner_api/utils",
+    "$graphic_surface_root/sandbox",
+    "$graphic_surface_root/scoped_bytrace/include",
   ]
 
   defines = []
@@ -54,48 +56,51 @@ ohos_shared_library("surface") {
   sources = [
     "src/buffer_client_producer.cpp",
     "src/buffer_extra_data_impl.cpp",
-    "src/buffer_manager.cpp",
     "src/buffer_queue.cpp",
     "src/buffer_queue_consumer.cpp",
     "src/buffer_queue_producer.cpp",
     "src/buffer_utils.cpp",
     "src/consumer_surface.cpp",
+    "src/consumer_surface_delegator.cpp",
     "src/metadata_helper.cpp",
     "src/native_buffer.cpp",
     "src/native_window.cpp",
     "src/producer_surface.cpp",
+    "src/producer_surface_delegator.cpp",
     "src/surface_buffer_impl.cpp",
     "src/surface_delegate.cpp",
     "src/surface_tunnel_handle.cpp",
     "src/surface_utils.cpp",
+    "src/transact_surface_delegator_proxy.cpp",
+    "src/transact_surface_delegator_stub.cpp",
   ]
 
   configs = [ ":surface_config" ]
 
-  public_configs = [
-    ":surface_public_config",
-    "//commonlibrary/c_utils/base:utils_config",
-  ]
+  public_configs = [ ":surface_public_config" ]
 
   deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle",
     "$graphic_surface_root/sandbox:sandbox_utils",
     "$graphic_surface_root/scoped_bytrace:scoped_bytrace",
     "$graphic_surface_root/sync_fence:sync_fence",
+    "$graphic_surface_root/utils/frame_report:frame_report",
   ]
 
-  external_deps = [
+  public_external_deps = [
     "c_utils:utils",
-    "drivers_interface_display:display_buffer_idl_headers",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "init:libbegetutil",
     "ipc:ipc_single",
   ]
+
+  external_deps = [ "drivers_interface_display:display_buffer_idl_headers" ]
 
   if (graphic_2d_feature_drivers_interface_display_enable) {
     external_deps += [
       "drivers_interface_display:display_buffer_idl_headers",
-      "drivers_interface_display:display_commontype_idl_headers",
+      "drivers_interface_display:display_commontype_idl_headers_1.1",
       "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_1",
     ]
   }

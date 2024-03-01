@@ -89,12 +89,10 @@ ohos_shared_library("surface") {
 
   external_deps = [
     "c_utils:utils",
+    "hilog:libhilog",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
-  ]
-
-  public_external_deps = [
-    "hilog:libhilog",
+    "ipc:ipc_core",
     "ipc:ipc_single",
   ]
 

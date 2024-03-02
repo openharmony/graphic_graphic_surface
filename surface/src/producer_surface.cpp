@@ -18,7 +18,6 @@
 #include <cinttypes>
 
 #include "buffer_log.h"
-#include "buffer_manager.h"
 #include "buffer_extra_data_impl.h"
 #include "buffer_producer_listener.h"
 #include "sync_fence.h"
@@ -62,7 +61,7 @@ ProducerSurface::~ProducerSurface()
     BLOGND("dtor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
     auto ret = Disconnect();
     if (ret != GSERROR_OK) {
-        BLOGNE("Disconnect failed, %{public}s", GSErrorStr(ret).c_str());
+        BLOGND("Disconnect failed, %{public}s", GSErrorStr(ret).c_str());
     }
 }
 
@@ -238,12 +237,53 @@ GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)
     return producer_->AttachBuffer(buffer);
 }
 
+GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
+{
+    if (buffer == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    return producer_->AttachBuffer(buffer, timeOut);
+}
+
 GSError ProducerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 {
     if (buffer == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->DetachBuffer(buffer);
+}
+
+GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
+{
+    if (client == nullptr) {
+        BLOGE("RegisterSurfaceDelegator failed for the delegator client is nullptr");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
+    if (surfaceDelegator == nullptr) {
+        BLOGE("RegisterSurfaceDelegator failed for the surface delegator is nullptr");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (!surfaceDelegator->SetClient(client)) {
+        BLOGE("Set the surface delegator client failed");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    surfaceDelegator->SetSurface(this);
+    wpPSurfaceDelegator_ = surfaceDelegator;
+
+    auto releaseBufferCallBack = [this] (const sptr<SurfaceBuffer> &buffer,
+        const sptr<SyncFence> &fence) -> GSError {
+        auto surfaceDelegator = this->wpPSurfaceDelegator_.promote();
+        if (surfaceDelegator == nullptr) {
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        int error = surfaceDelegator->ReleaseBuffer(buffer, fence);
+        return static_cast<GSError>(error);
+    };
+    RegisterReleaseListener(releaseBufferCallBack);
+    return GSERROR_OK;
 }
 
 bool ProducerSurface::QueryIfBufferAvailable()
@@ -296,15 +336,33 @@ uint32_t ProducerSurface::GetDefaultUsage()
 
 GSError ProducerSurface::SetUserData(const std::string &key, const std::string &val)
 {
+    std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.size() >= SURFACE_MAX_USER_DATA_COUNT) {
+        BLOGE("SetUserData failed: userData_ size out");
         return GSERROR_OUT_OF_RANGE;
     }
+
+    auto iterUserData = userData_.find(key);
+    if (iterUserData != userData_.end() && iterUserData->second == val) {
+        BLOGE("SetUserData failed: key:%{public}s, val:%{public}s exist", key.c_str(), val.c_str());
+        return GSERROR_API_FAILED;
+    }
+    
     userData_[key] = val;
+    auto iter = onUserDataChange_.begin();
+    while (iter != onUserDataChange_.end()) {
+        if (iter->second != nullptr) {
+            iter->second(key, val);
+        }
+        iter++;
+    }
+
     return GSERROR_OK;
 }
 
 std::string ProducerSurface::GetUserData(const std::string &key)
 {
+    std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.find(key) != userData_.end()) {
         return userData_[key];
     }
@@ -337,6 +395,16 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
     return producer_->RegisterReleaseListener(listener_);
 }
 
+GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWithFence)
+{
+    if (funcWithFence == nullptr) {
+        BLOGNE("OnReleaseFuncWithFence is nullptr, RegisterReleaseListener failed.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    listener_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
+    return producer_->RegisterReleaseListener(listener_);
+}
+
 GSError ProducerSurface::UnRegisterReleaseListener()
 {
     if (producer_ == nullptr) {
@@ -349,6 +417,36 @@ GSError ProducerSurface::UnRegisterReleaseListener()
 GSError ProducerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw)
 {
     return GSERROR_NOT_SUPPORT;
+}
+
+GSError ProducerSurface::RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func)
+{
+    std::lock_guard<std::mutex> lockGuard(lockMutex_);
+    if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
+        BLOGND("func already register");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    
+    onUserDataChange_[funcName] = func;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::UnRegisterUserDataChangeListener(const std::string &funcName)
+{
+    std::lock_guard<std::mutex> lockGuard(lockMutex_);
+    if (onUserDataChange_.erase(funcName) == 0) {
+        BLOGND("func doesn't register");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::ClearUserDataChangeListener()
+{
+    std::lock_guard<std::mutex> lockGuard(lockMutex_);
+    onUserDataChange_.clear();
+    return GSERROR_OK;
 }
 
 bool ProducerSurface::IsRemote()
@@ -404,7 +502,12 @@ GSError ProducerSurface::SetTransform(GraphicTransformType transform)
 
 GraphicTransformType ProducerSurface::GetTransform() const
 {
-    return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    if (producer_->GetTransform(transform) != GSERROR_OK) {
+        BLOGNE("Warning ProducerSurface GetTransform failed.");
+        return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    }
+    return transform;
 }
 
 GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,

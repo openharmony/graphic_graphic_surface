@@ -34,8 +34,10 @@ public:
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence);
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer);
+    GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut);
 
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer);
+    GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<Surface> cSurface);
 
     bool QueryIfBufferAvailable();
 
@@ -60,6 +62,10 @@ public:
     void SetStatus(bool status);
     GSError OnConsumerDied();
     GSError GoBackground();
+    void ConsumerRequestCpuAccess(bool on)
+    {
+        bufferQueue_->ConsumerRequestCpuAccess(on);
+    }
 
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;

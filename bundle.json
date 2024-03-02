@@ -24,14 +24,17 @@
           "hilog",
           "hitrace",
           "init",
-          "ipc"
+          "ipc",
+          "video_processing_engine",
+          "drivers_interface_hwsched"
         ]
       },
       "build": {
         "sub_component": [
           "//foundation/graphic/graphic_surface/surface:surface",
           "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
-          "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle"
+          "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle",
+          "//foundation/graphic/graphic_surface/utils/frame_report:frame_report"
         ],
         "inner_kits": [
           {
@@ -65,6 +68,17 @@
               ],
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
             }
+          },
+          {
+            "type": "none",
+            "name": "//foundation/graphic/graphic_surface/utils/frame_report:frame_report",
+            "header": {
+              "header_files": [
+                "frame_report.h",
+                "ring_array.h"
+              ]
+            },
+            "header_base": "//foundation/graphic/graphic_surface/utils/frame_report/src"
           },
           {
             "type": "so",

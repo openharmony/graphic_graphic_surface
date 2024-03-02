@@ -17,9 +17,10 @@
 #include <surface.h>
 #include <buffer_extra_data_impl.h>
 #include <buffer_queue.h>
-#include <buffer_manager.h>
 #include "buffer_consumer_listener.h"
 #include "sync_fence.h"
+#include "consumer_surface.h"
+#include "producer_surface_delegator.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -51,6 +52,8 @@ public:
     static inline sptr<BufferQueue> bq = nullptr;
     static inline std::map<int32_t, sptr<SurfaceBuffer>> cache;
     static inline sptr<BufferExtraData> bedata = nullptr;
+    static inline sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
+    static inline sptr<IConsumerSurface> csurface1 = nullptr;
 };
 
 void BufferQueueTest::SetUpTestCase()
@@ -59,6 +62,7 @@ void BufferQueueTest::SetUpTestCase()
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bq->RegisterConsumerListener(listener);
     bedata = new OHOS::BufferExtraDataImpl;
+    csurface1 = IConsumerSurface::Create();
 }
 
 void BufferQueueTest::TearDownTestCase()
@@ -113,6 +117,10 @@ HWTEST_F(BufferQueueTest, QueueSize001, Function | MediumTest | Level2)
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 
     ASSERT_EQ(bq->GetQueueSize(), 2u);
+    BufferQueue *bqTmp = new BufferQueue("testTmp", true);
+    EXPECT_EQ(bqTmp->SetQueueSize(2), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
+    bqTmp = nullptr;
 }
 
 /*
@@ -636,7 +644,7 @@ HWTEST_F(BufferQueueTest, GetDefaultWidth001, Function | MediumTest | Level2)
  */
 HWTEST_F(BufferQueueTest, SetDefaultUsage001, Function | MediumTest | Level2)
 {
-    uint64_t usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA;
+    uint32_t usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA;
     GSError ret = bq->SetDefaultUsage(usage);
     ASSERT_EQ(ret, GSERROR_OK);
     ASSERT_EQ(usage, bq->GetDefaultUsage());
@@ -653,5 +661,116 @@ HWTEST_F(BufferQueueTest, CleanCache001, Function | MediumTest | Level2)
 {
     GSError ret = bq->CleanCache();
     ASSERT_EQ(ret, GSERROR_OK);
+}
+/*
+* Function: AttachBufferUpdateStatus
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferUpdateStatus and check ret
+ */
+HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, Function | MediumTest | Level2)
+{
+    uint32_t sequence = 2;
+    int32_t timeOut = 6;
+    std::mutex mutex_;
+    std::unique_lock<std::mutex> lock(mutex_);
+    GSError ret = bq->AttachBufferUpdateStatus(lock, sequence, timeOut);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: AttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer, DetachBuffer and check ret
+ */
+HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, Function | MediumTest | Level2)
+{
+    bq->CleanCache();
+    int32_t timeOut = 6;
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bq->AttachBuffer(retval.buffer, timeOut);
+    ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
+    EXPECT_EQ(bq->DetachBuffer(retval.buffer), GSERROR_INVALID_ARGUMENTS);
+    sptr<SurfaceBuffer> buffer = nullptr;
+    EXPECT_EQ(bq->DetachBuffer(buffer), GSERROR_INVALID_ARGUMENTS);
+    BufferQueue *bqTmp = new BufferQueue("testTmp", true);
+    EXPECT_EQ(bqTmp->DetachBuffer(buffer), GSERROR_INVALID_OPERATING);
+    bqTmp = nullptr;
+}
+
+/*
+* Function: AttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer, DetachBuffer and check ret
+ */
+HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, Function | MediumTest | Level2)
+{
+    bq->CleanCache();
+    int32_t timeOut = 6;
+    EXPECT_EQ(bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = bq->AttachBuffer(buffer, timeOut);
+    sptr<SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
+    EXPECT_EQ(bq->GetUsedSize(), 1);
+    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(bq->AttachBuffer(buffer1, timeOut), GSERROR_OK);
+    ret= bq->DetachBuffer(buffer);
+    EXPECT_EQ(ret, GSERROR_NO_ENTRY);
+    EXPECT_EQ(bq->DetachBuffer(buffer1), GSERROR_NO_ENTRY);
+    EXPECT_EQ(bq->AllocBuffer(buffer1, requestConfig), GSERROR_OK);
+    EXPECT_EQ(bq->DetachBuffer(buffer1), GSERROR_OK);
+}
+
+/*
+* Function: RegisterSurfaceDelegator
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterSurfaceDelegator and check ret
+ */
+HWTEST_F(BufferQueueTest, RegisterSurfaceDelegator001, Function | MediumTest | Level2)
+{
+    surfaceDelegator = ProducerSurfaceDelegator::Create();
+    GSError ret = bq->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), csurface1);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: RegisterDeleteBufferListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterDeleteBufferListener and check ret
+ */
+HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, Function | MediumTest | Level2)
+{
+    surfaceDelegator = ProducerSurfaceDelegator::Create();
+    GSError ret = bq->RegisterDeleteBufferListener(nullptr, true);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: DumpToFile
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DumpToFile and check ret
+ */
+HWTEST_F(BufferQueueTest, DumpToFile001, Function | MediumTest | Level2)
+{
+    bq->CleanCache();
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = bq->AttachBuffer(buffer, 6);
+    sptr<SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
+    ASSERT_EQ(ret, GSERROR_OK);
+    bq->DumpToFile(0);
+    bq->DumpToFile(1);
 }
 }

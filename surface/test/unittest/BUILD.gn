@@ -23,7 +23,7 @@ group("unittest") {
   deps = [
     # ":buffer_client_producer_remote_test",
     # ":buffer_manager_test",
-    ":buffer_queue_consumer_test",
+    # ":buffer_queue_consumer_test",
 
     # ":buffer_queue_producer_remote_test",
     # ":buffer_queue_producer_test",

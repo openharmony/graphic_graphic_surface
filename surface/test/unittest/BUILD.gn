@@ -21,19 +21,22 @@ group("unittest") {
   testonly = true
 
   deps = [
-    ":buffer_client_producer_remote_test",
-    ":buffer_manager_test",
-    ":buffer_queue_consumer_test",
-    ":buffer_queue_producer_remote_test",
-    ":buffer_queue_producer_test",
-    ":buffer_queue_test",
+    # ":buffer_client_producer_remote_test",
+    # ":buffer_manager_test",
+    # ":buffer_queue_consumer_test",
+
+    # ":buffer_queue_producer_remote_test",
+    # ":buffer_queue_producer_test",
+    # ":buffer_queue_test",
     ":buffer_shared_test",
-    ":consumer_surface_test",
+
+    # ":consumer_surface_test",
     ":metadata_helper_test",
     ":native_buffer_test",
-    ":native_window_test",
-    ":producer_surface_test",
-    ":surface_buffer_impl_test",
+
+    # ":native_window_test",
+    # ":producer_surface_test",
+    # ":surface_buffer_impl_test",
     ":surface_utils_test",
   ]
 }

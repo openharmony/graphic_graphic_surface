@@ -114,6 +114,8 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         return GSERROR_API_FAILED;
     } else {
         retval.buffer = bufferProducerCache_[retval.sequence];
+        retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
+        retval.buffer->SetSurfaceBufferTransform(config.transform);
     }
     buffer = retval.buffer;
     fence = retval.fence;
@@ -226,6 +228,40 @@ GSError ProducerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fen
 GSError ProducerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
 {
     return GSERROR_NOT_SUPPORT;
+}
+
+GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
+{
+    if (buffer == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    auto ret = producer_->AttachBufferToQueue(buffer);
+    if (ret == GSERROR_OK) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
+            BLOGNE("Attach already exist buffer %{public}d", buffer->GetSeqNum());
+            return GSERROR_API_FAILED;
+        }
+        bufferProducerCache_[buffer->GetSeqNum()] = buffer;
+    }
+    return ret;
+}
+
+GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
+{
+    if (buffer == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    auto ret = producer_->DetachBufferFromQueue(buffer);
+    if (ret == GSERROR_OK) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (bufferProducerCache_.find(buffer->GetSeqNum()) == bufferProducerCache_.end()) {
+            BLOGNE("Detach not exist buffer %{public}d", buffer->GetSeqNum());
+            return GSERROR_API_FAILED;
+        }
+        bufferProducerCache_.erase(buffer->GetSeqNum());
+    }
+    return ret;
 }
 
 GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)

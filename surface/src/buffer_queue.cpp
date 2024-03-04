@@ -114,6 +114,8 @@ GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
     }
 
     buffer = bufferQueueCache_[freeList_.front()].buffer;
+    buffer->SetSurfaceBufferColorGamut(config.colorGamut);
+    buffer->SetSurfaceBufferTransform(config.transform);
     freeList_.pop_front();
     return GSERROR_OK;
 }
@@ -841,6 +843,78 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer)
     buffer->Map();
     buffer->SetSurfaceBufferWidth(buffer->GetWidth());
     buffer->SetSurfaceBufferHeight(buffer->GetHeight());
+}
+
+GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerType invokerType)
+{
+    ScopedBytrace func(__func__);
+    if (buffer == nullptr) {
+        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        uint32_t sequence = buffer->GetSeqNum();
+        if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
+            BLOGN_FAILURE_ID(sequence, "buffer is already in cache");
+            return GSERROR_API_FAILED;
+        }
+        BufferElement ele;
+        if (invokerType == InvokerType::PRODUCER_INVOKER) {
+            ele = {
+                .buffer = buffer,
+                .state = BUFFER_STATE_REQUESTED,
+                .isDeleting = false,
+                .config = *(buffer->GetBufferRequestConfig()),
+                .fence = SyncFence::INVALID_FENCE,
+            };
+        } else {
+            ele = {
+                .buffer = buffer,
+                .state = BUFFER_STATE_ACQUIRED,
+                .isDeleting = false,
+                .config = *(buffer->GetBufferRequestConfig()),
+                .fence = SyncFence::INVALID_FENCE,
+            };
+        }
+        bufferQueueCache_[sequence] = ele;
+        queueSize_++;
+    }
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> &buffer, InvokerType invokerType)
+{
+    ScopedBytrace func(__func__);
+    if (buffer == nullptr) {
+        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        uint32_t sequence = buffer->GetSeqNum();
+        if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+            BLOGN_FAILURE_ID(sequence, "not find in cache");
+            return GSERROR_NO_ENTRY;
+        }
+        if (invokerType == InvokerType::PRODUCER_INVOKER) {
+            if (bufferQueueCache_[sequence].state != BUFFER_STATE_REQUESTED) {
+                BLOGN_FAILURE_ID(sequence, "producer state is not requested");
+                return GSERROR_INVALID_OPERATING;
+            }
+        } else {
+            if (bufferQueueCache_[sequence].state != BUFFER_STATE_ACQUIRED) {
+                BLOGN_FAILURE_ID(sequence, "consumer state is not acquired");
+                return GSERROR_INVALID_OPERATING;
+            }
+        }
+        if (queueSize_ > 0) {
+            queueSize_--;
+            bufferQueueCache_.erase(sequence);
+        } else {
+            BLOGN_FAILURE_ID(sequence, "there has no buffer");
+            return GSERROR_INVALID_OPERATING;
+        }
+    }
+    return GSERROR_OK;
 }
 
 GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)

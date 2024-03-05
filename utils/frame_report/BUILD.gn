@@ -51,6 +51,6 @@ ohos_static_library("frame_report") {
   }
 
   subsystem_name = "graphic"
-  part_name = "graphic_2d"
+  part_name = "graphic_surface"
 }
 ## Build frame_report.a }}}

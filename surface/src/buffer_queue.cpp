@@ -859,23 +859,18 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerTyp
             return GSERROR_API_FAILED;
         }
         BufferElement ele;
+        ele = {
+            .buffer = buffer,
+            .isDeleting = false,
+            .config = *(buffer->GetBufferRequestConfig()),
+            .fence = SyncFence::INVALID_FENCE,
+        };
         if (invokerType == InvokerType::PRODUCER_INVOKER) {
-            ele = {
-                .buffer = buffer,
-                .state = BUFFER_STATE_REQUESTED,
-                .isDeleting = false,
-                .config = *(buffer->GetBufferRequestConfig()),
-                .fence = SyncFence::INVALID_FENCE,
-            };
+            ele.state = BUFFER_STATE_REQUESTED;
         } else {
-            ele = {
-                .buffer = buffer,
-                .state = BUFFER_STATE_ACQUIRED,
-                .isDeleting = false,
-                .config = *(buffer->GetBufferRequestConfig()),
-                .fence = SyncFence::INVALID_FENCE,
-            };
+            ele.state = BUFFER_STATE_ACQUIRED;
         }
+        AttachBufferUpdateBufferInfo(buffer);
         bufferQueueCache_[sequence] = ele;
         queueSize_++;
     }

@@ -18,68 +18,55 @@
 
 #include <cstdint>
 #include <string>
-#include "ring_array.h"
+#include <unordered_map>
 
 namespace OHOS {
 namespace Rosen {
 
-struct FpsCalculator {
-    int64_t duration;
-    int frameNum;
-    float realFps;
-    int fps;
-};
+using NotifyFrameInfoFunc = void(*)(int32_t, const std::string&, int64_t, const std::string&);
+constexpr int32_t FR_DEFAULT_PID = 0;
+constexpr uint64_t FR_DEFAULT_UNIQUEID = 0;
 
 class FrameReport {
 public:
     static FrameReport& GetInstance();
 
-    bool IsGameScene() const;
-    void SetGameScene(bool gameScene);
+    void SetGameScene(int32_t pid, int32_t state);
+    bool HasGameScene();
+    bool IsGameScene(int32_t pid);
+    bool IsActiveGameWithPid(int32_t pid);
+    bool IsActiveGameWithUniqueId(uint64_t uniqueId);
     void SetLastSwapBufferTime(int64_t lastSwapBufferTime);
-    void SetDequeueBufferTime(std::string& name, int64_t dequeueBufferTime);
-    void SetQueueBufferTime(std::string& name, int64_t queueBufferTime);
-    void SetPendingBufferNum(std::string& name, int32_t pendingBufferNum);
-    void Report(std::string& name);
+    void SetDequeueBufferTime(const std::string& layerName, int64_t dequeueBufferTime);
+    void SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime);
+    void SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum);
+    void Report(int32_t pid, const std::string& layerName);
 
 private:
     FrameReport();
     ~FrameReport();
 
-    bool IsReportBySurfaceName(std::string& name);
-    void CalculateGameFps(int64_t timestamp);
-    void DeleteInvalidTimes(int64_t timestamp);
-    void GetTargetGameFps();
-    void SendGameTargetFps(int32_t fps);
-    int FindStage(const int fps) const;
-
-    bool LoadLibrary();
+    bool IsReportBySurfaceName(const std::string& layerName);
+    void LoadLibrary();
     void CloseLibrary();
-    void* LoadSymbol(const char* symName);
-    int CurTime(int type, const std::string& message, int length);
-    int SchedMsg(int type, const std::string& message, int length);
+    void* LoadSymbol(const std::string& symName);
 
-    static void SwitchFunction(const char *key, const char *value, void *context);
+    void LimitingCacheSize();
+    void AddPidInfo(int32_t pid);
+    void DeletePidInfo(int32_t pid);
+    void NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp, const std::string& bufferMsg);
 
+    int32_t activelyPid_ = FR_DEFAULT_PID;
+    int32_t pendingBufferNum_ = 0;
+    uint64_t activelyUniqueId_ = FR_DEFAULT_UNIQUEID;
     int64_t lastSwapBufferTime_ = 0;
     int64_t dequeueBufferTime_ = 0;
     int64_t queueBufferTime_ = 0;
-    int32_t pendingBufferNum_ = 0;
-    int32_t skipHintStatus_ = 0;
+    bool isGameSoLoaded_ = false;
+    void* gameSoHandle_ = nullptr;
+    NotifyFrameInfoFunc notifyFrameInfoFunc_ = nullptr;
 
-    std::string name_ = "";
-    int frameNumCnt_ = 0;
-    int targetFps_ = 0;
-    int lastTargetFps_ = 0;
-    RingArray gameTimeStamps_;
-    int64_t gameLastTimeStamp_ = 0;
-
-    bool gameScene_ = false;
-
-    void* curTimeFunc_ = nullptr;
-    void* schedMsgFunc_ = nullptr;
-    void* schedHandle_ = nullptr;
-    bool schedSoLoaded_ = false;
+    std::unordered_map<int32_t, bool> gameSceneMap_;
 };
 
 } // namespace Rosen

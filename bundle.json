@@ -20,13 +20,12 @@
           "bytrace",
           "c_utils",
           "drivers_interface_display",
+          "drivers_interface_hwsched",
           "eventhandler",
           "hilog",
           "hitrace",
           "init",
-          "ipc",
-          "video_processing_engine",
-          "drivers_interface_hwsched"
+          "ipc"
         ]
       },
       "build": {

@@ -61,6 +61,19 @@
           },
           {
             "type": "so",
+            "name": "//foundation/graphic/graphic_surface/surface:surface_headers",
+            "header": {
+              "header_files": [
+                "common_types.h",
+                "external_window.h",
+                "native_buffer.h",
+                "surface_type.h"
+              ],
+              "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/surface"
+            }
+          },
+          {
+            "type": "so",
             "name": "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
             "header": {
               "header_files": [
@@ -74,11 +87,10 @@
             "name": "//foundation/graphic/graphic_surface/utils/frame_report:frame_report",
             "header": {
               "header_files": [
-                "frame_report.h",
-                "ring_array.h"
+                "frame_report.h"
               ]
             },
-            "header_base": "//foundation/graphic/graphic_surface/utils/frame_report/src"
+            "header_base": "//foundation/graphic/graphic_surface/utils/frame_report/export"
           },
           {
             "type": "so",

@@ -52,6 +52,16 @@ config("surface_public_config") {
   cflags = [ "-Wno-error=deprecated-declarations" ]
 }
 
+config("surface_headers_config") {
+  include_dirs = [ "$graphic_surface_root/interfaces/inner_api/surface" ]
+}
+
+ohos_static_library("surface_headers") {
+  public_configs = [ ":surface_headers_config" ]
+  part_name = "graphic_surface"
+  subsystem_name = "graphic"
+}
+
 ohos_shared_library("surface") {
   sources = [
     "src/buffer_client_producer.cpp",

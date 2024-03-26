@@ -514,8 +514,9 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, Function | MediumTest | L
             ASSERT_NE(outPlanes.planes[2].offset, 0);
             std::cout << "i:" << i << std::endl;
             for (int32_t j = 0; j < 3; j++) {
-                std::cout << "offset:" << outPlanes.planes[j].offset << " rowStride:" << outPlanes.planes[j].rowStride <<
-                    " columnStride:" << outPlanes.planes[j].columnStride << std::endl;
+                std::cout << "offset:" << outPlanes.planes[j].offset <<
+                    " rowStride:" << outPlanes.planes[j].rowStride <<" columnStride:" <<
+                     outPlanes.planes[j].columnStride << std::endl;
             }
         }
     }

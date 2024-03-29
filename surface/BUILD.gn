@@ -15,6 +15,10 @@ import("//build/ohos.gni")
 import("//foundation/graphic/graphic_2d/graphic_config.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
+if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
+  import("${graphic_2d_ext_delegator_gni}")
+}
+
 ## Build surface.so {{{
 config("surface_config") {
   visibility = [ ":*" ]
@@ -39,6 +43,10 @@ config("surface_public_config") {
     "$graphic_surface_root/sandbox",
     "$graphic_surface_root/scoped_bytrace/include",
   ]
+
+  if (graphic_2d_ext_delegator && defined(vendor_root)) {
+    include_dirs += libsurface_ext_delegator_include_dirs
+  }
 
   defines = []
   if (graphic_2d_feature_freemem_enable) {
@@ -104,6 +112,11 @@ ohos_shared_library("surface") {
     "libnative_buffer.so",
     "libnative_window.so",
   ]
+
+  if (graphic_2d_ext_delegator && defined(vendor_root)) {
+    sources += libsurface_ext_delegator_sources
+    sources -= libsurface_ext_delegator_sources_del
+  }
 
   innerapi_tags = [ "chipsetsdk" ]
   part_name = "graphic_surface"

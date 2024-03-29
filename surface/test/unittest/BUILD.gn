@@ -14,6 +14,10 @@
 import("//build/test.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
+if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
+  import("${graphic_2d_ext_delegator_gni}")
+}
+
 module_out_path = "graphic_surface/surface"
 
 group("unittest") {
@@ -43,7 +47,13 @@ group("unittest") {
 ohos_unittest("producer_surface_delegator_test") {
   module_out_path = module_out_path
 
-  sources = [ "producer_surface_delegator_test.cpp" ]
+  sources = []
+  if (graphic_2d_ext_delegator &&
+      defined(libsurface_ext_test_producer_delegator_src)) {
+    sources += libsurface_ext_test_producer_delegator_src
+  } else {
+    sources += [ "producer_surface_delegator_test.cpp" ]
+  }
 
   deps = [ ":surface_test_common" ]
 }
@@ -54,7 +64,13 @@ ohos_unittest("producer_surface_delegator_test") {
 ohos_unittest("consumer_surface_delegator_test") {
   module_out_path = module_out_path
 
-  sources = [ "consumer_surface_delegator_test.cpp" ]
+  sources = []
+  if (graphic_2d_ext_delegator &&
+      defined(libsurface_ext_test_consumer_delegator_src)) {
+    sources += libsurface_ext_test_consumer_delegator_src
+  } else {
+    sources += [ "consumer_surface_delegator_test.cpp" ]
+  }
 
   deps = [ ":surface_test_common" ]
 }
@@ -65,7 +81,13 @@ ohos_unittest("consumer_surface_delegator_test") {
 ohos_unittest("transact_surface_delegator_stub_test") {
   module_out_path = module_out_path
 
-  sources = [ "transact_surface_delegator_stub_test.cpp" ]
+  sources = []
+  if (graphic_2d_ext_delegator &&
+      defined(libsurface_ext_test_transact_delegator_src)) {
+    sources += libsurface_ext_test_transact_delegator_src
+  } else {
+    sources += [ "transact_surface_delegator_stub_test.cpp" ]
+  }
 
   deps = [ ":surface_test_common" ]
 }

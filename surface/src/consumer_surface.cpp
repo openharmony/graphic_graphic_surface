@@ -184,6 +184,7 @@ GSError ConsumerSurface::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
     if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    buffer->SetConsumerAttachBufferFlag(true);
     return consumer_->AttachBufferToQueue(buffer);
 }
 
@@ -192,6 +193,7 @@ GSError ConsumerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
     if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    buffer->SetConsumerAttachBufferFlag(false);
     return consumer_->DetachBufferFromQueue(buffer);
 }
 
@@ -262,12 +264,12 @@ int32_t ConsumerSurface::GetDefaultHeight()
     return producer_->GetDefaultHeight();
 }
 
-GSError ConsumerSurface::SetDefaultUsage(uint32_t usage)
+GSError ConsumerSurface::SetDefaultUsage(uint64_t usage)
 {
     return consumer_->SetDefaultUsage(usage);
 }
 
-uint32_t ConsumerSurface::GetDefaultUsage()
+uint64_t ConsumerSurface::GetDefaultUsage()
 {
     return producer_->GetDefaultUsage();
 }
@@ -529,5 +531,20 @@ GSError ConsumerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
 void ConsumerSurface::ConsumerRequestCpuAccess(bool on)
 {
     consumer_->ConsumerRequestCpuAccess(on);
+}
+
+GraphicTransformType ConsumerSurface::GetTransformHint() const
+{
+    GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    if (producer_->GetTransformHint(transformHint) != GSERROR_OK) {
+        BLOGNE("Warning ProducerSurface GetTransformHint failed.");
+        return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    }
+    return transformHint;
+}
+
+GSError ConsumerSurface::SetTransformHint(GraphicTransformType transformHint)
+{
+    return producer_->SetTransformHint(transformHint);
 }
 } // namespace OHOS

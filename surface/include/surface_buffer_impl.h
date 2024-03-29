@@ -21,6 +21,7 @@
 #include <buffer_handle_utils.h>
 #include <surface_buffer.h>
 #include "egl_data.h"
+#include "native_buffer.h"
 #include "stdint.h"
 
 struct BufferWrapper {};
@@ -49,7 +50,7 @@ public:
     int32_t GetFormat() const override;
     uint64_t GetUsage() const override;
     uint64_t GetPhyAddr() const override;
-    void *GetVirAddr() override;
+    void* GetVirAddr() override;
     int32_t GetFileDescriptor() const override;
     uint32_t GetSize() const override;
 
@@ -93,9 +94,13 @@ public:
     GSError ReadBufferRequestConfig(MessageParcel &parcel) override;
     const BufferRequestConfig* GetBufferRequestConfig() const override;
     void SetBufferRequestConfig(const BufferRequestConfig &config) override;
+    void SetConsumerAttachBufferFlag(bool value) override;
+    bool GetConsumerAttachBufferFlag() override;
+    GSError GetPlanesInfo(void **planesInfo) override;
 
 private:
     void FreeBufferHandleLocked();
+    GSError GetImageLayout(void *layout);
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;
@@ -106,7 +111,9 @@ private:
     int32_t surfaceBufferWidth_ = 0;
     int32_t surfaceBufferHeight_ = 0;
     mutable std::mutex mutex_;
+    OH_NativeBuffer_Planes planesInfo_ = {0, {}};
     BufferRequestConfig bufferRequestConfig_;
+    bool isConsumerAttachBufferFlag_ = false;
 };
 } // namespace OHOS
 

@@ -69,6 +69,9 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORM] = &BufferQueueProducer::GetTransformRemote;
     memberFuncMap_[BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE] = &BufferQueueProducer::AttachBufferToQueueRemote;
     memberFuncMap_[BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE] = &BufferQueueProducer::DetachBufferFromQueueRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_DEFAULT_USAGE] = &BufferQueueProducer::SetDefaultUsageRemote;
+    memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORMHINT] = &BufferQueueProducer::GetTransformHintRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORMHINT] = &BufferQueueProducer::SetTransformHintRemote;
 }
 
 BufferQueueProducer::~BufferQueueProducer()
@@ -123,7 +126,8 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
     BufferRequestConfig config = {};
     int64_t startTimeNs = 0;
     int64_t endTimeNs = 0;
-    if (Rosen::FrameReport::GetInstance().IsGameScene()) {
+    bool isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid_);
+    if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
     }
@@ -140,7 +144,7 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
         reply.WriteInt32Vector(retval.deletingBuffers);
     }
 
-    if (Rosen::FrameReport::GetInstance().IsGameScene()) {
+    if (isActiveGame) {
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
         Rosen::FrameReport::GetInstance().SetDequeueBufferTime(name_, (endTimeNs - startTimeNs));
@@ -169,8 +173,8 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
     int64_t startTimeNs = 0;
     int64_t endTimeNs = 0;
-
-    if (Rosen::FrameReport::GetInstance().IsGameScene()) {
+    bool isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid_);
+    if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
     }
@@ -185,10 +189,14 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
 
     reply.WriteInt32(sret);
 
-    if (Rosen::FrameReport::GetInstance().IsGameScene()) {
+    if (isActiveGame) {
+        uint64_t uniqueId = GetUniqueId();
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
-        Rosen::FrameReport::GetInstance().SetQueueBufferTime(name_, (endTimeNs - startTimeNs));
+        Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
+    }
+    if (Rosen::FrameReport::GetInstance().IsGameScene(connectedPid_)) {
+        Rosen::FrameReport::GetInstance().Report(connectedPid_, name_);
     }
 
     return 0;
@@ -328,10 +336,19 @@ int32_t BufferQueueProducer::GetDefaultHeightRemote(MessageParcel &arguments, Me
     return 0;
 }
 
+int32_t BufferQueueProducer::SetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                   MessageOption &option)
+{
+    uint64_t usage = arguments.ReadUint64();
+    GSError sret = SetDefaultUsage(usage);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
 int32_t BufferQueueProducer::GetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply,
                                                    MessageOption &option)
 {
-    reply.WriteUint32(GetDefaultUsage());
+    reply.WriteUint64(GetDefaultUsage());
     return 0;
 }
 
@@ -492,6 +509,31 @@ int32_t BufferQueueProducer::GetTransformRemote(
     return 0;
 }
 
+int32_t BufferQueueProducer::SetTransformHintRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    GraphicTransformType transformHint = static_cast<GraphicTransformType>(arguments.ReadUint32());
+    GSError sret = SetTransformHint(transformHint);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::GetTransformHintRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    auto ret = GetTransformHint(transformHint);
+    if (ret != GSERROR_OK) {
+        reply.WriteInt32(static_cast<int32_t>(ret));
+        return -1;
+    }
+
+    reply.WriteInt32(GSERROR_OK);
+    reply.WriteUint32(static_cast<uint32_t>(transformHint));
+
+    return 0;
+}
+
 GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                            RequestBufferReturnValue &retval)
 {
@@ -617,7 +659,15 @@ int32_t BufferQueueProducer::GetDefaultHeight()
     return bufferQueue_->GetDefaultHeight();
 }
 
-uint32_t BufferQueueProducer::GetDefaultUsage()
+GSError BufferQueueProducer::SetDefaultUsage(uint64_t usage)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetDefaultUsage(usage);
+}
+
+uint64_t BufferQueueProducer::GetDefaultUsage()
 {
     if (bufferQueue_ == nullptr) {
         return 0;
@@ -698,6 +748,25 @@ GSError BufferQueueProducer::GetTransform(GraphicTransformType &transform)
         return GSERROR_INVALID_ARGUMENTS;
     }
     transform = bufferQueue_->GetTransform();
+    return GSERROR_OK;
+}
+
+GSError BufferQueueProducer::SetTransformHint(GraphicTransformType transformHint)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetTransformHint(transformHint);
+}
+
+GSError BufferQueueProducer::GetTransformHint(GraphicTransformType &transformHint)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (bufferQueue_ == nullptr) {
+        transformHint = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    transformHint = bufferQueue_->GetTransformHint();
     return GSERROR_OK;
 }
 

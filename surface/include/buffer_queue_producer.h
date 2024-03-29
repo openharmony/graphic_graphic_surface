@@ -62,7 +62,8 @@ public:
 
     int32_t GetDefaultWidth() override;
     int32_t GetDefaultHeight() override;
-    uint32_t GetDefaultUsage() override;
+    GSError SetDefaultUsage(uint64_t usage) override;
+    uint64_t GetDefaultUsage() override;
 
     GSError CleanCache() override;
     GSError GoBackground() override;
@@ -94,6 +95,9 @@ public:
     GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) override;
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) override;
 
+    GSError SetTransformHint(GraphicTransformType transformHint) override;
+    GSError GetTransformHint(GraphicTransformType &transformHint) override;
+
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -109,6 +113,7 @@ private:
     int32_t GetDefaultWidthRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetDefaultHeightRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetUniqueIdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t CleanCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RegisterReleaseListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
@@ -128,6 +133,8 @@ private:
     int32_t GetTransformRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AttachBufferToQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DetachBufferFromQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);

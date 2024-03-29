@@ -41,7 +41,7 @@ public:
     virtual int32_t GetFormat() const = 0;
     virtual uint64_t GetUsage() const = 0;
     virtual uint64_t GetPhyAddr() const = 0;
-    virtual void *GetVirAddr() = 0;
+    virtual void* GetVirAddr() = 0;
     virtual int32_t GetFileDescriptor() const = 0;
     virtual uint32_t GetSize() const = 0;
 
@@ -114,6 +114,19 @@ public:
     virtual void SetBufferRequestConfig(const BufferRequestConfig &config)
     {
         (void)config;
+    };
+    virtual void SetConsumerAttachBufferFlag(bool value)
+    {
+        (void)value;
+    };
+    virtual bool GetConsumerAttachBufferFlag()
+    {
+        return false;
+    };
+    virtual GSError GetPlanesInfo(void **planesInfo)
+    {
+        (void)planesInfo;
+        return GSERROR_OK;
     };
 
 protected:

@@ -38,7 +38,6 @@
  */
 
 #include <stdint.h>
-#include "external_window.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +45,7 @@ extern "C" {
 
 struct OH_NativeBuffer;
 typedef struct OH_NativeBuffer OH_NativeBuffer;
+typedef struct NativeWindowBuffer OHNativeWindowBuffer;
 
 /**
  * @brief Indicates the usage of a native buffer.

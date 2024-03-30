@@ -1322,13 +1322,13 @@ HWTEST_F(NativeWindowTest, SetTunnelHandle004, Function | MediumTest | Level1)
  */
 HWTEST_F(NativeWindowTest, NativeWindowGetTransformHint001, Function | MediumTest | Level1)
 {
-    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_180;
+    OH_NativeBuffer_TransformType transform = OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_180;
     ASSERT_EQ(NativeWindowGetTransformHint(nullptr, &transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(NativeWindowSetTransformHint(nullptr, transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(NativeWindowSetTransformHint(nativeWindow, transform), OHOS::GSERROR_OK);
-    transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    transform = OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_NONE;
     ASSERT_EQ(NativeWindowGetTransformHint(nativeWindow, &transform), OHOS::GSERROR_OK);
-    ASSERT_EQ(transform, GraphicTransformType::GRAPHIC_ROTATE_180);
+    ASSERT_EQ(transform, OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_180);
 }
 
 /*

@@ -528,4 +528,66 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, Function | MediumTest | L
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+
+/*
+* Function: OH_NativeBuffer_MapPlanes
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_MapPlanes
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | Level2)
+{
+    sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producer = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    int32_t fence;
+    sptr<OHOS::SurfaceBuffer> sBuffer = nullptr;
+    BufferRequestConfig requestConfig = {.width = 0x100, .height = 0x100, .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_YCBCR_420_SP,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA, .timeout = 0};
+    pSurface->SetQueueSize(4);
+    int32_t formatType = GRAPHIC_PIXEL_FMT_YCBCR_420_SP;
+    NativeWindow* nativeWindow;
+    NativeWindowBuffer* nativeWindowBuffer;
+    requestConfig.format = formatType;
+    pSurface->RequestBuffer(sBuffer, fence, requestConfig);
+    nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
+    ASSERT_NE(nativeWindow, nullptr);
+    nativeWindowBuffer = OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(&sBuffer);
+    ASSERT_NE(nativeWindowBuffer, nullptr);
+    OH_NativeBuffer* nativeBuffer = OH_NativeBufferFromNativeWindowBuffer(nativeWindowBuffer);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    OH_NativeBuffer* nativeBufferTmp = nullptr;
+    for (int32_t i = 0; i < 1000; i++) {
+        int32_t ret = OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBufferTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_EQ(nativeBuffer, nativeBufferTmp);
+    }
+
+    void *virAddr = nullptr;
+    OH_NativeBuffer_Planes outPlanes;
+    for (int32_t i = 0; i < 1000; i++) {
+        int32_t ret = OH_NativeBuffer_MapPlanes(nativeBuffer, &virAddr, &outPlanes);
+        if (ret != 50001999) {
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_NE(virAddr, nullptr);
+            ASSERT_EQ(outPlanes.planeCount, 3);
+            ASSERT_EQ(outPlanes.planes[0].offset, 0);
+            ASSERT_NE(outPlanes.planes[1].offset, 0);
+            ASSERT_NE(outPlanes.planes[2].offset, 0);
+        }
+    }
+
+    sBuffer = nullptr;
+    cSurface = nullptr;
+    producer = nullptr;
+    pSurface = nullptr;
+    nativeWindow = nullptr;
+    nativeWindowBuffer = nullptr;
+}
 }

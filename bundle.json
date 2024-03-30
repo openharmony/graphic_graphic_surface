@@ -63,9 +63,6 @@
             "name": "//foundation/graphic/graphic_surface/surface:surface_headers",
             "header": {
               "header_files": [
-                "common_types.h",
-                "external_window.h",
-                "native_buffer.h",
                 "surface_type.h"
               ],
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/surface"

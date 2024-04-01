@@ -94,8 +94,7 @@
             "header": {
               "header_files": [
                 "buffer_handle_parcel.h",
-                "buffer_handle_utils.h",
-                "buffer_handle.h"
+                "buffer_handle_utils.h"
               ],
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
             }

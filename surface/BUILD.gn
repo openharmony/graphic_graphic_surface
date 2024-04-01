@@ -30,6 +30,7 @@ config("surface_config") {
 
 config("surface_public_config") {
   include_dirs = [
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
     "$graphic_surface_root/utils/frame_report/export",
     "$graphic_surface_root/surface/include",
     "$graphic_surface_root/interfaces/inner_api",
@@ -39,6 +40,15 @@ config("surface_public_config") {
     "$graphic_surface_root/sandbox",
     "$graphic_surface_root/scoped_bytrace/include",
   ]
+
+  if (defined(graphic_2d_ext_configs.vendor_root)) {
+    include_dirs += graphic_2d_ext_configs.libsurface_ext_include_dirs
+  }
+
+  if (defined(graphic_2d_delegator_configs.vendor_root)) {
+    include_dirs +=
+        graphic_2d_delegator_configs.libsurface_ext_delegator_include_dirs
+  }
 
   defines = []
   if (graphic_2d_feature_freemem_enable) {
@@ -106,7 +116,6 @@ ohos_shared_library("surface") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
-    "ipc:ipc_core",
     "ipc:ipc_single",
   ]
 
@@ -115,7 +124,24 @@ ohos_shared_library("surface") {
     "libnative_window.so",
   ]
 
-  innerapi_tags = [ "chipsetsdk" ]
+  if (defined(graphic_2d_ext_configs.vendor_root)) {
+    sources += graphic_2d_ext_configs.libsurface_ext_sources
+    sources -= graphic_2d_ext_configs.libsurface_ext_sources_del
+
+    public_deps += [ "//foundation/graphic/graphic_2d_ext/ohcore/graphic_compat_layer:libgraphic_compat_layer" ]
+
+    public_external_deps -= [ "drivers_interface_display:hdi_gralloc_client" ]
+  }
+
+  if (defined(graphic_2d_delegator_configs.vendor_root)) {
+    sources += graphic_2d_delegator_configs.libsurface_ext_delegator_sources
+    sources -= graphic_2d_delegator_configs.libsurface_ext_delegator_sources_del
+  }
+
+  innerapi_tags = [
+    "chipsetsdk",
+    "platformsdk",
+  ]
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

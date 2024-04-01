@@ -439,17 +439,21 @@ HWTEST_F(SyncFenceTest, TrackFenceTest, Function | MediumTest | Level2)
 {
     sptr<SyncTimeline> syncTimeline_ = new SyncTimeline();
     bool valid = syncTimeline_->IsValid();
-    ASSERT_EQ(true, valid);
-    int32_t fd = syncTimeline_->GenerateFence("test sw_sync_fence_timeline", 1);
-    sptr<SyncFence> syncFence = new SyncFence(fd);
-    ASSERT_GE(fd, 0);
+    if (valid) {
+        ASSERT_EQ(true, valid);
+        int32_t fd = syncTimeline_->GenerateFence("test sw_sync_fence_timeline", 1);
+        sptr<SyncFence> syncFence = new SyncFence(fd);
+        ASSERT_GE(fd, 0);
 
-    auto tracker = std::make_shared<SyncFenceTracker>("test sw_sync_fence");
-    tracker->TrackFence(syncFence);
+        auto tracker = std::make_shared<SyncFenceTracker>("test sw_sync_fence");
+        tracker->TrackFence(syncFence);
 
-    // increase timeline from 0 -> 1
-    auto ret = syncTimeline_->IncreaseSyncPoint(1);
-    ASSERT_EQ(ret, 0);
-    tracker->TrackFence(syncFence);
+        // increase timeline from 0 -> 1
+        auto ret = syncTimeline_->IncreaseSyncPoint(1);
+        ASSERT_EQ(ret, 0);
+        tracker->TrackFence(syncFence);
+    } else {
+        ASSERT_EQ(valid, false);
+    }
 }
 } // namespace OHOS

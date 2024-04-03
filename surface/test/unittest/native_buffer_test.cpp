@@ -15,12 +15,14 @@
 #include <gtest/gtest.h>
 #include "iconsumer_surface.h"
 #include <iservice_registry.h>
+#include <ctime>
 #include "native_buffer.h"
 #include "native_buffer_inner.h"
 #include "native_window.h"
 #include "surface_type.h"
 #include "graphic_common_c.h"
 
+using namespace std;
 using namespace testing;
 using namespace testing::ext;
 
@@ -571,6 +573,8 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | L
 
     void *virAddr = nullptr;
     OH_NativeBuffer_Planes outPlanes;
+    clock_t startTime, endTime;
+    startTime = clock();
     for (int32_t i = 0; i < 1000; i++) {
         int32_t ret = OH_NativeBuffer_MapPlanes(nativeBuffer, &virAddr, &outPlanes);
         if (ret != 50001999) {
@@ -582,6 +586,8 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | L
             ASSERT_NE(outPlanes.planes[2].offset, 0);
         }
     }
+    endTime = clock();
+    cout << "OH_NativeBuffer_MapPlanes 1000 times cost time: " << (endTime - startTime) << "ms" << endl;
 
     sBuffer = nullptr;
     cSurface = nullptr;

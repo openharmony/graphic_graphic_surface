@@ -17,11 +17,13 @@
 #include <iservice_registry.h>
 #include <native_window.h>
 #include <securec.h>
+#include <ctime>
 #include "buffer_log.h"
 #include "external_window.h"
 #include "surface_utils.h"
 #include "sync_fence.h"
 
+using namespace std;
 using namespace testing;
 using namespace testing::ext;
 
@@ -426,6 +428,7 @@ HWTEST_F(NativeWindowTest, HandleOpt009, Function | MediumTest | Level1)
 HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer001, Function | MediumTest | Level1)
 {
     ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nullptr, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nullptr, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 void SetNativeWindowConfig(NativeWindow *nativeWindow)
@@ -690,10 +693,14 @@ HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer006, Function | MediumTest | 
     int32_t queueSize = 0;
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindowTmp, code, &queueSize), OHOS::GSERROR_OK);
     ASSERT_EQ(queueSize, 3);
+    clock_t startTime, endTime;
+    startTime = clock();
     for (int32_t i = 0; i < 1000; i++) {
         ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nativeWindowTmp, nativeWindowBuffer1), OHOS::GSERROR_OK);
         ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindowTmp, nativeWindowBuffer1), OHOS::GSERROR_OK);
     }
+    endTime = clock();
+    cout << "DetachBuffer and AttachBuffer 1000 times cost time: " << (endTime - startTime) << "ms" << endl;
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindowTmp, code, &queueSize), OHOS::GSERROR_OK);
     ASSERT_EQ(queueSize, 3);
     OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);

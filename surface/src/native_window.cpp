@@ -523,23 +523,23 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowGetTransformHint(OHNativeWindow *window, GraphicTransformType *transform)
+int32_t NativeWindowGetTransformHint(OHNativeWindow *window, OH_NativeBuffer_TransformType *transform)
 {
     if (window == nullptr || window->surface == nullptr || transform == nullptr) {
         BLOGE("parameter error, please check input parameter");
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
-    *transform = window->surface->GetTransformHint();
+    *transform = static_cast<OH_NativeBuffer_TransformType>(window->surface->GetTransformHint());
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowSetTransformHint(OHNativeWindow *window, GraphicTransformType transform)
+int32_t NativeWindowSetTransformHint(OHNativeWindow *window, OH_NativeBuffer_TransformType transform)
 {
     if (window == nullptr || window->surface == nullptr) {
         BLOGE("parameter error, please check input parameter");
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
-    return window->surface->SetTransformHint(transform);
+    return window->surface->SetTransformHint(static_cast<OHOS::GraphicTransformType>(transform));
 }
 
 int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *width, int32_t *height)

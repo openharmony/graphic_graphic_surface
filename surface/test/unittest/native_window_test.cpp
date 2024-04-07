@@ -17,11 +17,13 @@
 #include <iservice_registry.h>
 #include <native_window.h>
 #include <securec.h>
+#include <ctime>
 #include "buffer_log.h"
 #include "external_window.h"
 #include "surface_utils.h"
 #include "sync_fence.h"
 
+using namespace std;
 using namespace testing;
 using namespace testing::ext;
 
@@ -426,6 +428,7 @@ HWTEST_F(NativeWindowTest, HandleOpt009, Function | MediumTest | Level1)
 HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer001, Function | MediumTest | Level1)
 {
     ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nullptr, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nullptr, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 void SetNativeWindowConfig(NativeWindow *nativeWindow)
@@ -658,6 +661,48 @@ HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer005, Function | MediumTest | 
     sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
     ASSERT_EQ(cSurface->ReleaseBuffer(nativeWindowBuffer->sfbuffer, fence), GSERROR_OK);
 
+    OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
+}
+
+/*
+* Function: OH_NativeWindow_NativeWindowAttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowAttachBuffer by normal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer006, Function | MediumTest | Level1)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+
+    NativeWindowBuffer *nativeWindowBuffer1 = nullptr;
+    int fenceFd = -1;
+    int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindowTmp, &nativeWindowBuffer1, &fenceFd);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    int code = GET_BUFFERQUEUE_SIZE;
+    int32_t queueSize = 0;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindowTmp, code, &queueSize), OHOS::GSERROR_OK);
+    ASSERT_EQ(queueSize, 3);
+    clock_t startTime, endTime;
+    startTime = clock();
+    for (int32_t i = 0; i < 1000; i++) {
+        ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nativeWindowTmp, nativeWindowBuffer1), OHOS::GSERROR_OK);
+        ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindowTmp, nativeWindowBuffer1), OHOS::GSERROR_OK);
+    }
+    endTime = clock();
+    cout << "DetachBuffer and AttachBuffer 1000 times cost time: " << (endTime - startTime) << "ms" << endl;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindowTmp, code, &queueSize), OHOS::GSERROR_OK);
+    ASSERT_EQ(queueSize, 3);
     OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
 }
 
@@ -1322,13 +1367,13 @@ HWTEST_F(NativeWindowTest, SetTunnelHandle004, Function | MediumTest | Level1)
  */
 HWTEST_F(NativeWindowTest, NativeWindowGetTransformHint001, Function | MediumTest | Level1)
 {
-    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_180;
+    OH_NativeBuffer_TransformType transform = OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_180;
     ASSERT_EQ(NativeWindowGetTransformHint(nullptr, &transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(NativeWindowSetTransformHint(nullptr, transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(NativeWindowSetTransformHint(nativeWindow, transform), OHOS::GSERROR_OK);
-    transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    transform = OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_NONE;
     ASSERT_EQ(NativeWindowGetTransformHint(nativeWindow, &transform), OHOS::GSERROR_OK);
-    ASSERT_EQ(transform, GraphicTransformType::GRAPHIC_ROTATE_180);
+    ASSERT_EQ(transform, OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_180);
 }
 
 /*

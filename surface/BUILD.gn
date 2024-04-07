@@ -15,6 +15,10 @@ import("//build/ohos.gni")
 import("//foundation/graphic/graphic_2d/graphic_config.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
+if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
+  import("${graphic_2d_ext_delegator_gni}")
+}
+
 ## Build surface.so {{{
 config("surface_config") {
   visibility = [ ":*" ]
@@ -45,9 +49,8 @@ config("surface_public_config") {
     include_dirs += graphic_2d_ext_configs.libsurface_ext_include_dirs
   }
 
-  if (defined(graphic_2d_delegator_configs.vendor_root)) {
-    include_dirs +=
-        graphic_2d_delegator_configs.libsurface_ext_delegator_include_dirs
+  if (graphic_2d_ext_delegator && defined(vendor_root)) {
+    include_dirs += libsurface_ext_delegator_include_dirs
   }
 
   defines = []
@@ -125,23 +128,21 @@ ohos_shared_library("surface") {
   ]
 
   if (defined(graphic_2d_ext_configs.vendor_root)) {
-    sources += graphic_2d_ext_configs.libsurface_ext_sources
-    sources -= graphic_2d_ext_configs.libsurface_ext_sources_del
-
     public_deps += [ "//foundation/graphic/graphic_2d_ext/ohcore/graphic_compat_layer:libgraphic_compat_layer" ]
 
     public_external_deps -= [ "drivers_interface_display:hdi_gralloc_client" ]
   }
 
-  if (defined(graphic_2d_delegator_configs.vendor_root)) {
-    sources += graphic_2d_delegator_configs.libsurface_ext_delegator_sources
-    sources -= graphic_2d_delegator_configs.libsurface_ext_delegator_sources_del
+  if (graphic_2d_ext_delegator && defined(vendor_root)) {
+    sources += libsurface_ext_delegator_sources
+    sources -= libsurface_ext_delegator_sources_del
   }
 
   innerapi_tags = [
     "chipsetsdk",
     "platformsdk",
   ]
+
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

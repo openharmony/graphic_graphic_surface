@@ -105,47 +105,47 @@ enum OH_NativeBuffer_Format {
      * YUV422 interleaved format
      * @since 12
      */
-    NATIVEBUFFER_PIXEL_FMT_YUV_422_T,
+    NATIVEBUFFER_PIXEL_FMT_YUV_422_I,
     /**
      * YCBCR422 semi-plannar format
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_YCBCR_422_SP,
     /**
-     * YCRCR422 semi-plannar format
+     * YCRCB422 semi-plannar format
      * @since 12
      */
-    NATIVEBUFFER_PIXEL_FMT_YCRCR_422_SP,
+    NATIVEBUFFER_PIXEL_FMT_YCRCB_422_SP,
     /**
      * YCBCR420 semi-plannar format
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_YCBCR_420_SP,
     /**
-     * YCRCR420 semi-plannar format
+     * YCRCB420 semi-plannar format
      * @since 12
      */
-    NATIVEBUFFER_PIXEL_FMT_YCRCR_420_SP,
+    NATIVEBUFFER_PIXEL_FMT_YCRCB_420_SP,
     /**
      * YCBCR422 plannar format
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_YCBCR_422_P,
     /**
-     * YCRCR422 plannar format
+     * YCRCB422 plannar format
      * @since 12
      */
-    NATIVEBUFFER_PIXEL_FMT_YCRCR_422_P,
+    NATIVEBUFFER_PIXEL_FMT_YCRCB_422_P,
     /**
      * YCBCR420 plannar format
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_YCBCR_420_P,
     /**
-     * YCRCR420 plannar format
+     * YCRCB420 plannar format
      * @since 12
      */
-    NATIVEBUFFER_PIXEL_FMT_YCRCR_420_P,
+    NATIVEBUFFER_PIXEL_FMT_YCRCB_420_P,
     /**
      * YUYV422 packed format
      * @since 12

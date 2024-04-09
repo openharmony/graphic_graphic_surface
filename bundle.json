@@ -20,13 +20,12 @@
           "bytrace",
           "c_utils",
           "drivers_interface_display",
+          "drivers_interface_hwsched",
           "eventhandler",
           "hilog",
           "hitrace",
           "init",
-          "ipc",
-          "video_processing_engine",
-          "drivers_interface_hwsched"
+          "ipc"
         ]
       },
       "build": {
@@ -61,6 +60,16 @@
           },
           {
             "type": "so",
+            "name": "//foundation/graphic/graphic_surface/surface:surface_headers",
+            "header": {
+              "header_files": [
+                "surface_type.h"
+              ],
+              "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/surface"
+            }
+          },
+          {
+            "type": "so",
             "name": "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
             "header": {
               "header_files": [
@@ -74,11 +83,10 @@
             "name": "//foundation/graphic/graphic_surface/utils/frame_report:frame_report",
             "header": {
               "header_files": [
-                "frame_report.h",
-                "ring_array.h"
+                "frame_report.h"
               ]
             },
-            "header_base": "//foundation/graphic/graphic_surface/utils/frame_report/src"
+            "header_base": "//foundation/graphic/graphic_surface/utils/frame_report/export"
           },
           {
             "type": "so",
@@ -86,8 +94,7 @@
             "header": {
               "header_files": [
                 "buffer_handle_parcel.h",
-                "buffer_handle_utils.h",
-                "buffer_handle.h"
+                "buffer_handle_utils.h"
               ],
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
             }

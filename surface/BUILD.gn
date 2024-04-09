@@ -34,6 +34,7 @@ config("surface_config") {
 
 config("surface_public_config") {
   include_dirs = [
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
     "$graphic_surface_root/utils/frame_report/export",
     "$graphic_surface_root/surface/include",
     "$graphic_surface_root/interfaces/inner_api",
@@ -43,6 +44,10 @@ config("surface_public_config") {
     "$graphic_surface_root/sandbox",
     "$graphic_surface_root/scoped_bytrace/include",
   ]
+
+  if (defined(graphic_2d_ext_configs.vendor_root)) {
+    include_dirs += graphic_2d_ext_configs.libsurface_ext_include_dirs
+  }
 
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
     include_dirs += libsurface_ext_delegator_include_dirs
@@ -58,6 +63,16 @@ config("surface_public_config") {
   defines += gpu_defines
 
   cflags = [ "-Wno-error=deprecated-declarations" ]
+}
+
+config("surface_headers_config") {
+  include_dirs = [ "$graphic_surface_root/interfaces/inner_api/surface" ]
+}
+
+ohos_static_library("surface_headers") {
+  public_configs = [ ":surface_headers_config" ]
+  part_name = "graphic_surface"
+  subsystem_name = "graphic"
 }
 
 ohos_shared_library("surface") {
@@ -104,7 +119,6 @@ ohos_shared_library("surface") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
-    "ipc:ipc_core",
     "ipc:ipc_single",
   ]
 
@@ -113,12 +127,22 @@ ohos_shared_library("surface") {
     "libnative_window.so",
   ]
 
+  if (defined(graphic_2d_ext_configs.vendor_root)) {
+    public_deps += [ "//foundation/graphic/graphic_2d_ext/ohcore/graphic_compat_layer:libgraphic_compat_layer" ]
+
+    public_external_deps -= [ "drivers_interface_display:hdi_gralloc_client" ]
+  }
+
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
     sources += libsurface_ext_delegator_sources
     sources -= libsurface_ext_delegator_sources_del
   }
 
-  innerapi_tags = [ "chipsetsdk" ]
+  innerapi_tags = [
+    "chipsetsdk",
+    "platformsdk",
+  ]
+
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

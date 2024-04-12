@@ -147,10 +147,5 @@ ohos_shared_library("surface") {
   subsystem_name = "graphic"
 }
 
-group("test") {
-  testonly = true
-  deps = [ "test:test" ]
-}
-
 ## Build surface.so }}}
 

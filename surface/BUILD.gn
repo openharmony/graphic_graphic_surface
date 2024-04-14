@@ -43,6 +43,7 @@ config("surface_public_config") {
     "$graphic_surface_root/interfaces/inner_api/utils",
     "$graphic_surface_root/sandbox",
     "$graphic_surface_root/scoped_bytrace/include",
+    "$graphic_surface_root/utils/rs_frame_report_ext/include",
   ]
 
   if (defined(graphic_2d_ext_configs.vendor_root)) {
@@ -108,6 +109,7 @@ ohos_shared_library("surface") {
     "$graphic_surface_root/scoped_bytrace:scoped_bytrace",
     "$graphic_surface_root/sync_fence:sync_fence",
     "$graphic_surface_root/utils/frame_report:frame_report",
+    "$graphic_surface_root/utils/rs_frame_report_ext:rs_frame_report_ext_surface",
   ]
 
   external_deps = [

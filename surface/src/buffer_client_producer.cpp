@@ -21,6 +21,7 @@
 #include "sync_fence.h"
 #include "message_option.h"
 #include "securec.h"
+#include "rs_frame_report_ext.h"
 
 #define DEFINE_MESSAGE_VARIABLES(arg, ret, opt, LOGE) \
     MessageOption opt;                                \
@@ -172,6 +173,9 @@ GSError BufferClientProducer::FlushBuffer(uint32_t sequence, const sptr<BufferEx
     SEND_REQUEST_WITH_SEQ(BUFFER_PRODUCER_FLUSH_BUFFER, arguments, reply, option, sequence);
     CHECK_RETVAL_WITH_SEQ(reply, sequence);
 
+    if (OHOS::RsFrameReportExt::GetInstance().GetEnable()) {
+        OHOS::RsFrameReportExt::GetInstance().HandleSwapBuffer();
+    }
     return GSERROR_OK;
 }
 

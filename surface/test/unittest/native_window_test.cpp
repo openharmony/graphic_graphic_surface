@@ -418,6 +418,36 @@ HWTEST_F(NativeWindowTest, HandleOpt009, Function | MediumTest | Level1)
 }
 
 /*
+* Function: OH_NativeWindow_NativeWindowHandleOpt
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt by different param
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, HandleOpt010, Function | MediumTest | Level2)
+{
+    int code = SET_USAGE;
+    uint64_t usageSet = NATIVEBUFFER_USAGE_HW_RENDER | NATIVEBUFFER_USAGE_HW_TEXTURE |
+    NATIVEBUFFER_USAGE_CPU_READ_OFTEN | NATIVEBUFFER_USAGE_ALIGNMENT_512;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, usageSet), OHOS::GSERROR_OK);
+
+    code = GET_USAGE;
+    uint64_t usageGet = usageSet;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &usageGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(usageSet, usageGet);
+
+    code = SET_FORMAT;
+    int32_t formatSet = NATIVEBUFFER_PIXEL_FMT_YCBCR_P010;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, formatSet), OHOS::GSERROR_OK);
+
+    code = GET_FORMAT;
+    int32_t formatGet = NATIVEBUFFER_PIXEL_FMT_YCBCR_P010;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &formatGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(formatSet, formatGet);
+}
+
+/*
 * Function: OH_NativeWindow_NativeWindowAttachBuffer
 * Type: Function
 * Rank: Important(2)

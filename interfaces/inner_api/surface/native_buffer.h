@@ -58,6 +58,10 @@ enum OH_NativeBuffer_Usage {
     NATIVEBUFFER_USAGE_CPU_READ = (1ULL << 0),        /// < CPU read buffer */
     NATIVEBUFFER_USAGE_CPU_WRITE = (1ULL << 1),       /// < CPU write memory */
     NATIVEBUFFER_USAGE_MEM_DMA = (1ULL << 3),         /// < Direct memory access (DMA) buffer */
+    NATIVEBUFFER_USAGE_HW_RENDER = (1ULL << 8),       /// < For GPU write case */
+    NATIVEBUFFER_USAGE_HW_TEXTURE = (1ULL << 9),      /// < For GPU read case */
+    NATIVEBUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), /// < Often be mapped for direct CPU reads */
+    NATIVEBUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  /// < 512 bytes alignment */
 };
 
 /**
@@ -171,6 +175,21 @@ enum OH_NativeBuffer_Format {
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_RGBA_1010102,
+    /**
+     * YCBCR420 semi-planar 10bit packed format
+     * @since 12
+     */
+    NATIVEBUFFER_PIXEL_FMT_YCBCR_P010,
+    /**
+     * YCRCB420 semi-planar 10bit packed format
+     * @since 12
+     */
+    NATIVEBUFFER_PIXEL_FMT_YCRCB_P010,
+    /**
+     * Raw 10bit packed format
+     * @since 12
+     */
+    NATIVEBUFFER_PIXEL_FMT_RAW10,
     /**
      * vender mask format
      * @since 12

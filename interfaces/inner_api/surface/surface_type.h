@@ -130,6 +130,7 @@ using GraphicPixelFormat = enum {
     GRAPHIC_PIXEL_FMT_YCRCB_P010 = 36,              /**< YCRCB420 semi-planar 10bit packed format */
     GRAPHIC_PIXEL_FMT_RAW10 = 37,                   /**< Raw 10bit packed format */
     GRAPHIC_PIXEL_FMT_BLOB = 38,                    /**< BLOB format */
+    GRAPHIC_PIXEL_FMT_RGBA16_FLOAT = 39,            /**< RGBA16 float format */
     GRAPHIC_PIXEL_FMT_VENDER_MASK = 0X7FFF0000,     /**< vendor mask format */
     GRAPHIC_PIXEL_FMT_BUTT = 0X7FFFFFFF             /**< Invalid pixel format */
 };
@@ -279,7 +280,8 @@ using SurfaceBufferUsage = enum {
     BUFFER_USAGE_VIDEO_ENCODER = (1ULL << 14),  /**< For encode case */
     BUFFER_USAGE_VIDEO_DECODER = (1ULL << 15),  /**< For decode case */
     BUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), /**< CPU read often buffer */
-    BUFFER_USAGE_CPU_HW_BOTH = (1ULL << 17), /**< CPU read often buffer */
+    BUFFER_USAGE_CPU_HW_BOTH = (1ULL << 17),    /**< CPU read often buffer */
+    BUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  /**< 512 bytes alignment */
     BUFFER_USAGE_VENDOR_PRI0 = (1ULL << 44),    /**< Reserverd for vendor */
     BUFFER_USAGE_VENDOR_PRI1 = (1ULL << 45),    /**< Reserverd for vendor */
     BUFFER_USAGE_VENDOR_PRI2 = (1ULL << 46),    /**< Reserverd for vendor */

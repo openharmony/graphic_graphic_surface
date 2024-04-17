@@ -85,7 +85,6 @@ public:
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
-    GSError SendRemoveDeathRecipientObject() override;
 private:
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     std::string name_ = "not init";

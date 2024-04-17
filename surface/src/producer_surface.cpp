@@ -56,9 +56,6 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 
 ProducerSurface::~ProducerSurface()
 {
-    if (producer_) {
-        producer_->SendRemoveDeathRecipientObject();
-    }
     if (producer_->GetSptrRefCount() > PRODUCER_REF_COUNT_IN_PRODUCER_SURFACE) {
         BLOGND("Warning SptrRefCount! producer_:%{public}d", producer_->GetSptrRefCount());
     }

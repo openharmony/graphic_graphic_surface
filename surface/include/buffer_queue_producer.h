@@ -98,8 +98,6 @@ public:
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
 
-    GSError SendRemoveDeathRecipientObject() override;
-
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -137,7 +135,6 @@ private:
     int32_t DetachBufferFromQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t UnregisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);
@@ -154,8 +151,7 @@ private:
         std::string name_ = "DeathRecipient";
     };
     sptr<ProducerSurfaceDeathRecipient> producerSurfaceDeathRecipient_ = nullptr;
-    sptr<IRemoteObject> token_;
-    bool isAddDeathRecipient_ = false;
+    sptr<IRemoteObject> token_ = nullptr;
 
     int32_t connectedPid_ = 0;
     sptr<BufferQueue> bufferQueue_ = nullptr;

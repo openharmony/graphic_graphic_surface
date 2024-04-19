@@ -475,6 +475,33 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
     return GSERROR_OK;
 }
 
+GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence)
+{
+    auto consumerDelegator = wpCSurfaceDelegator_.promote();
+    if (consumerDelegator == nullptr) {
+        BLOGE("Consumer surface delegator has been expired");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sptr<SurfaceBuffer> buffer = nullptr;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+            return GSERROR_NO_ENTRY;
+        }
+        bufferQueueCache_[sequence].state = BUFFER_STATE_ACQUIRED;
+        buffer = bufferQueueCache_[sequence].buffer;
+    }
+    GSError ret = consumerDelegator->QueueBuffer(buffer, fence->Get());
+    if (ret != GSERROR_OK) {
+        BLOGNE("Consumer surface delegator failed to queuebuffer");
+    }
+    ret = ReleaseBuffer(bufferQueueCache_[sequence].buffer, SyncFence::INVALID_FENCE);
+    if (ret != GSERROR_OK) {
+        BLOGNE("Consumer surface delegator failed to releasebuffer");
+    }
+    return ret;
+}
+
 GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
@@ -519,15 +546,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
         sequence, uniqueId_, fence->Get());
 
     if (wpCSurfaceDelegator_ != nullptr) {
-        auto consumerDelegator = wpCSurfaceDelegator_.promote();
-        if (consumerDelegator == nullptr) {
-            BLOGE("Consumer surface delegator has been expired");
-            return GSERROR_INVALID_ARGUMENTS;
-        }
-        sret = consumerDelegator->QueueBuffer(bufferQueueCache_[sequence].buffer, fence->Get());
-        if (sret != GSERROR_OK) {
-            BLOGNE("Consumer surface delegator failed to dequeuebuffer");
-        }
+        sret = DelegatorQueueBuffer(sequence, fence);
     }
     return sret;
 }

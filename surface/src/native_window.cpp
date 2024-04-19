@@ -524,6 +524,9 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
     nativeWindow->config.width = nativeWindow->surface->GetDefaultWidth();
     nativeWindow->config.height = nativeWindow->surface->GetDefaultHeight();
     nativeWindow->config.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
+#ifdef SURFACE_EMULATOR
+    nativeWindow->config.usage |= BUFFER_USAGE_CPU_WRITE;
+#endif
     nativeWindow->config.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
     nativeWindow->config.strideAlignment = 8;   // default stride is 8
     nativeWindow->config.timeout = 3000;        // default timeout is 3000 ms

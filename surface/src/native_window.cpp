@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <map>
 #include <cinttypes>
+#include <securec.h>
 #include "buffer_log.h"
 #include "window.h"
 #include "surface_type.h"
@@ -113,7 +114,20 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     OHOS::sptr<OHOS::SurfaceBuffer> sfbuffer;
     OHOS::sptr<OHOS::SyncFence> releaseFence = OHOS::SyncFence::INVALID_FENCE;
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
-    int32_t ret = window->surface->RequestBuffer(sfbuffer, releaseFence, window->config);
+    int32_t ret;
+    if (window->surface->GetRequestWidth() != 0 && window->surface->GetRequestHeight() != 0) {
+        OHOS::BufferRequestConfig config;
+        if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), &(window->config),
+            sizeof(OHOS::BufferRequestConfig)) != EOK) {
+            BLOGE("memcpy_s failed");
+            return OHOS::GSERROR_INTERNAL;
+        }
+        config.width = window->surface->GetRequestWidth();
+        config.height = window->surface->GetRequestHeight();
+        ret = window->surface->RequestBuffer(sfbuffer, releaseFence, config);
+    } else {
+        ret = window->surface->RequestBuffer(sfbuffer, releaseFence, window->config);
+    }
     if (ret != OHOS::GSError::GSERROR_OK || sfbuffer == nullptr) {
         BLOGE("API failed, please check RequestBuffer function ret:%{public}d, Queue Id:%{public}" PRIu64,
                 ret, window->surface->GetUniqueId());
@@ -548,8 +562,23 @@ int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *wi
         BLOGE("parameter error, please check input parameter");
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
-    *width = window->surface->GetDefaultWidth();
-    *height = window->surface->GetDefaultHeight();
+    if (window->config.width != 0 && window->config.height != 0) {
+        *width = window->config.width;
+        *height = window->config.height;
+    } else {
+        *width = window->surface->GetDefaultWidth();
+        *height = window->surface->GetDefaultHeight();
+    }
+    return OHOS::GSERROR_OK;
+}
+
+int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t width, int32_t height)
+{
+    if (window == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::GSERROR_INVALID_ARGUMENTS;
+    }
+    window->surface->SetRequestWidthAndHeight(width, height);
     return OHOS::GSERROR_OK;
 }
 

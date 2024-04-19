@@ -705,4 +705,23 @@ GSError ProducerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
     wpNativeWindow_ = nw;
     return GSERROR_OK;
 }
+
+void ProducerSurface::SetRequestWidthAndHeight(int32_t width, int32_t height)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    requestWidth_ = width;
+    requestHeight_ = height;
+}
+
+int32_t ProducerSurface::GetRequestWidth()
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return requestWidth_;
+}
+
+int32_t ProducerSurface::GetRequestHeight()
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return requestHeight_;
+}
 } // namespace OHOS

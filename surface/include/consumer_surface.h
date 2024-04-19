@@ -132,6 +132,9 @@ public:
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
 
+    void SetRequestWidthAndHeight(int32_t width, int32_t height) override;
+    int32_t GetRequestWidth() override;
+    int32_t GetRequestHeight() override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

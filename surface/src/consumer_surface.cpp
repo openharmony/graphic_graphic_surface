@@ -547,4 +547,20 @@ GSError ConsumerSurface::SetTransformHint(GraphicTransformType transformHint)
 {
     return producer_->SetTransformHint(transformHint);
 }
+
+void ConsumerSurface::SetRequestWidthAndHeight(int32_t width, int32_t height)
+{
+    (void)width;
+    (void)height;
+}
+
+int32_t ConsumerSurface::GetRequestWidth()
+{
+    return 0;
+}
+
+int32_t ConsumerSurface::GetRequestHeight()
+{
+    return 0;
+}
 } // namespace OHOS

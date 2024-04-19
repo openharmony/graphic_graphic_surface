@@ -1273,6 +1273,17 @@ GSError BufferQueue::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &
     return GSERROR_OK;
 }
 
+GSError BufferQueue::SetBufferHold(bool hold)
+{
+    isBufferHold_ = hold;
+    return GSERROR_OK;
+}
+
+bool BufferQueue::IsBufferHold()
+{
+    return isBufferHold_;
+}
+
 GSError BufferQueue::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);

@@ -131,6 +131,7 @@ public:
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
+    bool IsBufferHold() override;
 
 private:
     std::map<std::string, std::string> userData_;

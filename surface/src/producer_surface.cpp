@@ -607,6 +607,11 @@ GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMo
     return producer_->SetScalingMode(sequence, scalingMode);
 }
 
+GSError ProducerSurface::SetBufferHold(bool hold)
+{
+    return producer_->SetBufferHold(hold);
+}
+
 GSError ProducerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
 {
     return GSERROR_NOT_SUPPORT;

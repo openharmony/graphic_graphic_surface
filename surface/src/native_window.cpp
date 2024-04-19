@@ -282,6 +282,12 @@ static void HandleNativeWindowSetUiTimestamp(OHNativeWindow *window, va_list arg
     window->uiTimestamp = static_cast<int64_t>(uiTimestamp);
 }
 
+static void HandleNativeWindowSetBufferHold(OHNativeWindow *window, va_list args)
+{
+    (void)args;
+    window->surface->SetBufferHold(true);
+}
+
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t *value = va_arg(args, uint64_t*);

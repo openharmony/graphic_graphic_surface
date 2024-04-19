@@ -134,7 +134,7 @@ public:
 
     virtual GraphicTransformType GetTransformHint() const = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
-
+    virtual void SetBufferHold(bool hold) = 0;
 protected:
     Surface() = default;
 };

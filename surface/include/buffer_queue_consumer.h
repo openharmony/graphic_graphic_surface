@@ -69,6 +69,8 @@ public:
 
     GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer);
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer);
+    void SetBufferHold(bool hold);
+    bool IsBufferHold();
 
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;

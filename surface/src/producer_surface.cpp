@@ -56,9 +56,6 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 
 ProducerSurface::~ProducerSurface()
 {
-    if (producer_) {
-        producer_->SendRemoveDeathRecipientObject();
-    }
     if (producer_->GetSptrRefCount() > PRODUCER_REF_COUNT_IN_PRODUCER_SURFACE) {
         BLOGND("Warning SptrRefCount! producer_:%{public}d", producer_->GetSptrRefCount());
     }
@@ -607,9 +604,9 @@ GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMo
     return producer_->SetScalingMode(sequence, scalingMode);
 }
 
-GSError ProducerSurface::SetBufferHold(bool hold)
+void ProducerSurface::SetBufferHold(bool hold)
 {
-    return producer_->SetBufferHold(hold);
+    producer_->SetBufferHold(hold);
 }
 
 GSError ProducerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)

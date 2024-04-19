@@ -82,6 +82,7 @@ public:
     int32_t GetDefaultHeight() override;
     GSError SetDefaultUsage(uint64_t usage) override;
     uint64_t GetDefaultUsage() override;
+    void SetBufferHold(bool hold) override;
 
     GSError SetUserData(const std::string &key, const std::string &val) override;
     std::string GetUserData(const std::string &key) override;

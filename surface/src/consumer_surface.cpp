@@ -480,7 +480,7 @@ sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
 
 bool ConsumerSurface::IsBufferHold()
 {
-    return producer_->IsBufferHold();
+    return consumer_->IsBufferHold();
 }
 
 GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)

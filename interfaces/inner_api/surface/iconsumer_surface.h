@@ -130,7 +130,7 @@ public:
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual bool IsBufferHold() = 0;
-    virtual GSError SetBufferHold(bool hold) = 0;
+    // virtual GSError SetBufferHold(bool hold) = 0;
 protected:
     IConsumerSurface() = default;
 };

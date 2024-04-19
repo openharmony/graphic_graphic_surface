@@ -132,6 +132,7 @@ public:
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     bool IsBufferHold() override;
+    void SetBufferHold(bool hold) override;
 
 private:
     std::map<std::string, std::string> userData_;

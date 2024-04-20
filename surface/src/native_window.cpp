@@ -119,15 +119,17 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     OHOS::sptr<OHOS::SyncFence> releaseFence = OHOS::SyncFence::INVALID_FENCE;
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
     int32_t ret;
-    if (window->surface->GetRequestWidth() != 0 && window->surface->GetRequestHeight() != 0) {
+    int32_t requestWidth = window->surface->GetRequestWidth();
+    int32_t requestHeight = window->surface->GetRequestHeight();
+    if (requestWidth != 0 && requestHeight != 0) {
         OHOS::BufferRequestConfig config;
         if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), &(window->config),
             sizeof(OHOS::BufferRequestConfig)) != EOK) {
             BLOGE("memcpy_s failed");
             return OHOS::GSERROR_INTERNAL;
         }
-        config.width = window->surface->GetRequestWidth();
-        config.height = window->surface->GetRequestHeight();
+        config.width = requestWidth;
+        config.height = requestHeight;
         ret = window->surface->RequestBuffer(sfbuffer, releaseFence, config);
     } else {
         ret = window->surface->RequestBuffer(sfbuffer, releaseFence, window->config);

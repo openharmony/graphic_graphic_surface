@@ -42,7 +42,11 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     OHNativeWindow* nativeWindow = new OHNativeWindow();
     nativeWindow->surface =
                 *reinterpret_cast<OHOS::sptr<OHOS::Surface> *>(pSurface);
-    BLOGE_CHECK_AND_RETURN_RET(nativeWindow->surface != nullptr, nullptr, "window surface is null");
+    if (nativeWindow->surface == nullptr) {
+        BLOGE("window surface is null");
+        delete nativeWindow;
+        return nullptr;
+    }
     nativeWindow->config.width = nativeWindow->surface->GetDefaultWidth();
     nativeWindow->config.height = nativeWindow->surface->GetDefaultHeight();
     nativeWindow->config.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
@@ -519,8 +523,11 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
 
     OHNativeWindow *nativeWindow = new OHNativeWindow();
     nativeWindow->surface = utils->GetSurface(surfaceId);
-    BLOGE_CHECK_AND_RETURN_RET(nativeWindow->surface != nullptr,
-        OHOS::GSERROR_INVALID_ARGUMENTS, "window surface is null");
+    if (nativeWindow->surface == nullptr) {
+        BLOGE("window surface is null");
+        delete nativeWindow;
+        return OHOS::GSERROR_INVALID_ARGUMENTS;
+    }
     nativeWindow->config.width = nativeWindow->surface->GetDefaultWidth();
     nativeWindow->config.height = nativeWindow->surface->GetDefaultHeight();
     nativeWindow->config.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;

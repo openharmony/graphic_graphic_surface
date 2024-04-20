@@ -563,14 +563,12 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | L
     ASSERT_NE(nativeWindowBuffer, nullptr);
     OH_NativeBuffer* nativeBuffer = OH_NativeBufferFromNativeWindowBuffer(nativeWindowBuffer);
     ASSERT_NE(nativeBuffer, nullptr);
-
     OH_NativeBuffer* nativeBufferTmp = nullptr;
     for (int32_t i = 0; i < 1000; i++) {
         int32_t ret = OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBufferTmp);
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
         ASSERT_EQ(nativeBuffer, nativeBufferTmp);
     }
-
     void *virAddr = nullptr;
     OH_NativeBuffer_Planes outPlanes;
     clock_t startTime, endTime;
@@ -588,7 +586,6 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | L
     }
     endTime = clock();
     cout << "OH_NativeBuffer_MapPlanes 1000 times cost time: " << (endTime - startTime) << "ms" << endl;
-
     sBuffer = nullptr;
     cSurface = nullptr;
     producer = nullptr;

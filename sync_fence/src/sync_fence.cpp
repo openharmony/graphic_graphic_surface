@@ -255,7 +255,7 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     const auto fenceInfos = (struct sync_fence_info *)(uintptr_t)(infoPtr->sync_fence_info);
     for (uint32_t i = 0; i < infoPtr->num_fences; i++) {
         infos.push_back(SyncPointInfo { fenceInfos[i].timestamp_ns,
-            static_cast<FenceStatus>(fenceInfos[i].status) } );
+            static_cast<FenceStatus>(fenceInfos[i].status) });
     }
 
     free(infoPtr);

@@ -310,9 +310,14 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     surfaceDelegator->SetSurface(this);
     wpPSurfaceDelegator_ = surfaceDelegator;
 
-    auto releaseBufferCallBack = [this] (const sptr<SurfaceBuffer> &buffer,
+    auto releaseBufferCallBack = [weakThis = wptr(this)] (const sptr<SurfaceBuffer> &buffer,
         const sptr<SyncFence> &fence) -> GSError {
-        auto surfaceDelegator = this->wpPSurfaceDelegator_.promote();
+        auto pSurface = weakThis.promote();
+        if (pSurface == nullptr) {
+            BLOGE("releaseBuffer failed, pSurface already destory");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        auto surfaceDelegator = pSurface->wpPSurfaceDelegator_.promote();
         if (surfaceDelegator == nullptr) {
             return GSERROR_INVALID_ARGUMENTS;
         }

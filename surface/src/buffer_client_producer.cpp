@@ -428,6 +428,14 @@ GSError BufferClientProducer::GoBackground()
 
 GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
 {
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (lastSetTransformType_ == transform) {
+            return GSERROR_OK;
+        }
+        lastSetTransformType_ = transform;
+    }
+
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
 
     arguments.WriteUint32(static_cast<uint32_t>(transform));
@@ -436,6 +444,10 @@ GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
     int32_t ret = reply.ReadInt32();
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Remote return %{public}d", ret);
+        {
+            std::lock_guard<std::mutex> lockGuard(mutex_);
+            lastSetTransformType_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+        }
         return (GSError)ret;
     }
 

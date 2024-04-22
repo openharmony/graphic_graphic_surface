@@ -44,7 +44,7 @@
     do {                                                                        \
         int32_t ret = Remote()->SendRequest(COMMAND, arguments, reply, option); \
         if (ret != ERR_NONE) {                                                  \
-            BLOGN_FAILURE_ID(sequence, "SendRequest return %{public}u", ret);    \
+            BLOGN_FAILURE_ID(sequence, "SendRequest return %{public}d", ret);    \
             return GSERROR_BINDER;                                  \
         }                                                                       \
     } while (0)

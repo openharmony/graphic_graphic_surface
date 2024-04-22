@@ -1049,8 +1049,9 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
             queueSize, SURFACE_MAX_QUEUE_SIZE);
         return GSERROR_INVALID_ARGUMENTS;
     }
+
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (queueSize_ > queueSize) {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
         DeleteBuffersLocked(queueSize_ - queueSize);
     }
     // if increase the queue size, try to wakeup the blocked thread

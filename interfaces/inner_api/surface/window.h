@@ -39,8 +39,7 @@ OHNativeWindowBuffer* CreateNativeWindowBufferFromSurfaceBuffer(void* pSurfaceBu
 OHNativeWindowBuffer* CreateNativeWindowBufferFromNativeBuffer(OH_NativeBuffer* nativeBuffer);
 void DestroyNativeWindowBuffer(OHNativeWindowBuffer* buffer);
 
-int32_t NativeWindowRequestBuffer(OHNativeWindow *window, /* [out] */ OHNativeWindowBuffer **buffer,
-    /* [out] get release fence */ int *fenceFd);
+int32_t NativeWindowRequestBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd);
 int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer,
     int fenceFd, Region region);
 int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer,
@@ -70,6 +69,7 @@ int32_t NativeWindowDetachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
 int32_t NativeWindowGetTransformHint(OHNativeWindow *window, OH_NativeBuffer_TransformType *transform);
 int32_t NativeWindowSetTransformHint(OHNativeWindow *window, OH_NativeBuffer_TransformType transform);
 int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *width, int32_t *height);
+int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t width, int32_t height);
 
 #ifdef __cplusplus
 }

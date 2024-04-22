@@ -375,6 +375,10 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
     MessageParcel &reply, MessageOption &option)
 {
     sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
+    if (listenerObject == nullptr) {
+        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
     GSError sret = RegisterReleaseListener(listener);
     reply.WriteInt32(sret);

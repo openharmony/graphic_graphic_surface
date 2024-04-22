@@ -1049,8 +1049,9 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
             queueSize, SURFACE_MAX_QUEUE_SIZE);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
+
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (queueSize_ > queueSize) {
         DeleteBuffersLocked(queueSize_ - queueSize);
     }
     // if increase the queue size, try to wakeup the blocked thread
@@ -1520,14 +1521,16 @@ void BufferQueue::Dump(std::string &result)
     allSurfacesMemSize += memSizeInKB;
     uint32_t resultLen = result.size();
     std::string dumpEndFlag = "dumpend";
-    std::string dumpEndIn(result, resultLen - dumpEndFlag.size(), resultLen - 1);
-    if (dumpEndIn == dumpEndFlag) {
-        ss << allSurfacesMemSize;
-        std::string dumpEndStr = ss.str();
-        result.erase(resultLen - dumpEndFlag.size(), resultLen - 1);
-        result += dumpEndStr + " KiB.\n";
-        allSurfacesMemSize = 0;
-        return;
+    if (resultLen > dumpEndFlag.size() && resultLen > 1) {
+        std::string dumpEndIn(result, resultLen - dumpEndFlag.size(), resultLen - 1);
+        if (dumpEndIn == dumpEndFlag) {
+            ss << allSurfacesMemSize;
+            std::string dumpEndStr = ss.str();
+            result.erase(resultLen - dumpEndFlag.size(), resultLen - 1);
+            result += dumpEndStr + " KiB.\n";
+            allSurfacesMemSize = 0;
+            return;
+        }
     }
 
     ss.str("");

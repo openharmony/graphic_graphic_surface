@@ -134,6 +134,11 @@ public:
 
     virtual GraphicTransformType GetTransformHint() const = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+
+    virtual void SetRequestWidthAndHeight(int32_t width, int32_t height) = 0;
+    virtual int32_t GetRequestWidth() = 0;
+    virtual int32_t GetRequestHeight() = 0;
+
     virtual void SetBufferHold(bool hold) = 0;
 protected:
     Surface() = default;

@@ -310,9 +310,14 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     surfaceDelegator->SetSurface(this);
     wpPSurfaceDelegator_ = surfaceDelegator;
 
-    auto releaseBufferCallBack = [this] (const sptr<SurfaceBuffer> &buffer,
+    auto releaseBufferCallBack = [weakThis = wptr(this)] (const sptr<SurfaceBuffer> &buffer,
         const sptr<SyncFence> &fence) -> GSError {
-        auto surfaceDelegator = this->wpPSurfaceDelegator_.promote();
+        auto pSurface = weakThis.promote();
+        if (pSurface == nullptr) {
+            BLOGE("releaseBuffer failed, pSurface already destory");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        auto surfaceDelegator = pSurface->wpPSurfaceDelegator_.promote();
         if (surfaceDelegator == nullptr) {
             return GSERROR_INVALID_ARGUMENTS;
         }
@@ -709,5 +714,24 @@ GSError ProducerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
     NativeWindow *nw = reinterpret_cast<NativeWindow *>(nativeWindow);
     wpNativeWindow_ = nw;
     return GSERROR_OK;
+}
+
+void ProducerSurface::SetRequestWidthAndHeight(int32_t width, int32_t height)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    requestWidth_ = width;
+    requestHeight_ = height;
+}
+
+int32_t ProducerSurface::GetRequestWidth()
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return requestWidth_;
+}
+
+int32_t ProducerSurface::GetRequestHeight()
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return requestHeight_;
 }
 } // namespace OHOS

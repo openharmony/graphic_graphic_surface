@@ -148,7 +148,7 @@ int32_t SyncFence::Wait(uint32_t timeout)
 int SyncFence::SyncMerge(const char *name, int fd1, int fd2)
 {
     int retCode = -1;
-    struct sync_merge_data syncMergeData = {0};
+    struct sync_merge_data syncMergeData = {{0}};
     syncMergeData.fd2 = fd2;
     if (strcpy_s(syncMergeData.name, sizeof(syncMergeData.name), name)) {
         UTILS_LOGE("SyncMerge ctrcpy fence name failed.");
@@ -255,7 +255,7 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     const auto fenceInfos = (struct sync_fence_info *)(uintptr_t)(infoPtr->sync_fence_info);
     for (uint32_t i = 0; i < infoPtr->num_fences; i++) {
         infos.push_back(SyncPointInfo { fenceInfos[i].timestamp_ns,
-            static_cast<FenceStatus>(fenceInfos[i].status) } );
+            static_cast<FenceStatus>(fenceInfos[i].status) });
     }
 
     free(infoPtr);

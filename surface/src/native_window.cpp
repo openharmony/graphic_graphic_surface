@@ -302,12 +302,6 @@ static void HandleNativeWindowSetUiTimestamp(OHNativeWindow *window, va_list arg
     window->uiTimestamp = static_cast<int64_t>(uiTimestamp);
 }
 
-static void HandleNativeWindowSetBufferHold(OHNativeWindow *window, va_list args)
-{
-    (void)args;
-    window->surface->SetBufferHold(true);
-}
-
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t *value = va_arg(args, uint64_t*);
@@ -600,6 +594,11 @@ int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t wid
     return OHOS::GSERROR_OK;
 }
 
+void NativeWindowSetBufferHold(OHNativeWindow *window)
+{
+    window->surface->SetBufferHold(true);
+}
+
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
 }
@@ -650,4 +649,5 @@ WEAK_ALIAS(NativeWindowSetMetaDataSet, OH_NativeWindow_NativeWindowSetMetaDataSe
 WEAK_ALIAS(NativeWindowSetTunnelHandle, OH_NativeWindow_NativeWindowSetTunnelHandle);
 WEAK_ALIAS(GetSurfaceId, OH_NativeWindow_GetSurfaceId);
 WEAK_ALIAS(CreateNativeWindowFromSurfaceId, OH_NativeWindow_CreateNativeWindowFromSurfaceId);
+WEAK_ALIAS(NativeWindowSetBufferHold, OH_NativeWindow_SetBufferHold);
 

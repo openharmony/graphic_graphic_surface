@@ -483,6 +483,11 @@ bool ConsumerSurface::IsBufferHold()
     return consumer_->IsBufferHold();
 }
 
+void ConsumerSurface::SetBufferHold(bool hold)
+{
+    consumer_->SetBufferHold(hold);
+}
+
 GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
 {
     if (timestamp.type == GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED) {

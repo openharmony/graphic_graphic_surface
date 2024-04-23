@@ -445,6 +445,10 @@ GSError BufferQueue::CancelBuffer(uint32_t sequence, const sptr<BufferExtraData>
     }
     bufferQueueCache_[sequence].state = BUFFER_STATE_RELEASED;
     freeList_.push_back(sequence);
+    if (bufferQueueCache_[sequence].buffer == nullptr) {
+        BLOGNE("buffer queue cache buffer is nullptr, sequence:%{public}u", sequence);
+        return GSERROR_INVALID_OPERATING;
+    }
     bufferQueueCache_[sequence].buffer->SetExtraData(bedata);
 
     waitReqCon_.notify_all();
@@ -781,6 +785,7 @@ void BufferQueue::DeleteBufferInCache(uint32_t sequence)
         if (onBufferDeleteForRSHardwareThread_ != nullptr) {
             onBufferDeleteForRSHardwareThread_(sequence);
         }
+        BLOGND("DeleteBufferInCache sequence:%{public}u", sequence);
         bufferQueueCache_.erase(it);
         deletingList_.push_back(sequence);
     }
@@ -866,6 +871,11 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerTyp
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         uint32_t sequence = buffer->GetSeqNum();
+        if (GetUsedSize() >= GetQueueSize()) {
+            BLOGN_FAILURE_ID(sequence, "buffer queue size:%{public}u, used size:%{public}u",
+                GetQueueSize(), GetUsedSize());
+            return GSERROR_API_FAILED;
+        }
         if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
             BLOGN_FAILURE_ID(sequence, "buffer is already in cache");
             return GSERROR_API_FAILED;
@@ -884,7 +894,6 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerTyp
         }
         AttachBufferUpdateBufferInfo(buffer);
         bufferQueueCache_[sequence] = ele;
-        queueSize_++;
     }
     return GSERROR_OK;
 }
@@ -913,13 +922,7 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> &buffer, InvokerT
                 return GSERROR_INVALID_OPERATING;
             }
         }
-        if (queueSize_ > 0) {
-            queueSize_--;
-            bufferQueueCache_.erase(sequence);
-        } else {
-            BLOGN_FAILURE_ID(sequence, "there has no buffer");
-            return GSERROR_INVALID_OPERATING;
-        }
+        bufferQueueCache_.erase(sequence);
     }
     return GSERROR_OK;
 }

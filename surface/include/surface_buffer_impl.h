@@ -69,8 +69,8 @@ public:
     sptr<EglData> GetEglData() const override;
     void SetEglData(const sptr<EglData>& data) override;
 
-    void SetExtraData(const sptr<BufferExtraData> &bedata) override;
-    const sptr<BufferExtraData>& GetExtraData() const override;
+    void SetExtraData(sptr<BufferExtraData> bedata) override;
+    sptr<BufferExtraData> GetExtraData() const override;
 
     void SetBufferHandle(BufferHandle *handle) override;
     GSError WriteToMessageParcel(MessageParcel &parcel) override;

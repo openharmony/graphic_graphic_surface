@@ -47,10 +47,10 @@ public:
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) = 0;
 
-    virtual GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata) = 0;
+    virtual GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) = 0;
 
-    virtual GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                                const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config) = 0;
+    virtual GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                                sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) = 0;
 
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) = 0;

@@ -40,10 +40,10 @@ public:
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) override;
 
-    GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata) override;
+    GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) override;
 
-    GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config) override;
+    GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                        sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16]) override;

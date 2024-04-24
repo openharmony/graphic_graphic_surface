@@ -561,7 +561,7 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
-GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata)
+GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -569,8 +569,8 @@ GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, const sptr<BufferEx
     return bufferQueue_->CancelBuffer(sequence, bedata);
 }
 
-GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                                         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config)
+GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                                         sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

@@ -101,6 +101,7 @@ public:
     GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
     GSError Disconnect() override;
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) override;
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key, const std::vector<uint8_t> &metaData) override;

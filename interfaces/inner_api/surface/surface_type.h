@@ -227,6 +227,7 @@ using ScalingMode = enum {
     SCALING_MODE_SCALE_TO_WINDOW,
     SCALING_MODE_SCALE_CROP,
     SCALING_MODE_NO_SCALE_CROP,
+    SCALING_MODE_SCALE_FIT,
 };
 
 using HDRMetaDataType = enum {

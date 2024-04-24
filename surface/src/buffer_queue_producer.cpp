@@ -821,6 +821,14 @@ GSError BufferQueueProducer::SetScalingMode(uint32_t sequence, ScalingMode scali
     return bufferQueue_->SetScalingMode(sequence, scalingMode);
 }
 
+GSError BufferQueueProducer::SetScalingMode(ScalingMode scalingMode)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetScalingMode(scalingMode);
+}
+
 GSError BufferQueueProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
     if (bufferQueue_ == nullptr) {

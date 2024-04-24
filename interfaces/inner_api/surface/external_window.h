@@ -229,6 +229,37 @@ typedef enum {
 } OHScalingMode;
 
 /**
+ * @brief Indicates Scaling Mode.
+ * @since 12
+ */
+typedef enum {
+    /**
+     * the window content is not updated until a buffer of
+     * the window size is received
+     */
+    OH_SCALING_MODE_FREEZE_V2 = 0,
+    /**
+     * the buffer is scaled in two dimensions to match the window size
+     */
+    OH_SCALING_MODE_SCALE_TO_WINDOW_V2,
+    /**
+     * the buffer is uniformly scaled so that the smaller size of
+     * the buffer matches the window size
+     */
+    OH_SCALING_MODE_SCALE_CROP_V2,
+    /**
+     * the window is clipped to the size of the buffer's clipping rectangle
+     * pixels outside the clipping rectangle are considered fully transparent.
+     */
+    OH_SCALING_MODE_NO_SCALE_CROP_V2,
+    /**
+     * Adapt to the buffer and scale proportionally to the buffer size. Prioritize displaying all buffer content.
+     * If the size is not the same as the window size, fill the unfilled area of the window with a background color.
+     */
+    OH_SCALING_MODE_SCALE_FIT_V2,
+} OHScalingModeV2;
+
+/**
  * @brief Enumerates the HDR metadata keys.
  * @since 9
  * @deprecated(since = "10")
@@ -558,6 +589,17 @@ int32_t OH_NativeWindow_NativeWindowAttachBuffer(OHNativeWindow *window, OHNativ
  */
 int32_t OH_NativeWindow_NativeWindowDetachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer);
 
+/**
+ * @brief Sets scalingMode of a native window.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window indicates the pointer to an <b>OHNativeWindow</b> instance.
+ * @param scalingMode Indicates the enum value to <b>OHScalingModeV2</b>
+ * @return Returns an error code, 0 is Success, otherwise, failed.
+ * @since 12
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode);
 #ifdef __cplusplus
 }
 #endif

@@ -129,6 +129,7 @@ public:
                              std::vector<bool> &supporteds) const;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode);
+    GSError SetScalingMode(ScalingMode scalingMode);
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode);
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData);
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
@@ -186,6 +187,7 @@ private:
     int32_t defaultHeight = 0;
     uint64_t defaultUsage = 0;
     uint32_t queueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
+    ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     GraphicTransformType lastFlushedTransform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     std::string name_;

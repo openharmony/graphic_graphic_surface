@@ -490,13 +490,13 @@ GSError SurfaceBufferImpl::GetPlanesInfo(void **planesInfo)
     return GSERROR_OK;
 }
 
-void SurfaceBufferImpl::SetExtraData(const sptr<BufferExtraData> &bedata)
+void SurfaceBufferImpl::SetExtraData(sptr<BufferExtraData> bedata)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     bedata_ = bedata;
 }
 
-const sptr<BufferExtraData>& SurfaceBufferImpl::GetExtraData() const
+sptr<BufferExtraData> SurfaceBufferImpl::GetExtraData() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return bedata_;

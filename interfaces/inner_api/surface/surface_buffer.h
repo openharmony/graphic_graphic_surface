@@ -61,8 +61,8 @@ public:
     virtual sptr<EglData> GetEglData() const = 0;
     virtual void SetEglData(const sptr<EglData>& data) = 0;
 
-    virtual void SetExtraData(const sptr<BufferExtraData> &bedata) = 0;
-    virtual const sptr<BufferExtraData>& GetExtraData() const = 0;
+    virtual void SetExtraData(sptr<BufferExtraData> bedata) = 0;
+    virtual sptr<BufferExtraData> GetExtraData() const = 0;
     virtual GSError WriteToMessageParcel(MessageParcel &parcel) = 0;
     virtual GSError ReadFromMessageParcel(MessageParcel &parcel) = 0;
     virtual void SetBufferHandle(BufferHandle *handle) = 0;

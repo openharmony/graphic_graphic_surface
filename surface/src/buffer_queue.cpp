@@ -427,7 +427,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     return GSERROR_OK;
 }
 
-GSError BufferQueue::CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata)
+GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     ScopedBytrace func(__func__);
     if (isShared_) {
@@ -475,8 +475,8 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
     return GSERROR_OK;
 }
 
-GSError BufferQueue::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-    const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config)
+GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
     ScopedBytrace func(__func__);
     if (!GetStatus()) {
@@ -590,8 +590,8 @@ void BufferQueue::DumpToFile(uint32_t sequence)
     rawDataFile.close();
 }
 
-GSError BufferQueue::DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-    const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config)
+GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
     ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
     std::lock_guard<std::mutex> lockGuard(mutex_);

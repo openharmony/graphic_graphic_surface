@@ -140,7 +140,7 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     return GSERROR_OK;
 }
 
-GSError BufferClientProducer::CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata)
+GSError BufferClientProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
 
@@ -160,8 +160,8 @@ GSError BufferClientProducer::CancelBuffer(uint32_t sequence, const sptr<BufferE
     return GSERROR_OK;
 }
 
-GSError BufferClientProducer::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                                          const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config)
+GSError BufferClientProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                                          sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
 

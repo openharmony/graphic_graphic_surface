@@ -72,13 +72,13 @@ public:
     GSError ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                         struct IBufferProducer::RequestBufferReturnValue &retval);
 
-    GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata);
+    GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata);
 
-    GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                        const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config);
+    GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                        sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
-    GSError DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                          const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config);
+    GSError DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                          sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16]);

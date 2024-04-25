@@ -78,6 +78,7 @@ BufferQueueProducer::~BufferQueueProducer()
 {
     if (token_ && producerSurfaceDeathRecipient_) {
         token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
+        token_ = nullptr;
     }
 }
 
@@ -483,15 +484,12 @@ int32_t BufferQueueProducer::GetPresentTimestampRemote(MessageParcel &arguments,
 int32_t BufferQueueProducer::RegisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply,
                                                     MessageOption &option)
 {
-    if (token_ != nullptr) {
-        token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
-    }
-    token_ = arguments.ReadRemoteObject();
-    if (token_ == nullptr) {
+    sptr<IRemoteObject> token = arguments.ReadRemoteObject();
+    if (token == nullptr) {
         reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    bool result = token_->AddDeathRecipient(producerSurfaceDeathRecipient_);
+    bool result = HandleDeathRecipient(token);
     if (result) {
         reply.WriteInt32(GSERROR_OK);
     } else {
@@ -739,8 +737,19 @@ GSError BufferQueueProducer::UnRegisterReleaseListener()
     return bufferQueue_->UnRegisterProducerReleaseListener();
 }
 
+bool BufferQueueProducer::HandleDeathRecipient(sptr<IRemoteObject> token)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (token_ != nullptr) {
+        token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
+    }
+    token_ = token;
+    return token_->AddDeathRecipient(producerSurfaceDeathRecipient_);
+}
+
 GSError BufferQueueProducer::SetTransform(GraphicTransformType transform)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -760,6 +769,7 @@ GSError BufferQueueProducer::GetTransform(GraphicTransformType &transform)
 
 GSError BufferQueueProducer::SetTransformHint(GraphicTransformType transformHint)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }

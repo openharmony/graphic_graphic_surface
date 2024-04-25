@@ -591,7 +591,6 @@ void BufferQueue::DumpToFile(uint32_t sequence)
         return;
     }
 
-    ScopedBytrace func(__func__);
     struct timeval now;
     gettimeofday(&now, nullptr);
     constexpr int secToUsec = 1000 * 1000;
@@ -605,6 +604,7 @@ void BufferQueue::DumpToFile(uint32_t sequence)
         BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
         return;
     }
+    ScopedBytrace toFile(std::string(__func__) + ":" + ss.str());
     rawDataFile.write(static_cast<const char *>(buffer->GetVirAddr()), buffer->GetSize());
     rawDataFile.close();
 }

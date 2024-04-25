@@ -181,6 +181,7 @@ private:
     GSError ReallocBuffer(const BufferRequestConfig &config, struct IBufferProducer::RequestBufferReturnValue &retval);
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);
     GSError RequestBufferCheckStatus();
+    GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
 
     int32_t defaultWidth = 0;
     int32_t defaultHeight = 0;

@@ -91,6 +91,7 @@ private:
     uint64_t uniqueId_ = 0;
     std::mutex mutex_;
     sptr<IBufferProducerToken> token_;
+    GraphicTransformType lastSetTransformType_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
 };
 }; // namespace OHOS
 

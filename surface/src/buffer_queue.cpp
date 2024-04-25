@@ -495,7 +495,7 @@ GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fen
     if (ret != GSERROR_OK) {
         BLOGNE("Consumer surface delegator failed to queuebuffer");
     }
-    ret = ReleaseBuffer(bufferQueueCache_[sequence].buffer, SyncFence::INVALID_FENCE);
+    ret = ReleaseBuffer(buffer, SyncFence::INVALID_FENCE);
     if (ret != GSERROR_OK) {
         BLOGNE("Consumer surface delegator failed to releasebuffer");
     }

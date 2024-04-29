@@ -478,11 +478,6 @@ sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
     return consumer_->GetTunnelHandle();
 }
 
-bool ConsumerSurface::IsBufferHold()
-{
-    return consumer_->IsBufferHold();
-}
-
 void ConsumerSurface::SetBufferHold(bool hold)
 {
     consumer_->SetBufferHold(hold);

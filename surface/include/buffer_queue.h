@@ -129,7 +129,10 @@ public:
                              std::vector<bool> &supporteds) const;
 
     GSError SetBufferHold(bool hold);
-    bool IsBufferHold();
+    inline bool IsBufferHold()
+    {
+        return isBufferHold_;
+    }
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode);
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode);
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData);

@@ -236,11 +236,6 @@ void BufferQueueConsumer::SetBufferHold(bool hold)
     bufferQueue_->SetBufferHold(hold);
 }
 
-bool BufferQueueConsumer::IsBufferHold()
-{
-    return bufferQueue_->IsBufferHold();
-}
-
 GSError BufferQueueConsumer::OnConsumerDied()
 {
     if (bufferQueue_ == nullptr) {

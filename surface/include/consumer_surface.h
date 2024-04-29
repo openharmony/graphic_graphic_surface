@@ -131,7 +131,10 @@ public:
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
-    bool IsBufferHold() override;
+    inline bool IsBufferHold() override
+    {
+        return consumer_->IsBufferHold();
+    }
     void SetBufferHold(bool hold) override;
 
     void SetRequestWidthAndHeight(int32_t width, int32_t height) override;

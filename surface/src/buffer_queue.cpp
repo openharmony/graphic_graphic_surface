@@ -1280,11 +1280,6 @@ GSError BufferQueue::SetBufferHold(bool hold)
     return GSERROR_OK;
 }
 
-bool BufferQueue::IsBufferHold()
-{
-    return isBufferHold_;
-}
-
 GSError BufferQueue::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);

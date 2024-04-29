@@ -533,7 +533,6 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     if (sret != GSERROR_OK) {
         return sret;
     }
-    CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     if (sret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {
@@ -620,6 +619,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     if (bufferQueueCache_[sequence].isDeleting) {
         DeleteBufferInCache(sequence);
         BLOGN_SUCCESS_ID(sequence, "delete");
+        CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
         return GSERROR_OK;
     }
 
@@ -651,6 +651,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1
     // and reboot your device
     DumpToFile(sequence);
+    CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
 }
 

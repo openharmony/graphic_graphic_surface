@@ -197,7 +197,7 @@ private:
     std::map<uint32_t, BufferElement> bufferQueueCache_;
     sptr<IBufferConsumerListener> listener_ = nullptr;
     IBufferConsumerListenerClazz *listenerClazz_ = nullptr;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::mutex listenerMutex_;
     std::mutex producerListenerMutex_;
     const uint64_t uniqueId_;

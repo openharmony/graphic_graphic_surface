@@ -707,6 +707,7 @@ sptr<NativeSurface> ProducerSurface::GetNativeSurface()
 GSError ProducerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
 {
     NativeWindow *nw = reinterpret_cast<NativeWindow *>(nativeWindow);
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     wpNativeWindow_ = nw;
     return GSERROR_OK;
 }

@@ -1424,4 +1424,35 @@ HWTEST_F(NativeWindowTest, NativeWindowGetDefaultWidthAndHeight001, Function | M
     ASSERT_EQ(width, 300);
     ASSERT_EQ(height, 400);
 }
+
+/*
+* Function: NativeWindowSetBufferHold
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call NativeWindowSetBufferHold and no ret
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest | Level1)
+{
+    NativeWindowSetBufferHold(nativeWindow);
+    int fenceFd = -1;
+    struct Region *region = new Region();
+    region->rectNumber = 0;
+    region->rects = nullptr;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
+              OHOS::GSERROR_OK);
+    region->rectNumber = 1;
+    struct Region::Rect * rect = new Region::Rect();
+    rect->x = 0x100;
+    rect->y = 0x100;
+    rect->w = 0x100;
+    rect->h = 0x100;
+    region->rects = rect;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
+              OHOS::GSERROR_OK);
+    delete rect;
+    delete region;
+    cSurface->SetBufferHold(false);
+}
 }

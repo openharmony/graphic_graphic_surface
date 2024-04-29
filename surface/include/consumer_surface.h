@@ -133,6 +133,9 @@ public:
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     inline bool IsBufferHold() override
     {
+        if (consumer_ == nullptr) {
+            return false;
+        }
         return consumer_->IsBufferHold();
     }
     void SetBufferHold(bool hold) override;

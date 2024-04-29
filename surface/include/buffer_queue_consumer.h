@@ -72,6 +72,9 @@ public:
     void SetBufferHold(bool hold);
     inline bool IsBufferHold()
     {
+        if (bufferQueue_ == nullptr) {
+            return false;
+        }
         return bufferQueue_->IsBufferHold();
     }
 

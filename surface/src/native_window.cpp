@@ -598,7 +598,7 @@ void NativeWindowSetBufferHold(OHNativeWindow *window)
 {
     if (window == nullptr || window->surface == nullptr) {
         BLOGE("parameter error, please check input parameter(window or surface is nullptr)");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return;
     }
     window->surface->SetBufferHold(true);
 }

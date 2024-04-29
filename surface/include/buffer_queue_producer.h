@@ -79,6 +79,7 @@ public:
     GSError Disconnect() override;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
+    GSError SetBufferHold(bool hold) override;
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;
@@ -136,6 +137,7 @@ private:
     int32_t DetachBufferFromQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);

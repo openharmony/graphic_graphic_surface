@@ -597,6 +597,15 @@ int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t wid
     return OHOS::GSERROR_OK;
 }
 
+void NativeWindowSetBufferHold(OHNativeWindow *window)
+{
+    if (window == nullptr || window->surface == nullptr) {
+        BLOGE("parameter error, please check input parameter(window or surface is nullptr)");
+        return;
+    }
+    window->surface->SetBufferHold(true);
+}
+
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
 }
@@ -647,4 +656,5 @@ WEAK_ALIAS(NativeWindowSetMetaDataSet, OH_NativeWindow_NativeWindowSetMetaDataSe
 WEAK_ALIAS(NativeWindowSetTunnelHandle, OH_NativeWindow_NativeWindowSetTunnelHandle);
 WEAK_ALIAS(GetSurfaceId, OH_NativeWindow_GetSurfaceId);
 WEAK_ALIAS(CreateNativeWindowFromSurfaceId, OH_NativeWindow_CreateNativeWindowFromSurfaceId);
+WEAK_ALIAS(NativeWindowSetBufferHold, OH_NativeWindow_SetBufferHold);
 

@@ -558,6 +558,16 @@ int32_t OH_NativeWindow_NativeWindowAttachBuffer(OHNativeWindow *window, OHNativ
  */
 int32_t OH_NativeWindow_NativeWindowDetachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer);
 
+/**
+ * @brief Set native window buffer hold.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.
+ * @since 12
+ * @version 1.0
+ */
+void OH_NativeWindow_SetBufferHold(OHNativeWindow *window);
+
 #ifdef __cplusplus
 }
 #endif

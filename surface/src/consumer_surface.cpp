@@ -478,6 +478,15 @@ sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
     return consumer_->GetTunnelHandle();
 }
 
+void ConsumerSurface::SetBufferHold(bool hold)
+{
+    if (consumer_ == nullptr) {
+        BLOGNE("ConsumerSurface::SetBufferHold producer is nullptr.");
+        return;
+    }
+    consumer_->SetBufferHold(hold);
+}
+
 GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
 {
     if (timestamp.type == GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED) {

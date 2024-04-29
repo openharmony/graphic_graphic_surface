@@ -128,6 +128,11 @@ public:
     GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
                              std::vector<bool> &supporteds) const;
 
+    GSError SetBufferHold(bool hold);
+    inline bool IsBufferHold()
+    {
+        return isBufferHold_;
+    }
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode);
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode);
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData);
@@ -218,6 +223,7 @@ private:
     wptr<ConsumerSurfaceDelegator> wpCSurfaceDelegator_;
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    bool isBufferHold_ = false;
 };
 }; // namespace OHOS
 

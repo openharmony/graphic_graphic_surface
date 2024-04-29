@@ -72,6 +72,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_SET_DEFAULT_USAGE] = &BufferQueueProducer::SetDefaultUsageRemote;
     memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORMHINT] = &BufferQueueProducer::GetTransformHintRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORMHINT] = &BufferQueueProducer::SetTransformHintRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_BUFFER_HOLD] = &BufferQueueProducer::SetBufferHoldRemote;
 }
 
 BufferQueueProducer::~BufferQueueProducer()
@@ -429,6 +430,14 @@ int32_t BufferQueueProducer::SetScalingModeRemote(MessageParcel &arguments, Mess
     uint32_t sequence = arguments.ReadUint32();
     ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
     GSError sret = SetScalingMode(sequence, scalingMode);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    bool hold = arguments.ReadBool();
+    GSError sret = SetBufferHold(hold);
     reply.WriteInt32(sret);
     return 0;
 }
@@ -829,6 +838,14 @@ GSError BufferQueueProducer::SetScalingMode(uint32_t sequence, ScalingMode scali
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->SetScalingMode(sequence, scalingMode);
+}
+
+GSError BufferQueueProducer::SetBufferHold(bool hold)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetBufferHold(hold);
 }
 
 GSError BufferQueueProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)

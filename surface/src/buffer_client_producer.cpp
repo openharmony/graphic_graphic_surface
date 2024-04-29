@@ -504,6 +504,20 @@ GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scal
     return GSERROR_OK;
 }
 
+GSError BufferClientProducer::SetBufferHold(bool hold)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    arguments.WriteBool(hold);
+    SEND_REQUEST(BUFFER_PRODUCER_SET_BUFFER_HOLD, arguments, reply, option);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return (GSError)ret;
+    }
+
+    return GSERROR_OK;
+}
+
 GSError BufferClientProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);

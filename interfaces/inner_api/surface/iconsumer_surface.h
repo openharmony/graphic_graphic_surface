@@ -129,6 +129,7 @@ public:
     virtual void ConsumerRequestCpuAccess(bool on) = 0;
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
+    virtual bool IsBufferHold() = 0;
 protected:
     IConsumerSurface() = default;
 };

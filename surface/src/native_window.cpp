@@ -596,6 +596,10 @@ int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t wid
 
 void NativeWindowSetBufferHold(OHNativeWindow *window)
 {
+    if (window == nullptr || window->surface == nullptr) {
+        BLOGE("parameter error, please check input parameter(window or surface is nullptr)");
+        return OHOS::GSERROR_INVALID_ARGUMENTS;
+    }
     window->surface->SetBufferHold(true);
 }
 

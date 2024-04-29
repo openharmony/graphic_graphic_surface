@@ -480,6 +480,10 @@ sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
 
 void ConsumerSurface::SetBufferHold(bool hold)
 {
+    if (consumer_ == nullptr) {
+        BLOGNE("ConsumerSurface::SetBufferHold producer is nullptr.");
+        return;
+    }
     consumer_->SetBufferHold(hold);
 }
 

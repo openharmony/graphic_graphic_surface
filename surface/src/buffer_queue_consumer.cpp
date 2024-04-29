@@ -233,6 +233,10 @@ void BufferQueueConsumer::SetStatus(bool status)
 
 void BufferQueueConsumer::SetBufferHold(bool hold)
 {
+    if (bufferQueue_ == nullptr) {
+        BLOGFE("SetBufferHold failed for nullptr bufferqueue.");
+        return;
+    }
     bufferQueue_->SetBufferHold(hold);
 }
 

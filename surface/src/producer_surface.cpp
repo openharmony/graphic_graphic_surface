@@ -611,6 +611,10 @@ GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMo
 
 void ProducerSurface::SetBufferHold(bool hold)
 {
+    if (producer_ == nullptr) {
+        BLOGNE("ProducerSurface::SetBufferHold producer is nullptr.");
+        return;
+    }
     producer_->SetBufferHold(hold);
 }
 

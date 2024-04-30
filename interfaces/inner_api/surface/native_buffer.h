@@ -54,7 +54,7 @@ typedef struct NativeWindowBuffer OHNativeWindowBuffer;
  * @since 10
  * @version 1.0
  */
-enum OH_NativeBuffer_Usage {
+typedef enum OH_NativeBuffer_Usage {
     NATIVEBUFFER_USAGE_CPU_READ = (1ULL << 0),        /// < CPU read buffer */
     NATIVEBUFFER_USAGE_CPU_WRITE = (1ULL << 1),       /// < CPU write memory */
     NATIVEBUFFER_USAGE_MEM_DMA = (1ULL << 3),         /// < Direct memory access (DMA) buffer */
@@ -62,7 +62,7 @@ enum OH_NativeBuffer_Usage {
     NATIVEBUFFER_USAGE_HW_TEXTURE = (1ULL << 9),      /// < For GPU read case */
     NATIVEBUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), /// < Often be mapped for direct CPU reads */
     NATIVEBUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  /// < 512 bytes alignment */
-};
+} OH_NativeBuffer_Usage;
 
 /**
  * @brief Indicates the format of a native buffer.
@@ -71,7 +71,7 @@ enum OH_NativeBuffer_Usage {
  * @since 10
  * @version 1.0
  */
-enum OH_NativeBuffer_Format {
+typedef enum OH_NativeBuffer_Format {
     /**
      * CLUT8 format
      * @since 12
@@ -196,7 +196,7 @@ enum OH_NativeBuffer_Format {
      */
     NATIVEBUFFER_PIXEL_FMT_VENDER_MASK = 0X7FFF0000,
     NATIVEBUFFER_PIXEL_FMT_BUTT = 0X7FFFFFFF          /// < Invalid pixel format */
-};
+} OH_NativeBuffer_Format;
 
 /**
  * @brief Indicates the color space of a native buffer.
@@ -205,7 +205,7 @@ enum OH_NativeBuffer_Format {
  * @since 11
  * @version 1.0
  */
-enum OH_NativeBuffer_ColorSpace {
+typedef enum OH_NativeBuffer_ColorSpace {
     /** None color space */
     OH_COLORSPACE_NONE,
     /** COLORPRIMARIES_BT601_P | (TRANSFUNC_BT709 << 8) | (MATRIX_BT601_P << 16) | (RANGE_FULL << 21) */
@@ -270,7 +270,7 @@ enum OH_NativeBuffer_ColorSpace {
     OH_COLORSPACE_DISPLAY_BT2020_HLG,
     /** equal to OH_COLORSPACE_BT2020_PQ_FULL */
     OH_COLORSPACE_DISPLAY_BT2020_PQ,
-};
+} OH_NativeBuffer_ColorSpace;
 
 /**
  * @brief Indicates the transform type of a native buffer.
@@ -279,7 +279,7 @@ enum OH_NativeBuffer_ColorSpace {
  * @since 12
  * @version 1.0
  */
-enum OH_NativeBuffer_TransformType {
+typedef enum OH_NativeBuffer_TransformType {
     NATIVEBUFFER_ROTATE_NONE = 0,         /**< No rotation */
     NATIVEBUFFER_ROTATE_90,               /**< Rotation by 90 degrees */
     NATIVEBUFFER_ROTATE_180,              /**< Rotation by 180 degrees */
@@ -292,7 +292,7 @@ enum OH_NativeBuffer_TransformType {
     NATIVEBUFFER_FLIP_V_ROT180,           /**< Flip vertically and rotate 180 degrees */
     NATIVEBUFFER_FLIP_H_ROT270,           /**< Flip horizontally and rotate 270 degrees */
     NATIVEBUFFER_FLIP_V_ROT270,           /**< Flip vertically and rotate 270 degrees */
-};
+} OH_NativeBuffer_TransformType;
 
 /**
  * @brief Indicates the color gamut of a native buffer.
@@ -301,7 +301,7 @@ enum OH_NativeBuffer_TransformType {
  * @since 12
  * @version 1.0
  */
-enum OH_NativeBuffer_ColorGamut {
+typedef enum OH_NativeBuffer_ColorGamut {
     NATIVEBUFFER_COLOR_GAMUT_NATIVE = 0,            /**< Native or default */
     NATIVEBUFFER_COLOR_GAMUT_STANDARD_BT601 = 1,    /**< Standard BT601 */
     NATIVEBUFFER_COLOR_GAMUT_STANDARD_BT709 = 2,    /**< Standard BT709 */
@@ -313,7 +313,7 @@ enum OH_NativeBuffer_ColorGamut {
     NATIVEBUFFER_COLOR_GAMUT_BT2100_PQ = 8,         /**< BT2100 PQ */
     NATIVEBUFFER_COLOR_GAMUT_BT2100_HLG = 9,        /**< BT2100 HLG */
     NATIVEBUFFER_COLOR_GAMUT_DISPLAY_BT2020 = 10,   /**< Display BT2020 */
-};
+} OH_NativeBuffer_ColorGamut;
 
 /**
  * @brief <b>OH_NativeBuffer</b> config. \n

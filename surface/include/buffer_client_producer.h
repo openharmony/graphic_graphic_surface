@@ -86,6 +86,12 @@ public:
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
+
+    GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
+    GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;
+
+    GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
+    GSError GetSurfaceAppFrameworkType(std::string &appFrameworkType) override;
 private:
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     std::string name_ = "not init";

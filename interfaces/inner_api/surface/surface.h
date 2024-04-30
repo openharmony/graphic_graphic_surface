@@ -138,6 +138,10 @@ public:
     virtual void SetRequestWidthAndHeight(int32_t width, int32_t height) = 0;
     virtual int32_t GetRequestWidth() = 0;
     virtual int32_t GetRequestHeight() = 0;
+    virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
+    virtual OHSurfaceSource GetSurfaceSourceType() const = 0;
+    virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) = 0;
+    virtual std::string GetSurfaceAppFrameworkType() const = 0;
 
     virtual void SetBufferHold(bool hold) = 0;
 protected:

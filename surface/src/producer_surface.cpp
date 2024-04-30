@@ -391,6 +391,36 @@ uint64_t ProducerSurface::GetDefaultUsage()
     return producer_->GetDefaultUsage();
 }
 
+GSError ProducerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
+{
+    return producer_->SetSurfaceSourceType(sourceType);
+}
+
+OHSurfaceSource ProducerSurface::GetSurfaceSourceType() const
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    if (producer_->GetSurfaceSourceType(sourceType) != GSERROR_OK) {
+        BLOGNE("Warning ProducerSurface GetSurfaceSourceType failed.");
+        return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    }
+    return sourceType;
+}
+
+GSError ProducerSurface::SetSurfaceAppFrameworkType(std::string appFrameworkType)
+{
+    return producer_->SetSurfaceAppFrameworkType(appFrameworkType);
+}
+
+std::string ProducerSurface::GetSurfaceAppFrameworkType() const
+{
+    std::string appFrameworkType = "";
+    if (producer_->GetSurfaceAppFrameworkType(appFrameworkType) != GSERROR_OK) {
+        BLOGNE("Warning ProducerSurface GetSurfaceAppFrameworkType failed.");
+        return "";
+    }
+    return appFrameworkType;
+}
+
 GSError ProducerSurface::SetUserData(const std::string &key, const std::string &val)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);

@@ -557,6 +557,36 @@ GSError ConsumerSurface::SetTransformHint(GraphicTransformType transformHint)
     return producer_->SetTransformHint(transformHint);
 }
 
+GSError ConsumerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
+{
+    return producer_->SetSurfaceSourceType(sourceType);
+}
+
+OHSurfaceSource ConsumerSurface::GetSurfaceSourceType() const
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    if (producer_->GetSurfaceSourceType(sourceType) != GSERROR_OK) {
+        BLOGNE("Warning GetSurfaceSourceType failed.");
+        return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    }
+    return sourceType;
+}
+
+GSError ConsumerSurface::SetSurfaceAppFrameworkType(std::string appFrameworkType)
+{
+    return producer_->SetSurfaceAppFrameworkType(appFrameworkType);
+}
+
+std::string ConsumerSurface::GetSurfaceAppFrameworkType() const
+{
+    std::string appFrameworkType = "";
+    if (producer_->GetSurfaceAppFrameworkType(appFrameworkType) != GSERROR_OK) {
+        BLOGNE("Warning GetSurfaceAppFrameworkType failed.");
+        return "";
+    }
+    return appFrameworkType;
+}
+
 void ConsumerSurface::SetRequestWidthAndHeight(int32_t width, int32_t height)
 {
     (void)width;

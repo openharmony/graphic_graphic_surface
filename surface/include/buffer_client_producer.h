@@ -81,8 +81,8 @@ public:
     GSError SendAddDeathRecipientObject() override;
 
     GSError GetTransform(GraphicTransformType &transform) override;
-    GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) override;
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) override;
+    GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;

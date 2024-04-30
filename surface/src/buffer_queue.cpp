@@ -882,7 +882,7 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer)
     buffer->SetSurfaceBufferHeight(buffer->GetHeight());
 }
 
-GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerType invokerType)
+GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
 {
     ScopedBytrace func(__func__);
     if (buffer == nullptr) {
@@ -918,7 +918,7 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerTyp
     return GSERROR_OK;
 }
 
-GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> &buffer, InvokerType invokerType)
+GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
 {
     ScopedBytrace func(__func__);
     if (buffer == nullptr) {

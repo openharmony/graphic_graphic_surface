@@ -226,12 +226,17 @@ int32_t BufferQueueProducer::GetLastFlushedBufferRemote(MessageParcel &arguments
 int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    sptr<SurfaceBuffer> buffer;
+    sptr<SurfaceBuffer> buffer = nullptr;
     uint32_t sequence;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
         reply.WriteInt32(ret);
+        return 0;
+    }
+    if (buffer == nullptr) {
+        BLOGN_FAILURE("Read buffer is nullptr");
+        reply.WriteInt32(GSERROR_INTERNAL);
         return 0;
     }
     ret = buffer->ReadBufferRequestConfig(arguments);
@@ -248,12 +253,17 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
 int32_t BufferQueueProducer::DetachBufferFromQueueRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    sptr<SurfaceBuffer> buffer;
+    sptr<SurfaceBuffer> buffer = nullptr;
     uint32_t sequence;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
         reply.WriteInt32(ret);
+        return 0;
+    }
+    if (buffer == nullptr) {
+        BLOGN_FAILURE("Read buffer is nullptr");
+        reply.WriteInt32(GSERROR_INTERNAL);
         return 0;
     }
     ret = DetachBufferFromQueue(buffer);
@@ -594,7 +604,7 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     return bufferQueue_->GetLastFlushedBuffer(buffer, fence, matrix);
 }
 
-GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
+GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -602,7 +612,7 @@ GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
 }
 
-GSError BufferQueueProducer::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
+GSError BufferQueueProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

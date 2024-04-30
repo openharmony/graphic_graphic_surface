@@ -179,7 +179,7 @@ GSError BufferClientProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraDat
     return GSERROR_OK;
 }
 
-GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
+GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
     uint32_t sequence = buffer->GetSeqNum();
@@ -194,7 +194,7 @@ GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
     return GSERROR_OK;
 }
 
-GSError BufferClientProducer::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
+GSError BufferClientProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
     uint32_t sequence = buffer->GetSeqNum();

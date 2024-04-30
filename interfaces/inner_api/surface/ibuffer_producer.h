@@ -96,8 +96,8 @@ public:
 
     virtual GSError GetTransform(GraphicTransformType &transform) = 0;
 
-    virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) = 0;
-    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
+    virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
+    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");

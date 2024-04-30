@@ -40,10 +40,10 @@ public:
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) override;
 
-    GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata) override;
+    GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) override;
 
-    GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config) override;
+    GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                        sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16]) override;
@@ -79,7 +79,7 @@ public:
     GSError Disconnect() override;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
-    GSError SetScalingMode(ScalingMode scalingMode) override;
+    GSError SetBufferHold(bool hold) override;
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;
@@ -98,10 +98,12 @@ public:
 
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
 
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
+    bool HandleDeathRecipient(sptr<IRemoteObject> token);
 
     int32_t RequestBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t CancelBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
@@ -137,6 +139,7 @@ private:
     int32_t DetachBufferFromQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);

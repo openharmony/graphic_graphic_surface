@@ -92,7 +92,6 @@ public:
                                      std::vector<bool> &supporteds) = 0;
     virtual GSError Disconnect() = 0;
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
-    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) = 0;
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
@@ -139,6 +138,9 @@ public:
     virtual void SetRequestWidthAndHeight(int32_t width, int32_t height) = 0;
     virtual int32_t GetRequestWidth() = 0;
     virtual int32_t GetRequestHeight() = 0;
+
+    virtual void SetBufferHold(bool hold) = 0;
+    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 protected:
     Surface() = default;
 };

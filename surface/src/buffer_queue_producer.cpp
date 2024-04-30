@@ -72,12 +72,15 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_SET_DEFAULT_USAGE] = &BufferQueueProducer::SetDefaultUsageRemote;
     memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORMHINT] = &BufferQueueProducer::GetTransformHintRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORMHINT] = &BufferQueueProducer::SetTransformHintRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_BUFFER_HOLD] = &BufferQueueProducer::SetBufferHoldRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_SCALING_MODEV2] = &BufferQueueProducer::SetScalingModeV2Remote;
 }
 
 BufferQueueProducer::~BufferQueueProducer()
 {
     if (token_ && producerSurfaceDeathRecipient_) {
         token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
+        token_ = nullptr;
     }
 }
 
@@ -432,6 +435,22 @@ int32_t BufferQueueProducer::SetScalingModeRemote(MessageParcel &arguments, Mess
     return 0;
 }
 
+int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
+    GSError sret = SetScalingMode(scalingMode);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    bool hold = arguments.ReadBool();
+    GSError sret = SetBufferHold(hold);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
 int32_t BufferQueueProducer::SetMetaDataRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     uint32_t sequence = arguments.ReadUint32();
@@ -483,15 +502,12 @@ int32_t BufferQueueProducer::GetPresentTimestampRemote(MessageParcel &arguments,
 int32_t BufferQueueProducer::RegisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply,
                                                     MessageOption &option)
 {
-    if (token_ != nullptr) {
-        token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
-    }
-    token_ = arguments.ReadRemoteObject();
-    if (token_ == nullptr) {
+    sptr<IRemoteObject> token = arguments.ReadRemoteObject();
+    if (token == nullptr) {
         reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    bool result = token_->AddDeathRecipient(producerSurfaceDeathRecipient_);
+    bool result = HandleDeathRecipient(token);
     if (result) {
         reply.WriteInt32(GSERROR_OK);
     } else {
@@ -561,7 +577,7 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
-GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata)
+GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -569,8 +585,8 @@ GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, const sptr<BufferEx
     return bufferQueue_->CancelBuffer(sequence, bedata);
 }
 
-GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                                         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config)
+GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                                         sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -739,8 +755,19 @@ GSError BufferQueueProducer::UnRegisterReleaseListener()
     return bufferQueue_->UnRegisterProducerReleaseListener();
 }
 
+bool BufferQueueProducer::HandleDeathRecipient(sptr<IRemoteObject> token)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (token_ != nullptr) {
+        token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
+    }
+    token_ = token;
+    return token_->AddDeathRecipient(producerSurfaceDeathRecipient_);
+}
+
 GSError BufferQueueProducer::SetTransform(GraphicTransformType transform)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -760,6 +787,7 @@ GSError BufferQueueProducer::GetTransform(GraphicTransformType &transform)
 
 GSError BufferQueueProducer::SetTransformHint(GraphicTransformType transformHint)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -827,6 +855,14 @@ GSError BufferQueueProducer::SetScalingMode(ScalingMode scalingMode)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->SetScalingMode(scalingMode);
+}
+
+GSError BufferQueueProducer::SetBufferHold(bool hold)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetBufferHold(hold);
 }
 
 GSError BufferQueueProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)

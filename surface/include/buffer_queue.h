@@ -72,13 +72,13 @@ public:
     GSError ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                         struct IBufferProducer::RequestBufferReturnValue &retval);
 
-    GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata);
+    GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata);
 
-    GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                        const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config);
+    GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                        sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
-    GSError DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                          const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config);
+    GSError DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                          sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16]);
@@ -128,8 +128,12 @@ public:
     GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
                              std::vector<bool> &supporteds) const;
 
+    GSError SetBufferHold(bool hold);
+    inline bool IsBufferHold()
+    {
+        return isBufferHold_;
+    }
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode);
-    GSError SetScalingMode(ScalingMode scalingMode);
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode);
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData);
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
@@ -157,6 +161,7 @@ public:
 
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;
+    GSError SetScalingMode(ScalingMode scalingMode);
 
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
@@ -182,6 +187,7 @@ private:
     GSError ReallocBuffer(const BufferRequestConfig &config, struct IBufferProducer::RequestBufferReturnValue &retval);
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);
     GSError RequestBufferCheckStatus();
+    GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
 
     int32_t defaultWidth = 0;
     int32_t defaultHeight = 0;
@@ -198,7 +204,7 @@ private:
     std::map<uint32_t, BufferElement> bufferQueueCache_;
     sptr<IBufferConsumerListener> listener_ = nullptr;
     IBufferConsumerListenerClazz *listenerClazz_ = nullptr;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::mutex listenerMutex_;
     std::mutex producerListenerMutex_;
     const uint64_t uniqueId_;
@@ -219,6 +225,7 @@ private:
     wptr<ConsumerSurfaceDelegator> wpCSurfaceDelegator_;
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    bool isBufferHold_ = false;
 };
 }; // namespace OHOS
 

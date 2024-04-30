@@ -101,7 +101,6 @@ public:
     GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
     GSError Disconnect() override;
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
-    GSError SetScalingMode(ScalingMode scalingMode) override;
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) override;
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key, const std::vector<uint8_t> &metaData) override;
@@ -132,10 +131,19 @@ public:
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
+    inline bool IsBufferHold() override
+    {
+        if (consumer_ == nullptr) {
+            return false;
+        }
+        return consumer_->IsBufferHold();
+    }
+    void SetBufferHold(bool hold) override;
 
     void SetRequestWidthAndHeight(int32_t width, int32_t height) override;
     int32_t GetRequestWidth() override;
     int32_t GetRequestHeight() override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

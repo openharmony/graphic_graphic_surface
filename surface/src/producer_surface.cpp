@@ -163,7 +163,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    const sptr<BufferExtraData>& bedata = buffer->GetExtraData();
+    sptr<BufferExtraData> bedata = buffer->GetExtraData();
     auto ret = producer_->FlushBuffer(buffer->GetSeqNum(), bedata, fence, config);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
@@ -208,7 +208,7 @@ GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    const sptr<BufferExtraData>& bedata = buffer->GetExtraData();
+    sptr<BufferExtraData> bedata = buffer->GetExtraData();
     return producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
 }
 
@@ -618,6 +618,15 @@ GSError ProducerSurface::SetScalingMode(ScalingMode scalingMode)
     return producer_->SetScalingMode(scalingMode);
 }
 
+void ProducerSurface::SetBufferHold(bool hold)
+{
+    if (producer_ == nullptr) {
+        BLOGNE("ProducerSurface::SetBufferHold producer is nullptr.");
+        return;
+    }
+    producer_->SetBufferHold(hold);
+}
+
 GSError ProducerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
 {
     return GSERROR_NOT_SUPPORT;
@@ -716,6 +725,7 @@ sptr<NativeSurface> ProducerSurface::GetNativeSurface()
 GSError ProducerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
 {
     NativeWindow *nw = reinterpret_cast<NativeWindow *>(nativeWindow);
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     wpNativeWindow_ = nw;
     return GSERROR_OK;
 }

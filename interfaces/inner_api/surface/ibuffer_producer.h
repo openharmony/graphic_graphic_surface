@@ -47,10 +47,10 @@ public:
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) = 0;
 
-    virtual GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata) = 0;
+    virtual GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) = 0;
 
-    virtual GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                                const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config) = 0;
+    virtual GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                                sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) = 0;
 
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
@@ -80,7 +80,7 @@ public:
     virtual GSError Disconnect() = 0;
 
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
-    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
+    virtual GSError SetBufferHold(bool hold) = 0;
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                    const std::vector<uint8_t> &metaData) = 0;
@@ -100,6 +100,7 @@ public:
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -137,7 +138,8 @@ protected:
         BUFFER_PRODUCER_SET_DEFAULT_USAGE = 30,
         BUFFER_PRODUCER_GET_TRANSFORMHINT = 31,
         BUFFER_PRODUCER_SET_TRANSFORMHINT = 32,
-        BUFFER_PRODUCER_SET_SCALING_MODEV2 = 33,
+        BUFFER_PRODUCER_SET_BUFFER_HOLD = 33,
+        BUFFER_PRODUCER_SET_SCALING_MODEV2 = 34,
     };
 };
 } // namespace OHOS

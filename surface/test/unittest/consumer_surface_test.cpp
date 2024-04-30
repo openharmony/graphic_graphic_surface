@@ -592,6 +592,20 @@ HWTEST_F(ConsumerSurfaceTest, scalingMode002, Function | MediumTest | Level1)
 }
 
 /*
+* Function: SetScalingMode003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, scalingMode003, Function | MediumTest | Level2)
+{
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    GSError ret = cs->SetScalingMode(scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: QueryMetaDataType
 * Type: Function
 * Rank: Important(1)

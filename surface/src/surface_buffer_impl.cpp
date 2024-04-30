@@ -107,12 +107,14 @@ SurfaceBufferImpl::SurfaceBufferImpl()
 
         mutex.unlock();
     }
+    metaDataCache_.clear();
     bedata_ = new BufferExtraDataImpl;
     BLOGD("ctor +[%{public}u]", sequenceNumber_);
 }
 
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 {
+    metaDataCache_.clear();
     sequenceNumber_ = seqNum;
     bedata_ = new BufferExtraDataImpl;
     BLOGD("ctor =[%{public}u]", sequenceNumber_);
@@ -127,6 +129,15 @@ SurfaceBufferImpl::~SurfaceBufferImpl()
 SurfaceBufferImpl *SurfaceBufferImpl::FromBase(const sptr<SurfaceBuffer>& buffer)
 {
     return static_cast<SurfaceBufferImpl*>(buffer.GetRefPtr());
+}
+
+bool SurfaceBufferImpl::MetaDataCached(const uint32_t key, const std::vector<uint8_t>& value)
+{
+    if (metaDataCache_.find(key) != metaDataCache_.end() &&
+        metaDataCache_[key] == value) {
+        return true;
+    }
+    return false;
 }
 
 GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
@@ -490,13 +501,13 @@ GSError SurfaceBufferImpl::GetPlanesInfo(void **planesInfo)
     return GSERROR_OK;
 }
 
-void SurfaceBufferImpl::SetExtraData(const sptr<BufferExtraData> &bedata)
+void SurfaceBufferImpl::SetExtraData(sptr<BufferExtraData> bedata)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     bedata_ = bedata;
 }
 
-const sptr<BufferExtraData>& SurfaceBufferImpl::GetExtraData() const
+sptr<BufferExtraData> SurfaceBufferImpl::GetExtraData() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return bedata_;
@@ -631,8 +642,15 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
         BLOGE("Failure, Reason: handle_ is nullptr");
         return GSERROR_NOT_INIT;
     }
+
+    if (MetaDataCached(key, value)) {
+        return GSERROR_OK;
+    }
+
     auto dret = g_displayBuffer->SetMetadata(*handle_, key, value);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
+        // cache metaData
+        metaDataCache_[key] = value;
         return GSERROR_OK;
     }
     return GenerateError(GSERROR_API_FAILED, dret);
@@ -697,6 +715,7 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     }
     auto dret = g_displayBuffer->EraseMetadataKey(*handle_, key);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
+        metaDataCache_.erase(key);
         return GSERROR_OK;
     }
     return GenerateError(GSERROR_API_FAILED, dret);

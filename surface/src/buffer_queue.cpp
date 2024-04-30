@@ -427,7 +427,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     return GSERROR_OK;
 }
 
-GSError BufferQueue::CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata)
+GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     ScopedBytrace func(__func__);
     if (isShared_) {
@@ -475,8 +475,35 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
     return GSERROR_OK;
 }
 
-GSError BufferQueue::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-    const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config)
+GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence)
+{
+    auto consumerDelegator = wpCSurfaceDelegator_.promote();
+    if (consumerDelegator == nullptr) {
+        BLOGE("Consumer surface delegator has been expired");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sptr<SurfaceBuffer> buffer = nullptr;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+            return GSERROR_NO_ENTRY;
+        }
+        bufferQueueCache_[sequence].state = BUFFER_STATE_ACQUIRED;
+        buffer = bufferQueueCache_[sequence].buffer;
+    }
+    GSError ret = consumerDelegator->QueueBuffer(buffer, fence->Get());
+    if (ret != GSERROR_OK) {
+        BLOGNE("Consumer surface delegator failed to queuebuffer");
+    }
+    ret = ReleaseBuffer(buffer, SyncFence::INVALID_FENCE);
+    if (ret != GSERROR_OK) {
+        BLOGNE("Consumer surface delegator failed to releasebuffer");
+    }
+    return ret;
+}
+
+GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
     ScopedBytrace func(__func__);
     if (!GetStatus()) {
@@ -506,7 +533,6 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> 
     if (sret != GSERROR_OK) {
         return sret;
     }
-    CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     if (sret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {
@@ -519,15 +545,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> 
         sequence, uniqueId_, fence->Get());
 
     if (wpCSurfaceDelegator_ != nullptr) {
-        auto consumerDelegator = wpCSurfaceDelegator_.promote();
-        if (consumerDelegator == nullptr) {
-            BLOGE("Consumer surface delegator has been expired");
-            return GSERROR_INVALID_ARGUMENTS;
-        }
-        sret = consumerDelegator->QueueBuffer(bufferQueueCache_[sequence].buffer, fence->Get());
-        if (sret != GSERROR_OK) {
-            BLOGNE("Consumer surface delegator failed to dequeuebuffer");
-        }
+        sret = DelegatorQueueBuffer(sequence, fence);
     }
     return sret;
 }
@@ -572,7 +590,6 @@ void BufferQueue::DumpToFile(uint32_t sequence)
         return;
     }
 
-    ScopedBytrace func(__func__);
     struct timeval now;
     gettimeofday(&now, nullptr);
     constexpr int secToUsec = 1000 * 1000;
@@ -586,12 +603,13 @@ void BufferQueue::DumpToFile(uint32_t sequence)
         BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
         return;
     }
+    ScopedBytrace toFile(std::string(__func__) + ":" + ss.str());
     rawDataFile.write(static_cast<const char *>(buffer->GetVirAddr()), buffer->GetSize());
     rawDataFile.close();
 }
 
-GSError BufferQueue::DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-    const sptr<SyncFence>& fence, const BufferFlushConfigWithDamages &config)
+GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
     ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -601,6 +619,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData
     if (bufferQueueCache_[sequence].isDeleting) {
         DeleteBufferInCache(sequence);
         BLOGN_SUCCESS_ID(sequence, "delete");
+        CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
         return GSERROR_OK;
     }
 
@@ -632,6 +651,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, const sptr<BufferExtraData
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1
     // and reboot your device
     DumpToFile(sequence);
+    CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
 }
 
@@ -1275,6 +1295,12 @@ GSError BufferQueue::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &
             supporteds.push_back(false);
         }
     }
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetBufferHold(bool hold)
+{
+    isBufferHold_ = hold;
     return GSERROR_OK;
 }
 

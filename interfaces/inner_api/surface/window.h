@@ -57,7 +57,6 @@ int32_t NativeObjectUnreference(void *obj);
 int32_t GetNativeObjectMagic(void *obj);
 
 int32_t NativeWindowSetScalingMode(OHNativeWindow *window, uint32_t sequence, OHScalingMode scalingMode);
-int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode);
 int32_t NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32_t size,
                                 const OHHDRMetaData *metaData);
 int32_t NativeWindowSetMetaDataSet(OHNativeWindow *window, uint32_t sequence, OHHDRMetadataKey key,
@@ -71,6 +70,8 @@ int32_t NativeWindowGetTransformHint(OHNativeWindow *window, OH_NativeBuffer_Tra
 int32_t NativeWindowSetTransformHint(OHNativeWindow *window, OH_NativeBuffer_TransformType transform);
 int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *width, int32_t *height);
 int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t width, int32_t height);
+void NativeWindowSetBufferHold(OHNativeWindow *window);
+int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode);
 
 #ifdef __cplusplus
 }

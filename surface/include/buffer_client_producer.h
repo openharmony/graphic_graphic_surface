@@ -36,10 +36,10 @@ public:
     GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                           RequestBufferReturnValue &retval) override;
 
-    GSError CancelBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata) override;
+    GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) override;
 
-    GSError FlushBuffer(uint32_t sequence, const sptr<BufferExtraData> &bedata,
-                        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages &config) override;
+    GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
+                        sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16]) override;
     uint32_t GetQueueSize() override;
@@ -69,7 +69,7 @@ public:
     GSError GoBackground() override;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
-    GSError SetScalingMode(ScalingMode scalingMode) override;
+    GSError SetBufferHold(bool hold) override;
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;
@@ -86,12 +86,14 @@ public:
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
 private:
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     std::string name_ = "not init";
     uint64_t uniqueId_ = 0;
     std::mutex mutex_;
     sptr<IBufferProducerToken> token_;
+    GraphicTransformType lastSetTransformType_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
 };
 }; // namespace OHOS
 

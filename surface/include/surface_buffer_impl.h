@@ -69,8 +69,8 @@ public:
     sptr<EglData> GetEglData() const override;
     void SetEglData(const sptr<EglData>& data) override;
 
-    void SetExtraData(const sptr<BufferExtraData> &bedata) override;
-    const sptr<BufferExtraData>& GetExtraData() const override;
+    void SetExtraData(sptr<BufferExtraData> bedata) override;
+    sptr<BufferExtraData> GetExtraData() const override;
 
     void SetBufferHandle(BufferHandle *handle) override;
     GSError WriteToMessageParcel(MessageParcel &parcel) override;
@@ -100,6 +100,7 @@ public:
 
 private:
     void FreeBufferHandleLocked();
+    bool MetaDataCached(const uint32_t key, const std::vector<uint8_t>& value);
     GSError GetImageLayout(void *layout);
 
     BufferHandle *handle_ = nullptr;
@@ -114,6 +115,7 @@ private:
     OH_NativeBuffer_Planes planesInfo_ = {0, {}};
     BufferRequestConfig bufferRequestConfig_ = {0, 0, 0, 0, 0, 0};
     bool isConsumerAttachBufferFlag_ = false;
+    std::map<uint32_t, std::vector<uint8_t>> metaDataCache_;
 };
 } // namespace OHOS
 

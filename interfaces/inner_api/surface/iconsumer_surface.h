@@ -92,7 +92,6 @@ public:
                                      std::vector<bool> &supporteds) = 0;
     virtual GSError Disconnect() = 0;
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
-    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) = 0;
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
@@ -130,6 +129,8 @@ public:
     virtual void ConsumerRequestCpuAccess(bool on) = 0;
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
+    virtual bool IsBufferHold() = 0;
+    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 protected:
     IConsumerSurface() = default;
 };

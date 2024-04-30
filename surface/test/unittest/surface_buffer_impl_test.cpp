@@ -61,6 +61,8 @@ void SurfaceBufferImplTest::TearDownTestCase()
 * EnvConditions: N/A
 * CaseDescription: 1. new SurfaceBufferImpl and GetSeqNum
 *                  2. new SurfaceBufferImpl again and check GetSeqNum = oldSeq + 1
+*                  3. set and verify the value of parameter isConsumerAttachBufferFlag_ is false
+*                  4. set and verify the value of parameter isConsumerAttachBufferFlag_ is true
  */
 HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, Function | MediumTest | Level2)
 {
@@ -69,6 +71,11 @@ HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, Function | MediumTest | Level
 
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(oldSeq + 1, buffer->GetSeqNum());
+
+    buffer->SetConsumerAttachBufferFlag(false);
+    ASSERT_EQ(buffer->GetConsumerAttachBufferFlag(), false);
+    buffer->SetConsumerAttachBufferFlag(true);
+    ASSERT_EQ(buffer->GetConsumerAttachBufferFlag(), true);
 }
 
 /*
@@ -210,5 +217,26 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
     if (sret == OHOS::GSERROR_OK) {
         ASSERT_EQ(keys.size(), 0);
     }
+}
+
+/*
+* Function: BufferRequestConfig
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call SetBufferRequestConfig interface using requestConfig and check ret
+*                  3. call GetBufferRequestConfig interface using requestConfig and check ret
+*                  4. call WriteBufferRequestConfig interface and check ret
+*                  5. call ReadBufferRequestConfig interface and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    MessageParcel parcel;
+    buffer->SetBufferRequestConfig(requestConfig);
+    ASSERT_EQ(*buffer->GetBufferRequestConfig(), requestConfig);
+    ASSERT_EQ(buffer->WriteBufferRequestConfig(parcel), GSERROR_OK);
+    ASSERT_EQ(buffer->ReadBufferRequestConfig(parcel), GSERROR_OK);
 }
 }

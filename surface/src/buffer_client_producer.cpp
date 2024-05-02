@@ -89,7 +89,7 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
     GSError ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
-        return ret;
+        return SURFACE_ERROR_UNKOWN;
     }
     if (retval.buffer != nullptr) {
         retval.buffer->SetBufferRequestConfig(config);
@@ -98,7 +98,7 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
     ret = bedata->ReadFromParcel(reply);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read extra data from parcel failed, return %{public}d", ret);
-        return ret;
+        return SURFACE_ERROR_UNKOWN;
     }
     retval.fence = SyncFence::ReadFromMessageParcel(reply);
     reply.ReadInt32Vector(&retval.deletingBuffers);
@@ -121,12 +121,12 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     GSError ret = ReadSurfaceBufferImpl(reply, sequence, buffer);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
-        return ret;
+        return SURFACE_ERROR_UNKOWN;
     }
     ret = buffer->ReadBufferRequestConfig(reply);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("ReadBufferRequestConfig failed, return %{public}d", ret);
-        return ret;
+        return SURFACE_ERROR_UNKOWN;
     }
 
     fence = SyncFence::ReadFromMessageParcel(reply);
@@ -135,7 +135,7 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     if (memcpy_s(matrix, readMatrixVector.size() * sizeof(float),
         readMatrixVector.data(), readMatrixVector.size() * sizeof(float)) != EOK) {
         BLOGN_FAILURE("memcpy_s fail");
-        return GSERROR_API_FAILED;
+        return SURFACE_ERROR_UNKOWN;
     }
     return GSERROR_OK;
 }

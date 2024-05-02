@@ -98,7 +98,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferAlloc002, Function | MediumTest | Level
 HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum001, Function | MediumTest | Level2)
 {
     uint32_t id = OH_NativeBuffer_GetSeqNum(nullptr);
-    ASSERT_EQ(id, GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(id, UINT_MAX);
 }
 
 /*

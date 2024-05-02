@@ -91,14 +91,14 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     bfConfig.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     GSError ret = bufferImpl->Alloc(bfConfig);
-    if (ret != GSERROR_OK) {
+    if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("Surface Buffer Alloc failed, %{public}s", GSErrorStr(ret).c_str());
         return nullptr;
     }
 
     OH_NativeBuffer* buffer = OH_NativeBufferFromSurfaceBuffer(bufferImpl);
     int32_t err = OH_NativeBuffer_Reference(buffer);
-    if (err != OHOS::GSERROR_OK) {
+    if (err != OHOS::SURFACE_ERROR_OK) {
         BLOGE("NativeBufferReference failed");
         return nullptr;
     }
@@ -113,7 +113,7 @@ int32_t OH_NativeBuffer_Reference(OH_NativeBuffer *buffer)
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(buffer);
     ref->IncStrongRef(ref);
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 int32_t OH_NativeBuffer_Unreference(OH_NativeBuffer *buffer)
@@ -124,7 +124,7 @@ int32_t OH_NativeBuffer_Unreference(OH_NativeBuffer *buffer)
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(buffer);
     ref->DecStrongRef(ref);
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* config)
@@ -145,12 +145,15 @@ int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
 {
     if (buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     int32_t ret = sbuffer->Map();
-    if (ret == OHOS::GSERROR_OK) {
+    if (ret == OHOS::SURFACE_ERROR_OK) {
         *virAddr = sbuffer->GetVirAddr();
+    } else {
+        BLOGE("buffer map failed, ret:%{public}d", ret);
+        ret = OHOS::SURFACE_ERROR_UNKOWN;
     }
     return ret;
 }
@@ -159,17 +162,22 @@ int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
-    return sbuffer->Unmap();
+    int32_t ret = sbuffer->Unmap();
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("buffer unmap failed, ret:%{public}d", ret);
+        ret = OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return ret;
 }
 
 uint32_t OH_NativeBuffer_GetSeqNum(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return UINT_MAX;
     }
     const SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     return sbuffer->GetSeqNum();
@@ -213,25 +221,25 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
 {
     if (buffer == nullptr || NATIVE_COLORSPACE_TO_HDI_MAP.find(colorSpace) == NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     GSError ret = MetadataHelper::SetColorSpaceType(sbuffer, NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
-        return OHOS::GSERROR_NOT_SUPPORT;
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    return ret;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_NativeBuffer_Planes *outPlanes)
 {
     if (buffer == nullptr || virAddr == nullptr || outPlanes == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     int32_t ret = sbuffer->Map();
-    if (ret == OHOS::GSERROR_OK) {
+    if (ret == OHOS::SURFACE_ERROR_OK) {
         *virAddr = sbuffer->GetVirAddr();
     } else {
         BLOGE("Surface Buffer Map failed, %{public}d", ret);
@@ -239,7 +247,7 @@ int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_Na
     }
     OH_NativeBuffer_Planes *planes = nullptr;
     GSError retVal = sbuffer->GetPlanesInfo(reinterpret_cast<void**>(&planes));
-    if (retVal != OHOS::GSERROR_OK) {
+    if (retVal != OHOS::SURFACE_ERROR_OK) {
         BLOGE("Get planesInfo failed, retVal:%d", retVal);
         return retVal;
     }
@@ -249,19 +257,19 @@ int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_Na
         outPlanes->planes[i].rowStride = planes->planes[i].rowStride;
         outPlanes->planes[i].columnStride = planes->planes[i].columnStride;
     }
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 int32_t OH_NativeBuffer_FromNativeWindowBuffer(OHNativeWindowBuffer *nativeWindowBuffer, OH_NativeBuffer **buffer)
 {
     if (nativeWindowBuffer == nullptr || buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     *buffer = OH_NativeBufferFromSurfaceBuffer(nativeWindowBuffer->sfbuffer);
     if (*buffer == nullptr) {
         BLOGE("get sfbuffer is nullptr");
         return OHOS::GSERROR_INVALID_OPERATING;
     }
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }

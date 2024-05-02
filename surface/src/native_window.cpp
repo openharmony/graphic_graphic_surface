@@ -116,7 +116,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
 {
     if (window == nullptr || buffer == nullptr || fenceFd == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHOS::sptr<OHOS::SurfaceBuffer> sfbuffer;
     OHOS::sptr<OHOS::SyncFence> releaseFence = OHOS::SyncFence::INVALID_FENCE;
@@ -129,7 +129,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), &(window->config),
             sizeof(OHOS::BufferRequestConfig)) != EOK) {
             BLOGE("memcpy_s failed");
-            return OHOS::GSERROR_INTERNAL;
+            return OHOS::SURFACE_ERROR_UNKOWN;
         }
         config.width = requestWidth;
         config.height = requestHeight;
@@ -137,10 +137,10 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     } else {
         ret = window->surface->RequestBuffer(sfbuffer, releaseFence, window->config);
     }
-    if (ret != OHOS::GSError::GSERROR_OK || sfbuffer == nullptr) {
+    if (ret != OHOS::GSError::SURFACE_ERROR_OK || sfbuffer == nullptr) {
         BLOGE("API failed, please check RequestBuffer function ret:%{public}d, Queue Id:%{public}" PRIu64,
                 ret, window->surface->GetUniqueId());
-        return OHOS::GSERROR_NO_BUFFER;
+        return ret;
     }
     uint32_t seqNum = sfbuffer->GetSeqNum();
     if (window->bufferCache_.find(seqNum) == window->bufferCache_.end()) {
@@ -156,7 +156,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         (*buffer)->uiTimestamp = window->uiTimestamp;
     }
     *fenceFd = releaseFence->Dup();
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer,
@@ -164,7 +164,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
 {
     if (window == nullptr || buffer == nullptr || window->surface == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 
     OHOS::BufferFlushConfigWithDamages config;
@@ -201,35 +201,35 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         }
     }
 
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
     if (window == nullptr || buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
     OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::INVALID_FENCE;
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix);
-    if (ret != OHOS::GSError::GSERROR_OK || nwBuffer->sfbuffer == nullptr) {
+    if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
         BLOGE("GetLastFlushedBuffer fail");
         return ret;
     }
     *buffer = nwBuffer;
     NativeObjectReference(nwBuffer);
     *fenceFd = acquireFence->Dup();
-    return OHOS::GSERROR_OK;
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 int32_t NativeWindowAttachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer)
 {
     if (window == nullptr || buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
     return window->surface->AttachBufferToQueue(buffer->sfbuffer);
 }
 
@@ -237,9 +237,9 @@ int32_t NativeWindowDetachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
 {
     if (window == nullptr || buffer == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
     return window->surface->DetachBufferFromQueue(buffer->sfbuffer);
 }
 
@@ -247,9 +247,9 @@ int32_t NativeWindowCancelBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
 {
     if (window == nullptr || buffer == nullptr) {
         BLOGD("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
     window->surface->CancelBuffer(buffer->sfbuffer);
     return OHOS::GSERROR_OK;
 }
@@ -388,7 +388,7 @@ int32_t NativeWindowHandleOpt(OHNativeWindow *window, int code, ...)
 {
     if (window == nullptr) {
         BLOGD("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     va_list args;
     va_start(args, code);
@@ -410,7 +410,7 @@ int32_t GetNativeObjectMagic(void *obj)
 {
     if (obj == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return -1;
     }
     NativeWindowMagic* nativeWindowMagic = reinterpret_cast<NativeWindowMagic *>(obj);
     return nativeWindowMagic->magic;
@@ -419,15 +419,16 @@ int32_t GetNativeObjectMagic(void *obj)
 int32_t NativeObjectReference(void *obj)
 {
     if (obj == nullptr) {
-        BLOGD("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     switch (GetNativeObjectMagic(obj)) {
         case NATIVE_OBJECT_MAGIC_WINDOW:
         case NATIVE_OBJECT_MAGIC_WINDOW_BUFFER:
             break;
         default:
-            return OHOS::GSERROR_TYPE_ERROR;
+            BLOGE("parameter error, magic illegal");
+            return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(obj);
     ref->IncStrongRef(ref);
@@ -438,14 +439,15 @@ int32_t NativeObjectUnreference(void *obj)
 {
     if (obj == nullptr) {
         BLOGD("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     switch (GetNativeObjectMagic(obj)) {
         case NATIVE_OBJECT_MAGIC_WINDOW:
         case NATIVE_OBJECT_MAGIC_WINDOW_BUFFER:
             break;
         default:
-            return OHOS::GSERROR_TYPE_ERROR;
+            BLOGE("parameter error, magic illegal");
+            return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(obj);
     ref->DecStrongRef(ref);
@@ -458,7 +460,7 @@ int32_t NativeWindowSetScalingMode(OHNativeWindow *window, uint32_t sequence, OH
         scalingMode < OHScalingMode::OH_SCALING_MODE_FREEZE ||
         scalingMode > OHScalingMode::OH_SCALING_MODE_NO_SCALE_CROP) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return window->surface->SetScalingMode(sequence, static_cast<ScalingMode>(scalingMode));
 }
@@ -468,7 +470,7 @@ int32_t NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32
 {
     if (window == nullptr || window->surface == nullptr || size <= 0 || metaData == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 
     std::vector<GraphicHDRMetaData> data(reinterpret_cast<const GraphicHDRMetaData *>(metaData),
@@ -483,7 +485,7 @@ int32_t NativeWindowSetMetaDataSet(OHNativeWindow *window, uint32_t sequence, OH
         key < OHHDRMetadataKey::OH_METAKEY_RED_PRIMARY_X || key > OHHDRMetadataKey::OH_METAKEY_HDR_VIVID ||
         size <= 0 || metaData == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     std::vector<uint8_t> data(metaData, metaData + size);
     return window->surface->SetMetaDataSet(sequence, static_cast<GraphicHDRMetadataKey>(key), data);
@@ -493,7 +495,7 @@ int32_t NativeWindowSetTunnelHandle(OHNativeWindow *window, const OHExtDataHandl
 {
     if (window == nullptr || window->surface == nullptr || handle == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return window->surface->SetTunnelHandle(reinterpret_cast<const OHOS::GraphicExtDataHandle*>(handle));
 }
@@ -502,7 +504,7 @@ int32_t GetSurfaceId(OHNativeWindow *window, uint64_t *surfaceId)
 {
     if (window == nullptr || surfaceId == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 
     *surfaceId = window->surface->GetUniqueId();
@@ -515,7 +517,7 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
 {
     if (window == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 
     auto utils = SurfaceUtils::GetInstance();
@@ -531,7 +533,7 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
     if (nativeWindow->surface == nullptr) {
         BLOGE("window surface is null");
         delete nativeWindow;
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     nativeWindow->config.width = nativeWindow->surface->GetDefaultWidth();
     nativeWindow->config.height = nativeWindow->surface->GetDefaultHeight();
@@ -556,7 +558,7 @@ int32_t NativeWindowGetTransformHint(OHNativeWindow *window, OH_NativeBuffer_Tra
 {
     if (window == nullptr || window->surface == nullptr || transform == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     *transform = static_cast<OH_NativeBuffer_TransformType>(window->surface->GetTransformHint());
     return OHOS::GSERROR_OK;
@@ -566,7 +568,7 @@ int32_t NativeWindowSetTransformHint(OHNativeWindow *window, OH_NativeBuffer_Tra
 {
     if (window == nullptr || window->surface == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return window->surface->SetTransformHint(static_cast<OHOS::GraphicTransformType>(transform));
 }
@@ -575,7 +577,7 @@ int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *wi
 {
     if (window == nullptr || window->surface == nullptr || width == nullptr || height == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     if (window->config.width != 0 && window->config.height != 0) {
         *width = window->config.width;
@@ -591,7 +593,7 @@ int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t wid
 {
     if (window == nullptr) {
         BLOGE("parameter error, please check input parameter");
-        return OHOS::GSERROR_INVALID_ARGUMENTS;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     window->surface->SetRequestWidthAndHeight(width, height);
     return OHOS::GSERROR_OK;

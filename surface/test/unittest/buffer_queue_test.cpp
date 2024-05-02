@@ -441,7 +441,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer001, Function | MediumTest | Level2)
     config.width = -1;
 
     GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*
@@ -460,7 +460,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer002, Function | MediumTest | Level2)
     config.height = -1;
 
     GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 
@@ -480,7 +480,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer003, Function | MediumTest | Level2)
     config.strideAlignment = SURFACE_MIN_STRIDE_ALIGNMENT - 1;
 
     GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*
@@ -499,7 +499,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer004, Function | MediumTest | Level2)
     config.strideAlignment = SURFACE_MAX_STRIDE_ALIGNMENT + 1;
 
     GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*
@@ -518,7 +518,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer005, Function | MediumTest | Level2)
     config.strideAlignment = 3;
 
     GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*
@@ -537,7 +537,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer006, Function | MediumTest | Level2)
     config.format = -1;
 
     GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*

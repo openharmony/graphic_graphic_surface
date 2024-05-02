@@ -112,7 +112,8 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
     } else if (bufferProducerCache_.find(retval.sequence) == bufferProducerCache_.end()) {
-        return GSERROR_API_FAILED;
+        BLOGNE("buffer producer cache not find buffer(%{public}u)", retval.sequence);
+        return SURFACE_ERROR_UNKOWN;
     } else {
         retval.buffer = bufferProducerCache_[retval.sequence];
         retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
@@ -234,14 +235,14 @@ GSError ProducerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenc
 GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
 {
     if (buffer == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        return SURFACE_ERROR_UNKOWN;
     }
     auto ret = producer_->AttachBufferToQueue(buffer);
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
             BLOGNE("Attach already exist buffer %{public}d", buffer->GetSeqNum());
-            return GSERROR_API_FAILED;
+            return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
     }
@@ -251,14 +252,14 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
 GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
 {
     if (buffer == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        return SURFACE_ERROR_UNKOWN;
     }
     auto ret = producer_->DetachBufferFromQueue(buffer);
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) == bufferProducerCache_.end()) {
             BLOGNE("Detach not exist buffer %{public}d", buffer->GetSeqNum());
-            return GSERROR_API_FAILED;
+            return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
         bufferProducerCache_.erase(buffer->GetSeqNum());
     }

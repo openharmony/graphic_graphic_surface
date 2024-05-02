@@ -367,12 +367,12 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     sptr<BufferQueueProducer> bqpTmp = new BufferQueueProducer(bqTmp);
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bqpTmp->RequestBuffer(requestConfig, bedata_, retval);
-    EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
     ret = bqpTmp->CancelBuffer(retval.sequence, bedata_);
-    EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
     ret = bqpTmp->FlushBuffer(retval.sequence, bedata_, acquireFence, flushConfig);
-    EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
     ret = bqpTmp->GetLastFlushedBuffer(retval.buffer, acquireFence, nullptr);
     EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->AttachBuffer(retval.buffer), OHOS::GSERROR_INVALID_ARGUMENTS);

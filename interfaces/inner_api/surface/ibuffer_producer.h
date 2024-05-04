@@ -26,6 +26,7 @@
 #include "native_surface.h"
 #include "surface_buffer.h"
 #include "surface_type.h"
+#include "external_window.h"
 
 namespace OHOS {
 class SyncFence;
@@ -100,6 +101,12 @@ public:
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+
+    virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
+    virtual GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) = 0;
+
+    virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) = 0;
+    virtual GSError GetSurfaceAppFrameworkType(std::string &appFrameworkType) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -138,6 +145,10 @@ protected:
         BUFFER_PRODUCER_GET_TRANSFORMHINT = 31,
         BUFFER_PRODUCER_SET_TRANSFORMHINT = 32,
         BUFFER_PRODUCER_SET_BUFFER_HOLD = 33,
+        BUFFER_PRODUCER_SET_SOURCE_TYPE = 34,
+        BUFFER_PRODUCER_GET_SOURCE_TYPE = 35,
+        BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE = 36,
+        BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE = 37,
     };
 };
 } // namespace OHOS

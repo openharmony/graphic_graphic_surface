@@ -38,6 +38,7 @@ namespace {
 constexpr uint32_t UNIQUE_ID_OFFSET = 32;
 constexpr uint32_t BUFFER_MEMSIZE_RATE = 1024;
 constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
+constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -1281,6 +1282,34 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint)
 GraphicTransformType BufferQueue::GetTransformHint() const
 {
     return transformHint_;
+}
+
+GSError BufferQueue::SetSurfaceSourceType(OHSurfaceSource sourceType)
+{
+    sourceType_ = sourceType;
+    return GSERROR_OK;
+}
+
+OHSurfaceSource BufferQueue::GetSurfaceSourceType() const
+{
+    return sourceType_;
+}
+
+GSError BufferQueue::SetSurfaceAppFrameworkType(std::string appFrameworkType)
+{
+    if (appFrameworkType.empty()) {
+        return GSERROR_NO_ENTRY;
+    }
+    if (appFrameworkType.size() > MAXIMUM_LENGTH_OF_APP_FRAMEWORK) {
+        return GSERROR_OUT_OF_RANGE;
+    }
+    appFrameworkType_ = appFrameworkType;
+    return GSERROR_OK;
+}
+
+std::string BufferQueue::GetSurfaceAppFrameworkType() const
+{
+    return appFrameworkType_;
 }
 
 GSError BufferQueue::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,

@@ -305,6 +305,19 @@ static void HandleNativeWindowSetUiTimestamp(OHNativeWindow *window, va_list arg
     window->uiTimestamp = static_cast<int64_t>(uiTimestamp);
 }
 
+static void HandleNativeWindowSetSurfaceSourceType(OHNativeWindow *window, va_list args)
+{
+    OHSurfaceSource sourceType = va_arg(args, OHSurfaceSource);
+    window->surface->SetSurfaceSourceType(sourceType);
+}
+
+static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window, va_list args)
+{
+    char* appFrameworkType = va_arg(args, char*);
+    std::string typeStr(appFrameworkType);
+    window->surface->SetSurfaceAppFrameworkType(typeStr);
+}
+
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t *value = va_arg(args, uint64_t*);
@@ -356,6 +369,19 @@ static void HandleNativeWindowGetBufferQueueSize(OHNativeWindow *window, va_list
     *bufferQueueSize = static_cast<int32_t>(window->surface->GetQueueSize());
 }
 
+static void HandleNativeWindowGetSurfaceSourceType(OHNativeWindow *window, va_list args)
+{
+    OHSurfaceSource *sourceType = va_arg(args, OHSurfaceSource*);
+    *sourceType = window->surface->GetSurfaceSourceType();
+}
+
+static void HandleNativeWindowGetSurfaceAppFrameworkType(OHNativeWindow *window, va_list args)
+{
+    const char **appFrameworkType = va_arg(args, const char**);
+    std::string typeStr = window->surface->GetSurfaceAppFrameworkType();
+    *appFrameworkType = typeStr.c_str();
+}
+
 static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap = {
     {SET_USAGE, HandleNativeWindowSetUsage},
     {SET_BUFFER_GEOMETRY, HandleNativeWindowSetBufferGeometry},
@@ -365,6 +391,8 @@ static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap
     {SET_COLOR_GAMUT, HandleNativeWindowSetColorGamut},
     {SET_TRANSFORM, HandleNativeWindowSetTransform},
     {SET_UI_TIMESTAMP, HandleNativeWindowSetUiTimestamp},
+    {SET_SOURCE_TYPE, HandleNativeWindowSetSurfaceSourceType},
+    {SET_APP_FRAMEWORK_TYPE, HandleNativeWindowSetSurfaceAppFrameworkType},
     {GET_USAGE, HandleNativeWindowGetUsage},
     {GET_BUFFER_GEOMETRY, HandleNativeWindowGetBufferGeometry},
     {GET_FORMAT, HandleNativeWindowGetFormat},
@@ -373,6 +401,8 @@ static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap
     {GET_COLOR_GAMUT, HandleNativeWindowGetColorGamut},
     {GET_TRANSFORM, HandleNativeWindowGetTransform},
     {GET_BUFFERQUEUE_SIZE, HandleNativeWindowGetBufferQueueSize},
+    {GET_SOURCE_TYPE, HandleNativeWindowGetSurfaceSourceType},
+    {GET_APP_FRAMEWORK_TYPE, HandleNativeWindowGetSurfaceAppFrameworkType},
 };
 
 static int32_t InternalHandleNativeWindowOpt(OHNativeWindow *window, int code, va_list args)

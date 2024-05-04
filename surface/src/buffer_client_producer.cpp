@@ -661,4 +661,58 @@ GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHin
 
     return GSERROR_OK;
 }
+
+GSError BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    arguments.WriteUint32(static_cast<uint32_t>(sourceType));
+    SEND_REQUEST(BUFFER_PRODUCER_SET_SOURCE_TYPE, arguments, reply, option);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return (GSError)ret;
+    }
+
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_SOURCE_TYPE, arguments, reply, option);
+    auto ret = static_cast<GSError>(reply.ReadInt32());
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", static_cast<int>(ret));
+        return ret;
+    }
+    sourceType = static_cast<OHSurfaceSource>(reply.ReadUint32());
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::SetSurfaceAppFrameworkType(std::string appFrameworkType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    arguments.WriteString(appFrameworkType);
+    SEND_REQUEST(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, arguments, reply, option);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return (GSError)ret;
+    }
+
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFrameworkType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE, arguments, reply, option);
+    auto ret = static_cast<GSError>(reply.ReadInt32());
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", static_cast<int>(ret));
+        return ret;
+    }
+    appFrameworkType = static_cast<std::string>(reply.ReadString());
+    return GSERROR_OK;
+}
 }; // namespace OHOS

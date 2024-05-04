@@ -74,6 +74,10 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORMHINT] = &BufferQueueProducer::SetTransformHintRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_BUFFER_HOLD] = &BufferQueueProducer::SetBufferHoldRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_SCALING_MODEV2] = &BufferQueueProducer::SetScalingModeV2Remote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_SOURCE_TYPE] = &BufferQueueProducer::SetSurfaceSourceTypeRemote;
+    memberFuncMap_[BUFFER_PRODUCER_GET_SOURCE_TYPE] = &BufferQueueProducer::GetSurfaceSourceTypeRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::SetSurfaceAppFrameworkTypeRemote;
+    memberFuncMap_[BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::GetSurfaceAppFrameworkTypeRemote;
 }
 
 BufferQueueProducer::~BufferQueueProducer()
@@ -435,7 +439,8 @@ int32_t BufferQueueProducer::SetScalingModeRemote(MessageParcel &arguments, Mess
     return 0;
 }
 
-int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply,
+                                                    MessageOption &option)
 {
     ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
     GSError sret = SetScalingMode(scalingMode);
@@ -553,6 +558,56 @@ int32_t BufferQueueProducer::GetTransformHintRemote(
 
     reply.WriteInt32(GSERROR_OK);
     reply.WriteUint32(static_cast<uint32_t>(transformHint));
+
+    return 0;
+}
+
+int32_t BufferQueueProducer::SetSurfaceSourceTypeRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    OHSurfaceSource sourceType = static_cast<OHSurfaceSource>(arguments.ReadUint32());
+    GSError sret = SetSurfaceSourceType(sourceType);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::GetSurfaceSourceTypeRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    auto ret = GetSurfaceSourceType(sourceType);
+    if (ret != GSERROR_OK) {
+        reply.WriteInt32(static_cast<int32_t>(ret));
+        return -1;
+    }
+
+    reply.WriteInt32(GSERROR_OK);
+    reply.WriteUint32(static_cast<uint32_t>(sourceType));
+
+    return 0;
+}
+
+int32_t BufferQueueProducer::SetSurfaceAppFrameworkTypeRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::string appFrameworkType = arguments.ReadString();
+    GSError sret = SetSurfaceAppFrameworkType(appFrameworkType);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::GetSurfaceAppFrameworkTypeRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::string appFrameworkType = "";
+    auto ret = GetSurfaceAppFrameworkType(appFrameworkType);
+    if (ret != GSERROR_OK) {
+        reply.WriteInt32(static_cast<int32_t>(ret));
+        return -1;
+    }
+
+    reply.WriteInt32(GSERROR_OK);
+    reply.WriteString(appFrameworkType);
 
     return 0;
 }
@@ -802,6 +857,44 @@ GSError BufferQueueProducer::GetTransformHint(GraphicTransformType &transformHin
         return GSERROR_INVALID_ARGUMENTS;
     }
     transformHint = bufferQueue_->GetTransformHint();
+    return GSERROR_OK;
+}
+
+GSError BufferQueueProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetSurfaceSourceType(sourceType);
+}
+
+GSError BufferQueueProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (bufferQueue_ == nullptr) {
+        sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sourceType = bufferQueue_->GetSurfaceSourceType();
+    return GSERROR_OK;
+}
+
+GSError BufferQueueProducer::SetSurfaceAppFrameworkType(std::string appFrameworkType)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetSurfaceAppFrameworkType(appFrameworkType);
+}
+
+GSError BufferQueueProducer::GetSurfaceAppFrameworkType(std::string &appFrameworkType)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (bufferQueue_ == nullptr) {
+        appFrameworkType = "";
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    appFrameworkType = bufferQueue_->GetSurfaceAppFrameworkType();
     return GSERROR_OK;
 }
 

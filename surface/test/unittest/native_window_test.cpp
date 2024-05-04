@@ -1179,7 +1179,7 @@ HWTEST_F(NativeWindowTest, SetScalingMode004, Function | MediumTest | Level1)
  */
 HWTEST_F(NativeWindowTest, SetScalingMode005, Function | MediumTest | Level1)
 {
-    OHScalingMode scalingMode = OHScalingMode::OH_SCALING_MODE_SCALE_TO_WINDOW;
+    OHScalingModeV2 scalingMode = OHScalingModeV2::OH_SCALING_MODE_SCALE_TO_WINDOW_V2;
     ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingModeV2(nativeWindow, scalingMode), OHOS::GSERROR_OK);
 }
 

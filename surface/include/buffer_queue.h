@@ -163,6 +163,12 @@ public:
     GraphicTransformType GetTransformHint() const;
     GSError SetScalingMode(ScalingMode scalingMode);
 
+    GSError SetSurfaceSourceType(OHSurfaceSource sourceType);
+    OHSurfaceSource GetSurfaceSourceType() const;
+
+    GSError SetSurfaceAppFrameworkType(std::string appFrameworkType);
+    std::string GetSurfaceAppFrameworkType() const;
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     void DeleteBufferInCache(uint32_t sequence);
@@ -226,6 +232,8 @@ private:
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     bool isBufferHold_ = false;
+    OHSurfaceSource sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    std::string appFrameworkType_ = "";
 };
 }; // namespace OHOS
 

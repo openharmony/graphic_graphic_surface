@@ -144,6 +144,10 @@ public:
     int32_t GetRequestWidth() override;
     int32_t GetRequestHeight() override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
+    GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
+    OHSurfaceSource GetSurfaceSourceType() const override;
+    GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
+    std::string GetSurfaceAppFrameworkType() const override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

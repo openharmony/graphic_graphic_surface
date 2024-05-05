@@ -98,6 +98,7 @@ public:
 
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;
@@ -144,6 +145,7 @@ private:
     int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 

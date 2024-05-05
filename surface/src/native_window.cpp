@@ -493,6 +493,17 @@ int32_t NativeWindowSetScalingMode(OHNativeWindow *window, uint32_t sequence, OH
     return window->surface->SetScalingMode(sequence, static_cast<ScalingMode>(scalingMode));
 }
 
+int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode)
+{
+    if (window == nullptr || window->surface == nullptr ||
+        scalingMode < OHScalingModeV2::OH_SCALING_MODE_FREEZE_V2 ||
+        scalingMode > OHScalingModeV2::OH_SCALING_MODE_SCALE_FIT_V2) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::GSERROR_INVALID_ARGUMENTS;
+    }
+    return window->surface->SetScalingMode(static_cast<ScalingMode>(scalingMode));
+}
+
 int32_t NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32_t size,
                                 const OHHDRMetaData *metaData)
 {
@@ -681,6 +692,7 @@ WEAK_ALIAS(NativeObjectReference, OH_NativeWindow_NativeObjectReference);
 WEAK_ALIAS(NativeObjectUnreference, OH_NativeWindow_NativeObjectUnreference);
 WEAK_ALIAS(GetNativeObjectMagic, OH_NativeWindow_GetNativeObjectMagic);
 WEAK_ALIAS(NativeWindowSetScalingMode, OH_NativeWindow_NativeWindowSetScalingMode);
+WEAK_ALIAS(NativeWindowSetScalingModeV2, OH_NativeWindow_NativeWindowSetScalingModeV2);
 WEAK_ALIAS(NativeWindowSetMetaData, OH_NativeWindow_NativeWindowSetMetaData);
 WEAK_ALIAS(NativeWindowSetMetaDataSet, OH_NativeWindow_NativeWindowSetMetaDataSet);
 WEAK_ALIAS(NativeWindowSetTunnelHandle, OH_NativeWindow_NativeWindowSetTunnelHandle);

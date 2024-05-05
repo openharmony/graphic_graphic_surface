@@ -161,6 +161,7 @@ public:
 
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;
+    GSError SetScalingMode(ScalingMode scalingMode);
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType);
     OHSurfaceSource GetSurfaceSourceType() const;
@@ -198,6 +199,7 @@ private:
     int32_t defaultHeight = 0;
     uint64_t defaultUsage = 0;
     uint32_t queueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
+    ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     GraphicTransformType lastFlushedTransform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     std::string name_;

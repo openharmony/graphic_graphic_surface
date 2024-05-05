@@ -144,6 +144,7 @@ public:
     virtual std::string GetSurfaceAppFrameworkType() const = 0;
 
     virtual void SetBufferHold(bool hold) = 0;
+    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 protected:
     Surface() = default;
 };

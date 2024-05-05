@@ -86,6 +86,7 @@ public:
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;

@@ -101,6 +101,7 @@ public:
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
     virtual GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) = 0;
@@ -145,6 +146,7 @@ protected:
         BUFFER_PRODUCER_GET_TRANSFORMHINT = 31,
         BUFFER_PRODUCER_SET_TRANSFORMHINT = 32,
         BUFFER_PRODUCER_SET_BUFFER_HOLD = 33,
+        BUFFER_PRODUCER_SET_SCALING_MODEV2 = 34,
         BUFFER_PRODUCER_SET_SOURCE_TYPE = 34,
         BUFFER_PRODUCER_GET_SOURCE_TYPE = 35,
         BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE = 36,

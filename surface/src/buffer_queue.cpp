@@ -776,6 +776,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
         .isDeleting = false,
         .config = config,
         .fence = SyncFence::INVALID_FENCE,
+        .scalingMode = scalingMode_,
     };
 
     if (config.usage & BUFFER_USAGE_PROTECTED) {
@@ -1339,6 +1340,16 @@ GSError BufferQueue::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
         return GSERROR_NO_ENTRY;
     }
     bufferQueueCache_[sequence].scalingMode = scalingMode;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetScalingMode(ScalingMode scalingMode)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
+        it->second.scalingMode = scalingMode;
+    }
+    scalingMode_ = scalingMode;
     return GSERROR_OK;
 }
 

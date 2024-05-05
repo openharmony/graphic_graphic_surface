@@ -420,10 +420,19 @@ GSError ConsumerSurface::Disconnect()
 GSError ConsumerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     if (scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
-        scalingMode > ScalingMode::SCALING_MODE_NO_SCALE_CROP) {
+        scalingMode > ScalingMode::SCALING_MODE_SCALE_FIT) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetScalingMode(sequence, scalingMode);
+}
+
+GSError ConsumerSurface::SetScalingMode(ScalingMode scalingMode)
+{
+    if (scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
+        scalingMode > ScalingMode::SCALING_MODE_SCALE_FIT) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetScalingMode(scalingMode);
 }
 
 GSError ConsumerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)

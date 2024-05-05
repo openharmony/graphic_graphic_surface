@@ -143,6 +143,7 @@ public:
     void SetRequestWidthAndHeight(int32_t width, int32_t height) override;
     int32_t GetRequestWidth() override;
     int32_t GetRequestHeight() override;
+    GSError SetScalingMode(ScalingMode scalingMode) override;
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     OHSurfaceSource GetSurfaceSourceType() const override;
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;

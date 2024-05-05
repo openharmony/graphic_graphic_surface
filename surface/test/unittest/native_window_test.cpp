@@ -1170,6 +1170,21 @@ HWTEST_F(NativeWindowTest, SetScalingMode004, Function | MediumTest | Level1)
 }
 
 /*
+* Function: OH_NativeWindow_NativeWindowSetScalingModeV2
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowSetScalingModeV2 with abnormal parameters and check ret
+*                  2. call OH_NativeWindow_NativeWindowSetScalingModeV2 with normal parameters and check ret
+ */
+HWTEST_F(NativeWindowTest, SetScalingMode005, Function | MediumTest | Level1)
+{
+    OHScalingModeV2 scalingMode = OHScalingModeV2::OH_SCALING_MODE_SCALE_TO_WINDOW_V2;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingModeV2(nativeWindow, scalingMode), OHOS::GSERROR_OK);
+}
+
+
+/*
 * Function: OH_NativeWindow_NativeWindowSetMetaData
 * Type: Function
 * Rank: Important(2)

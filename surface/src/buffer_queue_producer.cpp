@@ -73,6 +73,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORMHINT] = &BufferQueueProducer::GetTransformHintRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORMHINT] = &BufferQueueProducer::SetTransformHintRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_BUFFER_HOLD] = &BufferQueueProducer::SetBufferHoldRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_SCALING_MODEV2] = &BufferQueueProducer::SetScalingModeV2Remote;
     memberFuncMap_[BUFFER_PRODUCER_SET_SOURCE_TYPE] = &BufferQueueProducer::SetSurfaceSourceTypeRemote;
     memberFuncMap_[BUFFER_PRODUCER_GET_SOURCE_TYPE] = &BufferQueueProducer::GetSurfaceSourceTypeRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::SetSurfaceAppFrameworkTypeRemote;
@@ -434,6 +435,15 @@ int32_t BufferQueueProducer::SetScalingModeRemote(MessageParcel &arguments, Mess
     uint32_t sequence = arguments.ReadUint32();
     ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
     GSError sret = SetScalingMode(sequence, scalingMode);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply,
+                                                    MessageOption &option)
+{
+    ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
+    GSError sret = SetScalingMode(scalingMode);
     reply.WriteInt32(sret);
     return 0;
 }
@@ -930,6 +940,14 @@ GSError BufferQueueProducer::SetScalingMode(uint32_t sequence, ScalingMode scali
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->SetScalingMode(sequence, scalingMode);
+}
+
+GSError BufferQueueProducer::SetScalingMode(ScalingMode scalingMode)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetScalingMode(scalingMode);
 }
 
 GSError BufferQueueProducer::SetBufferHold(bool hold)

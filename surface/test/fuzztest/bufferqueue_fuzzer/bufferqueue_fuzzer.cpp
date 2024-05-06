@@ -120,6 +120,8 @@ namespace OHOS {
         bool status = GetData<bool>();
         uint32_t reserveInts = GetData<uint32_t>() % 0x100000; // no more than 0x100000
         GraphicPresentTimestamp timestamp = GetData<GraphicPresentTimestamp>();
+        OHSurfaceSource sourceType = GetData<OHSurfaceSource>();
+        std::string appFrameworkType = GetStringFromData(STR_LEN);
 
         // test
         sptr<BufferQueue> bufferqueue = new BufferQueue(name, isShared);
@@ -138,6 +140,8 @@ namespace OHOS {
         bufferqueue->SetTunnelHandle(tunnelHandle);
         FreeExtDataHandle(handle);
         bufferqueue->SetPresentTimestamp(sequence, timestamp);
+        bufferqueue->SetSurfaceSourceType(sourceType);
+        bufferqueue->SetSurfaceAppFrameworkType(appFrameworkType);
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)

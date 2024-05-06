@@ -355,6 +355,123 @@ HWTEST_F(BufferQueueProducerTest, GetPresentTimestampRemote, Function | MediumTe
 }
 
 /*
+* Function: SetSurfaceSourceType and GetSurfaceSourceType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceSourceType for default
+*                  2. call SetSurfaceSourceType and check the ret
+*/
+HWTEST_F(BufferQueueProducerTest, SurfaceSourceType001, Function | MediumTest | Level2)
+{
+    OHSurfaceSource sourceType;
+    GSError ret = bqp_->GetSurfaceSourceType(sourceType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(sourceType, OH_SURFACE_SOURCE_DEFAULT);
+
+    ret = bqp_->SetSurfaceSourceType(OH_SURFACE_SOURCE_VIDEO);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bqp_->GetSurfaceSourceType(sourceType);
+    ASSERT_EQ(sourceType, OH_SURFACE_SOURCE_VIDEO);
+}
+
+/*
+* Function: SetSurfaceAppFrameworkType and GetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceAppFrameworkType for default
+*                  2. call SetSurfaceAppFrameworkType and check the ret
+*/
+HWTEST_F(BufferQueueProducerTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+{
+    std::string appFrameworkType;
+    bqp_->GetSurfaceAppFrameworkType(appFrameworkType);
+    ASSERT_EQ(appFrameworkType, "");
+
+    GSError ret = bqp_->SetSurfaceAppFrameworkType("test");
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bqp_->GetSurfaceAppFrameworkType(appFrameworkType);
+    ASSERT_EQ(appFrameworkType, "test");
+}
+
+/*
+* Function: SetSurfaceSourceTypeRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceSourceTypeRemote
+* 4. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetSurfaceSourceTypeRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(1);
+    MessageParcel reply;
+    reply.WriteInt32(6);
+    MessageOption option;
+    int32_t ret = bqp_->SetSurfaceSourceTypeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
+* Function: GetSurfaceSourceTypeRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceSourceTypeRemote
+* 4. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, GetSurfaceSourceTypeRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(5);
+    MessageParcel reply;
+    reply.WriteInt32(6);
+    MessageOption option;
+    int32_t ret = bqp_->GetSurfaceSourceTypeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
+* Function: SetSurfaceAppFrameworkTypeRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceAppFrameworkTypeRemote
+* 4. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetSurfaceAppFrameworkTypeRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteString("test");
+    MessageParcel reply;
+    reply.WriteInt32(6);
+    MessageOption option;
+    int32_t ret = bqp_->SetSurfaceAppFrameworkTypeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
+* Function: GetSurfaceAppFrameworkTypeRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceAppFrameworkTypeRemote
+* 4. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(5);
+    MessageParcel reply;
+    reply.WriteInt32(6);
+    MessageOption option;
+    int32_t ret = bqp_->GetSurfaceAppFrameworkTypeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
 * Function: BufferQueueProducer member function nullptr test
 * Type: Function
 * Rank: Important(2)

@@ -773,4 +773,57 @@ HWTEST_F(BufferQueueTest, DumpToFile001, Function | MediumTest | Level2)
     bq->DumpToFile(0);
     bq->DumpToFile(1);
 }
+
+/*
+* Function: SetSurfaceSourceType and GetSurfaceSourceType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceSourceType and check ret
+*                  2. call GetSurfaceSourceType and check the value
+*/
+HWTEST_F(BufferQueueTest, SurfaceSourceType001, Function | MediumTest | Level2)
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
+    GSError ret = bq->SetSurfaceSourceType(sourceType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(sourceType, bq->GetSurfaceSourceType());
+}
+
+/*
+* Function: SetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceAppFrameworkType and check ret
+*/
+HWTEST_F(BufferQueueTest, SetSurfaceAppFrameworkType001, Function | MediumTest | Level2)
+{
+    std::string type = "";
+    GSError ret = bq->SetSurfaceAppFrameworkType(type);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_ENTRY);
+
+    std::string type1 = "AAAAABBBBBCCCCCDDDDDEEEEEFFFFFGGGGGAAAAABBBBBCCCCCDDDDDEEEEEFFFFFGGGGG";
+    ret = bq->SetSurfaceAppFrameworkType(type1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OUT_OF_RANGE);
+
+    std::string type2 = "test";
+    ret = bq->SetSurfaceAppFrameworkType(type2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: GetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceAppFrameworkType and check value
+*/
+HWTEST_F(BufferQueueTest, GetSurfaceAppFrameworkType001, Function | MediumTest | Level2)
+{
+    std::string type = "test";
+    GSError ret = bq->SetSurfaceAppFrameworkType(type);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bq->GetSurfaceAppFrameworkType(), "test");
+}
 }

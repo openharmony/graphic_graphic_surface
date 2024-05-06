@@ -141,6 +141,8 @@ namespace OHOS {
         int32_t height = GetData<int32_t>();
         uint64_t usage = GetData<uint64_t>();
         GraphicTransformType transform = GetData<GraphicTransformType>();
+        OHSurfaceSource sourceType = GetData<OHSurfaceSource>();
+        std::string appFrameworkType = GetStringFromData(STR_LEN);
 
         // test
         sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name, isShared);
@@ -157,6 +159,8 @@ namespace OHOS {
         pSurface->DetachBuffer(buffer);
         pSurface->SetQueueSize(queueSize);
         pSurface->SetTransform(transform);
+        pSurface->SetSurfaceSourceType(sourceType);
+        pSurface->SetSurfaceAppFrameworkType(appFrameworkType);
 
         cSurface->AcquireBuffer(buffer, fenceFd, timestamp, damage);
         cSurface->ReleaseBuffer(buffer, fenceFd);
@@ -166,6 +170,8 @@ namespace OHOS {
         cSurface->SetDefaultWidthAndHeight(width, height);
         cSurface->SetDefaultUsage(usage);
         cSurface->SetTransform(transform);
+        cSurface->SetSurfaceSourceType(sourceType);
+        cSurface->SetSurfaceAppFrameworkType(appFrameworkType);
 
         SurfaceFuzzTest2();
 

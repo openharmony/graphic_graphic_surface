@@ -1191,4 +1191,35 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess002, Function | MediumTest
     ASSERT_EQ(ret, GSERROR_OK);
 }
 
+/*
+* Function: SetSurfaceSourceType and GetSurfaceSourceType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceSourceType and check ret
+*                  2. call GetSurfaceSourceType and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, SurfaceSourceType001, Function | MediumTest | Level2)
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
+    GSError ret = cs->SetSurfaceSourceType(sourceType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(cs->GetSurfaceSourceType(), OH_SURFACE_SOURCE_VIDEO);
+}
+
+/*
+* Function: SetSurfaceAppFrameworkType and GetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceAppFrameworkType and check ret
+*                  2. call GetSurfaceAppFrameworkType and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+{
+    std::string type = "test";
+    GSError ret = cs->SetSurfaceAppFrameworkType(type);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(cs->GetSurfaceAppFrameworkType(), "test");
+}
 }

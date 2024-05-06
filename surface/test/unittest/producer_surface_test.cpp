@@ -918,4 +918,36 @@ HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, Function | MediumTest
     ret = pSurface->RegisterSurfaceDelegator(nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
+
+/*
+* Function: SetSurfaceSourceType and GetSurfaceSourceType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceSourceType and check ret
+*                  2. call GetSurfaceSourceType and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, SurfaceSourceType001, Function | MediumTest | Level2)
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
+    GSError ret = pSurface->SetSurfaceSourceType(sourceType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(pSurface->GetSurfaceSourceType(), OH_SURFACE_SOURCE_VIDEO);
+}
+
+/*
+* Function: SetSurfaceAppFrameworkType and GetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceAppFrameworkType and check ret
+*                  2. call GetSurfaceAppFrameworkType and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+{
+    std::string type = "test";
+    GSError ret = pSurface->SetSurfaceAppFrameworkType(type);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(pSurface->GetSurfaceAppFrameworkType(), "test");
+}
 }

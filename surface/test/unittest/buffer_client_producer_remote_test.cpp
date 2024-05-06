@@ -562,4 +562,44 @@ HWTEST_F(BufferClientProducerRemoteTest, AttachBuffer001, Function | MediumTest 
     ret = bp->AttachBuffer(buffer, timeOut);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+* Function: SetSurfaceSourceType and GetSurfaceSourceType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceSourceType for default
+*                  2. call SetSurfaceSourceType and check the ret
+*/
+HWTEST_F(BufferClientProducerRemoteTest, SurfaceSourceType001, Function | MediumTest | Level2)
+{
+    OHSurfaceSource sourceType;
+    bp->GetSurfaceSourceType(sourceType);
+    ASSERT_EQ(sourceType, OH_SURFACE_SOURCE_DEFAULT);
+
+    GSError ret = bp->SetSurfaceSourceType(OH_SURFACE_SOURCE_VIDEO);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bp->GetSurfaceSourceType(sourceType);
+    ASSERT_EQ(sourceType, OH_SURFACE_SOURCE_VIDEO);
+}
+
+/*
+* Function: SetSurfaceAppFrameworkType and GetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceAppFrameworkType for default
+*                  2. call SetSurfaceAppFrameworkType and check the ret
+*/
+HWTEST_F(BufferClientProducerRemoteTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+{
+    std::string appFrameworkType;
+    bp->GetSurfaceAppFrameworkType(appFrameworkType);
+    ASSERT_EQ(appFrameworkType, "");
+
+    GSError ret = bp->SetSurfaceAppFrameworkType("test");
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bp->GetSurfaceAppFrameworkType(appFrameworkType);
+    ASSERT_EQ(appFrameworkType, "test");
+}
 }

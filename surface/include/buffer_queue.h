@@ -156,8 +156,8 @@ public:
         isCpuAccessable_ = on;
     }
 
-    GSError AttachBufferToQueue(sptr<SurfaceBuffer> &buffer, InvokerType invokerType);
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> &buffer, InvokerType invokerType);
+    GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType);
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType);
 
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;

@@ -67,8 +67,8 @@ public:
         bufferQueue_->ConsumerRequestCpuAccess(on);
     }
 
-    GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer);
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer);
+    GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer);
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer);
     void SetBufferHold(bool hold);
     inline bool IsBufferHold()
     {

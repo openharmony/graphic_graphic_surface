@@ -129,8 +129,8 @@ public:
     virtual GSError UnRegisterUserDataChangeListener(const std::string &funcName) = 0;
     virtual GSError ClearUserDataChangeListener() = 0;
 
-    virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer>& buffer) = 0;
-    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer) = 0;
+    virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
+    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
 
     virtual GraphicTransformType GetTransformHint() const = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;

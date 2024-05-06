@@ -45,7 +45,7 @@ GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sp
     return bufferQueue_->ReleaseBuffer(buffer, fence);
 }
 
-GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
+GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -53,7 +53,7 @@ GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::CONSUMER_INVOKER);
 }
 
-GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
+GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

@@ -179,7 +179,7 @@ GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenc
     return ReleaseBuffer(buffer, syncFence);
 }
 
-GSError ConsumerSurface::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
+GSError ConsumerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -188,7 +188,7 @@ GSError ConsumerSurface::AttachBufferToQueue(sptr<SurfaceBuffer>& buffer)
     return consumer_->AttachBufferToQueue(buffer);
 }
 
-GSError ConsumerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer>& buffer)
+GSError ConsumerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

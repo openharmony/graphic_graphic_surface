@@ -55,9 +55,6 @@ config("surface_public_config") {
   }
 
   defines = []
-  if (is_emulator) {
-    defines += [ "SURFACE_EMULATOR" ]
-  }
   if (graphic_2d_feature_freemem_enable) {
     defines += [ "SURFACE_ENABLE_FREEMEM" ]
   }

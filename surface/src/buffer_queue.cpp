@@ -287,7 +287,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     ret = CheckRequestConfig(config);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE_API(CheckRequestConfig, ret);
-        return ret;
+        return SURFACE_ERROR_UNKOWN;
     }
 
     std::unique_lock<std::mutex> lock(mutex_);
@@ -356,7 +356,8 @@ GSError BufferQueue::ReallocBuffer(const BufferRequestConfig &config,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
     if (isShared_) {
-        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+        BLOGNE("is shared mode");
+        return SURFACE_ERROR_UNKOWN;
     }
     DeleteBufferInCache(retval.sequence);
 
@@ -378,11 +379,13 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
 {
     ScopedBytrace func(__func__);
     if (retval.buffer == nullptr) {
-        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+        BLOGNE("input buffer is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     retval.sequence = retval.buffer->GetSeqNum();
     if (bufferQueueCache_.find(retval.sequence) == bufferQueueCache_.end()) {
-        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+        BLOGNE("buffer queue cache not find the buffer(%{public}u)", retval.sequence);
+        return SURFACE_ERROR_UNKOWN;
     }
     bool needRealloc = (config != bufferQueueCache_[retval.sequence].config);
     // config, realloc
@@ -556,16 +559,17 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (bufferQueueCache_.find(lastFlusedSequence_) == bufferQueueCache_.end()) {
-        return GSERROR_NO_ENTRY;
+        BLOGNE("buffer queue cache ont find the buffer(%{public}u)", lastFlusedSequence_);
+        return SURFACE_ERROR_UNKOWN;
     }
     auto &state = bufferQueueCache_[lastFlusedSequence_].state;
     if (state == BUFFER_STATE_REQUESTED) {
         BLOGN_FAILURE_ID(lastFlusedSequence_, "invalid state %{public}d", state);
-        return GSERROR_NO_ENTRY;
+        return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
     if (bufferQueueCache_[lastFlusedSequence_].buffer->GetUsage() & BUFFER_USAGE_PROTECTED) {
         BLOGE("Not allowed to obtain protect surface buffer");
-        return OHOS::GSERROR_NO_PERMISSION;
+        return SURFACE_ERROR_NOT_SUPPORT;
     }
     buffer = bufferQueueCache_[lastFlusedSequence_].buffer;
     fence = lastFlusedFence_;
@@ -674,7 +678,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         BLOGND("Success Buffer seq id: %{public}d Queue id: %{public}" PRIu64 " AcquireFence:%{public}d",
             sequence, uniqueId_, fence->Get());
     } else if (ret == GSERROR_NO_BUFFER) {
-        BLOGND("there is no dirty buffer");
+        BLOGNE("there is no dirty buffer");
     }
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
@@ -724,14 +728,15 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
-            return GSERROR_NO_ENTRY;
+            BLOGNE("buffer queue cache not find the buffer(%{public}u)", sequence);
+            return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
 
         if (isShared_ == false) {
             const auto &state = bufferQueueCache_[sequence].state;
             if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
-                BLOGND("invalid state");
-                return GSERROR_NO_ENTRY;
+                BLOGNE("invalid state:%{public}d", state);
+                return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
         }
 
@@ -766,8 +771,8 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 
     GSError ret = bufferImpl->Alloc(updateConfig);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE_ID_API(sequence, Alloc, ret);
-        return ret;
+        BLOGE("alloc buffer failed, sequence:%{public}u, ret:%{public}d", sequence, ret);
+        return SURFACE_ERROR_UNKOWN;
     }
 
     BufferElement ele = {
@@ -783,7 +788,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
         BLOGD("handle usage is BUFFER_USAGE_PROTECTED, do not Map/UnMap");
         bufferQueueCache_[sequence] = ele;
         buffer = bufferImpl;
-        return ret;
+        return SURFACE_ERROR_OK;
     }
 
     ret = bufferImpl->Map();
@@ -792,9 +797,10 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
         bufferQueueCache_[sequence] = ele;
         buffer = bufferImpl;
     } else {
-        BLOGN_FAILURE_ID(sequence, "Map failed");
+        BLOGE("map buffer failed, sequence:%{public}u, ret:%{public}d", sequence, ret);
+        return SURFACE_ERROR_UNKOWN;
     }
-    return ret;
+    return SURFACE_ERROR_OK;
 }
 
 void BufferQueue::DeleteBufferInCache(uint32_t sequence)
@@ -888,7 +894,7 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
 {
     ScopedBytrace func(__func__);
     if (buffer == nullptr) {
-        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+        BLOGN_FAILURE_RET(SURFACE_ERROR_UNKOWN);
     }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -896,11 +902,11 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
         if (GetUsedSize() >= GetQueueSize()) {
             BLOGN_FAILURE_ID(sequence, "buffer queue size:%{public}u, used size:%{public}u",
                 GetQueueSize(), GetUsedSize());
-            return GSERROR_API_FAILED;
+            return SURFACE_ERROR_BUFFER_QUEUE_FULL;
         }
         if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
             BLOGN_FAILURE_ID(sequence, "buffer is already in cache");
-            return GSERROR_API_FAILED;
+            return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         BufferElement ele;
         ele = {
@@ -924,24 +930,24 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerTy
 {
     ScopedBytrace func(__func__);
     if (buffer == nullptr) {
-        BLOGN_FAILURE_RET(GSERROR_INVALID_ARGUMENTS);
+        BLOGN_FAILURE_RET(SURFACE_ERROR_UNKOWN);
     }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         uint32_t sequence = buffer->GetSeqNum();
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
             BLOGN_FAILURE_ID(sequence, "not find in cache");
-            return GSERROR_NO_ENTRY;
+            return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
         if (invokerType == InvokerType::PRODUCER_INVOKER) {
             if (bufferQueueCache_[sequence].state != BUFFER_STATE_REQUESTED) {
                 BLOGN_FAILURE_ID(sequence, "producer state is not requested");
-                return GSERROR_INVALID_OPERATING;
+                return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
         } else {
             if (bufferQueueCache_[sequence].state != BUFFER_STATE_ACQUIRED) {
                 BLOGN_FAILURE_ID(sequence, "consumer state is not acquired");
-                return GSERROR_INVALID_OPERATING;
+                return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
         }
         bufferQueueCache_.erase(sequence);

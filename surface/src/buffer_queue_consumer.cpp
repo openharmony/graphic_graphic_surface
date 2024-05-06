@@ -32,7 +32,8 @@ GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<Syn
     int64_t &timestamp, std::vector<Rect> &damages)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGFE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AcquireBuffer(buffer, fence, timestamp, damages);
 }
@@ -40,7 +41,8 @@ GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<Syn
 GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGFE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->ReleaseBuffer(buffer, fence);
 }
@@ -48,7 +50,8 @@ GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sp
 GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGFE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::CONSUMER_INVOKER);
 }
@@ -56,7 +59,8 @@ GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGFE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::CONSUMER_INVOKER);
 }
@@ -70,6 +74,7 @@ GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
 {
     if (bufferQueue_ == nullptr) {
+        BLOGFE("bufferQueue is null");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->AttachBuffer(buffer, timeOut);

@@ -528,7 +528,8 @@ HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer002, Function | MediumTest | 
     ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindowTmp, nativeWindowBuffer), OHOS::GSERROR_OK);
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindowTmp, code, &queueSize), OHOS::GSERROR_OK);
     ASSERT_EQ(queueSize, 3);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindowTmp, nativeWindowBuffer), OHOS::GSERROR_API_FAILED);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindowTmp, nativeWindowBuffer),
+        OHOS::GSERROR_BUFFER_IS_INCACHE);
 
     struct Region *region = new Region();
     struct Region::Rect *rect = new Region::Rect();
@@ -590,7 +591,7 @@ void NativeWindowAttachBuffer003Test(NativeWindow *nativeWindowTmp, NativeWindow
     ASSERT_EQ(ret, GSERROR_OK);
 
     ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindowTmp1, nativeWindowBuffer1),
-        OHOS::GSERROR_API_FAILED);
+        OHOS::SURFACE_ERROR_BUFFER_QUEUE_FULL);
 }
 
 /*
@@ -665,9 +666,10 @@ HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer004, Function | MediumTest | 
     ASSERT_EQ(ret, GSERROR_OK);
 
     ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nativeWindowTmp, nativeWindowBuffer),
-        OHOS::GSERROR_INVALID_OPERATING);
+        OHOS::SURFACE_ERROR_BUFFER_STATE_INVALID);
 
-    ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nativeWindow, nativeWindowBuffer), OHOS::GSERROR_NO_ENTRY);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nativeWindow, nativeWindowBuffer),
+        OHOS::SURFACE_ERROR_BUFFER_NOT_INCACHE);
 
     OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
 }
@@ -1001,7 +1003,7 @@ HWTEST_F(NativeWindowTest, GetLastFlushedBuffer002, Function | MediumTest | Leve
     int lastFlushedFenceFd;
     float matrix[16];
     ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
-        OHOS::GSERROR_NO_PERMISSION);
+        OHOS::SURFACE_ERROR_NOT_SUPPORT);
 }
 /*
 * Function: OH_NativeWindow_NativeWindowAbortBuffer

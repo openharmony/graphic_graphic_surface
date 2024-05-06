@@ -236,7 +236,7 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
-        reply.WriteInt32(ret);
+        reply.WriteInt32(SURFACE_ERROR_UNKOWN);
         return 0;
     }
     if (buffer == nullptr) {
@@ -247,7 +247,7 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     ret = buffer->ReadBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("ReadBufferRequestConfig failed, return %{public}d", ret);
-        reply.WriteInt32(ret);
+        reply.WriteInt32(SURFACE_ERROR_UNKOWN);
         return 0;
     }
     ret = AttachBufferToQueue(buffer);
@@ -263,7 +263,7 @@ int32_t BufferQueueProducer::DetachBufferFromQueueRemote(MessageParcel &argument
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
-        reply.WriteInt32(ret);
+        reply.WriteInt32(SURFACE_ERROR_UNKOWN);
         return 0;
     }
     if (buffer == nullptr) {
@@ -626,7 +626,8 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
                                            RequestBufferReturnValue &retval)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
 
     {
@@ -634,7 +635,7 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
         auto callingPid = GetCallingPid();
         if (connectedPid_ != 0 && connectedPid_ != callingPid) {
             BLOGNW("this BufferQueue has been connected by :%{public}d", connectedPid_);
-            return GSERROR_INVALID_OPERATING;
+            return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
         }
         connectedPid_ = callingPid;
     }
@@ -645,7 +646,8 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
 GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->CancelBuffer(sequence, bedata);
 }
@@ -654,7 +656,8 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
                                          sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
 }
@@ -663,7 +666,8 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16])
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetLastFlushedBuffer(buffer, fence, matrix);
 }
@@ -671,7 +675,8 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
 }
@@ -679,7 +684,8 @@ GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 GSError BufferQueueProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::PRODUCER_INVOKER);
 }

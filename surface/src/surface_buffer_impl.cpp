@@ -530,7 +530,7 @@ GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.transform))) {
         BLOGE("%{public}s a lot failed", __func__);
-        return GSERROR_API_FAILED;
+        return SURFACE_ERROR_UNKOWN;
     }
     return GSERROR_OK;
 }

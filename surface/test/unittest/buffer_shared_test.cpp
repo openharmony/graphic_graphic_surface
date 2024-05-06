@@ -127,7 +127,7 @@ HWTEST_F(BufferSharedTest, RequestBufferDiff001, Function | MediumTest | Level2)
             ret1 = producerSurface1->RequestBuffer(bufferDiff, releaseFence, diffRequestConfig);
         }
         STEP("2: check ret1") {
-            STEP_ASSERT_EQ(ret1, GSERROR_INVALID_ARGUMENTS);
+            STEP_ASSERT_EQ(ret1, SURFACE_ERROR_UNKOWN);
         }
     }
 }

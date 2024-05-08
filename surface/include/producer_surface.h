@@ -143,6 +143,8 @@ public:
     OHSurfaceSource GetSurfaceSourceType() const override;
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     std::string GetSurfaceAppFrameworkType() const override;
+
+    BufferRequestConfig* GetWindowConfig() override;
 private:
     bool IsRemote();
     void CleanAllLocked();
@@ -162,6 +164,7 @@ private:
     std::mutex lockMutex_;
     int32_t requestWidth_ = 0;
     int32_t requestHeight_ = 0;
+    BufferRequestConfig windowConfig_ = {0};
 };
 } // namespace OHOS
 

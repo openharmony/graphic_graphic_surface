@@ -32,7 +32,6 @@ struct NativeWindowMagic : public OHOS::RefBase {
 struct NativeWindow : public NativeWindowMagic {
     NativeWindow();
     ~NativeWindow();
-    OHOS::BufferRequestConfig config = {0};
     OHOS::sptr<OHOS::Surface> surface;
     int64_t uiTimestamp = 0;
     uint32_t lastBufferSeqNum = 0;

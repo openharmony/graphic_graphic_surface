@@ -611,4 +611,9 @@ int32_t ConsumerSurface::GetRequestHeight()
 {
     return 0;
 }
+
+BufferRequestConfig* ConsumerSurface::GetWindowConfig()
+{
+    return nullptr;
+}
 } // namespace OHOS

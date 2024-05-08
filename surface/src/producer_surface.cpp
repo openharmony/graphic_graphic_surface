@@ -51,6 +51,14 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     if (producer_) {
         producer_->SendAddDeathRecipientObject();
     }
+    windowConfig_.width = GetDefaultWidth();
+    windowConfig_.height = GetDefaultHeight();
+    windowConfig_.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
+    windowConfig_.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+    windowConfig_.strideAlignment = 8;     // default stride is 8
+    windowConfig_.timeout = 3000;          // default timeout is 3000 ms
+    windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+    windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BLOGND("ctor");
 }
 
@@ -778,5 +786,10 @@ int32_t ProducerSurface::GetRequestHeight()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return requestHeight_;
+}
+
+BufferRequestConfig* ProducerSurface::GetWindowConfig()
+{
+    return &windowConfig_;
 }
 } // namespace OHOS

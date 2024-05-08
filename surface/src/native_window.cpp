@@ -47,14 +47,15 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
         delete nativeWindow;
         return nullptr;
     }
-    nativeWindow->config.width = nativeWindow->surface->GetDefaultWidth();
-    nativeWindow->config.height = nativeWindow->surface->GetDefaultHeight();
-    nativeWindow->config.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
-    nativeWindow->config.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
-    nativeWindow->config.strideAlignment = 8;   // default stride is 8
-    nativeWindow->config.timeout = 3000;        // default timeout is 3000 ms
-    nativeWindow->config.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
-    nativeWindow->config.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    OHOS::BufferRequestConfig *windowConfig = nativeWindow->surface->GetWindowConfig();
+    windowConfig->width = nativeWindow->surface->GetDefaultWidth();
+    windowConfig->height = nativeWindow->surface->GetDefaultHeight();
+    windowConfig->usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
+    windowConfig->format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+    windowConfig->strideAlignment = 8;   // default stride is 8
+    windowConfig->timeout = 3000;        // default timeout is 3000 ms
+    windowConfig->colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+    windowConfig->transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
 
     NativeObjectReference(nativeWindow);
     auto utils = SurfaceUtils::GetInstance();
@@ -121,9 +122,10 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     int32_t ret;
     int32_t requestWidth = window->surface->GetRequestWidth();
     int32_t requestHeight = window->surface->GetRequestHeight();
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
     if (requestWidth != 0 && requestHeight != 0) {
         OHOS::BufferRequestConfig config;
-        if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), &(window->config),
+        if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), windowConfig,
             sizeof(OHOS::BufferRequestConfig)) != EOK) {
             BLOGE("memcpy_s failed");
             return OHOS::SURFACE_ERROR_UNKOWN;
@@ -132,7 +134,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         config.height = requestHeight;
         ret = window->surface->RequestBuffer(sfbuffer, releaseFence, config);
     } else {
-        ret = window->surface->RequestBuffer(sfbuffer, releaseFence, window->config);
+        ret = window->surface->RequestBuffer(sfbuffer, releaseFence, *windowConfig);
     }
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || sfbuffer == nullptr) {
         BLOGE("API failed, please check RequestBuffer function ret:%{public}d, Queue Id:%{public}" PRIu64,
@@ -178,12 +180,13 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         }
         config.timestamp = buffer->uiTimestamp;
     } else {
+        OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
         config.damages.reserve(1);
         OHOS::Rect damage = {
             .x = 0,
             .y = 0,
-            .w = window->config.width,
-            .h = window->config.height,
+            .w = windowConfig->width,
+            .h = windowConfig->height,
         };
         config.damages.emplace_back(damage);
         config.timestamp = buffer->uiTimestamp;
@@ -254,46 +257,53 @@ int32_t NativeWindowCancelBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
 static void HandleNativeWindowSetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t usage = va_arg(args, uint64_t);
-    window->config.usage = usage;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->usage = usage;
 }
 
 static void HandleNativeWindowSetBufferGeometry(OHNativeWindow *window, va_list args)
 {
     int32_t width = va_arg(args, int32_t);
     int32_t height = va_arg(args, int32_t);
-    window->config.height = height;
-    window->config.width = width;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->height = height;
+    windowConfig->width = width;
 }
 
 static void HandleNativeWindowSetFormat(OHNativeWindow *window, va_list args)
 {
     int32_t format = va_arg(args, int32_t);
-    window->config.format = format;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->format = format;
 }
 
 static void HandleNativeWindowSetStride(OHNativeWindow *window, va_list args)
 {
     int32_t stride = va_arg(args, int32_t);
-    window->config.strideAlignment = stride;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->strideAlignment = stride;
 }
 
 static void HandleNativeWindowSetTimeout(OHNativeWindow *window, va_list args)
 {
     int32_t timeout = va_arg(args, int32_t);
-    window->config.timeout = timeout;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->timeout = timeout;
 }
 
 static void HandleNativeWindowSetColorGamut(OHNativeWindow *window, va_list args)
 {
     int32_t colorGamut = va_arg(args, int32_t);
-    window->config.colorGamut = static_cast<GraphicColorGamut>(colorGamut);
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->colorGamut = static_cast<GraphicColorGamut>(colorGamut);
 }
 
 static void HandleNativeWindowSetTransform(OHNativeWindow *window, va_list args)
 {
     int32_t transform = va_arg(args, int32_t);
-    window->config.transform = static_cast<GraphicTransformType>(transform);
     window->surface->SetTransform(static_cast<GraphicTransformType>(transform));
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    windowConfig->transform = static_cast<GraphicTransformType>(transform);
 }
 
 static void HandleNativeWindowSetUiTimestamp(OHNativeWindow *window, va_list args)
@@ -318,7 +328,8 @@ static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window,
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t *value = va_arg(args, uint64_t*);
-    uint64_t usage = window->config.usage;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    uint64_t usage = windowConfig->usage;
     *value = usage;
 }
 
@@ -326,32 +337,37 @@ static void HandleNativeWindowGetBufferGeometry(OHNativeWindow *window, va_list 
 {
     int32_t *height = va_arg(args, int32_t*);
     int32_t *width = va_arg(args, int32_t*);
-    *height = window->config.height;
-    *width = window->config.width;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    *height = windowConfig->height;
+    *width = windowConfig->width;
 }
 
 static void HandleNativeWindowGetFormat(OHNativeWindow *window, va_list args)
 {
     int32_t *format = va_arg(args, int32_t*);
-    *format = window->config.format;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    *format = windowConfig->format;
 }
 
 static void HandleNativeWindowGetStride(OHNativeWindow *window, va_list args)
 {
     int32_t *stride = va_arg(args, int32_t*);
-    *stride = window->config.strideAlignment;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    *stride = windowConfig->strideAlignment;
 }
 
 static void HandleNativeWindowGetTimeout(OHNativeWindow *window, va_list args)
 {
     int32_t *timeout = va_arg(args, int32_t*);
-    *timeout = window->config.timeout;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    *timeout = windowConfig->timeout;
 }
 
 static void HandleNativeWindowGetColorGamut(OHNativeWindow *window, va_list args)
 {
     int32_t *colorGamut = va_arg(args, int32_t*);
-    *colorGamut = static_cast<int32_t>(window->config.colorGamut);
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    *colorGamut = static_cast<int32_t>(windowConfig->colorGamut);
 }
 
 static void HandleNativeWindowGetTransform(OHNativeWindow *window, va_list args)
@@ -573,14 +589,6 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
         delete nativeWindow;
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    nativeWindow->config.width = nativeWindow->surface->GetDefaultWidth();
-    nativeWindow->config.height = nativeWindow->surface->GetDefaultHeight();
-    nativeWindow->config.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
-    nativeWindow->config.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
-    nativeWindow->config.strideAlignment = 8;   // default stride is 8
-    nativeWindow->config.timeout = 3000;        // default timeout is 3000 ms
-    nativeWindow->config.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
-    nativeWindow->config.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
 
     NativeObjectReference(nativeWindow);
     utils->AddNativeWindow(nativeWindow->surface->GetUniqueId(), nativeWindow);
@@ -614,9 +622,10 @@ int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *wi
         BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    if (window->config.width != 0 && window->config.height != 0) {
-        *width = window->config.width;
-        *height = window->config.height;
+    OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+    if (windowConfig->width != 0 && windowConfig->height != 0) {
+        *width = windowConfig->width;
+        *height = windowConfig->height;
     } else {
         *width = window->surface->GetDefaultWidth();
         *height = window->surface->GetDefaultHeight();

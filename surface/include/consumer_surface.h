@@ -148,6 +148,8 @@ public:
     OHSurfaceSource GetSurfaceSourceType() const override;
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     std::string GetSurfaceAppFrameworkType() const override;
+
+    BufferRequestConfig* GetWindowConfig() override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

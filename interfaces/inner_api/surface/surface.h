@@ -145,6 +145,8 @@ public:
 
     virtual void SetBufferHold(bool hold) = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
+
+    virtual BufferRequestConfig* GetWindowConfig() = 0;
 protected:
     Surface() = default;
 };

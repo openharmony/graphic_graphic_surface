@@ -18,6 +18,7 @@
 #include <mutex>
 
 #include <message_parcel.h>
+#include <parameters.h>
 #include <securec.h>
 #include <sys/mman.h>
 #include "buffer_log.h"
@@ -161,6 +162,11 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 
     BufferHandle *handle = nullptr;
     OHOS::HDI::Display::Buffer::V1_0::AllocInfo info = {config.width, config.height, config.usage, config.format};
+    static bool debugHebcDisabled =
+        std::atoi((system::GetParameter("persist.graphic.debug_hebc.disabled", "0")).c_str()) != 0;
+    if (debugHebcDisabled) {
+        info.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
+    }
     auto dret = g_displayBuffer->AllocMem(info, handle);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         std::lock_guard<std::mutex> lock(mutex_);

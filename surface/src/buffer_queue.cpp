@@ -914,6 +914,7 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
             .isDeleting = false,
             .config = *(buffer->GetBufferRequestConfig()),
             .fence = SyncFence::INVALID_FENCE,
+            .scalingMode = scalingMode_,
         };
         if (invokerType == InvokerType::PRODUCER_INVOKER) {
             ele.state = BUFFER_STATE_REQUESTED;

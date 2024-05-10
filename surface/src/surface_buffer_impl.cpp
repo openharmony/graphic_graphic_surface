@@ -202,9 +202,6 @@ GSError SurfaceBufferImpl::Map()
         }
         handle = handle_;
     }
-#ifdef RS_ENABLE_AFBC
-    handle->usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
-#endif
 
     if (handle->usage & BUFFER_USAGE_PROTECTED) {
         BLOGD("handle usage is BUFFER_USAGE_PROTECTED, do not Map");

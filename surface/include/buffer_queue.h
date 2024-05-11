@@ -81,7 +81,7 @@ public:
                           sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-        float matrix[16]);
+        float matrix[16], bool isUseNewMatrix);
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                           int64_t &timestamp, std::vector<Rect> &damages);

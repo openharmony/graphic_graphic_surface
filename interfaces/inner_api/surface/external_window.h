@@ -666,6 +666,23 @@ int32_t OH_NativeWindow_NativeWindowSetScalingModeV2(OHNativeWindow *window, OHS
  */
 void OH_NativeWindow_SetBufferHold(OHNativeWindow *window);
 
+/**
+ * @brief Get the last flushed <b>OHNativeWindowBuffer</b> from an <b>OHNativeWindow</b> instance.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.
+ * @param buffer Indicates the pointer to an <b>OHNativeWindowBuffer</b> pointer.
+ * @param fenceFd Indicates the pointer to a file descriptor handle.
+ * @param matrix Indicates the retrieved 4*4 transform matrix.
+ * @return 0 - Success.
+ *     40001000 - window is NULL or buffer is NULL or fenceFd is NULL.
+ *     41207000 - buffer state is wrong.
+ * @since 12
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer,
+    int *fenceFd, float matrix[16]);
+
 #ifdef __cplusplus
 }
 #endif

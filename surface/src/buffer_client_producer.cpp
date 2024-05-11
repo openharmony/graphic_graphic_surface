@@ -107,10 +107,10 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
 }
 
 GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16])
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
-
+    arguments.WriteBool(isUseNewMatrix);
     SEND_REQUEST(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, arguments, reply, option);
     int32_t retCode = reply.ReadInt32();
     if (retCode != GSERROR_OK) {

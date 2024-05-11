@@ -555,7 +555,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
 }
 
 GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16])
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (bufferQueueCache_.find(lastFlusedSequence_) == bufferQueueCache_.end()) {
@@ -579,7 +579,11 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         damage.h = buffer->GetHeight();
     }
     auto utils = SurfaceUtils::GetInstance();
-    utils->ComputeTransformMatrix(matrix, buffer, lastFlushedTransform_, damage);
+    if (isUseNewMatrix) {
+        utils->ComputeTransformMatrixV2(matrix, buffer, lastFlushedTransform_, damage);
+    } else {
+        utils->ComputeTransformMatrix(matrix, buffer, lastFlushedTransform_, damage);
+    }
     return GSERROR_OK;
 }
 

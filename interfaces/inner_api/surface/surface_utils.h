@@ -28,7 +28,7 @@ public:
     // get surface by uniqueId.
     sptr<Surface> GetSurface(uint64_t uniqueId);
     // maintenance map with uniqueId and surface.
-    SurfaceError Add(uint64_t uniqueId, const sptr<Surface> &surface);
+    SurfaceError Add(uint64_t uniqueId, const wptr<Surface> &surface);
     // remove surface by uniqueId.
     SurfaceError Remove(uint64_t uniqueId);
     // Compute transform matrix
@@ -52,7 +52,7 @@ private:
     void ComputeTransformByMatrixV2(GraphicTransformType& transform,
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
     
-    std::unordered_map<uint64_t, sptr<Surface>> surfaceCache_;
+    std::unordered_map<uint64_t, wptr<Surface>> surfaceCache_;
     std::mutex mutex_;
     std::unordered_map<uint64_t, void*> nativeWindowCache_;
 };

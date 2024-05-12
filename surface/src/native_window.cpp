@@ -562,8 +562,6 @@ int32_t GetSurfaceId(OHNativeWindow *window, uint64_t *surfaceId)
     }
 
     *surfaceId = window->surface->GetUniqueId();
-    auto utils = SurfaceUtils::GetInstance();
-    utils->Add(*surfaceId, window->surface);
     return OHOS::GSERROR_OK;
 }
 
@@ -679,7 +677,6 @@ NativeWindow::~NativeWindow()
 {
     if (surface != nullptr) {
         auto utils = SurfaceUtils::GetInstance();
-        utils->Remove(surface->GetUniqueId());
         utils->RemoveNativeWindow(surface->GetUniqueId());
     }
 

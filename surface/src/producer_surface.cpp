@@ -42,6 +42,8 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
         BLOGE("Failure, Reason: producer surf init failed");
         return nullptr;
     }
+    auto utils = SurfaceUtils::GetInstance();
+    utils->Add(surf->GetUniqueId(), surf);
     return surf;
 }
 
@@ -72,6 +74,8 @@ ProducerSurface::~ProducerSurface()
     if (ret != GSERROR_OK) {
         BLOGND("Disconnect failed, %{public}s", GSErrorStr(ret).c_str());
     }
+    auto utils = SurfaceUtils::GetInstance();
+    utils->Remove(GetUniqueId());
 }
 
 GSError ProducerSurface::Init()

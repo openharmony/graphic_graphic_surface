@@ -49,10 +49,15 @@ sptr<Surface> SurfaceUtils::GetSurface(uint64_t uniqueId)
         BLOGE("Cannot find surface by uniqueId %" PRIu64 ".", uniqueId);
         return nullptr;
     }
-    return surfaceCache_[uniqueId];
+    sptr<Surface> surface = surfaceCache_[uniqueId].promote();
+    if (surface == nullptr) {
+        BLOGE("surface is nullptr");
+        return nullptr;
+    }
+    return surface;
 }
 
-SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const sptr<Surface> &surface)
+SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const wptr<Surface> &surface)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surface == nullptr) {

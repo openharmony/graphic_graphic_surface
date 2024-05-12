@@ -46,7 +46,7 @@ public:
                         sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-        float matrix[16]) override;
+        float matrix[16], bool isUseNewMatrix) override;
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) override;
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;

@@ -212,7 +212,7 @@ int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buff
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
     OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::INVALID_FENCE;
-    int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix);
+    int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, false);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
         BLOGE("GetLastFlushedBuffer fail");
         return ret;
@@ -652,6 +652,25 @@ void NativeWindowSetBufferHold(OHNativeWindow *window)
     window->surface->SetBufferHold(true);
 }
 
+int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
+{
+    if (window == nullptr || buffer == nullptr || fenceFd == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
+    OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::INVALID_FENCE;
+    int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, true);
+    if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
+        BLOGE("GetLastFlushedBufferV2 fail");
+        return ret;
+    }
+    *buffer = nwBuffer;
+    NativeObjectReference(nwBuffer);
+    *fenceFd = acquireFence->Dup();
+    return OHOS::SURFACE_ERROR_OK;
+}
+
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
 }
@@ -704,4 +723,5 @@ WEAK_ALIAS(NativeWindowSetTunnelHandle, OH_NativeWindow_NativeWindowSetTunnelHan
 WEAK_ALIAS(GetSurfaceId, OH_NativeWindow_GetSurfaceId);
 WEAK_ALIAS(CreateNativeWindowFromSurfaceId, OH_NativeWindow_CreateNativeWindowFromSurfaceId);
 WEAK_ALIAS(NativeWindowSetBufferHold, OH_NativeWindow_SetBufferHold);
+WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
 

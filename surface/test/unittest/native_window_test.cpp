@@ -971,6 +971,16 @@ HWTEST_F(NativeWindowTest, FlushBuffer003, Function | MediumTest | Level2)
     delete rect;
     delete region;
 }
+constexpr int32_t MATRIX_SIZE = 16;
+bool CheckMatricIsSame(float matrixOld[MATRIX_SIZE], float matrixNew[MATRIX_SIZE])
+{
+    for (int32_t i = 0; i < MATRIX_SIZE; i++) {
+        if (fabs(matrixOld[i] - matrixNew[i]) > 1e-6) {
+            return false;
+        }
+    }
+    return true;
+}
 
 /*
 * Function: OH_NativeWindow_GetLastFlushedBuffer
@@ -984,6 +994,10 @@ HWTEST_F(NativeWindowTest, FlushBuffer003, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, GetLastFlushedBuffer001, Function | MediumTest | Level2)
 {
+    int code = SET_TRANSFORM;
+    int32_t transform = GraphicTransformType::GRAPHIC_ROTATE_90;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, transform), OHOS::GSERROR_OK);
+
     NativeWindowBuffer *nativeWindowBuffer = nullptr;
     int fenceFd = -1;
     int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
@@ -1006,6 +1020,12 @@ HWTEST_F(NativeWindowTest, GetLastFlushedBuffer001, Function | MediumTest | Leve
         OHOS::GSERROR_OK);
     BufferHandle *lastFlushedHanlde = OH_NativeWindow_GetBufferHandleFromNative(lastFlushedBuffer);
     ASSERT_EQ(bufferHanlde->virAddr, lastFlushedHanlde->virAddr);
+
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBufferV2(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
+        OHOS::GSERROR_OK);
+    float matrix90[16] = {0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    bool bRet = CheckMatricIsSame(matrix90, matrix);
+    ASSERT_EQ(bRet, true);
 }
 
 /*

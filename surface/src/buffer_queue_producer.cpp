@@ -215,7 +215,8 @@ int32_t BufferQueueProducer::GetLastFlushedBufferRemote(MessageParcel &arguments
     sptr<SurfaceBuffer> buffer;
     sptr<SyncFence> fence;
     float matrix[BUFFER_MATRIX_SIZE];
-    GSError sret = GetLastFlushedBuffer(buffer, fence, matrix);
+    bool isUseNewMatrix = arguments.ReadBool();
+    GSError sret = GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
     reply.WriteInt32(sret);
     if (sret == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
@@ -663,13 +664,13 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
 }
 
 GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16])
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     if (bufferQueue_ == nullptr) {
         BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
-    return bufferQueue_->GetLastFlushedBuffer(buffer, fence, matrix);
+    return bufferQueue_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
 }
 
 GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)

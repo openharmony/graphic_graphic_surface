@@ -24,6 +24,7 @@
 #include "surface_type.h"
 #include "surface_utils.h"
 #include "sync_fence.h"
+#include "ipc_inner_object.h"
 
 #ifndef WEAK_ALIAS
     #define WEAK_ALIAS(old, new) \
@@ -650,6 +651,51 @@ void NativeWindowSetBufferHold(OHNativeWindow *window)
     window->surface->SetBufferHold(true);
 }
 
+int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel)
+{
+    if (window == nullptr) {
+        BLOGE("parameter error, please check input window");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    if (parcel == nullptr || parcel->msgParcel == nullptr) {
+        BLOGE("parcel error, please check input parcel");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<OHOS::Surface> windowSurface = window->surface;
+    if (windowSurface == nullptr) {
+        BLOGE("parameter error, please check input window");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    auto producer = windowSurface->GetProducer();
+    (parcel->msgParcel)->WriteRemoteObject(producer->AsObject());
+    return OHOS::GSERROR_OK;
+}
+
+OHNativeWindow *NativeWindowReadFromParcel(OHIPCParcel *parcel)
+{
+    if (parcel == nullptr || parcel->msgParcel == nullptr) {
+        BLOGE("parcel error, please check input parcel");
+        return nullptr;
+    }
+    sptr<OHOS::IRemoteObject> surfaceObject = (parcel->msgParcel)->ReadRemoteObject();
+    if (surfaceObject == nullptr) {
+        BLOGE("object error, please check input parcel");
+        return nullptr;
+    }
+    sptr<OHOS::IBufferProducer> bp = iface_cast<IBufferProducer>(surfaceObject);
+    sptr <OHOS::Surface> windowSurface = OHOS::Surface::CreateSurfaceAsProducer(bp);
+    if (windowSurface == nullptr) {
+        BLOGE("read error, producersurface create failed");
+        return nullptr;
+    }
+    auto utils = SurfaceUtils::GetInstance();
+    OHNativeWindow* window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(windowSurface->GetUniqueId()));
+    if (window == nullptr) {
+        window = CreateNativeWindowFromSurface(windowSurface);
+    }
+    return window;
+}
+
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
     if (window == nullptr || buffer == nullptr || fenceFd == nullptr) {
@@ -720,5 +766,7 @@ WEAK_ALIAS(NativeWindowSetTunnelHandle, OH_NativeWindow_NativeWindowSetTunnelHan
 WEAK_ALIAS(GetSurfaceId, OH_NativeWindow_GetSurfaceId);
 WEAK_ALIAS(CreateNativeWindowFromSurfaceId, OH_NativeWindow_CreateNativeWindowFromSurfaceId);
 WEAK_ALIAS(NativeWindowSetBufferHold, OH_NativeWindow_SetBufferHold);
+WEAK_ALIAS(NativeWindowWriteToParcel, OH_NativeWindow_WriteToParcel);
+WEAK_ALIAS(NativeWindowReadFromParcel, OH_NativeWindow_ReadFromParcel);
 WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
 

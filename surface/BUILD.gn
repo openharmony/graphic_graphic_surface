@@ -124,6 +124,8 @@ ohos_shared_library("surface") {
     "ipc:ipc_single",
   ]
 
+  public_external_deps = [ "ipc:ipc_capi" ]
+
   symlink_target_name = [
     "libnative_buffer.so",
     "libnative_window.so",

@@ -671,29 +671,25 @@ int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel)
     return OHOS::GSERROR_OK;
 }
 
-OHNativeWindow *NativeWindowReadFromParcel(OHIPCParcel *parcel)
+int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window)
 {
-    if (parcel == nullptr || parcel->msgParcel == nullptr) {
+    if (parcel == nullptr || parcel->msgParcel == nullptr || window == nullptr) {
         BLOGE("parcel error, please check input parcel");
-        return nullptr;
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<OHOS::IRemoteObject> surfaceObject = (parcel->msgParcel)->ReadRemoteObject();
     if (surfaceObject == nullptr) {
-        BLOGE("object error, please check input parcel");
-        return nullptr;
+        BLOGE("read object error, please check input parcel");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<OHOS::IBufferProducer> bp = iface_cast<IBufferProducer>(surfaceObject);
     sptr <OHOS::Surface> windowSurface = OHOS::Surface::CreateSurfaceAsProducer(bp);
-    if (windowSurface == nullptr) {
-        BLOGE("read error, producersurface create failed");
-        return nullptr;
-    }
     auto utils = SurfaceUtils::GetInstance();
-    OHNativeWindow* window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(windowSurface->GetUniqueId()));
-    if (window == nullptr) {
-        window = CreateNativeWindowFromSurface(windowSurface);
+    *window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(windowSurface->GetUniqueId()));
+    if (*window == nullptr) {
+        *window = CreateNativeWindowFromSurface(windowSurface);
     }
-    return window;
+    return OHOS::GSERROR_OK;
 }
 
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])

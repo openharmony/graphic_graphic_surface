@@ -46,7 +46,6 @@ extern "C" {
 typedef struct OH_NativeBuffer OH_NativeBuffer;
 
 typedef struct OHIPCParcel OHIPCParcel;
-
 /**
  * @brief native window.
  * @since 8

@@ -45,7 +45,13 @@ extern "C" {
 #endif
 typedef struct OH_NativeBuffer OH_NativeBuffer;
 
+/**
+ * @brief Defines the ipc parcel.
+ * @since 12
+ * @version 1.0
+ */
 typedef struct OHIPCParcel OHIPCParcel;
+
 /**
  * @brief native window.
  * @since 8

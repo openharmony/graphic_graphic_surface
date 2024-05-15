@@ -17,6 +17,7 @@
       "ram": "10000KB",
       "deps": {
         "components": [
+          "bounds_checking_function",
           "bytrace",
           "c_utils",
           "drivers_interface_display",

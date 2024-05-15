@@ -47,7 +47,7 @@ typedef struct OH_NativeBuffer OH_NativeBuffer;
 
 /**
  * @brief Defines the ipc parcel.
- * 
+ *
  * @since 12
  * @version 1.0
  */

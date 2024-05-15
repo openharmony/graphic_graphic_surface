@@ -112,8 +112,9 @@ GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
     }
 
     for (auto it = freeList_.begin(); it != freeList_.end(); it++) {
-        if (bufferQueueCache_[*it].config == config) {
-            buffer = bufferQueueCache_[*it].buffer;
+        auto mapIter = bufferQueueCache_.find(*it);
+        if (mapIter != bufferQueueCache_.end() && mapIter->second.config == config) {
+            buffer = mapIter->second.buffer;
             freeList_.erase(it);
             return GSERROR_OK;
         }

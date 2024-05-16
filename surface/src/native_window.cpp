@@ -687,7 +687,7 @@ int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window)
     auto utils = SurfaceUtils::GetInstance();
     *window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(windowSurface->GetUniqueId()));
     if (*window == nullptr) {
-        *window = CreateNativeWindowFromSurface(windowSurface);
+        *window = CreateNativeWindowFromSurface(&windowSurface);
     }
     return OHOS::GSERROR_OK;
 }

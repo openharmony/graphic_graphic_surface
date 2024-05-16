@@ -616,4 +616,26 @@ BufferRequestConfig* ConsumerSurface::GetWindowConfig()
 {
     return nullptr;
 }
+
+GSError ConsumerSurface::SetHdrWhitePointBrightness(float brightness)
+{
+    (void)brightness;
+    return GSERROR_OK;
+}
+
+GSError ConsumerSurface::SetSdrWhitePointBrightness(float brightness)
+{
+    (void)brightness;
+    return GSERROR_OK;
+}
+
+float ConsumerSurface::GetHdrWhitePointBrightness() const
+{
+    return consumer_->GetHdrWhitePointBrightness();
+}
+
+float ConsumerSurface::GetSdrWhitePointBrightness() const
+{
+    return consumer_->GetSdrWhitePointBrightness();
+}
 } // namespace OHOS

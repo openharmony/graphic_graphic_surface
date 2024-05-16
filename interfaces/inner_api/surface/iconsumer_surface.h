@@ -131,6 +131,8 @@ public:
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual bool IsBufferHold() = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
+    virtual float GetHdrWhitePointBrightness() const = 0;
+    virtual float GetSdrWhitePointBrightness() const = 0;
 protected:
     IConsumerSurface() = default;
 };

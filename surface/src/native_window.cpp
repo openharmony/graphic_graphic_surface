@@ -395,6 +395,18 @@ static void HandleNativeWindowGetSurfaceAppFrameworkType(OHNativeWindow *window,
     *appFrameworkType = typeStr.c_str();
 }
 
+static void HandleNativeWindowSetHdrWhitePointBrightness(OHNativeWindow *window, va_list args)
+{
+    float hdrWhitePointBrightness = static_cast<float>(va_arg(args, double));
+    window->surface->SetHdrWhitePointBrightness(hdrWhitePointBrightness);
+}
+
+static void HandleNativeWindowSetSdrWhitePointBrightness(OHNativeWindow *window, va_list args)
+{
+    float sdrWhitePointBrightness = static_cast<float>(va_arg(args, double));
+    window->surface->SetSdrWhitePointBrightness(sdrWhitePointBrightness);
+}
+
 static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap = {
     {SET_USAGE, HandleNativeWindowSetUsage},
     {SET_BUFFER_GEOMETRY, HandleNativeWindowSetBufferGeometry},
@@ -416,6 +428,8 @@ static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap
     {GET_BUFFERQUEUE_SIZE, HandleNativeWindowGetBufferQueueSize},
     {GET_SOURCE_TYPE, HandleNativeWindowGetSurfaceSourceType},
     {GET_APP_FRAMEWORK_TYPE, HandleNativeWindowGetSurfaceAppFrameworkType},
+    {SET_HDR_WHITE_POINT_BRIGHTNESS, HandleNativeWindowSetHdrWhitePointBrightness},
+    {SET_SDR_WHITE_POINT_BRIGHTNESS, HandleNativeWindowSetSdrWhitePointBrightness},
 };
 
 static int32_t InternalHandleNativeWindowOpt(OHNativeWindow *window, int code, va_list args)

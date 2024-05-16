@@ -108,6 +108,9 @@ public:
 
     virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) = 0;
     virtual GSError GetSurfaceAppFrameworkType(std::string &appFrameworkType) = 0;
+
+    virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
+    virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -151,6 +154,8 @@ protected:
         BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE = 36,
         BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE = 37,
         BUFFER_PRODUCER_SET_SCALING_MODEV2 = 38,
+        BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS = 39,
+        BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS = 40,
     };
 };
 } // namespace OHOS

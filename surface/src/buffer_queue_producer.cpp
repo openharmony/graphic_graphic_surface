@@ -78,6 +78,10 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_GET_SOURCE_TYPE] = &BufferQueueProducer::GetSurfaceSourceTypeRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::SetSurfaceAppFrameworkTypeRemote;
     memberFuncMap_[BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::GetSurfaceAppFrameworkTypeRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS] =
+        &BufferQueueProducer::SetHdrWhitePointBrightnessRemote;
+    memberFuncMap_[BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS] =
+        &BufferQueueProducer::SetSdrWhitePointBrightnessRemote;
 }
 
 BufferQueueProducer::~BufferQueueProducer()
@@ -623,6 +627,24 @@ int32_t BufferQueueProducer::GetSurfaceAppFrameworkTypeRemote(
     return 0;
 }
 
+int32_t BufferQueueProducer::SetHdrWhitePointBrightnessRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    float brightness = arguments.ReadFloat();
+    GSError sret = SetHdrWhitePointBrightness(brightness);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+int32_t BufferQueueProducer::SetSdrWhitePointBrightnessRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    float brightness = arguments.ReadFloat();
+    GSError sret = SetSdrWhitePointBrightness(brightness);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
 GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                            RequestBufferReturnValue &retval)
 {
@@ -913,6 +935,26 @@ GSError BufferQueueProducer::GetSurfaceAppFrameworkType(std::string &appFramewor
     }
     appFrameworkType = bufferQueue_->GetSurfaceAppFrameworkType();
     return GSERROR_OK;
+}
+
+GSError BufferQueueProducer::SetHdrWhitePointBrightness(float brightness)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetHdrWhitePointBrightness(brightness);
+}
+
+GSError BufferQueueProducer::SetSdrWhitePointBrightness(float brightness)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetSdrWhitePointBrightness(brightness);
 }
 
 GSError BufferQueueProducer::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,

@@ -147,6 +147,8 @@ public:
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 
     virtual BufferRequestConfig* GetWindowConfig() = 0;
+    virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
+    virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
 protected:
     Surface() = default;
 };

@@ -488,6 +488,50 @@ HWTEST_F(NativeWindowTest, HandleOpt012, Function | MediumTest | Level1)
 }
 
 /*
+* Function: OH_NativeWindow_NativeWindowHandleOpt
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt by different param
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, HandleOpt013, Function | MediumTest | Level1)
+{
+    int code = SET_HDR_WHITE_POINT_BRIGHTNESS;
+    float brightness = 0.8;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+
+    code = SET_SDR_WHITE_POINT_BRIGHTNESS;
+    brightness = 0.5;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+
+    ASSERT_EQ(fabs(cSurface->GetHdrWhitePointBrightness() - 0.8) < 1e-6, true);
+    ASSERT_EQ(fabs(cSurface->GetSdrWhitePointBrightness() - 0.5) < 1e-6, true);
+
+    code = SET_HDR_WHITE_POINT_BRIGHTNESS;
+    brightness = 1.8;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+    ASSERT_EQ(fabs(cSurface->GetHdrWhitePointBrightness() - 0.8) < 1e-6, true);
+    brightness = -0.5;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+    ASSERT_EQ(fabs(cSurface->GetHdrWhitePointBrightness() - 0.8) < 1e-6, true);
+    brightness = 0.5;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+    ASSERT_EQ(fabs(cSurface->GetHdrWhitePointBrightness() - 0.5) < 1e-6, true);
+
+    code = SET_SDR_WHITE_POINT_BRIGHTNESS;
+    brightness = 1.5;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+    ASSERT_EQ(fabs(cSurface->GetSdrWhitePointBrightness() - 0.5) < 1e-6, true);
+    brightness = -0.1;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+    ASSERT_EQ(fabs(cSurface->GetSdrWhitePointBrightness() - 0.5) < 1e-6, true);
+    brightness = 0.8;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness), OHOS::GSERROR_OK);
+    ASSERT_EQ(fabs(cSurface->GetSdrWhitePointBrightness() - 0.8) < 1e-6, true);
+}
+
+/*
 * Function: OH_NativeWindow_NativeWindowAttachBuffer
 * Type: Function
 * Rank: Important(2)

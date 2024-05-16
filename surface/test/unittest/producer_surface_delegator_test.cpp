@@ -314,7 +314,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, Function | MediumTes
         },
         .timestamp = 0
     };
-    GSError ret = qwe->RetryFlushBuffer(nullptr, 0, config);
+    GSError ret = qwe->RetryFlushBuffer(pBuffer, 0, config);
     ASSERT_EQ(ret, GSERROR_OK);
 }
 

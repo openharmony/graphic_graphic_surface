@@ -72,6 +72,8 @@ int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *wi
 int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t width, int32_t height);
 void NativeWindowSetBufferHold(OHNativeWindow *window);
 int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode);
+int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel);
+int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window);
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16]);
 
 #ifdef __cplusplus

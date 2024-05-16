@@ -121,6 +121,7 @@ ohos_shared_library("surface") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
+    "ipc:ipc_capi",
     "ipc:ipc_single",
   ]
 

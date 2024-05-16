@@ -22,6 +22,7 @@
 #include "external_window.h"
 #include "surface_utils.h"
 #include "sync_fence.h"
+#include "ipc_inner_object.h"
 
 using namespace std;
 using namespace testing;
@@ -1546,5 +1547,85 @@ HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest |
     delete rect;
     delete region;
     cSurface->SetBufferHold(false);
+}
+
+/*
+* Function: NativeWindow_ReadWriteWindow
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_WriteToParcel and OH_NativeWindow_ReadFromParcel
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(NativeWindowTest, NativeWindowReadWriteWindow001, Function | MediumTest | Level1)
+{
+    using namespace OHOS;
+    sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producer = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
+    auto uniqueId = nativeWindow->surface->GetUniqueId();
+    ASSERT_NE(nativeWindow, nullptr);
+    OHIPCParcel *parcel1 = OH_IPCParcel_Create();
+    OHIPCParcel *parcel2 = OH_IPCParcel_Create();
+    ASSERT_NE(parcel1, nullptr);
+    ASSERT_NE(parcel2, nullptr);
+    ASSERT_EQ(OH_NativeWindow_WriteToParcel(nullptr, parcel1), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_WriteToParcel(nativeWindow, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    auto innerParcel = parcel1->msgParcel;
+    parcel1->msgParcel = nullptr;
+    ASSERT_EQ(OH_NativeWindow_WriteToParcel(nativeWindow, parcel1), SURFACE_ERROR_INVALID_PARAM);
+    parcel1->msgParcel = innerParcel;
+    ASSERT_EQ(OH_NativeWindow_WriteToParcel(nativeWindow, parcel1), GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_WriteToParcel(nativeWindow, parcel2), GSERROR_OK);
+    // test read
+    OHNativeWindow *readWindow = nullptr;
+    ASSERT_EQ(OH_NativeWindow_ReadFromParcel(nullptr, &readWindow), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel1, &readWindow), GSERROR_OK);
+    ASSERT_NE(readWindow, nullptr);
+    // test read twice
+    OHNativeWindow *tempWindow = nullptr;
+    ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel1, &tempWindow), SURFACE_ERROR_INVALID_PARAM);
+    cout << "test read write window, write window is " << nativeWindow << ", read windows is " << readWindow << endl;
+    auto readId = readWindow->surface->GetUniqueId();
+    ASSERT_EQ(uniqueId, readId);
+    OHNativeWindow *readWindow1 = nullptr;
+    SurfaceUtils::GetInstance()->RemoveNativeWindow(uniqueId);
+    ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel2, &readWindow1), GSERROR_OK);
+    ASSERT_NE(readWindow1, nativeWindow);
+    auto readId1 = readWindow1->surface->GetUniqueId();
+    ASSERT_EQ(uniqueId, readId1);
+    cout << "write uniqueId is " << uniqueId << ", parcel1 read id is " << readId <<
+        ", parcel2 read id is " << readId1 << endl;
+    OH_NativeWindow_DestroyNativeWindow(readWindow1);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindow);
+    OH_IPCParcel_Destroy(parcel1);
+    OH_IPCParcel_Destroy(parcel2);
+}
+
+/*
+* Function: NativeWindow_ReadWriteWindow
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_WriteToParcel and OH_NativeWindow_ReadFromParcel
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(NativeWindowTest, NativeWindowReadWriteWindow002, Function | MediumTest | Level1)
+{
+    using namespace OHOS;
+    // test for no surface->GetUniqueId
+    OHNativeWindow* nativeWindow1 = new OHNativeWindow();
+    ASSERT_NE(nativeWindow1, nullptr);
+    OHIPCParcel *parcel1 = OH_IPCParcel_Create();
+    ASSERT_NE(parcel1, nullptr);
+    ASSERT_EQ(OH_NativeWindow_WriteToParcel(nativeWindow1, parcel1), SURFACE_ERROR_INVALID_PARAM);
+    OHNativeWindow *readWindow = nullptr;
+    ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel1, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel1, &readWindow), SURFACE_ERROR_INVALID_PARAM);
+    OH_IPCParcel_Destroy(parcel1);
+    delete nativeWindow1;
 }
 }

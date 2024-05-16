@@ -83,4 +83,11 @@ int ProducerSurfaceDelegator::OnRemoteRequest(uint32_t code, MessageParcel &data
 {
     return ERR_NONE;
 }
+
+GSError ProducerSurfaceDelegator::RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence,
+                                                   BufferFlushConfig& config)
+{
+    return GSERROR_OK;
+}
+
 } // namespace OHOS

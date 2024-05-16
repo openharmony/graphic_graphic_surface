@@ -22,6 +22,13 @@
 #include "hisysevent.h"
 #include "file_ex.h"
 
+#ifdef FENCE_SCHED_ENABLE
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
+
 namespace OHOS {
 using namespace OHOS::HiviewDFX;
 namespace {
@@ -29,6 +36,64 @@ namespace {
 #define LOG_DOMAIN 0xD001400
 #undef LOG_TAG
 #define LOG_TAG "SyncFence"
+
+#ifdef FENCE_SCHED_ENABLE
+constexpr unsigned int QOS_CTRL_IPC_MAGIC = 0xCC;
+
+#define QOS_CTRL_BASIC_OPERATION \
+    _IOWR(QOS_CTRL_IPC_MAGIC, 1, struct QosCtrlData)
+
+#define QOS_APPLY 1
+
+typedef enum {
+    QOS_BACKGROUND = 0,
+    QOS_UTILITY,
+    QOS_DEFAULT,
+    QOS_USER_INITIATED,
+    QOS_DEADLINE_REQUEST,
+    QOS_USER_INTERACTIVE,
+    QOS_KEY_BACKGROUND,
+} QosLevel;
+
+struct QosCtrlData {
+    int pid;
+    unsigned int type;
+    unsigned int level;
+    int qos;
+    int staticQos;
+    int dynamicQos;
+    bool tagSchedEnable = false;
+};
+
+static int TrivalOpenQosCtrlNode(void)
+{
+    char fileName[] = "/proc/thread-self/sched_qos_ctrl";
+    int fd = open(fileName, O_RDWR);
+    if (fd < 0) {
+        HILOG_WARN(LOG_CORE, "open qos node failed");
+    }
+    return fd;
+}
+
+void QosApply(unsigned int level)
+{
+    int fd = TrivalOpenQosCtrlNode();
+    if (fd < 0) {
+        return;
+    }
+
+    int tid = gettid();
+    struct QosCtrlData data;
+    data.level = level;
+    data.type = QOS_APPLY;
+    data.pid = tid;
+    int ret = ioctl(fd, QOS_CTRL_BASIC_OPERATION, &data);
+    if (ret < 0) {
+        HILOG_WARN(LOG_CORE, "qos apply failed");
+    }
+    close(fd);
+}
+#endif
 }
 
 SyncFenceTracker::SyncFenceTracker(const std::string threadName)
@@ -38,6 +103,14 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
 {
     runner_ = OHOS::AppExecFwk::EventRunner::Create(threadName_);
     handler_ = std::make_shared<OHOS::AppExecFwk::EventHandler>(runner_);
+
+#ifdef FENCE_SCHED_ENABLE
+    if (handler_) {
+        handler_->PostTask([]() {
+            QosApply(QosLevel::QOS_USER_INTERACTIVE);
+        });
+    }
+#endif
 }
 
 void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence)

@@ -215,6 +215,7 @@ ohos_unittest("native_window_test") {
   module_out_path = module_out_path
 
   sources = [ "native_window_test.cpp" ]
+  include_dirs = [ "//foundation/communication/ipc/interfaces/innerkits/c_api/include" ]
 
   deps = [ ":surface_test_common" ]
 }

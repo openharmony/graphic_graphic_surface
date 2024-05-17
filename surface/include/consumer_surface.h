@@ -150,6 +150,10 @@ public:
     std::string GetSurfaceAppFrameworkType() const override;
 
     BufferRequestConfig* GetWindowConfig() override;
+    GSError SetHdrWhitePointBrightness(float brightness) override;
+    GSError SetSdrWhitePointBrightness(float brightness) override;
+    float GetHdrWhitePointBrightness() const override;
+    float GetSdrWhitePointBrightness() const override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

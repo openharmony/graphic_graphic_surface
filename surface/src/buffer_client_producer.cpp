@@ -715,4 +715,36 @@ GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFramewo
     appFrameworkType = static_cast<std::string>(reply.ReadString());
     return GSERROR_OK;
 }
+
+GSError BufferClientProducer::SetHdrWhitePointBrightness(float brightness)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+
+    arguments.WriteFloat(brightness);
+
+    SEND_REQUEST(BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return (GSError)ret;
+    }
+
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::SetSdrWhitePointBrightness(float brightness)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+
+    arguments.WriteFloat(brightness);
+
+    SEND_REQUEST(BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return (GSError)ret;
+    }
+
+    return GSERROR_OK;
+}
 }; // namespace OHOS

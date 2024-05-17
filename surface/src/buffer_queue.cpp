@@ -1307,6 +1307,28 @@ OHSurfaceSource BufferQueue::GetSurfaceSourceType() const
     return sourceType_;
 }
 
+GSError BufferQueue::SetHdrWhitePointBrightness(float brightness)
+{
+    hdrWhitePointBrightness_ = brightness;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetSdrWhitePointBrightness(float brightness)
+{
+    sdrWhitePointBrightness_ = brightness;
+    return GSERROR_OK;
+}
+
+float BufferQueue::GetHdrWhitePointBrightness() const
+{
+    return hdrWhitePointBrightness_;
+}
+
+float BufferQueue::GetSdrWhitePointBrightness() const
+{
+    return sdrWhitePointBrightness_;
+}
+
 GSError BufferQueue::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
     if (appFrameworkType.empty()) {
@@ -1606,7 +1628,7 @@ void BufferQueue::Dump(std::string &result)
     ss.str("");
     ss << memSizeInKB;
     std::string str = ss.str();
-    result.append("    BufferQueue:\n");
+    result.append("\nBufferQueue:\n");
     result += "      default-size = [" + std::to_string(defaultWidth) + "x" + std::to_string(defaultHeight) + "]" +
         ", FIFO = " + std::to_string(queueSize_) +
         ", name = " + name_ +
@@ -1614,7 +1636,9 @@ void BufferQueue::Dump(std::string &result)
         ", usedBufferListLen = " + std::to_string(GetUsedSize()) +
         ", freeBufferListLen = " + std::to_string(freeList_.size()) +
         ", dirtyBufferListLen = " + std::to_string(dirtyList_.size()) +
-        ", totalBuffersMemSize = " + str + "(KiB).\n";
+        ", totalBuffersMemSize = " + str + "(KiB)" +
+        ", hdrWhitePointBrightness = " + std::to_string(hdrWhitePointBrightness_) +
+        ", sdrWhitePointBrightness = " + std::to_string(sdrWhitePointBrightness_) + "\n";
 
     result.append("      bufferQueueCache:\n");
     DumpCache(result);

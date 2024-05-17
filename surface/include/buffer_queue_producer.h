@@ -106,6 +106,9 @@ public:
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     GSError GetSurfaceAppFrameworkType(std::string &appFrameworkType) override;
 
+    GSError SetHdrWhitePointBrightness(float brightness) override;
+    GSError SetSdrWhitePointBrightness(float brightness) override;
+
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -151,6 +154,8 @@ private:
 
     int32_t SetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetHdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);

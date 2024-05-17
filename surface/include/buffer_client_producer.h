@@ -93,6 +93,9 @@ public:
 
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     GSError GetSurfaceAppFrameworkType(std::string &appFrameworkType) override;
+
+    GSError SetHdrWhitePointBrightness(float brightness) override;
+    GSError SetSdrWhitePointBrightness(float brightness) override;
 private:
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     std::string name_ = "not init";

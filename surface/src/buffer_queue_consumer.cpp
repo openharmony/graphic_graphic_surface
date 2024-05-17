@@ -260,4 +260,22 @@ GSError BufferQueueConsumer::GoBackground()
     }
     return bufferQueue_->GoBackground();
 }
+
+float BufferQueueConsumer::GetHdrWhitePointBrightness() const
+{
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetHdrWhitePointBrightness();
+}
+
+float BufferQueueConsumer::GetSdrWhitePointBrightness() const
+{
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetSdrWhitePointBrightness();
+}
 } // namespace OHOS

@@ -796,4 +796,22 @@ BufferRequestConfig* ProducerSurface::GetWindowConfig()
 {
     return &windowConfig_;
 }
+
+GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)
+{
+    if (brightness < 0.0 || brightness > 1.0) {
+        BLOGNE("input brightness over range[0.0-1.0], brightness:%{public}f", brightness);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetHdrWhitePointBrightness(brightness);
+}
+
+GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
+{
+    if (brightness < 0.0 || brightness > 1.0) {
+        BLOGNE("input brightness over range[0.0-1.0], brightness:%{public}f", brightness);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetSdrWhitePointBrightness(brightness);
+}
 } // namespace OHOS

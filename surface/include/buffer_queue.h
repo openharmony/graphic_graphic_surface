@@ -169,6 +169,11 @@ public:
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType);
     std::string GetSurfaceAppFrameworkType() const;
 
+    GSError SetHdrWhitePointBrightness(float brightness);
+    GSError SetSdrWhitePointBrightness(float brightness);
+    float GetHdrWhitePointBrightness() const;
+    float GetSdrWhitePointBrightness() const;
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     void DeleteBufferInCache(uint32_t sequence);
@@ -234,6 +239,8 @@ private:
     bool isBufferHold_ = false;
     OHSurfaceSource sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     std::string appFrameworkType_ = "";
+    float hdrWhitePointBrightness_ = 0.0;
+    float sdrWhitePointBrightness_ = 0.0;
 };
 }; // namespace OHOS
 

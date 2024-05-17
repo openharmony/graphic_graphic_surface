@@ -145,6 +145,8 @@ public:
     std::string GetSurfaceAppFrameworkType() const override;
 
     BufferRequestConfig* GetWindowConfig() override;
+    GSError SetHdrWhitePointBrightness(float brightness) override;
+    GSError SetSdrWhitePointBrightness(float brightness) override;
 private:
     bool IsRemote();
     void CleanAllLocked();

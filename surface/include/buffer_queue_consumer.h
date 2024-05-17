@@ -77,6 +77,8 @@ public:
         }
         return bufferQueue_->IsBufferHold();
     }
+    float GetHdrWhitePointBrightness() const;
+    float GetSdrWhitePointBrightness() const;
 
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;

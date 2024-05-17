@@ -236,6 +236,20 @@ typedef enum NativeWindowOperation {
      * @since 12
      */
     GET_APP_FRAMEWORK_TYPE,
+    /**
+     * set hdr white point brightness,
+     * variable parameter in function is
+     * [in] float brightness. the value range is 0.0f to 1.0f.
+     * @since 12
+     */
+    SET_HDR_WHITE_POINT_BRIGHTNESS,
+    /**
+     * set sdr white point brightness,
+     * variable parameter in function is
+     * [in] float brightness. the value range is 0.0f to 1.0f.
+     * @since 12
+     */
+    SET_SDR_WHITE_POINT_BRIGHTNESS,
 } NativeWindowOperation;
 
 /**

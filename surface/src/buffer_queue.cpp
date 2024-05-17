@@ -1276,7 +1276,21 @@ uint64_t BufferQueue::GetUniqueId() const
 
 GSError BufferQueue::SetTransform(GraphicTransformType transform)
 {
+    if (transform_ == transform) {
+        return GSERROR_OK
+    }
+
     transform_ = transform;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        if (listener_ != nullptr) {
+            ScopedBytrace bufferIPCSend("OnTransformChange");
+            listener_->OnTransformChange();
+        } else if (listenerClazz_ != nullptr) {
+            ScopedBytrace bufferIPCSend("OnTransformChange");
+            listenerClazz_->OnTransformChange();
+        }
+    }
     return GSERROR_OK;
 }
 

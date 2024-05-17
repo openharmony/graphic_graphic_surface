@@ -294,4 +294,28 @@ HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, Function | MediumTest |
 {
     ASSERT_EQ(qwe->GetSlotLocked(nullptr), 0);
 }
+
+/*
+* Function: RetryFlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RetryFlushBuffer
+*                  2. check ret
+*/
+HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, Function | MediumTest | Level2)
+{
+    BufferFlushConfig config = {
+        .damage = {
+            .x = 0,
+            .y = 0,
+            .w = 0,
+            .h = 0,
+        },
+        .timestamp = 0
+    };
+    GSError ret = qwe->RetryFlushBuffer(pBuffer, 0, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
 } // namespace OHOS::Rosen

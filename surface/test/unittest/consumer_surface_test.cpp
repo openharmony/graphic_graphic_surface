@@ -425,10 +425,12 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener001, Function | MediumTest
     listener->OnTunnelHandleChange();
     listener->OnGoBackground();
     listener->OnCleanCache();
+    listener->OnTransformChange();
     TestConsumerListenerClazz* listenerClazz = new TestConsumerListenerClazz();
     listenerClazz->OnTunnelHandleChange();
     listenerClazz->OnGoBackground();
     listenerClazz->OnCleanCache();
+    listenerClazz->OnTransformChange();
 }
 
 /*

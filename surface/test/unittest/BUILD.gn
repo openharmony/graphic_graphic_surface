@@ -215,6 +215,7 @@ ohos_unittest("native_window_test") {
   module_out_path = module_out_path
 
   sources = [ "native_window_test.cpp" ]
+  external_deps = [ "ipc:ipc_capi" ]
 
   deps = [ ":surface_test_common" ]
 }

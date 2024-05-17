@@ -27,6 +27,7 @@ public:
     virtual void OnTunnelHandleChange() {};
     virtual void OnGoBackground() {};
     virtual void OnCleanCache() {};
+    virtual void OnTransformChange() {};
 };
 
 class IBufferConsumerListenerClazz {
@@ -36,6 +37,7 @@ public:
     virtual void OnTunnelHandleChange() {};
     virtual void OnGoBackground() {};
     virtual void OnCleanCache() {};
+    virtual void OnTransformChange() {};
 };
 } // namespace OHOS
 

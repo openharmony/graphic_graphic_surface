@@ -1277,7 +1277,7 @@ uint64_t BufferQueue::GetUniqueId() const
 GSError BufferQueue::SetTransform(GraphicTransformType transform)
 {
     if (transform_ == transform) {
-        return GSERROR_OK
+        return GSERROR_OK;
     }
 
     transform_ = transform;

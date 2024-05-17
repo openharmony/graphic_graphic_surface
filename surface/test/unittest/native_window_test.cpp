@@ -23,7 +23,7 @@
 #include "surface_utils.h"
 #include "sync_fence.h"
 #include "ipc_inner_object.h"
-#include "ipc_kit.h"
+#include "ipc_cparcel.h"
 
 using namespace std;
 using namespace testing;

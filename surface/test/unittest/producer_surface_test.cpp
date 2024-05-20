@@ -920,6 +920,19 @@ HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, Function | MediumTest
 }
 
 /*
+* Function: CleanCache001
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. CleanCache and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, CleanCache001, Function | MediumTest | Level2)
+{
+    GSError ret = pSurface->CleanCache(true);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: SetSurfaceSourceType and GetSurfaceSourceType
 * Type: Function
 * Rank: Important(2)

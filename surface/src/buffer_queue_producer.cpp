@@ -382,7 +382,8 @@ int32_t BufferQueueProducer::GetUniqueIdRemote(MessageParcel &arguments, Message
 
 int32_t BufferQueueProducer::CleanCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    reply.WriteInt32(CleanCache());
+    bool cleanAll = arguments.ReadBool();
+    reply.WriteInt32(CleanCache(cleanAll));
     return 0;
 }
 
@@ -800,7 +801,7 @@ uint64_t BufferQueueProducer::GetUniqueId()
     return bufferQueue_->GetUniqueId();
 }
 
-GSError BufferQueueProducer::CleanCache()
+GSError BufferQueueProducer::CleanCache(bool cleanAll)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -814,7 +815,7 @@ GSError BufferQueueProducer::CleanCache()
         }
     }
 
-    return bufferQueue_->CleanCache();
+    return bufferQueue_->CleanCache(cleanAll);
 }
 
 GSError BufferQueueProducer::GoBackground()
@@ -990,7 +991,7 @@ GSError BufferQueueProducer::Disconnect()
         }
         connectedPid_ = 0;
     }
-    return bufferQueue_->CleanCache();
+    return bufferQueue_->CleanCache(false);
 }
 
 GSError BufferQueueProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
@@ -1105,7 +1106,7 @@ void BufferQueueProducer::OnBufferProducerRemoteDied()
         }
         connectedPid_ = 0;
     }
-    bufferQueue_->CleanCache();
+    bufferQueue_->CleanCache(false);
 }
 
 BufferQueueProducer::ProducerSurfaceDeathRecipient::ProducerSurfaceDeathRecipient(

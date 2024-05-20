@@ -68,7 +68,7 @@ public:
     virtual GSError SetDefaultUsage(uint64_t usage) = 0;
     virtual uint64_t GetDefaultUsage() = 0;
 
-    virtual GSError CleanCache() = 0;
+    virtual GSError CleanCache(bool cleanAll = false) = 0;
     virtual GSError GoBackground() = 0;
 
     virtual GSError RegisterReleaseListener(sptr<IProducerListener> listener) = 0;

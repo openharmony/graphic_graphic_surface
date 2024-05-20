@@ -82,7 +82,7 @@ public:
     virtual GSError UnregisterConsumerListener() = 0;
 
     // Call carefully. This interface will empty all caches of the current process
-    virtual GSError CleanCache() = 0;
+    virtual GSError CleanCache(bool cleanAll = false) = 0;
     virtual GSError GoBackground() = 0;
 
     virtual GSError SetTransform(GraphicTransformType transform) = 0;

@@ -114,7 +114,7 @@ public:
     GSError SetDefaultUsage(uint64_t usage);
     uint64_t GetDefaultUsage();
 
-    GSError CleanCache();
+    GSError CleanCache(bool cleanAll);
     GSError GoBackground();
     GSError OnConsumerDied();
 

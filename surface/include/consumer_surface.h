@@ -92,7 +92,7 @@ public:
 
     void Dump(std::string &result) const override;
 
-    GSError CleanCache() override;
+    GSError CleanCache(bool cleanAll = false) override;
     GSError GoBackground() override;
 
     GSError SetTransform(GraphicTransformType transform) override;

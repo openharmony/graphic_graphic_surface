@@ -568,14 +568,14 @@ void ProducerSurface::CleanAllLocked()
     }
 }
 
-GSError ProducerSurface::CleanCache()
+GSError ProducerSurface::CleanCache(bool cleanAll)
 {
     BLOGND("Queue Id:%{public}" PRIu64, queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         CleanAllLocked();
     }
-    return producer_->CleanCache();
+    return producer_->CleanCache(cleanAll);
 }
 
 GSError ProducerSurface::GoBackground()

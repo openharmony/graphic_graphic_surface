@@ -53,21 +53,21 @@ inline GSError GenerateError(GSError err, int32_t code)
 
 using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_2::IDisplayBuffer>;
 static IDisplayBufferSptr g_displayBuffer;
-static std::mutex g_DisplayBufferMutex;
+static std::mutex g_displayBufferMutex;
 class DisplayBufferDiedRecipient : public OHOS::IRemoteObject::DeathRecipient {
 public:
     DisplayBufferDiedRecipient() = default;
     virtual ~DisplayBufferDiedRecipient() = default;
     void OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject>& remote) override
     {
-        std::lock_guard<std::mutex> lock(g_DisplayBufferMutex);
+        std::lock_guard<std::mutex> lock(g_displayBufferMutex);
         g_displayBuffer = nullptr;
         BLOGD("IDisplayBuffer died and g_displayBuffer is nullptr");
     };
 };
 IDisplayBufferSptr GetDisplayBuffer()
 {
-    std::lock_guard<std::mutex> lock(g_DisplayBufferMutex);
+    std::lock_guard<std::mutex> lock(g_displayBufferMutex);
     if (g_displayBuffer != nullptr) {
         return g_displayBuffer;
     }
@@ -92,7 +92,7 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
 
 void SurfaceBufferImpl::DisplayBufferDeathCallback(void* data)
 {
-    std::lock_guard<std::mutex> lock(g_DisplayBufferMutex);
+    std::lock_guard<std::mutex> lock(g_displayBufferMutex);
     g_displayBuffer = nullptr;
     BLOGD("gralloc_host died and g_displayBuffer is nullptr.");
 }

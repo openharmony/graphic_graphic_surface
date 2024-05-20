@@ -634,16 +634,7 @@ GSError BufferClientProducer::GetTransform(GraphicTransformType &transform)
 
 GSError BufferClientProducer::GetTransformHint(GraphicTransformType &transformHint)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
-    SEND_REQUEST(BUFFER_PRODUCER_GET_TRANSFORMHINT, arguments, reply, option);
-
-    auto ret = static_cast<GSError>(reply.ReadInt32());
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", static_cast<int>(ret));
-        return ret;
-    }
-    transformHint = static_cast<GraphicTransformType>(reply.ReadUint32());
-    return GSERROR_OK;
+    return GSERROR_NOT_SUPPORT;
 }
 
 GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHint)

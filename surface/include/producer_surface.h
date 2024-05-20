@@ -166,6 +166,7 @@ private:
     std::mutex lockMutex_;
     int32_t requestWidth_ = 0;
     int32_t requestHeight_ = 0;
+    GraphicTransformType lastSetTransformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BufferRequestConfig windowConfig_ = {0};
 };
 } // namespace OHOS

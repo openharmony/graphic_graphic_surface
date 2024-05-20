@@ -381,17 +381,18 @@ int32_t ProducerSurface::GetDefaultHeight()
 
 GraphicTransformType ProducerSurface::GetTransformHint() const
 {
-    GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
-    if (producer_->GetTransformHint(transformHint) != GSERROR_OK) {
-        BLOGNE("Warning ProducerSurface GetTransformHint failed.");
-        return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
-    }
-    return transformHint;
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return lastSetTransformHint_;
 }
 
 GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
 {
-    return producer_->SetTransformHint(transformHint);
+    GSError err = producer_->SetTransformHint(transformHint);
+    if (err == GSERROR_OK) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        lastSetTransformHint_ = transformHint;
+    }
+    return err;
 }
 
 GSError ProducerSurface::SetDefaultUsage(uint64_t usage)

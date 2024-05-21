@@ -65,7 +65,7 @@ public:
     GSError SetDefaultUsage(uint64_t usage) override;
     uint64_t GetDefaultUsage() override;
 
-    GSError CleanCache() override;
+    GSError CleanCache(bool cleanAll) override;
     GSError GoBackground() override;
 
     GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;

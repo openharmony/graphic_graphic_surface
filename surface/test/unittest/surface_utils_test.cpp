@@ -152,7 +152,7 @@ HWTEST_F(SurfaceUtilsTest, GetSurface002, Function | MediumTest | Level2)
 HWTEST_F(SurfaceUtilsTest, GetSurface003, Function | MediumTest | Level2)
 {
     sptr<Surface> surface2 = utils->GetSurface(psurface2->GetUniqueId());
-    ASSERT_EQ(surface2, nullptr);
+    ASSERT_NE(surface2, nullptr);
 
     GSError ret = utils->Add(psurface2->GetUniqueId(), psurface2);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

@@ -98,7 +98,7 @@ public:
     void Dump(std::string &result) const override {};
 
     // Call carefully. This interface will empty all caches of the current process
-    GSError CleanCache() override;
+    GSError CleanCache(bool cleanAll = false) override;
     GSError GoBackground() override;
 
     GSError SetTransform(GraphicTransformType transform) override;

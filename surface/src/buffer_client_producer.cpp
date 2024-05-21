@@ -398,10 +398,11 @@ uint64_t BufferClientProducer::GetDefaultUsage()
     return reply.ReadUint32();
 }
 
-GSError BufferClientProducer::CleanCache()
+GSError BufferClientProducer::CleanCache(bool cleanAll)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
 
+    arguments.WriteBool(cleanAll);
     SEND_REQUEST(BUFFER_PRODUCER_CLEAN_CACHE, arguments, reply, option);
     int32_t ret = reply.ReadInt32();
     if (ret != GSERROR_OK) {

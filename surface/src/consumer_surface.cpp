@@ -375,8 +375,9 @@ GSError ConsumerSurface::ClearUserDataChangeListener()
     return GSERROR_OK;
 }
 
-GSError ConsumerSurface::CleanCache()
+GSError ConsumerSurface::CleanCache(bool cleanAll)
 {
+    (void)cleanAll;
     return GSERROR_NOT_SUPPORT;
 }
 

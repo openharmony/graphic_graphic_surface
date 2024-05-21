@@ -552,7 +552,7 @@ HWTEST_F(BufferClientProducerRemoteTest, GoBackground001, Function | MediumTest 
 */
 HWTEST_F(BufferClientProducerRemoteTest, AttachBuffer001, Function | MediumTest | Level2)
 {
-    GSError ret = bp->CleanCache();
+    GSError ret = bp->CleanCache(false);
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     ASSERT_NE(buffer, nullptr);
     ret = buffer->Alloc(requestConfig);

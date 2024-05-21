@@ -173,6 +173,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
                                      BufferFlushConfigWithDamages &config)
 {
     if (buffer == nullptr) {
+        BLOGNE("Input buffer is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
 

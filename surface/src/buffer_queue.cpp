@@ -467,14 +467,15 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
-        return GSERROR_NO_ENTRY;
+        BLOGN_FAILURE_ID(sequence, "bufferQueueCache not find sequence:%{public}u", sequence);
+        return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
 
     if (isShared_ == false) {
         auto &state = bufferQueueCache_[sequence].state;
         if (state != BUFFER_STATE_REQUESTED && state != BUFFER_STATE_ATTACHED) {
             BLOGN_FAILURE_ID(sequence, "invalid state %{public}d", state);
-            return GSERROR_NO_ENTRY;
+            return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
     }
     return GSERROR_OK;
@@ -529,6 +530,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ == nullptr && listenerClazz_ == nullptr) {
+            BLOGNE("Consumer is not ready");
             CancelBuffer(sequence, bedata);
             return GSERROR_NO_CONSUMER;
         }
@@ -624,7 +626,8 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
-        return GSERROR_NO_ENTRY;
+        BLOGE("bufferQueueCache not find sequence:%{public}u", sequence);
+        return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
     if (bufferQueueCache_[sequence].isDeleting) {
         DeleteBufferInCache(sequence);

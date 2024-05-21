@@ -23,6 +23,7 @@
 #include <parameters.h>
 #include <scoped_bytrace.h>
 
+#include "acquire_fence_manager.h"
 #include "buffer_utils.h"
 #include "buffer_log.h"
 #include "hitrace_meter.h"
@@ -653,10 +654,9 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     }
 
     bufferQueueCache_[sequence].timestamp = config.timestamp;
-
-    if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isLocalRender_) {
-        static SyncFenceTracker acquireFenceThread("Acquire Fence");
-        acquireFenceThread.TrackFence(fence);
+    bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
+    if (isLocalRender_ && traceTag) {
+        AcquireFenceTracker::TrackFence(fence, traceTag);
     }
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1
     // and reboot your device

@@ -1013,7 +1013,7 @@ HWTEST_F(NativeWindowTest, FlushBuffer003, Function | MediumTest | Level2)
     rect->h = 0x100;
     region->rects = rect;
     ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
-              OHOS::GSERROR_OK);
+              OHOS::SURFACE_ERROR_BUFFER_STATE_INVALID);
     delete rect;
     delete region;
 }
@@ -1579,7 +1579,7 @@ HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest |
     region->rectNumber = 0;
     region->rects = nullptr;
     ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
-              OHOS::GSERROR_OK);
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
     region->rectNumber = 1;
     struct Region::Rect * rect = new Region::Rect();
     rect->x = 0x100;
@@ -1588,7 +1588,7 @@ HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest |
     rect->h = 0x100;
     region->rects = rect;
     ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
-              OHOS::GSERROR_OK);
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
     delete rect;
     delete region;
     cSurface->SetBufferHold(false);

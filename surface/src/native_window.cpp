@@ -193,7 +193,12 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         config.timestamp = buffer->uiTimestamp;
     }
     OHOS::sptr<OHOS::SyncFence> acquireFence = new OHOS::SyncFence(fenceFd);
-    window->surface->FlushBuffer(buffer->sfbuffer, acquireFence, config);
+    int32_t ret = window->surface->FlushBuffer(buffer->sfbuffer, acquireFence, config);
+    if (ret != OHOS::GSError::SURFACE_ERROR_OK) {
+        BLOGE("FlushBuffer buffer failed, ret:%{public}d, Queue Id:%{public}" PRIu64,
+            ret, window->surface->GetUniqueId());
+        return ret;
+    }
 
     for (auto &[seqNum, buf] : window->bufferCache_) {
         if (buf == buffer) {

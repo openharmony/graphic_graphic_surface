@@ -245,7 +245,7 @@ GSError SurfaceBufferImpl::FlushCache()
 {
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
-        return GSERROR_INTERNAL;
+        return SURFACE_ERROR_UNKOWN;
     }
     BufferHandle *handle = nullptr;
     {
@@ -258,7 +258,8 @@ GSError SurfaceBufferImpl::FlushCache()
     }
 
     if (handle->virAddr == nullptr) {
-        return GSERROR_API_FAILED;
+        BLOGE("Get virAddr is nullptr");
+        return SURFACE_ERROR_UNKOWN;
     }
 
     auto dret = g_displayBuffer->FlushCache(*handle);

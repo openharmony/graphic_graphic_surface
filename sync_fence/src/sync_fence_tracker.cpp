@@ -17,6 +17,7 @@
 #include <cinttypes>
 
 #include "sync_fence_tracker.h"
+#include "frame_sched.h"
 #include "hilog/log.h"
 #include "rs_trace.h"
 #include "hisysevent.h"
@@ -36,6 +37,9 @@ namespace {
 #define LOG_DOMAIN 0xD001400
 #undef LOG_TAG
 #define LOG_TAG "SyncFence"
+
+constexpr int FRAME_SET_BLUR_SIZE_ID = 100007;
+constexpr int FRAME_SET_CONTAINER_NODE_ID = 100008;
 
 #ifdef FENCE_SCHED_ENABLE
 constexpr unsigned int QOS_CTRL_IPC_MAGIC = 0xCC;
@@ -111,9 +115,12 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
         });
     }
 #endif
+    if (threadName_.compare("Acquire Fence") == 0) {
+        isGpuFence_ = true;
+    }
 }
 
-void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence)
+void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
 {
     if (fence->SyncFileReadTimestamp() != SyncFence::FENCE_PENDING_TIMESTAMP) {
         RS_TRACE_NAME_FMT("%s %d has signaled", threadName_.c_str(), fencesQueued_.load());
@@ -124,8 +131,12 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence)
 
     RS_TRACE_NAME_FMT("%s %d", threadName_.c_str(), fencesQueued_.load());
     if (handler_) {
-        handler_->PostTask([this, fence]() {
-            Loop(fence);
+        handler_->PostTask([this, fence, traceTag]() {
+            if (isGpuFence_) {
+                Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_CONTAINER_NODE_ID, 0, 0, processedNodeNum_);
+                processedNodeNum_ = 0;
+            }
+            Loop(fence, traceTag);
         });
         fencesQueued_++;
     }
@@ -188,20 +199,20 @@ void SyncFenceTracker::ReportEventGpuSubhealth(int32_t duration)
     }
 }
 
-void SyncFenceTracker::Loop(const sptr<SyncFence>& fence)
+void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
 {
     uint32_t fenceIndex = 0;
     fenceIndex = fencesSignaled_.load();
     {
+        HILOG_ERROR(LOG_CORE, "SyncFenceTracker monitor gpu:%s is gpu fence is %d", threadName_.c_str(), isGpuFence_);
         RS_TRACE_NAME_FMT("Waiting for %s %d", threadName_.c_str(), fenceIndex);
-        int32_t result;
-        
-        if (threadName_.compare("Acquire Fence") == 0) {
+        int32_t result = 0;
+        if (isGpuFence_ && traceTag) {
             int32_t startTimestamp = static_cast<int32_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count());
             UpdateFrameQueue(startTimestamp);
-            result = fence->Wait(SYNC_TIME_OUT);
+            result = WaitFence(fence);
             int32_t endTimestamp = static_cast<int32_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count());
@@ -211,7 +222,7 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence)
                 ReportEventGpuSubhealth(duration);
             }
         } else {
-            result = fence->Wait(SYNC_TIME_OUT);
+            result = WaitFence(fence);
         }
 
         if (result < 0) {
@@ -219,5 +230,31 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence)
         }
     }
     fencesSignaled_++;
+}
+
+int32_t SyncFenceTracker::WaitFence(const sptr<SyncFence>& fence)
+{
+    if (isGpuFence_) {
+        Rosen::FrameSched::GetInstance().MonitorGpuStart();
+    }
+    int32_t result = fence->Wait(SYNC_TIME_OUT);
+    if (isGpuFence_) {
+        Rosen::FrameSched::GetInstance().MonitorGpuEnd();
+    }
+    return result;
+}
+
+void SyncFenceTracker::SetBlurSize(int32_t blurSize)
+{
+    if (handler_) {
+        handler_->PostTask([blurSize]() {
+            Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_BLUR_SIZE_ID, 0, 0, blurSize);
+        });
+    }
+}
+
+void SyncFenceTracker::SetContainerNodeNum(int containerNodeNum)
+{
+    processedNodeNum_ += containerNodeNum;
 }
 } // namespace OHOS

@@ -225,7 +225,9 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     GSError ret = MetadataHelper::SetColorSpaceType(sbuffer, NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
-    if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

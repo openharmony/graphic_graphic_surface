@@ -1044,6 +1044,10 @@ HWTEST_F(NativeWindowTest, GetLastFlushedBuffer001, Function | MediumTest | Leve
     int32_t transform = GraphicTransformType::GRAPHIC_ROTATE_90;
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, transform), OHOS::GSERROR_OK);
 
+    code = SET_FORMAT;
+    int32_t format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, format), OHOS::GSERROR_OK);
+
     NativeWindowBuffer *nativeWindowBuffer = nullptr;
     int fenceFd = -1;
     int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);

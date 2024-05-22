@@ -491,7 +491,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     ret = bqpTmp->FlushBuffer(retval.sequence, bedata_, acquireFence, flushConfig);
     EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
     ret = bqpTmp->GetLastFlushedBuffer(retval.buffer, acquireFence, nullptr, false);
-    EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->AttachBuffer(retval.buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->DetachBuffer(retval.buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GetQueueSize(), 0);

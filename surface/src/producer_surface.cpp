@@ -134,13 +134,6 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     buffer = retval.buffer;
     fence = retval.fence;
 
-    if (static_cast<uint64_t>(config.usage) & BUFFER_USAGE_CPU_WRITE) {
-        ret = buffer->InvalidateCache();
-        if (ret != GSERROR_OK) {
-            BLOGNW("Warning [%{public}d], InvalidateCache failed", retval.sequence);
-        }
-    }
-
     if (buffer != nullptr) {
         buffer->SetExtraData(bedataimpl);
     }

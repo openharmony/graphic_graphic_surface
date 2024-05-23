@@ -78,6 +78,12 @@ int ProducerSurfaceDelegator::OnDequeueBuffer(MessageParcel &data, MessageParcel
     return ERR_NONE;
 }
 
+int ProducerSurfaceDelegator::OnSetDataspace(MessageParcel& data, MessageParcel& reply)
+{
+    mAncoDataspace = 0;
+    return ERR_NONE;
+}
+
 int ProducerSurfaceDelegator::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {

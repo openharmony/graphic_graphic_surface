@@ -255,7 +255,7 @@ HWTEST_F(SurfaceIPCTest, Connect001, Function | MediumTest | Level2)
     sptr<SurfaceBuffer> buffer = nullptr;
     int releaseFence = -1;
     auto sRet = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
-    ASSERT_EQ(sRet, OHOS::GSERROR_INVALID_OPERATING);  // RequestBuffer cannot be called in two processes
+    ASSERT_EQ(sRet, OHOS::SURFACE_ERROR_CONSUMER_IS_CONNECTED);  // RequestBuffer cannot be called in two processes
     ASSERT_EQ(buffer, nullptr);
 }
 

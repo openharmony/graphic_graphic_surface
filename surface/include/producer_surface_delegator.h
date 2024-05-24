@@ -36,6 +36,7 @@ public:
     GSError ClearAllBuffers();
     GSError CancelBuffer(int32_t slot, int32_t fenceFd);
     GSError DetachBuffer(int32_t slot);
+    int OnSetDataspace(MessageParcel& data, MessageParcel& reply);
     int OnDequeueBuffer(MessageParcel &data, MessageParcel &reply);
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 
@@ -44,6 +45,7 @@ private:
     std::vector<sptr<SurfaceBuffer>> pendingReleaseBuffer_;
     std::mutex mapMutex_;
     std::mutex mstate_;
+    uint32_t mAncoDataspace = 0;
 
     void AddBufferLocked(const sptr<SurfaceBuffer>& buffer, int32_t slot);
     sptr<SurfaceBuffer> GetBufferLocked(int32_t slot);

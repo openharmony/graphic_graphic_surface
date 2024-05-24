@@ -318,4 +318,19 @@ HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, Function | MediumTes
     ASSERT_EQ(ret, GSERROR_OK);
 }
 
+/*
+* Function: OnSetDataspace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OnSetDataspace
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, Function | MediumTest | Level2)
+{
+    MessageParcel reply;
+    MessageParcel data;
+    data.WriteUint32(1);
+    ASSERT_EQ(qwe->OnSetDataspace(data, reply), 0);
+}
 } // namespace OHOS::Rosen

@@ -330,7 +330,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, Function | MediumTest | 
 {
     MessageParcel reply;
     MessageParcel data;
-    data.WriteInt32(1);
+    data.WriteUint32(1);
     ASSERT_EQ(qwe->OnSetDataspace(data, reply), 0);
 }
 } // namespace OHOS::Rosen

@@ -56,6 +56,7 @@ ohos_unittest("producer_surface_delegator_test") {
   }
 
   deps = [ ":surface_test_common" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
 }
 
 ## UnitTest producer_surface_delegator_test }}}
@@ -73,6 +74,7 @@ ohos_unittest("consumer_surface_delegator_test") {
   }
 
   deps = [ ":surface_test_common" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
 }
 
 ## UnitTest consumer_surface_delegator_test }}}
@@ -90,6 +92,7 @@ ohos_unittest("transact_surface_delegator_stub_test") {
   }
 
   deps = [ ":surface_test_common" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
 }
 
 ## UnitTest transact_surface_delegator_stub_test }}}
@@ -168,8 +171,10 @@ ohos_unittest("consumer_surface_test") {
 
   deps = [ ":surface_test_common" ]
 
-  external_deps =
-      [ "drivers_interface_display:display_commontype_idl_headers_1.1" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "drivers_interface_display:display_commontype_idl_headers_1.1",
+  ]
 }
 
 ## UnitTest consumer_surface_test }}}
@@ -181,6 +186,7 @@ ohos_unittest("producer_surface_test") {
   sources = [ "producer_surface_test.cpp" ]
 
   deps = [ ":surface_test_common" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
 }
 
 ## UnitTest producer_surface_test }}}
@@ -193,8 +199,10 @@ ohos_unittest("surface_buffer_impl_test") {
 
   deps = [ ":surface_test_common" ]
 
-  external_deps =
-      [ "drivers_interface_display:display_commontype_idl_headers_1.1" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "drivers_interface_display:display_commontype_idl_headers_1.1",
+  ]
 }
 
 ## UnitTest surface_buffer_impl_test }}}
@@ -206,6 +214,7 @@ ohos_unittest("surface_utils_test") {
   sources = [ "surface_utils_test.cpp" ]
 
   deps = [ ":surface_test_common" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
 }
 
 ## UnitTest surface_utils_test }}}
@@ -215,7 +224,10 @@ ohos_unittest("native_window_test") {
   module_out_path = module_out_path
 
   sources = [ "native_window_test.cpp" ]
-  external_deps = [ "ipc:ipc_capi" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "ipc:ipc_capi",
+  ]
 
   deps = [ ":surface_test_common" ]
 }

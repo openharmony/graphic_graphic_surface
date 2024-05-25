@@ -283,7 +283,8 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         return ret;
     }
 
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("RequestBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " queueSize: " + std::to_string(GetQueueSize()));
     // check param
     ret = CheckRequestConfig(config);
     if (ret != GSERROR_OK) {
@@ -311,7 +312,11 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         if (ret == GSERROR_OK) {
             return ReuseBuffer(config, bedata, retval);
         } else if (GetUsedSize() >= GetQueueSize()) {
-            BLOGND("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
+            for (auto &[id, ele] : bufferQueueCache_) {
+                std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + BufferStateStrs.at(ele.state);
+                ScopedBytrace eleTrace(eleInfo);
+            }
+            BLOGNE("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
             return GSERROR_NO_BUFFER;
         }
     }
@@ -623,7 +628,8 @@ void BufferQueue::DumpToFile(uint32_t sequence)
 GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
-    ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
+    ScopedBytrace bufferName("DoFlushBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " seq: " + std::to_string(sequence));
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         BLOGE("bufferQueueCache not find sequence:%{public}u", sequence);
@@ -671,7 +677,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("AcquireBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_));
     // dequeue from dirty list
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = PopFromDirtyList(buffer);
@@ -682,10 +688,14 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         fence = bufferQueueCache_[sequence].fence;
         timestamp = bufferQueueCache_[sequence].timestamp;
         damages = bufferQueueCache_[sequence].damages;
-        ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
+        ScopedBytrace info("acquire buffer sequence: " + std::to_string(sequence));
         BLOGND("Success Buffer seq id: %{public}d Queue id: %{public}" PRIu64 " AcquireFence:%{public}d",
             sequence, uniqueId_, fence->Get());
     } else if (ret == GSERROR_NO_BUFFER) {
+        for (auto &[id, ele] : bufferQueueCache_) {
+            std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + BufferStateStrs.at(ele.state);
+            ScopedBytrace eleTrace(eleInfo);
+        }
         BLOGNE("there is no dirty buffer");
     }
 
@@ -732,10 +742,12 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     }
 
     uint32_t sequence = buffer->GetSeqNum();
-    ScopedBytrace bufferName(std::string(__func__) + "," + name_ + ":" + std::to_string(sequence));
+    ScopedBytrace bufferName("ReleaseBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " seq: " + std::to_string(sequence));
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+            ScopedBytrace bufferNotFound("buffer not found in cache");
             BLOGNE("buffer queue cache not find the buffer(%{public}u)", sequence);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
@@ -743,6 +755,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         if (isShared_ == false) {
             const auto &state = bufferQueueCache_[sequence].state;
             if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
+                ScopedBytrace bufferNotFound("invalid state: " + BufferStateStrs.at(state));
                 BLOGNE("invalid state:%{public}d", state);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }

@@ -733,6 +733,10 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
                              uniqueId_);
         }
     }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (onBufferDeleteForRSHardwareThread_ != nullptr) {
+            onBufferDeleteForRSHardwareThread_(buffer->GetSeqNum());
+    }
 }
 
 GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence)

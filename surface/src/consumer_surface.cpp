@@ -98,6 +98,13 @@ GSError ConsumerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
 {
     return GSERROR_NOT_SUPPORT;
 }
+
+GSError ConsumerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
+    std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
 GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
                                      const sptr<SyncFence>& fence, BufferFlushConfig &config)
 {
@@ -106,6 +113,12 @@ GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
 
 GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                      BufferFlushConfigWithDamages &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
+    const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config)
 {
     return GSERROR_NOT_SUPPORT;
 }

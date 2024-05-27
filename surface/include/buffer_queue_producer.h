@@ -39,12 +39,18 @@ public:
 
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) override;
+    GSError RequestBuffers(const BufferRequestConfig &config, std::vector<sptr<BufferExtraData>> &bedata,
+        std::vector<RequestBufferReturnValue> &retvalues) override;
 
     GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) override;
 
     GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
                         sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
 
+    GSError FlushBuffers(const std::vector<uint32_t> &sequences,
+        const std::vector<sptr<BufferExtraData>> &bedata,
+        const std::vector<sptr<SyncFence>> &fences,
+        const std::vector<BufferFlushConfigWithDamages> &configs) override;
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16], bool isUseNewMatrix) override;
 
@@ -115,8 +121,10 @@ private:
     bool HandleDeathRecipient(sptr<IRemoteObject> token);
 
     int32_t RequestBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t RequestBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t CancelBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t FlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t FlushBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AttachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetQueueSizeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

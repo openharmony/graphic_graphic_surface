@@ -35,11 +35,19 @@ public:
 
     GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                           RequestBufferReturnValue &retval) override;
+    GSError RequestBuffers(const BufferRequestConfig &config, std::vector<sptr<BufferExtraData>> &bedata,
+        std::vector<RequestBufferReturnValue> &retvalues) override;
 
     GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) override;
 
     GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
                         sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
+
+    GSError FlushBuffers(const std::vector<uint32_t> &sequences,
+        const std::vector<sptr<BufferExtraData>> &bedata,
+        const std::vector<sptr<SyncFence>> &fences,
+        const std::vector<BufferFlushConfigWithDamages> &configs) override;
+
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix) override;
     uint32_t GetQueueSize() override;

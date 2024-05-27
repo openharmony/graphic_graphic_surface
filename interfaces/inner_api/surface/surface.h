@@ -38,6 +38,9 @@ public:
     virtual GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                   int32_t &fence, BufferRequestConfig &config) = 0;
 
+    virtual GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
+        std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config);
+
     virtual GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) = 0;
 
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
@@ -118,6 +121,8 @@ public:
     virtual bool QueryIfBufferAvailable() = 0;
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                 BufferFlushConfigWithDamages &config) = 0;
+    virtual GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
+        const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &configs) = 0;
     virtual GSError UnRegisterReleaseListener() = 0;
     virtual GSError SetWptrNativeWindowToPSurface(void* nativeWindow) = 0;
     virtual GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,

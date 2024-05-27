@@ -75,6 +75,7 @@ int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 sca
 int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel);
 int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window);
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16]);
+int32_t NativeWindowDisconnect(OHNativeWindow *window);
 
 #ifdef __cplusplus
 }

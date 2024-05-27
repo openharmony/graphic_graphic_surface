@@ -730,6 +730,20 @@ int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **bu
     return OHOS::SURFACE_ERROR_OK;
 }
 
+int32_t NativeWindowDisconnect(OHNativeWindow *window)
+{
+    if (window == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<OHOS::Surface> windowSurface = window->surface;
+    if (windowSurface == nullptr) {
+        BLOGE("parameter error, please check input window");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    return windowSurface->Disconnect();
+}
+
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
 }

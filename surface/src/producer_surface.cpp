@@ -620,7 +620,8 @@ GSError ProducerSurface::Disconnect()
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (isDisconnected) {
-            return GSERROR_INVALID_OPERATING;
+            BLOGNE("Surface has been disconnect.");
+            return SURFACE_ERROR_CONSUMER_DISCONNECTED;
         }
     }
     BLOGND("Queue Id:%{public}" PRIu64 "", queueId_);

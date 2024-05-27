@@ -511,7 +511,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->IsSupportedAlloc(infos, supporteds), OHOS::GSERROR_INVALID_ARGUMENTS);
     uint64_t uniqueId;
     EXPECT_EQ(bqpTmp->GetNameAndUniqueId(name, uniqueId), OHOS::GSERROR_INVALID_ARGUMENTS);
-    EXPECT_EQ(bqpTmp->Disconnect(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->Disconnect(), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetScalingMode(0, ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> meta;
     EXPECT_EQ(bqpTmp->SetMetaData(0, meta), OHOS::GSERROR_INVALID_ARGUMENTS);

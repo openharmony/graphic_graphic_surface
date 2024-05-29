@@ -256,12 +256,6 @@ GSError SurfaceBufferImpl::FlushCache()
         }
         handle = handle_;
     }
-
-    if (handle->virAddr == nullptr) {
-        BLOGE("Get virAddr is nullptr");
-        return SURFACE_ERROR_UNKOWN;
-    }
-
     auto dret = g_displayBuffer->FlushCache(*handle);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;

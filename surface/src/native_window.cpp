@@ -703,6 +703,10 @@ int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window)
     }
     sptr<OHOS::IBufferProducer> bp = iface_cast<IBufferProducer>(surfaceObject);
     sptr <OHOS::Surface> windowSurface = OHOS::Surface::CreateSurfaceAsProducer(bp);
+    if (windowSurface == nullptr) {
+        BLOGE("create surface error, please check input parcel");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
     auto utils = SurfaceUtils::GetInstance();
     *window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(windowSurface->GetUniqueId()));
     if (*window == nullptr) {

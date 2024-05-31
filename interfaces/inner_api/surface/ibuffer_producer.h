@@ -48,10 +48,18 @@ public:
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) = 0;
 
+    virtual GSError RequestBuffers(const BufferRequestConfig &config, std::vector<sptr<BufferExtraData>> &bedata,
+        std::vector<RequestBufferReturnValue> &retvalues) = 0;
+
     virtual GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) = 0;
 
     virtual GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
                                 sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) = 0;
+
+    virtual GSError FlushBuffers(const std::vector<uint32_t> &sequences,
+        const std::vector<sptr<BufferExtraData>> &bedata,
+        const std::vector<sptr<SyncFence>> &fences,
+        const std::vector<BufferFlushConfigWithDamages> &configs) = 0;
 
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
     virtual GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
@@ -156,6 +164,8 @@ protected:
         BUFFER_PRODUCER_SET_SCALING_MODEV2 = 38,
         BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS = 39,
         BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS = 40,
+        BUFFER_PRODUCER_REQUEST_BUFFERS = 41,
+        BUFFER_PRODUCER_FLUSH_BUFFERS = 42,
     };
 };
 } // namespace OHOS

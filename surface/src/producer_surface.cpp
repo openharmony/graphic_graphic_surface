@@ -115,7 +115,15 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         BLOGND("RequestBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
         return ret;
     }
+    AddCache(bedataimpl, retval, config);
+    buffer = retval.buffer;
+    fence = retval.fence;
+    return GSERROR_OK;
+}
 
+GSError ProducerSurface::AddCache(sptr<BufferExtraData> &bedataimpl,
+    IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config)
+{
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (isDisconnected) {
         isDisconnected = false;
@@ -131,13 +139,9 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
         retval.buffer->SetSurfaceBufferTransform(config.transform);
     }
-    buffer = retval.buffer;
-    fence = retval.fence;
-
-    if (buffer != nullptr) {
-        buffer->SetExtraData(bedataimpl);
+    if (retval.buffer != nullptr) {
+        retval.buffer->SetExtraData(bedataimpl);
     }
-
     for (auto it = retval.deletingBuffers.begin(); it != retval.deletingBuffers.end(); it++) {
         uint32_t seqNum = static_cast<uint32_t>(*it);
         bufferProducerCache_.erase(seqNum);
@@ -149,6 +153,32 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
                 bufferCache.erase(seqNum);
             }
         }
+    }
+    return SURFACE_ERROR_OK;
+}
+
+GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
+    std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
+{
+    std::vector<IBufferProducer::RequestBufferReturnValue> retvalues;
+    retvalues.resize(SURFACE_MAX_QUEUE_SIZE);
+    std::vector<sptr<BufferExtraData>> bedataimpls;
+    for (size_t i = 0; i < retvalues.size(); ++i) {
+        sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+        bedataimpls.emplace_back(bedataimpl);
+    }
+    GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
+    if (ret != GSERROR_NO_BUFFER && ret != GSERROR_OK) {
+        if (ret == GSERROR_NO_CONSUMER) {
+            CleanCache();
+        }
+        BLOGND("RequestBuffers Producer report %{public}s", GSErrorStr(ret).c_str());
+        return ret;
+    }
+    for (size_t i = 0; i < retvalues.size(); ++i) {
+        AddCache(bedataimpls[i], retvalues[i], config);
+        buffers.emplace_back(retvalues[i].buffer);
+        fences.emplace_back(retvalues[i].fence);
     }
     return GSERROR_OK;
 }
@@ -165,13 +195,41 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                      BufferFlushConfigWithDamages &config)
 {
-    if (buffer == nullptr) {
-        BLOGNE("Input buffer is nullptr");
+    if (buffer == nullptr || fence == nullptr) {
+        BLOGNE("Input buffer or fence is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
 
     sptr<BufferExtraData> bedata = buffer->GetExtraData();
     auto ret = producer_->FlushBuffer(buffer->GetSeqNum(), bedata, fence, config);
+    if (ret == GSERROR_NO_CONSUMER) {
+        CleanCache();
+        BLOGND("FlushBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
+    }
+    return ret;
+}
+
+GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
+    const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &configs)
+{
+    if (buffers.empty()) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    for (size_t i = 0; i < buffers.size(); ++i) {
+        if (buffers[i] == nullptr || fences[i] == 0) {
+            BLOGNE("FlushBuffers Producer report: one buffer or fence is nullptr");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+    }
+    std::vector<sptr<BufferExtraData>> bedata;
+    bedata.reserve(buffers.size());
+    std::vector<uint32_t> sequences;
+    sequences.reserve(buffers.size());
+    for (uint32_t i = 0; i < buffers.size(); ++i) {
+        bedata.emplace_back(buffers[i]->GetExtraData());
+        sequences.emplace_back(buffers[i]->GetSeqNum());
+    }
+    auto ret = producer_->FlushBuffers(sequences, bedata, fences, configs);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
         BLOGND("FlushBuffer Producer report %{public}s", GSErrorStr(ret).c_str());

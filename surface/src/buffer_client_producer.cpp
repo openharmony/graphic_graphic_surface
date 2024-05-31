@@ -106,6 +106,43 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
     return GSERROR_OK;
 }
 
+GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
+    std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+
+    uint32_t num = static_cast<uint32_t>(bedata.size());
+    arguments.WriteUint32(num);
+    WriteRequestConfig(arguments, config);
+    SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
+    int32_t retCode = reply.ReadInt32();
+    if (retCode != GSERROR_OK) {
+        BLOGND("Remote return %{public}d", retCode);
+        return (GSError)retCode;
+    }
+
+    GSError ret = GSERROR_OK;
+    for (size_t i = 0; i < num; ++i) {
+        auto &retval = retvalues[i];
+        ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
+        if (ret != GSERROR_OK) {
+            BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+            return SURFACE_ERROR_UNKOWN;
+        }
+        if (retval.buffer != nullptr) {
+            retval.buffer->SetBufferRequestConfig(config);
+        }
+        ret = bedata[i]->ReadFromParcel(reply);
+        if (ret != GSERROR_OK) {
+            BLOGN_FAILURE("Read extra data from parcel failed, return %{public}d", ret);
+            return SURFACE_ERROR_UNKOWN;
+        }
+        retval.fence = SyncFence::ReadFromMessageParcel(reply);
+        reply.ReadInt32Vector(&retval.deletingBuffers);
+    }
+    return ret;
+}
+
 GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
@@ -179,6 +216,27 @@ GSError BufferClientProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraDat
     return GSERROR_OK;
 }
 
+GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequences,
+    const std::vector<sptr<BufferExtraData>> &bedata,
+    const std::vector<sptr<SyncFence>> &fences,
+    const std::vector<BufferFlushConfigWithDamages> &configs)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+
+    arguments.WriteUInt32Vector(sequences);
+    for (uint32_t i = 0; i < sequences.size(); ++i) {
+        bedata[i]->WriteToParcel(arguments);
+        fences[i]->WriteToMessageParcel(arguments);
+        WriteFlushConfig(arguments, configs[i]);
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_FLUSH_BUFFERS, arguments, reply, option);
+    int32_t retCode = reply.ReadInt32();
+    if (retCode != GSERROR_OK) {
+        BLOGND("Remote return %{public}d", retCode);
+        return (GSError)retCode;
+    }
+    return GSERROR_OK;
+}
 GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);

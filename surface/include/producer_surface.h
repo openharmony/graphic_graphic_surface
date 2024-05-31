@@ -19,6 +19,7 @@
 #include <atomic>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <surface.h>
 #include <ibuffer_producer.h>
@@ -43,10 +44,16 @@ public:
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                           int32_t &fence, BufferRequestConfig &config) override;
 
+    GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
+        std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config) override;
+
     GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) override;
 
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
                         int32_t fence, BufferFlushConfig &config) override;
+
+    GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
+        const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config) override;
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
                           int64_t &timestamp, Rect &damage) override;
@@ -150,6 +157,8 @@ public:
 private:
     bool IsRemote();
     void CleanAllLocked();
+    GSError AddCache(sptr<BufferExtraData> &bedataimpl,
+        IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;

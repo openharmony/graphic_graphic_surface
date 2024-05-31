@@ -37,6 +37,9 @@ public:
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                           int32_t &fence, BufferRequestConfig &config) override;
 
+    GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
+        std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config) override;
+
     GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) override;
 
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
@@ -53,6 +56,10 @@ public:
                         const sptr<SyncFence>& fence, BufferFlushConfig &config) override;
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                         BufferFlushConfigWithDamages &config) override;
+
+    GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
+        const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config) override;
+
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix = false) override;
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,

@@ -39,8 +39,10 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     }
 
     memberFuncMap_[BUFFER_PRODUCER_REQUEST_BUFFER] = &BufferQueueProducer::RequestBufferRemote;
+    memberFuncMap_[BUFFER_PRODUCER_REQUEST_BUFFERS] = &BufferQueueProducer::RequestBuffersRemote;
     memberFuncMap_[BUFFER_PRODUCER_CANCEL_BUFFER] = &BufferQueueProducer::CancelBufferRemote;
     memberFuncMap_[BUFFER_PRODUCER_FLUSH_BUFFER] = &BufferQueueProducer::FlushBufferRemote;
+    memberFuncMap_[BUFFER_PRODUCER_FLUSH_BUFFERS] = &BufferQueueProducer::FlushBuffersRemote;
     memberFuncMap_[BUFFER_PRODUCER_ATTACH_BUFFER] = &BufferQueueProducer::AttachBufferRemote;
     memberFuncMap_[BUFFER_PRODUCER_DETACH_BUFFER] = &BufferQueueProducer::DetachBufferRemote;
     memberFuncMap_[BUFFER_PRODUCER_GET_QUEUE_SIZE] = &BufferQueueProducer::GetQueueSizeRemote;
@@ -164,6 +166,36 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
     return 0;
 }
 
+int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::vector<RequestBufferReturnValue> retvalues;
+    std::vector<sptr<BufferExtraData>> bedataimpls;
+    BufferRequestConfig config = {};
+    uint32_t num = 0;
+
+    arguments.ReadUint32(num);
+    ReadRequestConfig(arguments, config);
+    retvalues.resize(num);
+    bedataimpls.reserve(num);
+
+    for (uint32_t i = 0; i < num; ++i) {
+        sptr<BufferExtraData> data = new BufferExtraDataImpl;
+        bedataimpls.emplace_back(data);
+    }
+    GSError sret = RequestBuffers(config, bedataimpls, retvalues);
+    num = static_cast<uint32_t>(retvalues.size());
+    reply.WriteInt32(sret);
+    if (sret == GSERROR_OK) {
+        for (uint32_t i = 0; i < num; ++i) {
+            WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer);
+            bedataimpls[i]->WriteToParcel(reply);
+            retvalues[i].fence->WriteToMessageParcel(reply);
+            reply.WriteInt32Vector(retvalues[i].deletingBuffers);
+        }
+    }
+    return 0;
+}
+
 int32_t BufferQueueProducer::CancelBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     uint32_t sequence;
@@ -210,6 +242,30 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
         Rosen::FrameReport::GetInstance().Report(connectedPid_, name_);
     }
 
+    return 0;
+}
+
+int32_t BufferQueueProducer::FlushBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::vector<uint32_t> sequences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+    std::vector<sptr<BufferExtraData>> bedataimpls;
+    std::vector<sptr<SyncFence>> fences;
+    arguments.ReadUInt32Vector(&sequences);
+    for (size_t i = 0; i < sequences.size(); ++i) {
+        sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+        bedataimpl->ReadFromParcel(arguments);
+        bedataimpls.emplace_back(bedataimpl);
+        sptr<SyncFence> fence = SyncFence::ReadFromMessageParcel(arguments);
+        fences.emplace_back(fence);
+        BufferFlushConfigWithDamages config;
+        ReadFlushConfig(arguments, config);
+        configs.emplace_back(config);
+    }
+
+    GSError sret = FlushBuffers(sequences, bedataimpls, fences, configs);
+
+    reply.WriteInt32(sret);
     return 0;
 }
 
@@ -667,6 +723,38 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
+GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
+    std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
+{
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto callingPid = GetCallingPid();
+        if (connectedPid_ != 0 && connectedPid_ != callingPid) {
+            BLOGNW("this BufferQueue has been connected by :%{public}d", connectedPid_);
+            return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
+        }
+        connectedPid_ = callingPid;
+    }
+    GSError ret;
+    bufferQueue_->SetBatchHandle(true);
+    for (size_t i = 0; i < retvalues.size(); ++i) {
+        ret = bufferQueue_->RequestBuffer(config, bedata[i], retvalues[i]);
+        if (ret != GSERROR_OK) {
+            retvalues.resize(i);
+            break;
+        }
+    }
+    bufferQueue_->SetBatchHandle(false);
+    if (retvalues.size() == 0) {
+        return ret;
+    }
+    return GSERROR_OK;
+}
+
 GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     if (bufferQueue_ == nullptr) {
@@ -684,6 +772,26 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
+}
+
+GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences,
+    const std::vector<sptr<BufferExtraData>> &bedata,
+    const std::vector<sptr<SyncFence>> &fences,
+    const std::vector<BufferFlushConfigWithDamages> &configs)
+{
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    GSError ret;
+    for (size_t i = 0; i < sequences.size(); ++i) {
+        ret = bufferQueue_->FlushBuffer(sequences[i], bedata[i], fences[i], configs[i]);
+        if (ret != GSERROR_OK) {
+            BLOGNE("BufferQueue FlushBuffers failed");
+            return ret;
+        }
+    }
+    return ret;
 }
 
 GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,

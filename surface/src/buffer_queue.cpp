@@ -257,8 +257,16 @@ void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
     buffer->SetMetadata(key, values);
 }
 
+void BufferQueue::SetBatchHandle(bool batch)
+{
+    isBatch_ = batch;
+}
+
 GSError BufferQueue::RequestBufferCheckStatus()
 {
+    if (isBatch_) {
+        return GSERROR_OK;
+    }
     if (!GetStatus()) {
         ScopedBytrace func("RequestBufferCheckStatus status wrong, surface name: " + name_ + " queueId: " +
             std::to_string(uniqueId_) + " status: " + std::to_string(GetStatus()));
@@ -307,7 +315,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     if (GetUsedSize() >= GetQueueSize()) {
         waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
             [this]() { return !freeList_.empty() || (GetUsedSize() < GetQueueSize()) || !GetStatus(); });
-        if (!GetStatus()) {
+        if (!GetStatus() && !isBatch_) {
             ScopedBytrace status("Status wrong, status: " + std::to_string(GetStatus()));
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
@@ -414,6 +422,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     SetSurfaceBufferHebcMetaLocked(retval.buffer);
 
     auto &dbs = retval.deletingBuffers;
+    dbs.reserve(dbs.size() + deletingList_.size());
     dbs.insert(dbs.end(), deletingList_.begin(), deletingList_.end());
     deletingList_.clear();
 

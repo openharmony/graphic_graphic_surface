@@ -963,4 +963,60 @@ HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, Function | MediumTest 
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(pSurface->GetSurfaceAppFrameworkType(), "test");
 }
+
+/*
+* Function: RequestBuffersAndFlushBuffers
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffers and FlushBuffers
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBuffersAndFlushBuffers, Function | MediumTest | Level1)
+{
+    pSurface->SetQueueSize(12);
+    std::vector<sptr<SurfaceBuffer>> sfbuffers;
+    std::vector<sptr<SyncFence>> releaseFences;
+    EXPECT_EQ(OHOS::GSERROR_OK, pSurface->RequestBuffers(sfbuffers, releaseFences, requestConfig));
+    for (size_t i = 0; i < sfbuffers.size(); ++i) {
+        EXPECT_NE(nullptr, sfbuffers[i]);
+    }
+    std::cout << sfbuffers.size() << std::endl;
+    uint32_t num = static_cast<uint32_t>(sfbuffers.size());
+    std::vector<sptr<SyncFence>> flushFences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+    flushFences.resize(num);
+    configs.reserve(num);
+    auto handleConfig = [](BufferFlushConfigWithDamages &config) -> void {
+        config.damages.reserve(1);
+        OHOS::Rect damage = {
+            .x = 0,
+            .y = 0,
+            .w = 0x100,
+            .h = 0x100
+        };
+        config.damages.emplace_back(damage);
+        config.timestamp = 0;
+    };
+    for (uint32_t i = 0; i < num; ++i) {
+        flushFences[i] = new SyncFence(-1);
+        BufferFlushConfigWithDamages config;
+        handleConfig(config);
+        configs.emplace_back(config);
+    }
+    flushFences[0] = nullptr;
+    EXPECT_EQ(OHOS::GSERROR_INVALID_ARGUMENTS, pSurface->FlushBuffers(sfbuffers, flushFences, configs));
+    flushFences[0] = new SyncFence(-1);
+    EXPECT_EQ(OHOS::GSERROR_OK, pSurface->FlushBuffers(sfbuffers, flushFences, configs));
+    sptr<SurfaceBuffer> buffer;
+    int32_t flushFence;
+    for (uint32_t i = 0; i < num; ++i) {
+        GSError ret = csurf->AcquireBuffer(buffer, flushFence, timestamp, damage);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ret = csurf->ReleaseBuffer(buffer, -1);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    EXPECT_EQ(OHOS::GSERROR_NO_BUFFER, csurf->AcquireBuffer(buffer, flushFence, timestamp, damage));
+    pSurface->SetQueueSize(2);
+}
 }

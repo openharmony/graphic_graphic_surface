@@ -150,6 +150,8 @@ public:
     bool GetStatus() const;
     void SetStatus(bool status);
 
+    void SetBatchHandle(bool batch);
+
     GSError SetProducerCacheCleanFlag(bool flag);
     inline void ConsumerRequestCpuAccess(bool on)
     {
@@ -241,6 +243,7 @@ private:
     std::string appFrameworkType_ = "";
     float hdrWhitePointBrightness_ = 0.0;
     float sdrWhitePointBrightness_ = 0.0;
+    bool isBatch_ = false;
 };
 }; // namespace OHOS
 

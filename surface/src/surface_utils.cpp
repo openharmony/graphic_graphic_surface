@@ -22,6 +22,7 @@ namespace OHOS {
 using namespace HiviewDFX;
 static SurfaceUtils* instance = nullptr;
 static std::mutex mutextinstance_;
+constexpr uint32_t MATRIX_ARRAY_SIZE = 16;
 
 SurfaceUtils* SurfaceUtils::GetInstance()
 {
@@ -46,7 +47,7 @@ sptr<Surface> SurfaceUtils::GetSurface(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surfaceCache_.count(uniqueId) == 0) {
-        BLOGE("Cannot find surface by uniqueId %" PRIu64 ".", uniqueId);
+        BLOGE("Cannot find surface by uniqueId %{public}" PRIu64, uniqueId);
         return nullptr;
     }
     sptr<Surface> surface = surfaceCache_[uniqueId].promote();
@@ -68,7 +69,7 @@ SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const wptr<Surface> &surface)
         surfaceCache_[uniqueId] = surface;
         return GSERROR_OK;
     }
-    BLOGD("the surface by uniqueId %" PRIu64 " already existed", uniqueId);
+    BLOGD("the surface by uniqueId %{public}" PRIu64 " already existed", uniqueId);
     return GSERROR_OK;
 }
 
@@ -76,60 +77,65 @@ SurfaceError SurfaceUtils::Remove(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surfaceCache_.count(uniqueId) == 0) {
-        BLOGD("Delete failed without surface by uniqueId %" PRIu64, uniqueId);
+        BLOGD("Delete failed without surface by uniqueId %{public}" PRIu64, uniqueId);
         return GSERROR_INVALID_OPERATING;
     }
     surfaceCache_.erase(uniqueId);
     return GSERROR_OK;
 }
 
-std::array<float, 16> SurfaceUtils::MatrixProduct(const std::array<float, 16>& lMat, const std::array<float, 16>& rMat)
+std::array<float, MATRIX_ARRAY_SIZE> SurfaceUtils::MatrixProduct(const std::array<float, MATRIX_ARRAY_SIZE>& lMat,
+    const std::array<float, MATRIX_ARRAY_SIZE>& rMat)
 {
     // Product matrix 4 * 4 = 16
-    return std::array<float, 16> {lMat[0] * rMat[0] + lMat[4] * rMat[1] + lMat[8] * rMat[2] + lMat[12] * rMat[3],
-                                  lMat[1] * rMat[0] + lMat[5] * rMat[1] + lMat[9] * rMat[2] + lMat[13] * rMat[3],
-                                  lMat[2] * rMat[0] + lMat[6] * rMat[1] + lMat[10] * rMat[2] + lMat[14] * rMat[3],
-                                  lMat[3] * rMat[0] + lMat[7] * rMat[1] + lMat[11] * rMat[2] + lMat[15] * rMat[3],
+    return std::array<float, MATRIX_ARRAY_SIZE> {
+        lMat[0] * rMat[0] + lMat[4] * rMat[1] + lMat[8] * rMat[2] + lMat[12] * rMat[3],
+        lMat[1] * rMat[0] + lMat[5] * rMat[1] + lMat[9] * rMat[2] + lMat[13] * rMat[3],
+        lMat[2] * rMat[0] + lMat[6] * rMat[1] + lMat[10] * rMat[2] + lMat[14] * rMat[3],
+        lMat[3] * rMat[0] + lMat[7] * rMat[1] + lMat[11] * rMat[2] + lMat[15] * rMat[3],
 
-                                  lMat[0] * rMat[4] + lMat[4] * rMat[5] + lMat[8] * rMat[6] + lMat[12] * rMat[7],
-                                  lMat[1] * rMat[4] + lMat[5] * rMat[5] + lMat[9] * rMat[6] + lMat[13] * rMat[7],
-                                  lMat[2] * rMat[4] + lMat[6] * rMat[5] + lMat[10] * rMat[6] + lMat[14] * rMat[7],
-                                  lMat[3] * rMat[4] + lMat[7] * rMat[5] + lMat[11] * rMat[6] + lMat[15] * rMat[7],
+        lMat[0] * rMat[4] + lMat[4] * rMat[5] + lMat[8] * rMat[6] + lMat[12] * rMat[7],
+        lMat[1] * rMat[4] + lMat[5] * rMat[5] + lMat[9] * rMat[6] + lMat[13] * rMat[7],
+        lMat[2] * rMat[4] + lMat[6] * rMat[5] + lMat[10] * rMat[6] + lMat[14] * rMat[7],
+        lMat[3] * rMat[4] + lMat[7] * rMat[5] + lMat[11] * rMat[6] + lMat[15] * rMat[7],
 
-                                  lMat[0] * rMat[8] + lMat[4] * rMat[9] + lMat[8] * rMat[10] + lMat[12] * rMat[11],
-                                  lMat[1] * rMat[8] + lMat[5] * rMat[9] + lMat[9] * rMat[10] + lMat[13] * rMat[11],
-                                  lMat[2] * rMat[8] + lMat[6] * rMat[9] + lMat[10] * rMat[10] + lMat[14] * rMat[11],
-                                  lMat[3] * rMat[8] + lMat[7] * rMat[9] + lMat[11] * rMat[10] + lMat[15] * rMat[11],
+        lMat[0] * rMat[8] + lMat[4] * rMat[9] + lMat[8] * rMat[10] + lMat[12] * rMat[11],
+        lMat[1] * rMat[8] + lMat[5] * rMat[9] + lMat[9] * rMat[10] + lMat[13] * rMat[11],
+        lMat[2] * rMat[8] + lMat[6] * rMat[9] + lMat[10] * rMat[10] + lMat[14] * rMat[11],
+        lMat[3] * rMat[8] + lMat[7] * rMat[9] + lMat[11] * rMat[10] + lMat[15] * rMat[11],
 
-                                  lMat[0] * rMat[12] + lMat[4] * rMat[13] + lMat[8] * rMat[14] + lMat[12] * rMat[15],
-                                  lMat[1] * rMat[12] + lMat[5] * rMat[13] + lMat[9] * rMat[14] + lMat[13] * rMat[15],
-                                  lMat[2] * rMat[12] + lMat[6] * rMat[13] + lMat[10] * rMat[14] + lMat[14] * rMat[15],
-                                  lMat[3] * rMat[12] + lMat[7] * rMat[13] + lMat[11] * rMat[14] + lMat[15] * rMat[15]};
+        lMat[0] * rMat[12] + lMat[4] * rMat[13] + lMat[8] * rMat[14] + lMat[12] * rMat[15],
+        lMat[1] * rMat[12] + lMat[5] * rMat[13] + lMat[9] * rMat[14] + lMat[13] * rMat[15],
+        lMat[2] * rMat[12] + lMat[6] * rMat[13] + lMat[10] * rMat[14] + lMat[14] * rMat[15],
+        lMat[3] * rMat[12] + lMat[7] * rMat[13] + lMat[11] * rMat[14] + lMat[15] * rMat[15]
+    };
 }
 
-std::array<float, 16> SurfaceUtils::MatrixProductV2(const std::array<float, 16>& lMat,
-    const std::array<float, 16>& rMat)
+std::array<float, MATRIX_ARRAY_SIZE> SurfaceUtils::MatrixProductV2(const std::array<float, MATRIX_ARRAY_SIZE>& lMat,
+    const std::array<float, MATRIX_ARRAY_SIZE>& rMat)
 {
     // Product matrix 4 * 4 = 16
-    return std::array<float, 16> {lMat[0] * rMat[0] + lMat[1] * rMat[4] + lMat[2] * rMat[8] + lMat[3] * rMat[12],
-                                  lMat[0] * rMat[1] + lMat[1] * rMat[5] + lMat[2] * rMat[9] + lMat[3] * rMat[13],
-                                  lMat[0] * rMat[2] + lMat[1] * rMat[6] + lMat[2] * rMat[10] + lMat[3] * rMat[14],
-                                  lMat[0] * rMat[3] + lMat[1] * rMat[7] + lMat[2] * rMat[11] + lMat[3] * rMat[15],
+    return std::array<float, MATRIX_ARRAY_SIZE> {
+        lMat[0] * rMat[0] + lMat[1] * rMat[4] + lMat[2] * rMat[8] + lMat[3] * rMat[12],
+        lMat[0] * rMat[1] + lMat[1] * rMat[5] + lMat[2] * rMat[9] + lMat[3] * rMat[13],
+        lMat[0] * rMat[2] + lMat[1] * rMat[6] + lMat[2] * rMat[10] + lMat[3] * rMat[14],
+        lMat[0] * rMat[3] + lMat[1] * rMat[7] + lMat[2] * rMat[11] + lMat[3] * rMat[15],
 
-                                  lMat[4] * rMat[0] + lMat[5] * rMat[4] + lMat[6] * rMat[8] + lMat[7] * rMat[12],
-                                  lMat[4] * rMat[1] + lMat[5] * rMat[5] + lMat[6] * rMat[9] + lMat[7] * rMat[13],
-                                  lMat[4] * rMat[2] + lMat[5] * rMat[6] + lMat[6] * rMat[10] + lMat[7] * rMat[14],
-                                  lMat[4] * rMat[3] + lMat[5] * rMat[7] + lMat[6] * rMat[11] + lMat[7] * rMat[15],
+        lMat[4] * rMat[0] + lMat[5] * rMat[4] + lMat[6] * rMat[8] + lMat[7] * rMat[12],
+        lMat[4] * rMat[1] + lMat[5] * rMat[5] + lMat[6] * rMat[9] + lMat[7] * rMat[13],
+        lMat[4] * rMat[2] + lMat[5] * rMat[6] + lMat[6] * rMat[10] + lMat[7] * rMat[14],
+        lMat[4] * rMat[3] + lMat[5] * rMat[7] + lMat[6] * rMat[11] + lMat[7] * rMat[15],
 
-                                  lMat[8] * rMat[0] + lMat[9] * rMat[4] + lMat[10] * rMat[8] + lMat[11] * rMat[12],
-                                  lMat[8] * rMat[1] + lMat[9] * rMat[5] + lMat[10] * rMat[9] + lMat[11] * rMat[13],
-                                  lMat[8] * rMat[2] + lMat[9] * rMat[6] + lMat[10] * rMat[10] + lMat[11] * rMat[14],
-                                  lMat[8] * rMat[3] + lMat[9] * rMat[7] + lMat[10] * rMat[11] + lMat[11] * rMat[15],
+        lMat[8] * rMat[0] + lMat[9] * rMat[4] + lMat[10] * rMat[8] + lMat[11] * rMat[12],
+        lMat[8] * rMat[1] + lMat[9] * rMat[5] + lMat[10] * rMat[9] + lMat[11] * rMat[13],
+        lMat[8] * rMat[2] + lMat[9] * rMat[6] + lMat[10] * rMat[10] + lMat[11] * rMat[14],
+        lMat[8] * rMat[3] + lMat[9] * rMat[7] + lMat[10] * rMat[11] + lMat[11] * rMat[15],
 
-                                  lMat[12] * rMat[0] + lMat[13] * rMat[4] + lMat[14] * rMat[8] + lMat[15] * rMat[12],
-                                  lMat[12] * rMat[1] + lMat[13] * rMat[5] + lMat[14] * rMat[9] + lMat[15] * rMat[13],
-                                  lMat[12] * rMat[2] + lMat[13] * rMat[6] + lMat[14] * rMat[10] + lMat[15] * rMat[14],
-                                  lMat[12] * rMat[3] + lMat[13] * rMat[7] + lMat[14] * rMat[11] + lMat[15] * rMat[15]};
+        lMat[12] * rMat[0] + lMat[13] * rMat[4] + lMat[14] * rMat[8] + lMat[15] * rMat[12],
+        lMat[12] * rMat[1] + lMat[13] * rMat[5] + lMat[14] * rMat[9] + lMat[15] * rMat[13],
+        lMat[12] * rMat[2] + lMat[13] * rMat[6] + lMat[14] * rMat[10] + lMat[15] * rMat[14],
+        lMat[12] * rMat[3] + lMat[13] * rMat[7] + lMat[14] * rMat[11] + lMat[15] * rMat[15]
+    };
 }
 
 void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
@@ -182,7 +188,7 @@ void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
     }
 }
 
-void SurfaceUtils::ComputeTransformMatrix(float matrix[16],
+void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE],
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
 {
     float tx = 0.f;
@@ -206,7 +212,7 @@ void SurfaceUtils::ComputeTransformMatrix(float matrix[16],
         changeFlag = true;
     }
     if (changeFlag) {
-        static const std::array<float, 16> cropMatrix = {sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1};
+        std::array<float, MATRIX_ARRAY_SIZE> cropMatrix = {sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1};
         transformMatrix = MatrixProduct(cropMatrix, transformMatrix);
     }
 
@@ -267,7 +273,7 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
     }
 }
 
-void SurfaceUtils::ComputeTransformMatrixV2(float matrix[16],
+void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE],
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
 {
     float tx = 0.f;
@@ -291,7 +297,7 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[16],
         changeFlag = true;
     }
     if (changeFlag) {
-        static const std::array<float, 16> cropMatrix = {sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1};
+        std::array<float, MATRIX_ARRAY_SIZE> cropMatrix = {sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1};
         transformMatrix = MatrixProductV2(cropMatrix, transformMatrix);
     }
 

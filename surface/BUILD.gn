@@ -119,9 +119,9 @@ ohos_shared_library("surface") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_display:display_buffer_idl_headers",
-    "drivers_interface_display:display_commontype_idl_headers",
-    "drivers_interface_display:display_commontype_idl_headers_1.1",
+    "drivers_interface_display:libdisplay_buffer_proxy_1.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1_0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1.1",
     "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_2",
     "hilog:libhilog",
     "hitrace:hitrace_meter",

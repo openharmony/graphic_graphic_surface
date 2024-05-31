@@ -244,7 +244,7 @@ ohos_unittest("metadata_helper_test") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_display:libdisplay_commontype_proxy_1_0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1.0",
     "hilog:libhilog",
   ]
 }

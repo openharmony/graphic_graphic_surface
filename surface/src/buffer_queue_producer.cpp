@@ -98,12 +98,12 @@ GSError BufferQueueProducer::CheckConnectLocked()
 {
     if (connectedPid_ == 0) {
         BLOGNW("this BufferQueue has no connections");
-        return GSERROR_INVALID_OPERATING;
+        return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
 
     if (connectedPid_ != GetCallingPid()) {
         BLOGNW("this BufferQueue has been connected by :%{public}d, you can not disconnect", connectedPid_);
-        return GSERROR_INVALID_OPERATING;
+        return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
 
     return GSERROR_OK;
@@ -1088,7 +1088,8 @@ GSError BufferQueueProducer::GetNameAndUniqueId(std::string& name, uint64_t& uni
 GSError BufferQueueProducer::Disconnect()
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
     }
 
     {

@@ -44,10 +44,7 @@ RsFrameReportExt::RsFrameReportExt()
     Init();
 }
 
-RsFrameReportExt::~RsFrameReportExt()
-{
-    CloseLibrary();
-}
+RsFrameReportExt::~RsFrameReportExt() {}
 
 void RsFrameReportExt::Init()
 {

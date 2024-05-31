@@ -268,10 +268,14 @@ GSError BufferQueue::RequestBufferCheckStatus()
         return GSERROR_OK;
     }
     if (!GetStatus()) {
+        ScopedBytrace func("RequestBufferCheckStatus status wrong, surface name: " + name_ + " queueId: " +
+            std::to_string(uniqueId_) + " status: " + std::to_string(GetStatus()));
         BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
     }
     std::lock_guard<std::mutex> lockGuard(listenerMutex_);
     if (listener_ == nullptr && listenerClazz_ == nullptr) {
+        ScopedBytrace func("RequestBufferCheckStatus no listener, surface name: " + name_ + " queueId: " +
+            std::to_string(uniqueId_));
         BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
     }
 
@@ -285,13 +289,13 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         return DelegatorDequeueBuffer(wpCSurfaceDelegator_, config, bedata, retval);
     }
 
-    GSError ret = GSERROR_OK;
-    ret = RequestBufferCheckStatus();
+    GSError ret = RequestBufferCheckStatus();
     if (ret != GSERROR_OK) {
         return ret;
     }
 
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("RequestBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " queueSize: " + std::to_string(GetQueueSize()));
     // check param
     ret = CheckRequestConfig(config);
     if (ret != GSERROR_OK) {
@@ -312,6 +316,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
             [this]() { return !freeList_.empty() || (GetUsedSize() < GetQueueSize()) || !GetStatus(); });
         if (!GetStatus() && !isBatch_) {
+            ScopedBytrace status("Status wrong, status: " + std::to_string(GetStatus()));
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
         // try dequeue from free list again
@@ -319,7 +324,11 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         if (ret == GSERROR_OK) {
             return ReuseBuffer(config, bedata, retval);
         } else if (GetUsedSize() >= GetQueueSize()) {
-            BLOGND("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
+            for (auto &[id, ele] : bufferQueueCache_) {
+                std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + BufferStateStrs.at(ele.state);
+                ScopedBytrace eleTrace(eleInfo);
+            }
+            BLOGNE("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
             return GSERROR_NO_BUFFER;
         }
     }
@@ -386,7 +395,9 @@ GSError BufferQueue::ReallocBuffer(const BufferRequestConfig &config,
 GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("ReuseBuffer config width: " + std::to_string(config.width) + " height: " +
+        std::to_string(config.height) + " strideAlignment: " + std::to_string(config.strideAlignment) +
+        " format: " + std::to_string(config.format));
     if (retval.buffer == nullptr) {
         BLOGNE("input buffer is null");
         return SURFACE_ERROR_UNKOWN;
@@ -443,7 +454,8 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
 
 GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("CancelBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " sequence: " + std::to_string(sequence));
     if (isShared_) {
         BLOGN_FAILURE_RET(GSERROR_INVALID_OPERATING);
     }
@@ -520,8 +532,10 @@ GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fen
 GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("FlushBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " sequence: " + std::to_string(sequence));
     if (!GetStatus()) {
+        ScopedBytrace status("status: " + std::to_string(GetStatus()));
         BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
     }
     // check param
@@ -539,6 +553,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ == nullptr && listenerClazz_ == nullptr) {
+            ScopedBytrace listener("listener is nullptr");
             BLOGNE("Consumer is not ready");
             CancelBuffer(sequence, bedata);
             return GSERROR_NO_CONSUMER;
@@ -617,8 +632,8 @@ void BufferQueue::DumpToFile(uint32_t sequence)
     int64_t nowVal = (int64_t)now.tv_sec * secToUsec + (int64_t)now.tv_usec;
 
     std::stringstream ss;
-    ss << "/data/bq_" << GetRealPid() << "_" << name_ << "_" << nowVal << "_" << buffer->GetWidth()
-        << "x" << buffer->GetHeight() << ".raw";
+    ss << "/data/bq_" << GetRealPid() << "_" << name_ << "_" << nowVal << "_" << buffer->GetFormat() << "_"
+        << buffer->GetWidth() << "x" << buffer->GetHeight() << ".raw";
     std::ofstream rawDataFile(ss.str(), std::ofstream::binary);
     if (!rawDataFile.good()) {
         BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
@@ -632,7 +647,8 @@ void BufferQueue::DumpToFile(uint32_t sequence)
 GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
-    ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
+    ScopedBytrace bufferName("DoFlushBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " seq: " + std::to_string(sequence));
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         BLOGE("bufferQueueCache not find sequence:%{public}u", sequence);
@@ -653,17 +669,6 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
-
-    uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
-    if (usage & BUFFER_USAGE_CPU_WRITE) {
-        // api flush
-        auto sret = bufferQueueCache_[sequence].buffer->FlushCache();
-        if (sret != GSERROR_OK) {
-            BLOGN_FAILURE_ID_API(sequence, FlushCache, sret);
-            return sret;
-        }
-    }
-
     bufferQueueCache_[sequence].timestamp = config.timestamp;
 
     if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isLocalRender_) {
@@ -680,7 +685,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("AcquireBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_));
     // dequeue from dirty list
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = PopFromDirtyList(buffer);
@@ -691,10 +696,14 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         fence = bufferQueueCache_[sequence].fence;
         timestamp = bufferQueueCache_[sequence].timestamp;
         damages = bufferQueueCache_[sequence].damages;
-        ScopedBytrace bufferName(name_ + ":" + std::to_string(sequence));
+        ScopedBytrace info("acquire buffer sequence: " + std::to_string(sequence));
         BLOGND("Success Buffer seq id: %{public}d Queue id: %{public}" PRIu64 " AcquireFence:%{public}d",
             sequence, uniqueId_, fence->Get());
     } else if (ret == GSERROR_NO_BUFFER) {
+        for (auto &[id, ele] : bufferQueueCache_) {
+            std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + BufferStateStrs.at(ele.state);
+            ScopedBytrace eleTrace(eleInfo);
+        }
         BLOGNE("there is no dirty buffer");
     }
 
@@ -707,7 +716,7 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
     {
         std::lock_guard<std::mutex> lockGuard(onBufferReleaseMutex_);
         if (onBufferRelease_ != nullptr) {
-            ScopedBytrace func("OnBufferRelease_");
+            ScopedBytrace func("OnBufferRelease_ sequence: " + std::to_string(buffer->GetSeqNum()));
             sptr<SurfaceBuffer> buf = buffer;
             auto sret = onBufferRelease_(buf);
             if (sret == GSERROR_OK) {   // need to check why directly return?
@@ -723,7 +732,7 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
     }
 
     if (listener != nullptr) {
-        ScopedBytrace func("onBufferReleasedForProducer");
+        ScopedBytrace func("onBufferReleasedForProducer sequence: "  + std::to_string(buffer->GetSeqNum()));
         if (listener->OnBufferReleased() != GSERROR_OK) {
             BLOGN_FAILURE_ID(buffer->GetSeqNum(), "OnBufferReleased failed, Queue id: %{public}" PRIu64 "", uniqueId_);
         }
@@ -731,6 +740,10 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
             BLOGN_FAILURE_ID(buffer->GetSeqNum(), "OnBufferReleasedWithFence failed, Queue id: %{public}" PRIu64 "",
                              uniqueId_);
         }
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (onBufferDeleteForRSHardwareThread_ != nullptr) {
+            onBufferDeleteForRSHardwareThread_(buffer->GetSeqNum());
     }
 }
 
@@ -741,10 +754,12 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     }
 
     uint32_t sequence = buffer->GetSeqNum();
-    ScopedBytrace bufferName(std::string(__func__) + "," + name_ + ":" + std::to_string(sequence));
+    ScopedBytrace bufferName("ReleaseBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " seq: " + std::to_string(sequence));
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+            ScopedBytrace bufferNotFound("buffer not found in cache");
             BLOGNE("buffer queue cache not find the buffer(%{public}u)", sequence);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
@@ -752,6 +767,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         if (isShared_ == false) {
             const auto &state = bufferQueueCache_[sequence].state;
             if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
+                ScopedBytrace bufferNotFound("invalid state: " + BufferStateStrs.at(state));
                 BLOGNE("invalid state:%{public}d", state);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
@@ -779,7 +795,9 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     const BufferRequestConfig &config)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("AllocBuffer config width: " + std::to_string(config.width) + " height: " +
+        std::to_string(config.height) + " strideAlignment: " + std::to_string(config.strideAlignment) +
+        " format: " + std::to_string(config.format));
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     uint32_t sequence = bufferImpl->GetSeqNum();
 
@@ -843,7 +861,7 @@ uint32_t BufferQueue::GetQueueSize()
 
 void BufferQueue::DeleteBuffersLocked(int32_t count)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("DeleteBuffersLocked count: " + std::to_string(count));
     if (count <= 0) {
         return;
     }
@@ -909,7 +927,8 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer)
 
 GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("AttachBufferToQueue name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " sequence: " + std::to_string(buffer->GetSeqNum()) + " invokerType" + std::to_string(invokerType));
     if (buffer == nullptr) {
         BLOGN_FAILURE_RET(SURFACE_ERROR_UNKOWN);
     }
@@ -946,7 +965,8 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
 
 GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
 {
-    ScopedBytrace func(__func__);
+    ScopedBytrace func("DetachBufferFromQueue name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " sequence: " + std::to_string(buffer->GetSeqNum()) + " invokerType" + std::to_string(invokerType));
     if (buffer == nullptr) {
         BLOGN_FAILURE_RET(SURFACE_ERROR_UNKOWN);
     }
@@ -1241,10 +1261,10 @@ GSError BufferQueue::GoBackground()
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnGoBackground");
+            ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ + " queueId: " + std::to_string(uniqueId_));
             listener_->OnGoBackground();
         } else if (listenerClazz_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnGoBackground");
+            ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ + " queueId: " + std::to_string(uniqueId_));
             listenerClazz_->OnGoBackground();
         }
     }
@@ -1261,18 +1281,20 @@ GSError BufferQueue::CleanCache(bool cleanAll)
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (cleanAll) {
             if (listener_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnGoBackground");
+                ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ +
+                    " queueId: " + std::to_string(uniqueId_));
                 listener_->OnGoBackground();
             } else if (listenerClazz_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnGoBackground");
+                ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ +
+                    " queueId: " + std::to_string(uniqueId_));
                 listenerClazz_->OnGoBackground();
             }
         } else {
             if (listener_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnCleanCache");
+                ScopedBytrace bufferIPCSend("OnCleanCache name: " + name_ + " queueId: " + std::to_string(uniqueId_));
                 listener_->OnCleanCache();
             } else if (listenerClazz_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnCleanCache");
+                ScopedBytrace bufferIPCSend("OnCleanCache name: " + name_ + " queueId: " + std::to_string(uniqueId_));
                 listenerClazz_->OnCleanCache();
             }
         }
@@ -1306,10 +1328,10 @@ GSError BufferQueue::SetTransform(GraphicTransformType transform)
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnTransformChange");
+            ScopedBytrace bufferIPCSend("OnTransformChange transform: " + std::to_string(transform));
             listener_->OnTransformChange();
         } else if (listenerClazz_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnTransformChange");
+            ScopedBytrace bufferIPCSend("OnTransformChange transform: " + std::to_string(transform));
             listenerClazz_->OnTransformChange();
         }
     }

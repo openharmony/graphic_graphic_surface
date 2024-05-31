@@ -703,6 +703,10 @@ int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window)
     }
     sptr<OHOS::IBufferProducer> bp = iface_cast<IBufferProducer>(surfaceObject);
     sptr <OHOS::Surface> windowSurface = OHOS::Surface::CreateSurfaceAsProducer(bp);
+    if (windowSurface == nullptr) {
+        BLOGE("create surface error, please check input parcel");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
     auto utils = SurfaceUtils::GetInstance();
     *window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(windowSurface->GetUniqueId()));
     if (*window == nullptr) {
@@ -728,6 +732,20 @@ int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **bu
     NativeObjectReference(nwBuffer);
     *fenceFd = acquireFence->Dup();
     return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t NativeWindowDisconnect(OHNativeWindow *window)
+{
+    if (window == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<OHOS::Surface> windowSurface = window->surface;
+    if (windowSurface == nullptr) {
+        BLOGE("parameter error, please check input window");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    return windowSurface->Disconnect();
 }
 
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)

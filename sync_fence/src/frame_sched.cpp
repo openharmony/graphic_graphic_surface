@@ -113,7 +113,6 @@ void FrameSched::Init()
 
 void FrameSched::MonitorGpuStart()
 {
-    LOGE("FrameSched [MonitorGpuEnd]");
     if (monitorGpuStartFunc_ == nullptr) {
         monitorGpuStartFunc_ = (MonitorGpuStartFunc)LoadSymbol("MonitorGpuStart");
     }
@@ -126,7 +125,6 @@ void FrameSched::MonitorGpuStart()
 
 void FrameSched::MonitorGpuEnd()
 {
-    LOGE("FrameSched [MonitorGpuEnd]");
     if (monitorGpuEndFunc_ == nullptr) {
         monitorGpuEndFunc_ = (MonitorGpuEndFunc)LoadSymbol("MonitorGpuEnd");
     }

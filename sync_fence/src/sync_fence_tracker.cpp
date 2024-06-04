@@ -204,7 +204,6 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
     uint32_t fenceIndex = 0;
     fenceIndex = fencesSignaled_.load();
     {
-        HILOG_ERROR(LOG_CORE, "SyncFenceTracker monitor gpu:%s is gpu fence is %d", threadName_.c_str(), isGpuFence_);
         RS_TRACE_NAME_FMT("Waiting for %s %d", threadName_.c_str(), fenceIndex);
         int32_t result = 0;
         if (isGpuFence_ && traceTag) {

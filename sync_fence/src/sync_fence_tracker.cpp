@@ -132,7 +132,7 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
     RS_TRACE_NAME_FMT("%s %d", threadName_.c_str(), fencesQueued_.load());
     if (handler_) {
         handler_->PostTask([this, fence, traceTag]() {
-            if (isGpuFence_) {
+            if (isGpuFence_ && isGpuEnable_) {
                 Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_CONTAINER_NODE_ID, 0, 0, processedNodeNum_);
                 processedNodeNum_ = 0;
             }
@@ -234,11 +234,11 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
 
 int32_t SyncFenceTracker::WaitFence(const sptr<SyncFence>& fence)
 {
-    if (isGpuFence_) {
+    if (isGpuFence_ && isGpuEnable_) {
         Rosen::FrameSched::GetInstance().MonitorGpuStart();
     }
     int32_t result = fence->Wait(SYNC_TIME_OUT);
-    if (isGpuFence_) {
+    if (isGpuFence_ && isGpuEnable_) {
         Rosen::FrameSched::GetInstance().MonitorGpuEnd();
     }
     return result;

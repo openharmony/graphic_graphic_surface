@@ -57,5 +57,14 @@ Note: If the text contains special characters, please escape them according to t
 <configuration>
     <oatconfig>
         <licensefile>LICENSE</licensefile>
+        <filefilterlist>
+            <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies" >
+                <filteritem type="filename" name="surface在系统架构中的位置（绿色部分为surface-buffer）.png" desc="readme graphic png"/>
+                <filteritem type="filename" name="Surface轮转流程.png" desc="readme graphic png"/>
+                <filteritem type="filename" name="surface-rotation-process.zip" desc="readme graphic png"/>
+                <filteritem type="filename" name="position-of-a-surface-in-the-system-architecture.png" desc="readme graphic png"/>
+                <filteritem type="filename" name="icon-notice.gif" desc="readme graphic gif"/>
+            </filefilter>
+        </filefilterlist>
     </oatconfig>
 </configuration>

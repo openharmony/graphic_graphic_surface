@@ -655,7 +655,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 
     bufferQueueCache_[sequence].timestamp = config.timestamp;
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
-    if (isLocalRender_ && traceTag) {
+    if (isLocalRender_) {
         AcquireFenceTracker::TrackFence(fence, traceTag);
     }
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1

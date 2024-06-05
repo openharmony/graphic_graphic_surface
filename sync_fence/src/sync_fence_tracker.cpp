@@ -19,6 +19,7 @@
 #include "sync_fence_tracker.h"
 #include "frame_sched.h"
 #include "hilog/log.h"
+#include "parameters.h"
 #include "rs_trace.h"
 #include "hisysevent.h"
 #include "file_ex.h"
@@ -122,6 +123,12 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
 
 void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
 {
+    if (isGpuFence_) {
+        gpuEnable_ = OHOS::system::SetParameter("persist.deadline.gpu_enable", "false");
+        if (!traceTag && !gpuEnable_) {
+            return;
+        }
+    }
     if (fence->SyncFileReadTimestamp() != SyncFence::FENCE_PENDING_TIMESTAMP) {
         RS_TRACE_NAME_FMT("%s %d has signaled", threadName_.c_str(), fencesQueued_.load());
         fencesQueued_++;

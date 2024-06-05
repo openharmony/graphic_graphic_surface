@@ -62,6 +62,7 @@ ohos_shared_library("sync_fence") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
+    "init:libbegetutil",
     "ipc:ipc_single",
   ]
 

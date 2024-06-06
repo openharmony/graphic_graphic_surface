@@ -59,6 +59,9 @@
     } while (0)
 
 namespace OHOS {
+namespace {
+    constexpr size_t MATRIX4_SIZE = 16;
+}
 BufferClientProducer::BufferClientProducer(const sptr<IRemoteObject>& impl)
     : IRemoteProxy<IBufferProducer>(impl)
 {
@@ -120,8 +123,8 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     fence = SyncFence::ReadFromMessageParcel(reply);
     std::vector<float> readMatrixVector;
     reply.ReadFloatVector(&readMatrixVector);
-    if (memcpy_s(matrix, readMatrixVector.size() * sizeof(float),
-        &readMatrixVector, readMatrixVector.size() * sizeof(float)) != EOK) {
+    if (memcpy_s(matrix, MATRIX4_SIZE * sizeof(float),
+        readMatrixVector.data(), readMatrixVector.size() * sizeof(float)) != EOK) {
         BLOGN_FAILURE("memcpy_s fail");
         return GSERROR_API_FAILED;
     }

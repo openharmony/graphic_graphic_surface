@@ -669,6 +669,17 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
+
+    uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
+    if (usage & BUFFER_USAGE_CPU_WRITE) {
+        // api flush
+        auto sret = bufferQueueCache_[sequence].buffer->FlushCache();
+        if (sret != GSERROR_OK) {
+            BLOGN_FAILURE_ID_API(sequence, FlushCache, sret);
+            return sret;
+        }
+    }
+
     bufferQueueCache_[sequence].timestamp = config.timestamp;
 
     if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isLocalRender_) {

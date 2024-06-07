@@ -25,6 +25,8 @@
 #include "surface_utils.h"
 #include "sync_fence.h"
 #include "ipc_inner_object.h"
+#include "external_window.h"
+#include "metadata_helper.h"
 
 #ifndef WEAK_ALIAS
     #define WEAK_ALIAS(old, new) \
@@ -32,6 +34,41 @@
 #endif
 
 using namespace OHOS;
+using namespace HDI::Display::Graphic::Common::V1_0;
+static std::unordered_map<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType> NATIVE_COLORSPACE_TO_HDI_MAP = {
+    {OH_COLORSPACE_NONE, CM_COLORSPACE_NONE},
+    {OH_COLORSPACE_BT601_EBU_FULL, CM_BT601_EBU_FULL},
+    {OH_COLORSPACE_BT601_SMPTE_C_FULL, CM_BT601_SMPTE_C_FULL},
+    {OH_COLORSPACE_BT709_FULL, CM_BT709_FULL},
+    {OH_COLORSPACE_BT2020_HLG_FULL, CM_BT2020_HLG_FULL},
+    {OH_COLORSPACE_BT2020_PQ_FULL, CM_BT2020_PQ_FULL},
+    {OH_COLORSPACE_BT601_EBU_LIMIT, CM_BT601_EBU_LIMIT},
+    {OH_COLORSPACE_BT601_SMPTE_C_LIMIT, CM_BT601_SMPTE_C_LIMIT},
+    {OH_COLORSPACE_BT709_LIMIT, CM_BT709_LIMIT},
+    {OH_COLORSPACE_BT2020_HLG_LIMIT, CM_BT2020_HLG_LIMIT},
+    {OH_COLORSPACE_BT2020_PQ_LIMIT, CM_BT2020_PQ_LIMIT},
+    {OH_COLORSPACE_SRGB_FULL, CM_SRGB_FULL},
+    {OH_COLORSPACE_P3_FULL, CM_P3_FULL},
+    {OH_COLORSPACE_P3_HLG_FULL, CM_P3_HLG_FULL},
+    {OH_COLORSPACE_P3_PQ_FULL, CM_P3_PQ_FULL},
+    {OH_COLORSPACE_ADOBERGB_FULL, CM_ADOBERGB_FULL},
+    {OH_COLORSPACE_SRGB_LIMIT, CM_SRGB_LIMIT},
+    {OH_COLORSPACE_P3_LIMIT, CM_P3_LIMIT},
+    {OH_COLORSPACE_P3_HLG_LIMIT, CM_P3_HLG_LIMIT},
+    {OH_COLORSPACE_P3_PQ_LIMIT, CM_P3_PQ_LIMIT},
+    {OH_COLORSPACE_ADOBERGB_LIMIT, CM_ADOBERGB_LIMIT},
+    {OH_COLORSPACE_LINEAR_SRGB, CM_LINEAR_SRGB},
+    {OH_COLORSPACE_LINEAR_BT709, CM_LINEAR_BT709},
+    {OH_COLORSPACE_LINEAR_P3, CM_LINEAR_P3},
+    {OH_COLORSPACE_LINEAR_BT2020, CM_LINEAR_BT2020},
+    {OH_COLORSPACE_DISPLAY_SRGB, CM_DISPLAY_SRGB},
+    {OH_COLORSPACE_DISPLAY_P3_SRGB, CM_DISPLAY_P3_SRGB},
+    {OH_COLORSPACE_DISPLAY_P3_HLG, CM_DISPLAY_P3_HLG},
+    {OH_COLORSPACE_DISPLAY_P3_PQ, CM_DISPLAY_P3_PQ},
+    {OH_COLORSPACE_DISPLAY_BT2020_SRGB, CM_DISPLAY_BT2020_SRGB},
+    {OH_COLORSPACE_DISPLAY_BT2020_HLG, CM_DISPLAY_BT2020_HLG},
+    {OH_COLORSPACE_DISPLAY_BT2020_PQ, CM_DISPLAY_BT2020_PQ}
+};
 
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
 {
@@ -746,6 +783,135 @@ int32_t NativeWindowDisconnect(OHNativeWindow *window)
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return windowSurface->Disconnect();
+}
+
+int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace colorSpace)
+{
+    if (window == nullptr || NATIVE_COLORSPACE_TO_HDI_MAP.find(colorSpace) == NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    OHNativeWindowBuffer *lastFlushedBuffer = new OHNativeWindowBuffer();
+    int lastFlushFenceFd;
+    float matrix[16];
+    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
+    if (status != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetLastFlushedBuffer fail");
+        return status;
+    }
+    GSError ret = MetadataHelper::SetColorSpaceType(lastFlushedBuffer->sfbuffer,
+        NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("SetColorSpaceType failed!, retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace *colorSpace)
+{
+    if (window == nullptr || colorSpace == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
+    OHNativeWindowBuffer *lastFlushedBuffer = new OHNativeWindowBuffer();
+    int lastFlushFenceFd;
+    float matrix[16];
+    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
+    if (status != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetLastFlushedBuffer fail");
+        return status;
+    }
+    GSError ret = MetadataHelper::GetColorSpaceType(lastFlushedBuffer->sfbuffer, colorSpaceType);
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    for (auto type : NATIVE_COLORSPACE_TO_HDI_MAP) {
+        if (type.second == colorSpaceType) {
+            *colorSpace = type.first;
+            return OHOS::SURFACE_ERROR_OK;
+        }
+    }
+    BLOGE("the colorSpace does not support it.");
+    return OHOS::SURFACE_ERROR_UNKOWN;
+}
+
+int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata)
+{
+    if (window == nullptr || metadata == nullptr || size <= 0) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    OHNativeWindowBuffer *lastFlushedBuffer = new OHNativeWindowBuffer();
+    int lastFlushFenceFd;
+    float matrix[16];
+    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
+    if (status != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetLastFlushedBuffer fail");
+        return status;
+    }
+    GSError ret = GSERROR_OK;
+    std::vector<uint8_t> mD(metadata, metadata + size);
+    if (metadataKey == OH_HDR_DYNAMIC_METADATA) {
+        ret = MetadataHelper::SetHDRDynamicMetadata(lastFlushedBuffer->sfbuffer, mD);
+    } else if (metadataKey == OH_HDR_STATIC_METADATA) {
+        ret = MetadataHelper::SetHDRStaticMetadata(lastFlushedBuffer->sfbuffer, mD);
+    } else {
+        BLOGE("the metadataKey does not support it.");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t *size, uint8_t **metadata)
+{
+    if (window == nullptr || metadata == nullptr || size == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    OHNativeWindowBuffer *lastFlushedBuffer = new OHNativeWindowBuffer();
+    int lastFlushFenceFd;
+    float matrix[16];
+    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
+    if (status != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetLastFlushedBuffer fail");
+        return status;
+    }
+    GSError ret = GSERROR_OK;
+    std::vector<uint8_t> mD;
+    if (metadataKey == OH_HDR_DYNAMIC_METADATA) {
+        ret = MetadataHelper::GetHDRDynamicMetadata(lastFlushedBuffer->sfbuffer, mD);
+    } else if (metadataKey == OH_HDR_STATIC_METADATA) {
+        ret = MetadataHelper::GetHDRStaticMetadata(lastFlushedBuffer->sfbuffer, mD);
+    } else {
+        BLOGE("the metadataKey does not support it.");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("SetHDRSMetadata failed! , retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    *size = mD.size();
+    *metadata = new uint8_t[mD.size()];
+    if (!mD.empty()) {
+        errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
+        if (err != 0) {
+            BLOGE("memcpy_s failed! , retVal:%d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+    } else {
+        BLOGE("new metadata failed! ");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
 }
 
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)

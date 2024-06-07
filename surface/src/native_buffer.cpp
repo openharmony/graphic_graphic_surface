@@ -275,3 +275,88 @@ int32_t OH_NativeBuffer_FromNativeWindowBuffer(OHNativeWindowBuffer *nativeWindo
     }
     return OHOS::SURFACE_ERROR_OK;
 }
+
+int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace *colorSpace)
+{
+    if (buffer == nullptr || colorSpace == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
+    GSError ret = MetadataHelper::GetColorSpaceType(sbuffer, colorSpaceType);
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    for (auto type : NATIVE_COLORSPACE_TO_HDI_MAP) {
+        if (type.second == colorSpaceType) {
+            *colorSpace = type.first;
+            return OHOS::SURFACE_ERROR_OK;
+        }
+    }
+    BLOGE("the colorSpace does not support it.");
+    return OHOS::SURFACE_ERROR_UNKOWN;
+}
+
+int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata)
+{
+    if (buffer == nullptr || metadata == nullptr || size <= 0) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    GSError ret = GSERROR_OK;
+    std::vector<uint8_t> mD(metadata, metadata + size);
+    if (metadataKey == OH_HDR_DYNAMIC_METADATA) {
+        ret = MetadataHelper::SetHDRDynamicMetadata(sbuffer, mD);
+    } else if (metadataKey == OH_HDR_STATIC_METADATA) {
+        ret = MetadataHelper::SetHDRStaticMetadata(sbuffer, mD);
+    } else {
+        BLOGE("the metadataKey does not support it.");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t *size, uint8_t **metadata)
+{
+    if (buffer == nullptr || metadata == nullptr || size == nullptr) {
+        BLOGE("parameter error, please check input parameter");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    GSError ret = GSERROR_OK;
+    std::vector<uint8_t> mD;
+    if (metadataKey == OH_HDR_DYNAMIC_METADATA) {
+        ret = MetadataHelper::GetHDRDynamicMetadata(sbuffer, mD);
+    } else if (metadataKey == OH_HDR_STATIC_METADATA) {
+        ret = MetadataHelper::GetHDRStaticMetadata(sbuffer, mD);
+    } else {
+        BLOGE("the metadataKey does not support it.");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("SetHDRSMetadata failed! , retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    *size = mD.size();
+    *metadata = new uint8_t[mD.size()];
+    if (!mD.empty()) {
+        errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
+        if (err != 0) {
+            BLOGE("memcpy_s failed! , retVal:%d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+    } else {
+        BLOGE("new metadata failed! ");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}

@@ -46,6 +46,7 @@ static const std::map<BufferState, std::string> BufferStateStrs = {
     {BUFFER_STATE_REQUESTED,                   "1 <requested>"},
     {BUFFER_STATE_FLUSHED,                     "2 <flushed>"},
     {BUFFER_STATE_ACQUIRED,                    "3 <acquired>"},
+    {BUFFER_STATE_ATTACHED,                    "4 <attached>"},
 };
 
 static uint64_t GetUniqueIdImpl()
@@ -325,7 +326,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
             return ReuseBuffer(config, bedata, retval);
         } else if (GetUsedSize() >= GetQueueSize()) {
             for (auto &[id, ele] : bufferQueueCache_) {
-                std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + BufferStateStrs.at(ele.state);
+                std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + std::to_string(ele.state);
                 ScopedBytrace eleTrace(eleInfo);
             }
             BLOGNE("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
@@ -701,7 +702,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, uniqueId_, fence->Get());
     } else if (ret == GSERROR_NO_BUFFER) {
         for (auto &[id, ele] : bufferQueueCache_) {
-            std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + BufferStateStrs.at(ele.state);
+            std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + std::to_string(ele.state);
             ScopedBytrace eleTrace(eleInfo);
         }
         BLOGNE("there is no dirty buffer");
@@ -767,7 +768,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         if (isShared_ == false) {
             const auto &state = bufferQueueCache_[sequence].state;
             if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
-                ScopedBytrace bufferNotFound("invalid state: " + BufferStateStrs.at(state));
+                ScopedBytrace bufferNotFound("invalid state: " + std::to_string(state));
                 BLOGNE("invalid state:%{public}d", state);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
@@ -1606,7 +1607,7 @@ void BufferQueue::DumpCache(std::string &result)
         BufferElement element = it->second;
         if (BufferStateStrs.find(element.state) != BufferStateStrs.end()) {
             result += "        sequence = " + std::to_string(it->first) +
-                ", state = " + BufferStateStrs.at(element.state) +
+                ", state = " + std::to_string(element.state) +
                 ", timestamp = " + std::to_string(element.timestamp);
         }
         for (decltype(element.damages.size()) i = 0; i < element.damages.size(); i++) {

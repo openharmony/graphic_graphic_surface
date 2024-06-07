@@ -929,9 +929,6 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
 {
     ScopedBytrace func("AttachBufferToQueue name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
         " sequence: " + std::to_string(buffer->GetSeqNum()) + " invokerType" + std::to_string(invokerType));
-    if (buffer == nullptr) {
-        BLOGN_FAILURE_RET(SURFACE_ERROR_UNKOWN);
-    }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         uint32_t sequence = buffer->GetSeqNum();
@@ -967,9 +964,6 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerTy
 {
     ScopedBytrace func("DetachBufferFromQueue name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
         " sequence: " + std::to_string(buffer->GetSeqNum()) + " invokerType" + std::to_string(invokerType));
-    if (buffer == nullptr) {
-        BLOGN_FAILURE_RET(SURFACE_ERROR_UNKOWN);
-    }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         uint32_t sequence = buffer->GetSeqNum();

@@ -236,19 +236,19 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
         case GraphicTransformType::GRAPHIC_ROTATE_NONE:
             break;
         case GraphicTransformType::GRAPHIC_ROTATE_90:
-            *transformMatrix = MatrixProductV2(*transformMatrix, rotate90);
+            *transformMatrix = rotate90;
             break;
         case GraphicTransformType::GRAPHIC_ROTATE_180:
-            *transformMatrix = MatrixProductV2(*transformMatrix, rotate180);
+            *transformMatrix = rotate180;
             break;
         case GraphicTransformType::GRAPHIC_ROTATE_270:
-            *transformMatrix = MatrixProductV2(*transformMatrix, rotate270);
+            *transformMatrix = rotate270;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H:
-            *transformMatrix = MatrixProductV2(*transformMatrix, flipH);
+            *transformMatrix = flipH;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V:
-            *transformMatrix = MatrixProductV2(*transformMatrix, flipV);
+            *transformMatrix = flipV;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT90:
             *transformMatrix = MatrixProductV2(flipH, rotate90);
@@ -257,16 +257,16 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
             *transformMatrix = MatrixProductV2(flipV, rotate90);
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT180:
-            *transformMatrix = MatrixProductV2(flipH, rotate180);
+            *transformMatrix = rotate180;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V_ROT180:
-            *transformMatrix = MatrixProductV2(flipV, rotate180);
+            *transformMatrix = rotate180;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT270:
-            *transformMatrix = MatrixProductV2(flipH, rotate270);
+            *transformMatrix = rotate270;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V_ROT270:
-            *transformMatrix = MatrixProductV2(flipV, rotate270);
+            *transformMatrix = rotate270;
             break;
         default:
             break;

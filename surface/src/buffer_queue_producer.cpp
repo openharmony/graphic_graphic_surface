@@ -175,6 +175,9 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
 
     arguments.ReadUint32(num);
     ReadRequestConfig(arguments, config);
+    if (num <= 0 || num > SURFACE_MAX_QUEUE_SIZE) {
+        return 0;
+    }
     retvalues.resize(num);
     bedataimpls.reserve(num);
 
@@ -185,6 +188,7 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
     GSError sret = RequestBuffers(config, bedataimpls, retvalues);
     num = static_cast<uint32_t>(retvalues.size());
     reply.WriteInt32(sret);
+    reply.WriteUint32(num);
     if (sret == GSERROR_OK) {
         for (uint32_t i = 0; i < num; ++i) {
             WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer);
@@ -252,6 +256,9 @@ int32_t BufferQueueProducer::FlushBuffersRemote(MessageParcel &arguments, Messag
     std::vector<sptr<BufferExtraData>> bedataimpls;
     std::vector<sptr<SyncFence>> fences;
     arguments.ReadUInt32Vector(&sequences);
+    if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
+        return 0;
+    }
     for (size_t i = 0; i < sequences.size(); ++i) {
         sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
         bedataimpl->ReadFromParcel(arguments);

@@ -251,22 +251,22 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
             *transformMatrix = flipV;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT90:
-            *transformMatrix = MatrixProductV2(flipH, rotate90);
-            break;
-        case GraphicTransformType::GRAPHIC_FLIP_V_ROT90:
             *transformMatrix = MatrixProductV2(flipV, rotate90);
             break;
+        case GraphicTransformType::GRAPHIC_FLIP_V_ROT90:
+            *transformMatrix = MatrixProductV2(flipH, rotate90);
+            break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT180:
-            *transformMatrix = rotate180;
+            *transformMatrix = flipV;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V_ROT180:
-            *transformMatrix = rotate180;
+            *transformMatrix = flipH;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT270:
-            *transformMatrix = rotate270;
+            *transformMatrix = MatrixProductV2(flipH, rotate90);
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V_ROT270:
-            *transformMatrix = rotate270;
+            *transformMatrix = MatrixProductV2(flipV, rotate90);
             break;
         default:
             break;

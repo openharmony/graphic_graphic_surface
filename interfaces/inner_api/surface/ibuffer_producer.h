@@ -45,6 +45,8 @@ public:
         sptr<SyncFence> fence;
         std::vector<int32_t> deletingBuffers;
     };
+    virtual GSError GetProducerInitInfo(ProducerInitInfo &info) = 0;
+
     virtual GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                   RequestBufferReturnValue &retval) = 0;
 
@@ -166,6 +168,7 @@ protected:
         BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS = 40,
         BUFFER_PRODUCER_REQUEST_BUFFERS = 41,
         BUFFER_PRODUCER_FLUSH_BUFFERS = 42,
+        BUFFER_PRODUCER_GET_INIT_INFO = 43,
     };
 };
 } // namespace OHOS

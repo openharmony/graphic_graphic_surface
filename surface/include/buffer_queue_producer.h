@@ -42,6 +42,8 @@ public:
     GSError RequestBuffers(const BufferRequestConfig &config, std::vector<sptr<BufferExtraData>> &bedata,
         std::vector<RequestBufferReturnValue> &retvalues) override;
 
+    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
+
     GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata) override;
 
     GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
@@ -120,6 +122,7 @@ private:
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
     bool HandleDeathRecipient(sptr<IRemoteObject> token);
 
+    int32_t GetProducerInitInfoRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t CancelBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

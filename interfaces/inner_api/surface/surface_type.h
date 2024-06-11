@@ -143,6 +143,13 @@ using GraphicLayerType = enum {
     GRAPHIC_LAYER_TYPE_BUTT             /**< Empty layer */
 };
 
+using ProducerInitInfo = struct {
+    uint64_t uniqueId;
+    int32_t width;
+    int32_t height;
+    std::string name;
+};
+
 using GraphicLayerInfo = struct {
     int32_t width;                /**< Layer width */
     int32_t height;               /**< Layer height */

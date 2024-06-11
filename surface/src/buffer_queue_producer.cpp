@@ -38,6 +38,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         bufferQueue_->GetName(name_);
     }
 
+    memberFuncMap_[BUFFER_PRODUCER_GET_INIT_INFO] = &BufferQueueProducer::GetProducerInitInfoRemote;
     memberFuncMap_[BUFFER_PRODUCER_REQUEST_BUFFER] = &BufferQueueProducer::RequestBufferRemote;
     memberFuncMap_[BUFFER_PRODUCER_REQUEST_BUFFERS] = &BufferQueueProducer::RequestBuffersRemote;
     memberFuncMap_[BUFFER_PRODUCER_CANCEL_BUFFER] = &BufferQueueProducer::CancelBufferRemote;
@@ -193,6 +194,18 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
             reply.WriteInt32Vector(retvalues[i].deletingBuffers);
         }
     }
+    return 0;
+}
+
+int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    ProducerInitInfo info;
+    (void)GetProducerInitInfo(info);
+    reply.WriteInt32(info.width);
+    reply.WriteInt32(info.height);
+    reply.WriteUint64(info.uniqueId);
+    reply.WriteString(info.name);
     return 0;
 }
 
@@ -753,6 +766,15 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
         return ret;
     }
     return GSERROR_OK;
+}
+
+GSError BufferQueueProducer::GetProducerInitInfo(ProducerInitInfo &info)
+{
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetProducerInitInfo(info);
 }
 
 GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)

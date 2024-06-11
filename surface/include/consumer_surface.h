@@ -34,6 +34,9 @@ public:
 
     bool IsConsumer() const override;
     sptr<IBufferProducer> GetProducer() const override;
+
+    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
+
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                           int32_t &fence, BufferRequestConfig &config) override;
 

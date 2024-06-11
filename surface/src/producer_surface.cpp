@@ -53,8 +53,9 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     if (producer_) {
         producer_->SendAddDeathRecipientObject();
     }
-    windowConfig_.width = GetDefaultWidth();
-    windowConfig_.height = GetDefaultHeight();
+    GetProducerInitInfo(initInfo_);
+    windowConfig_.width = initInfo_.width;
+    windowConfig_.height = initInfo_.height;
     windowConfig_.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
     windowConfig_.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
     windowConfig_.strideAlignment = 8;     // default stride is 8
@@ -78,15 +79,18 @@ ProducerSurface::~ProducerSurface()
     utils->Remove(GetUniqueId());
 }
 
+GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo &info)
+{
+    return producer_->GetProducerInitInfo(info);
+}
+
 GSError ProducerSurface::Init()
 {
     if (inited_.load()) {
         return GSERROR_OK;
     }
-    auto ret = producer_->GetNameAndUniqueId(name_, queueId_);
-    if (ret != GSERROR_OK) {
-        BLOGNE("GetNameAndUniqueId failed, %{public}s", GSErrorStr(ret).c_str());
-    }
+    name_ = initInfo_.name;
+    queueId_ = initInfo_.uniqueId;
     inited_.store(true);
     BLOGND("ctor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
     return GSERROR_OK;

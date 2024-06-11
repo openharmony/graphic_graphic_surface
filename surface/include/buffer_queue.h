@@ -66,6 +66,8 @@ public:
     virtual ~BufferQueue();
     GSError Init();
 
+    GSError GetProducerInitInfo(ProducerInitInfo &info);
+
     GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                           struct IBufferProducer::RequestBufferReturnValue &retval);
 

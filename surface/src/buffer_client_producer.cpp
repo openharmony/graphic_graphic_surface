@@ -123,6 +123,11 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     }
 
     GSError ret = GSERROR_OK;
+    num = reply.ReadInt32();
+    if (num > INT32_MAX || num < 1) {
+        return GSERROR_BINDER;
+    }
+    retvalues.resize(num);
     for (size_t i = 0; i < num; ++i) {
         auto &retval = retvalues[i];
         ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);

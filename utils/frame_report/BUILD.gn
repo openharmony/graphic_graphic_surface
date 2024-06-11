@@ -30,8 +30,7 @@ config("frame_report_public_config") {
 
 ohos_static_library("frame_report") {
   sources = [
-    "src/frame_report.cpp",
-    "src/ring_array.cpp",
+    "src/frame_report.cpp"
   ]
   configs = [ ":frame_report_config" ]
 

@@ -178,6 +178,17 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     return GSERROR_OK;
 }
 
+GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
+    reply.ReadInt32(info.width);
+    reply.ReadInt32(info.height);
+    reply.ReadUint64(info.uniqueId);
+    reply.ReadString(info.name);
+    return GSERROR_OK;
+}
+
 GSError BufferClientProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);

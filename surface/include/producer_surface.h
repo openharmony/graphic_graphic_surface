@@ -154,6 +154,7 @@ public:
     BufferRequestConfig* GetWindowConfig() override;
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;
+    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
 private:
     bool IsRemote();
     void CleanAllLocked();
@@ -177,6 +178,7 @@ private:
     int32_t requestHeight_ = 0;
     GraphicTransformType lastSetTransformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BufferRequestConfig windowConfig_ = {0};
+    ProducerInitInfo initInfo_ = {0};
 };
 } // namespace OHOS
 

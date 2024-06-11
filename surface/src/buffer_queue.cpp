@@ -104,6 +104,15 @@ uint32_t BufferQueue::GetUsedSize()
     return used_size;
 }
 
+GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
+{
+    info.name = name_;
+    info.width = defaultWidth;
+    info.height = defaultHeight;
+    info.uniqueId = uniqueId_;
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
     const BufferRequestConfig &config)
 {

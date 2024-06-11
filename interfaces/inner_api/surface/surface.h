@@ -32,6 +32,7 @@ public:
 
     virtual ~Surface() = default;
 
+    virtual GSError GetProducerInitInfo(ProducerInitInfo &info) = 0;
     virtual bool IsConsumer() const = 0;
     virtual sptr<IBufferProducer> GetProducer() const = 0;
 

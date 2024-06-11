@@ -33,6 +33,8 @@ public:
     BufferClientProducer(const sptr<IRemoteObject>& impl);
     virtual ~BufferClientProducer();
 
+    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
+
     GSError RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                           RequestBufferReturnValue &retval) override;
     GSError RequestBuffers(const BufferRequestConfig &config, std::vector<sptr<BufferExtraData>> &bedata,

@@ -624,36 +624,6 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     return GSERROR_OK;
 }
 
-void BufferQueue::DumpToFile(uint32_t sequence)
-{
-    static bool dumpBufferEnabled = system::GetParameter("persist.dumpbuffer.enabled", "0") != "0";
-    if (!dumpBufferEnabled || access("/data/bq_dump", F_OK) == -1) {
-        return;
-    }
-
-    sptr<SurfaceBuffer>& buffer = bufferQueueCache_[sequence].buffer;
-    if (buffer == nullptr) {
-        return;
-    }
-
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-    constexpr int secToUsec = 1000 * 1000;
-    int64_t nowVal = (int64_t)now.tv_sec * secToUsec + (int64_t)now.tv_usec;
-
-    std::stringstream ss;
-    ss << "/data/bq_" << GetRealPid() << "_" << name_ << "_" << nowVal << "_" << buffer->GetFormat() << "_"
-        << buffer->GetWidth() << "x" << buffer->GetHeight() << ".raw";
-    std::ofstream rawDataFile(ss.str(), std::ofstream::binary);
-    if (!rawDataFile.good()) {
-        BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
-        return;
-    }
-    ScopedBytrace toFile(std::string(__func__) + ":" + ss.str());
-    rawDataFile.write(static_cast<const char *>(buffer->GetVirAddr()), buffer->GetSize());
-    rawDataFile.close();
-}
-
 GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
@@ -698,7 +668,11 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     }
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1
     // and reboot your device
-    DumpToFile(sequence);
+    static bool dumpBufferEnabled = system::GetParameter("persist.dumpbuffer.enabled", "0") != "0";
+    if (dumpBufferEnabled) {
+        DumpToFileAsync(GetRealPid(), name_, bufferQueueCache_[sequence].buffer, fence);
+    }
+    
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
 }

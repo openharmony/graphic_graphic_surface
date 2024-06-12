@@ -181,7 +181,6 @@ public:
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     void DeleteBufferInCache(uint32_t sequence);
-    void DumpToFile(uint32_t sequence);
 
     uint32_t GetUsedSize();
     void DeleteBuffersLocked(int32_t count);

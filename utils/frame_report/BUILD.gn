@@ -13,6 +13,7 @@
 
 import("//build/ohos.gni")
 
+## Build frame_report.a {{{
 config("frame_report_config") {
   visibility = [ ":*" ]
 
@@ -29,7 +30,6 @@ config("frame_report_public_config") {
 
 ohos_static_library("frame_report") {
   sources = [ "src/frame_report.cpp" ]
-
   configs = [ ":frame_report_config" ]
 
   public_configs = [ ":frame_report_public_config" ]
@@ -37,16 +37,18 @@ ohos_static_library("frame_report") {
   external_deps = [
     "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
-    "init:libbegetutil",
     "init:libbeget_proxy",
+    "init:libbegetutil",
   ]
 
   defines = []
 
-  if (defined(global_parts_info) && defined(global_parts_info.hdf_drivers_interface_hwsched)) {
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.hdf_drivers_interface_hwsched)) {
     defines += [ "AI_SCHED_ENABLE" ]
   }
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"
 }
+## Build frame_report.a }}}

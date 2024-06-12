@@ -45,11 +45,7 @@ FrameSched& FrameSched::GetInstance()
 
 FrameSched::FrameSched()
 {
-    int ret = LoadLibrary();
-    if (!ret) {
-        LOGE("dlopen libframe_ui_intf.so failed");
-        return;
-    }
+    LoadLibrary();
 }
 
 FrameSched::~FrameSched()

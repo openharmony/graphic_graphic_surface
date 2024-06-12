@@ -43,8 +43,7 @@ ohos_static_library("frame_report") {
 
   defines = []
 
-  if (defined(global_parts_info) &&
-      defined(global_parts_info.hdf_drivers_interface_hwsched)) {
+  if (defined(global_parts_info) && defined(global_parts_info.hdf_drivers_interface_hwsched)) {
     defines += [ "AI_SCHED_ENABLE" ]
   }
 

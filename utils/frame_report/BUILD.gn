@@ -37,8 +37,8 @@ ohos_static_library("frame_report") {
   external_deps = [
     "bounds_checking_function:libsec_shared",
     "hilog:libhilog",
-    "init:libbeget_proxy",
     "init:libbegetutil",
+    "init:libbeget_proxy",
   ]
 
   defines = []

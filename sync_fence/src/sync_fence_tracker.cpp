@@ -119,12 +119,14 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
     if (threadName_.compare("Acquire Fence") == 0) {
         isGpuFence_ = true;
     }
+    if (isGpuFence_) {
+        isGpuEnable_ = OHOS::system::GetBoolParameter("persist.deadline.gpu_enable", false);
+    }
 }
 
 void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
 {
     if (isGpuFence_) {
-        isGpuEnable_ = OHOS::system::GetBoolParameter("persist.deadline.gpu_enable", false);
         if (!traceTag && !isGpuEnable_) {
             return;
         }

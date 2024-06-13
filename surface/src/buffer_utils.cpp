@@ -280,7 +280,7 @@ void WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handl
     }
 }
 
-void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize) 
+void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
 {
     size_t block_size = 1024 * 1024; // 1 MB block size
     size_t num_blocks = totalSize / block_size;
@@ -290,8 +290,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     size_t remaining_blocks = num_blocks % std::thread::hardware_concurrency();
 
     // Lambda function to copy a block of memory
-    auto copy_block = [&](uint8_t* current_dest,const uint8_t* current_src, size_t size)
-    {
+    auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
         size_t ret = memcpy_s(current_dest, size, current_src, size);
         if (ret != 0) {
             BLOGE("BufferDump error ret:%{public}d", static_cast<int>(ret));
@@ -368,19 +367,23 @@ void DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer, s
     }
 
     size_t size = buffer->GetSize();
-    // Copy through multithreading
-    uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
-    uint8_t* dest = static_cast<uint8_t*>(malloc(size));
-
-    if (dest == nullptr) {
-        BLOGE("BufferDump dest memory alloc error.");
+    if ( size > 0 ) {
+        uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
+        uint8_t* dest = static_cast<uint8_t*>(malloc(size));
+        if (dest != nullptr) {
+            // Copy through multithreading
+            CloneBuffer(dest, src, size);
+            // create dump thread，async export file
+            std::thread file_writer(WriteToFile, std::to_string(pid), dest, size, buffer->GetFormat(),
+                buffer->GetWidth(), buffer->GetHeight(), name);
+            file_writer.detach();
+        } else {
+            BLOGE("BufferDump dest memory alloc failed.");
+            return;
+        }
+    } else {
+        BLOGE("BufferDump buffer size error.");
         return;
     }
-    CloneBuffer(dest, src, size);
-
-    // create dump thread，async export file
-    std::thread file_writer(WriteToFile, std::to_string(pid), dest, size, buffer->GetFormat(), 
-        buffer->GetWidth(), buffer->GetHeight(), name);
-    file_writer.detach();
 }
 } // namespace OHOS

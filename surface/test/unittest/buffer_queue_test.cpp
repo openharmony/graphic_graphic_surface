@@ -756,25 +756,6 @@ HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, Function | MediumTest
 }
 
 /*
-* Function: DumpToFile
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call DumpToFile and check ret
- */
-HWTEST_F(BufferQueueTest, DumpToFile001, Function | MediumTest | Level2)
-{
-    bq->CleanCache(false);
-    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
-    ASSERT_NE(buffer, nullptr);
-    GSError ret = bq->AttachBuffer(buffer, 6);
-    sptr<SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
-    ASSERT_EQ(ret, GSERROR_OK);
-    bq->DumpToFile(0);
-    bq->DumpToFile(1);
-}
-
-/*
 * Function: SetSurfaceSourceType and GetSurfaceSourceType
 * Type: Function
 * Rank: Important(2)

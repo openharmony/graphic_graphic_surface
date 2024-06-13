@@ -301,6 +301,196 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace002, Function | MediumTest
 }
 
 /*
+* Function: OH_NativeBuffer_GetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetColorSpace by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace001, Function | MediumTest | Level2)
+{
+    OH_NativeBuffer_ColorSpace *colorSpace = nullptr;
+    int32_t ret = OH_NativeBuffer_GetColorSpace(nullptr, colorSpace);
+    ASSERT_NE(ret, GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_GetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetColorSpace
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace002, Function | MediumTest | Level2)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
+    int32_t ret = OH_NativeBuffer_SetColorSpace(buffer, OH_COLORSPACE_BT709_LIMIT);
+    ret += OH_NativeBuffer_GetColorSpace(buffer, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(colorSpace, OH_COLORSPACE_BT709_LIMIT);
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeBuffer_GetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetColorSpace
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace003, Function | MediumTest | Level2)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
+    int32_t ret = OH_NativeBuffer_GetColorSpace(buffer, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_SetColorSpace(buffer, OH_COLORSPACE_BT709_LIMIT);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(colorSpace, OH_COLORSPACE_BT709_LIMIT);
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue001, Function | MediumTest | Level2)
+{
+    int32_t size = 1024;
+    uint8_t buff[size];
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(nullptr, OH_HDR_STATIC_METADATA, size, buff);
+    ASSERT_NE(ret, GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, Function | MediumTest | Level2)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 60;
+    uint8_t outbuff[len];
+    for (int i = 0; i < 60; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_STATIC_METADATA, len, outbuff);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue003, Function | MediumTest | Level2)
+{
+    int32_t max_size = -1;
+    int32_t size = 60;
+    uint8_t buff[size];
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(nullptr, OH_HDR_STATIC_METADATA, max_size, buff);
+    ASSERT_NE(ret, GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_GetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue001, Function | MediumTest | Level2)
+{
+    int32_t size = 1024;
+    uint8_t *buff;
+    int32_t ret = OH_NativeBuffer_GetMetadataValue(nullptr, OH_HDR_STATIC_METADATA, &size, &buff);
+    if (buff != nullptr) {
+        delete[] buff;
+    }
+    ASSERT_NE(ret, GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_GetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | MediumTest | Level2)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 60;
+    uint8_t outbuff[len];
+    for (int i = 0; i < 60; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_STATIC_METADATA, len, outbuff);
+    ASSERT_EQ(ret, GSERROR_OK);
+    int32_t buffSize = 0;
+    uint8_t *buff;
+    ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_STATIC_METADATA, &buffSize, &buff);
+    if (buff != nullptr) {
+        ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
+        delete[] buff;
+    }
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_GetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue003, Function | MediumTest | Level2)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t buffSize = 0;
+    uint8_t *buff;
+    int32_t ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_STATIC_METADATA, &buffSize, &buff);
+    ASSERT_NE(ret, GSERROR_OK);
+}
+
+/*
 * Function: OH_NativeBuffer_Map
 * Type: Function
 * Rank: Important(2)

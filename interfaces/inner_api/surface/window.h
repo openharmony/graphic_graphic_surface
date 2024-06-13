@@ -76,6 +76,12 @@ int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel);
 int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window);
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16]);
 int32_t NativeWindowDisconnect(OHNativeWindow *window);
+int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace colorSpace);
+int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace *colorSpace);
+int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata);
+int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t *size, uint8_t **metadata);
 
 #ifdef __cplusplus
 }

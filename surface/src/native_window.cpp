@@ -49,6 +49,11 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
         return nullptr;
     }
     OHOS::BufferRequestConfig *windowConfig = nativeWindow->surface->GetWindowConfig();
+    if (windowConfig == nullptr) {
+        BLOGE("windowConfig is null");
+        delete nativeWindow;
+        return nullptr;
+    }
     windowConfig->width = nativeWindow->surface->GetDefaultWidth();
     windowConfig->height = nativeWindow->surface->GetDefaultHeight();
     windowConfig->usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
@@ -449,7 +454,7 @@ static int32_t InternalHandleNativeWindowOpt(OHNativeWindow *window, int code, v
 
 int32_t NativeWindowHandleOpt(OHNativeWindow *window, int code, ...)
 {
-    if (window == nullptr) {
+    if (window == nullptr || window->surface == nullptr) {
         BLOGD("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }

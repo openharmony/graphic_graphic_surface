@@ -56,7 +56,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     GetProducerInitInfo(initInfo_);
     windowConfig_.width = initInfo_.width;
     windowConfig_.height = initInfo_.height;
-    windowConfig_.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
+    windowConfig_.usage = BUFFER_USAGE_MEM_DMA;
     windowConfig_.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
     windowConfig_.strideAlignment = 8;     // default stride is 8
     windowConfig_.timeout = 3000;          // default timeout is 3000 ms

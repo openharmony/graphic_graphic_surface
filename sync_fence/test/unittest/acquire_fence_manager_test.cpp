@@ -46,9 +46,11 @@ void AcquireFenceTrackerTest::TearDownTestCase()
 */
 HWTEST_F(AcquireFenceTrackerTest, TrackFence001, Function | MediumTest | Level2)
 {
-    sptr<SyncFence> syncFence_ = nullptr;
+    sptr<SyncTimeline> syncTimeline_ = new SyncTimeline();
+    int32_t fd = syncTimeline_->GenerateFence("Acquire Fence", 20);
+    sptr<SyncFence> syncFence = new SyncFence(fd);
     bool traceTag = true;
-    AcquireFenceTracker::TrackFence(syncFence_, traceTag);
+    AcquireFenceTracker::TrackFence((const sptr<SyncFence>&)syncFence, traceTag);
 }
 
 /*

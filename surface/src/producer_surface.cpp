@@ -677,6 +677,26 @@ GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInf
     return producer_->IsSupportedAlloc(infos, supporteds);
 }
 
+GSError ProducerSurface::Connect()
+{
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (!isDisconnected) {
+            BLOGNE("Surface has been connect.");
+            return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
+        }
+    }
+    BLOGND("Connect Queue Id:%{public}" PRIu64 "", queueId_);
+    GSError ret = producer_->Connect();
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (ret == GSERROR_OK) {
+            isDisconnected = false;
+        }
+    }
+    return ret;
+}
+
 GSError ProducerSurface::Disconnect()
 {
     {

@@ -48,7 +48,7 @@ void WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &meta
 void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle);
 void WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle);
 
-void DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer>& buffer, sptr<SyncFence> &fence);
+GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer);
 } // namespace OHOS
 
 #endif // FRAMEWORKS_SURFACE_INCLUDE_BUFFER_UTILS_H

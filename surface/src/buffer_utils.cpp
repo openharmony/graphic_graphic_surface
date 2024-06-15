@@ -20,7 +20,6 @@
 
 #include "buffer_log.h"
 #include "surface_buffer_impl.h"
-#include "sync_fence.h"
 
 #include <securec.h>
 #include <thread>
@@ -353,21 +352,16 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
     free(dest);
 }
 
-void DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence)
+GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
 {
-    if (buffer == nullptr || access("/data/bq_dump", F_OK) == -1) {
-        return;
+    if (buffer == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
     }
 
-    // Wait for the status of the fence to change to SIGNALED
-    int32_t ret = fence->Wait(-1);
-    if (ret != 0) {
-        BLOGE("BufferDump fence wait() error seq:%{public}d", buffer->GetSeqNum());
-        return;
-    }
+    BLOGE("BufferDump 1 %{public}s,%{public}d", name.c_str(), static_cast<int>(buffer->GetSize()));
 
     size_t size = buffer->GetSize();
-    if (size > 0) {
+    if ( size > 0 ) {
         uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
         uint8_t* dest = static_cast<uint8_t*>(malloc(size));
         if (dest != nullptr) {
@@ -379,11 +373,13 @@ void DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer, s
             file_writer.detach();
         } else {
             BLOGE("BufferDump dest memory alloc failed.");
-            return;
+            return GSERROR_INTERNAL;
         }
     } else {
         BLOGE("BufferDump buffer size error.");
-        return;
+        return GSERROR_INTERNAL;
     }
+
+    return GSERROR_OK;
 }
 } // namespace OHOS

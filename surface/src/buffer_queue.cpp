@@ -670,7 +670,11 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     // and reboot your device
     static bool dumpBufferEnabled = system::GetParameter("persist.dumpbuffer.enabled", "0") != "0";
     if (dumpBufferEnabled) {
-        DumpToFileAsync(GetRealPid(), name_, bufferQueueCache_[sequence].buffer, fence);
+        // Wait for the status of the fence to change to SIGNALED.
+        int32_t ret = fence->Wait(-1);
+        if (ret == 0 && access("/data/bq_dump", F_OK) == 0) {
+            DumpToFileAsync(GetRealPid(), name_, bufferQueueCache_[sequence].buffer);
+        }
     }
     
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));

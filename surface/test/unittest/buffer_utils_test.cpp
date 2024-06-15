@@ -109,6 +109,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2
             // Get fileSize from the file stream
             dumpFileSize = file_data.size();
             dumpFile.close();
+            fs::remove(entry.path());
             break;
         }
     }

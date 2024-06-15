@@ -180,6 +180,7 @@ pid_t SurfaceIPCTest::ChildProcessMain()
 * EnvConditions: N/A
 * CaseDescription: 1. produce surface, fill buffer
 *                  2. consume surface and check buffer
+*                  3. call RequestBuffer in this process, check sRet and buffer
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
 HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
@@ -229,6 +230,15 @@ HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
     sRet = cSurface->ReleaseBuffer(buffer, -1);
     EXPECT_EQ(sRet, OHOS::GSERROR_OK);
 
+    // RequestBuffer cannot be called in two processes
+    auto pSurfaceSecond = Surface::CreateSurfaceAsProducer(producer);
+    sptr<SurfaceBuffer> bufferSecond = nullptr;
+    int releaseFence = -1;
+    sRet = pSurfaceSecond->RequestBuffer(bufferSecond, releaseFence, requestConfig);
+    ASSERT_EQ(sRet, GSERROR_CONSUMER_IS_CONNECTED);
+    ASSERT_EQ(bufferSecond, nullptr);
+
+    //close resource
     write(pipeFd[1], &data, sizeof(data));
     close(pipeFd[0]);
     close(pipeFd[1]);
@@ -237,26 +247,6 @@ HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
     do {
         waitpid(pid, nullptr, 0);
     } while (ret == -1 && errno == EINTR);
-}
-
-/*
-* Function: RequestBuffer and flush buffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RequestBuffer in this process, check sRet and buffer
- */
-HWTEST_F(SurfaceIPCTest, Connect001, Function | MediumTest | Level2)
-{
-    cSurface->RegisterConsumerListener(this);
-    auto producer = cSurface->GetProducer();
-    auto pSurface = Surface::CreateSurfaceAsProducer(producer);
-
-    sptr<SurfaceBuffer> buffer = nullptr;
-    int releaseFence = -1;
-    auto sRet = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
-    ASSERT_EQ(sRet, OHOS::SURFACE_ERROR_CONSUMER_IS_CONNECTED);  // RequestBuffer cannot be called in two processes
-    ASSERT_EQ(buffer, nullptr);
 }
 
 /*
@@ -272,6 +262,6 @@ HWTEST_F(SurfaceIPCTest, Disconnect001, Function | MediumTest | Level1)
     auto producer = cSurface->GetProducer();
     auto pSurface = Surface::CreateSurfaceAsProducer(producer);
     auto sRet = pSurface->Disconnect();
-    ASSERT_EQ(sRet, OHOS::GSERROR_INVALID_OPERATING);  // Disconnect cannot be called in two processes
+    ASSERT_EQ(sRet, GSERROR_CONSUMER_DISCONNECTED);  // Disconnect cannot be called in two processes
 }
 }

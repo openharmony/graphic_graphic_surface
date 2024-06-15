@@ -366,6 +366,84 @@ typedef struct {
 } OH_NativeBuffer_Planes;
 
 /**
+ * @brief Indicates the HDR metadata type of a native buffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 12
+ * @version 1.0
+ */
+typedef enum OH_NativeBuffer_MetadataType {
+    OH_VIDEO_HDR_HLG,      /**< HLG */
+    OH_VIDEO_HDR_HDR10,    /**< HDR10 */
+    OH_VIDEO_HDR_VIVID     /**< HDR VIVID */
+} OH_NativeBuffer_MetadataType;
+
+/**
+ * @brief Indicates the color x and y.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 12
+ * @version 1.0
+ */
+typedef struct {
+    float x;              /**< color X */
+    float y;              /**< color Y */
+} OH_NativeBuffer_ColorXY;
+
+/**
+ * @brief Indicates the smpte2086 metadata.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 12
+ * @version 1.0
+ */
+typedef struct {
+    OH_NativeBuffer_ColorXY displaPrimaryRed;    /**< primary red */
+    OH_NativeBuffer_ColorXY displaPrimaryGreen;  /**< primary green */
+    OH_NativeBuffer_ColorXY displaPrimaryBlue;   /**< primary blue */
+    OH_NativeBuffer_ColorXY whitePoint;          /**< white point */
+    float maxLuminance;                          /**< max luminance */
+    float minLuminance;                          /**< min luminance */
+} OH_NativeBuffer_Smpte2086;
+
+/**
+ * @brief Indicates the cta861.3 metadata.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 12
+ * @version 1.0
+ */
+typedef struct {
+    float maxContentLightLevel;                  /**< max content lightLevel */
+    float maxFrameAverageLightLevel;             /**< max frame average light level */
+} OH_NativeBuffer_Cta861;
+
+/**
+ * @brief Indicates the HDR static metadata.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 12
+ * @version 1.0
+ */
+typedef struct {
+    OH_NativeBuffer_Smpte2086 smpte2086;         /**< smpte 2086 metadata*/
+    OH_NativeBuffer_Cta861 cta861;               /**< CTA-861.3 metadata*/
+} OH_NativeBuffer_StaticMetadata;
+
+/**
+ * @brief Indicates the HDR metadata key of a native buffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 12
+ * @version 1.0
+ */
+typedef enum OH_NativeBuffer_MetadataKey {
+    OH_HDR_METADATA_TYPE,            /**< value: OH_NativeBuffer_MetadataType*/
+    OH_HDR_STATIC_METADATA,          /**< value: OH_NativeBuffer_StaticMetadata*/
+    OH_HDR_DYNAMIC_METADATA          /**< byte stream of SEI in video stream*/
+} OH_NativeBuffer_MetadataKey;
+
+/**
  * @brief Alloc a <b>OH_NativeBuffer</b> that matches the passed BufferRequestConfig. \n
  * A new <b>OH_NativeBuffer</b> instance is created each time this function is called.
  *
@@ -449,18 +527,6 @@ int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer);
 uint32_t OH_NativeBuffer_GetSeqNum(OH_NativeBuffer *buffer);
 
 /**
- * @brief Set the color space of the OH_NativeBuffer.
- *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
- * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
- * @param colorSpace Indicates the color space of native buffer, see <b>OH_NativeBuffer_ColorSpace</b>.
- * @return Returns the sequence number, which is unique for each OH_NativeBuffer.
- * @since 11
- * @version 1.0
- */
-int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace);
-
-/**
  * @brief Provide direct cpu access to the potentially multi-plannar OH_NativeBuffer in the process's address space.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
@@ -484,6 +550,68 @@ int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_Na
  * @version 1.0
  */
 int32_t OH_NativeBuffer_FromNativeWindowBuffer(OHNativeWindowBuffer *nativeWindowBuffer, OH_NativeBuffer **buffer);
+
+/**
+ * @brief Set the color space of the OH_NativeBuffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param colorSpace Indicates the color space of native buffer, see <b>OH_NativeBuffer_ColorSpace</b>.
+ * @return Returns an error code, 0 is success, otherwise, failed.
+ * @since 11
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace);
+
+/**
+ * @brief Get the color space of the OH_NativeBuffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param colorSpace Indicates the color space of native buffer, see <b>OH_NativeBuffer_ColorSpace</b>.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer is NULL.
+ *     {@link NATIVE_ERROR_BUFFER_STATE_INVALID} 41207000 - Incorrect colorSpace state.
+ * @since 12
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace *colorSpace);
+
+/**
+ * @brief Set the metadata type of the OH_NativeBuffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param metadataKey Indicates the metadata type of native buffer, see <b>OH_NativeBuffer_MetadataKey</b>.
+ * @param size Indicates the size of a uint8_t vector.
+ * @param metadata Indicates the pointer to a uint8_t vector.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or metadata is NULL.
+ *     {@link NATIVE_ERROR_BUFFER_STATE_INVALID} 41207000 - Incorrect metadata state.
+ *     {@link NATIVE_ERROR_UNSUPPORTED} 50102000 - Unsupported metadata key.
+ * @since 12
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata);
+
+/**
+ * @brief Set the metadata type of the OH_NativeBuffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param metadataKey Indicates the metadata type of native buffer, see <b>OH_NativeBuffer_MetadataKey</b>.
+ * @param size Indicates the size of a uint8_t vector.
+ * @param metadata Indicates the pointer to a uint8_t vector.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer, metadata, or size is NULL.
+ *     {@link NATIVE_ERROR_BUFFER_STATE_INVALID} 41207000 - Incorrect metadata state.
+ *     {@link NATIVE_ERROR_UNSUPPORTED} 50102000 - Unsupported metadata key.
+ * @since 12
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
+    int32_t *size, uint8_t **metadata);
 #ifdef __cplusplus
 }
 #endif

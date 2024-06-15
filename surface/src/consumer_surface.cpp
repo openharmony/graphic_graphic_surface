@@ -431,6 +431,11 @@ GSError ConsumerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInf
     return GSERROR_NOT_SUPPORT;
 }
 
+GSError ConsumerSurface::Connect()
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
 GSError ConsumerSurface::Disconnect()
 {
     return GSERROR_NOT_SUPPORT;

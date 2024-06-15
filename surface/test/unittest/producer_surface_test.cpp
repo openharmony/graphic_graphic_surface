@@ -796,6 +796,19 @@ HWTEST_F(ProducerSurfaceTest, tunnelHandle002, Function | MediumTest | Level2)
 }
 
 /*
+* Function: connect
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call connect and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, connect001, Function | MediumTest | Level1)
+{
+    GSError ret = pSurface->Connect();
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_CONSUMER_IS_CONNECTED);
+}
+
+/*
 * Function: disconnect
 * Type: Function
 * Rank: Important(1)
@@ -803,6 +816,32 @@ HWTEST_F(ProducerSurfaceTest, tunnelHandle002, Function | MediumTest | Level2)
 * CaseDescription: 1. call Disconnect and check ret
  */
 HWTEST_F(ProducerSurfaceTest, disconnect001, Function | MediumTest | Level1)
+{
+    GSError ret = pSurface->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: connect
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call connect and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, connect002, Function | MediumTest | Level1)
+{
+    GSError ret = pSurface->Connect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: disconnect
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call Disconnect and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, disconnect002, Function | MediumTest | Level1)
 {
     GSError ret = pSurface->Disconnect();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

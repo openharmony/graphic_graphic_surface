@@ -59,6 +59,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     memberFuncMap_[BUFFER_PRODUCER_IS_SUPPORTED_ALLOC] = &BufferQueueProducer::IsSupportedAllocRemote;
     memberFuncMap_[BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID] = &BufferQueueProducer::GetNameAndUniqueIdRemote;
     memberFuncMap_[BUFFER_PRODUCER_DISCONNECT] = &BufferQueueProducer::DisconnectRemote;
+    memberFuncMap_[BUFFER_PRODUCER_CONNECT] = &BufferQueueProducer::ConnectRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_SCALING_MODE] = &BufferQueueProducer::SetScalingModeRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_METADATA] = &BufferQueueProducer::SetMetaDataRemote;
     memberFuncMap_[BUFFER_PRODUCER_SET_METADATASET] = &BufferQueueProducer::SetMetaDataSetRemote;
@@ -508,6 +509,13 @@ int32_t BufferQueueProducer::IsSupportedAllocRemote(MessageParcel &arguments, Me
     return 0;
 }
 
+int32_t BufferQueueProducer::ConnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    GSError sret = Connect();
+    reply.WriteInt32(sret);
+    return 0;
+}
+
 int32_t BufferQueueProducer::DisconnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     GSError sret = Disconnect();
@@ -723,16 +731,10 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
         return SURFACE_ERROR_UNKOWN;
     }
 
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        auto callingPid = GetCallingPid();
-        if (connectedPid_ != 0 && connectedPid_ != callingPid) {
-            BLOGNW("this BufferQueue has been connected by :%{public}d", connectedPid_);
-            return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
-        }
-        connectedPid_ = callingPid;
+    auto ret = Connect();
+    if (ret != SURFACE_ERROR_OK) {
+        return ret;
     }
-
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
@@ -1105,6 +1107,18 @@ GSError BufferQueueProducer::GetNameAndUniqueId(std::string& name, uint64_t& uni
     }
     uniqueId = GetUniqueId();
     return GetName(name);
+}
+
+GSError BufferQueueProducer::Connect()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto callingPid = GetCallingPid();
+    if (connectedPid_ != 0 && connectedPid_ != callingPid) {
+        BLOGNW("this BufferQueue has been connected by :%{public}d", connectedPid_);
+        return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
+    }
+    connectedPid_ = callingPid;
+    return SURFACE_ERROR_OK;
 }
 
 GSError BufferQueueProducer::Disconnect()

@@ -547,6 +547,19 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
     return static_cast<GSError>(ret);
 }
 
+GSError BufferClientProducer::Connect()
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+
+    SEND_REQUEST(BUFFER_PRODUCER_CONNECT, arguments, reply, option);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Connect Remote return %{public}d", ret);
+        return static_cast<GSError>(ret);
+    }
+    return GSERROR_OK;
+}
+
 GSError BufferClientProducer::Disconnect()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);

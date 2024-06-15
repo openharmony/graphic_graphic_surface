@@ -88,6 +88,7 @@ public:
     virtual GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
                                      std::vector<bool> &supporteds) = 0;
 
+    virtual GSError Connect() = 0;
     virtual GSError Disconnect() = 0;
 
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
@@ -169,6 +170,7 @@ protected:
         BUFFER_PRODUCER_REQUEST_BUFFERS = 41,
         BUFFER_PRODUCER_FLUSH_BUFFERS = 42,
         BUFFER_PRODUCER_GET_INIT_INFO = 43,
+        BUFFER_PRODUCER_CONNECT = 44,
     };
 };
 } // namespace OHOS

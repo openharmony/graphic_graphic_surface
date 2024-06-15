@@ -84,6 +84,7 @@ public:
 
     GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
 
+    GSError Connect() override;
     GSError Disconnect() override;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
@@ -145,6 +146,7 @@ private:
     int32_t IsSupportedAllocRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetNameAndUniqueIdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DisconnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t ConnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetScalingModeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetMetaDataRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetMetaDataSetRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

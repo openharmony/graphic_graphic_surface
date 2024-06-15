@@ -75,6 +75,7 @@ public:
 
     // Call carefully. This interface will empty all caches of the current process
     GSError CleanCache(bool cleanAll) override;
+    GSError Connect() override;
     GSError Disconnect() override;
     GSError GoBackground() override;
 

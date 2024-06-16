@@ -361,7 +361,7 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
     BLOGE("BufferDump 1 %{public}s,%{public}d", name.c_str(), static_cast<int>(buffer->GetSize()));
 
     size_t size = buffer->GetSize();
-    if ( size > 0 ) {
+    if (size > 0) {
         uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
         uint8_t* dest = static_cast<uint8_t*>(malloc(size));
         if (dest != nullptr) {

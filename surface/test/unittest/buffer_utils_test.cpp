@@ -14,15 +14,10 @@
  */
 #include <gtest/gtest.h>
 
-#include <thread>
-#include <chrono>
 #include <unistd.h>
 #include <fstream>
-#include <securec.h>
 
 #include <buffer_utils.h>
-#include "sync_fence.h"
-#include "sync_fence_timeline.h"
 #include "surface_buffer_impl.h"
 #include "sandbox_utils.h"
 
@@ -104,7 +99,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2
         if (entry.is_regular_file() && entry.path().filename().string().find(prefix) == 0) {
             // Open the file to create a stream
             std::ifstream dumpFile(entry.path(), std::ios::binary);
-            std::vector<uint8_t> file_data((std::istreambuf_iterator<char>(dumpFile)), 
+            std::vector<uint8_t> file_data((std::istreambuf_iterator<char>(dumpFile)),
                 std::istreambuf_iterator<char>());
             // Get fileSize from the file stream
             dumpFileSize = file_data.size();

@@ -358,8 +358,6 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    BLOGE("BufferDump 1 %{public}s,%{public}d", name.c_str(), static_cast<int>(buffer->GetSize()));
-
     size_t size = buffer->GetSize();
     if (size > 0) {
         uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());

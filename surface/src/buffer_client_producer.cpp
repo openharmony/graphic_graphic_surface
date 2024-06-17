@@ -123,6 +123,12 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     }
 
     GSError ret = GSERROR_OK;
+    num = reply.ReadUint32();
+    if (num > SURFACE_MAX_QUEUE_SIZE || num <= 0) {
+        BLOGNE("num is invalid");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    retvalues.resize(num);
     for (size_t i = 0; i < num; ++i) {
         auto &retval = retvalues[i];
         ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);

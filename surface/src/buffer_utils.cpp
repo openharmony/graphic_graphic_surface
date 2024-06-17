@@ -340,6 +340,7 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
     std::ofstream rawDataFile(ss.str(), std::ofstream::binary);
     if (!rawDataFile.good()) {
         BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
+        free(dest);
         return;
     }
     

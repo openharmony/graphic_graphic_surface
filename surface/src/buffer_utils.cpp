@@ -285,8 +285,12 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     size_t num_blocks = totalSize / block_size;
     size_t last_block_size = totalSize % block_size;
 
-    size_t blocks_per_thread = num_blocks / std::thread::hardware_concurrency();
-    size_t remaining_blocks = num_blocks % std::thread::hardware_concurrency();
+    // Obtain the number of parallelizable threads.
+    size_t num_threads = std::thread::hardware_concurrency();
+    num_threads = num_threads > 0 ? num_threads : 1;
+
+    size_t blocks_per_thread = num_blocks / num_threads;
+    size_t remaining_blocks = num_blocks % num_threads;
 
     // Lambda function to copy a block of memory
     auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
@@ -302,7 +306,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     const uint8_t* current_src = src;
 
     // Create threads and copy blocks of memory
-    for (size_t i = 0; i < std::thread::hardware_concurrency(); ++i) {
+    for (size_t i = 0; i < num_threads; ++i) {
         size_t blocks_to_copy = blocks_per_thread + (i < remaining_blocks ? 1 : 0);
         size_t length_to_copy = blocks_to_copy * block_size;
 

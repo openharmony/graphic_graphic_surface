@@ -167,7 +167,7 @@ inline int32_t SyncFenceTracker::GetFrameRate()
     auto frameNum = frameStartTimes->size();
     if (frameNum > 1) {
         auto interval = frameStartTimes->back() - frameStartTimes->front();
-        if(interval > 0){
+        if(interval > 0) {
             frameRate = FRAME_PERIOD * (frameNum - 1) / interval;
         }
     }

@@ -161,13 +161,13 @@ inline void SyncFenceTracker::UpdateFrameQueue(int32_t startTime)
     frameStartTimes->push(startTime);
 }
 
-inline int32_t SyncFenceTracker::GetFrameRate()
+int32_t SyncFenceTracker::GetFrameRate()
 {
     int32_t frameRate = 0;
     auto frameNum = frameStartTimes->size();
     if (frameNum > 1) {
         auto interval = frameStartTimes->back() - frameStartTimes->front();
-        if(interval > 0){
+        if (interval > 0) {
             frameRate = FRAME_PERIOD * (frameNum - 1) / interval;
         }
     }

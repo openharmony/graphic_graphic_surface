@@ -338,7 +338,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
                 std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + std::to_string(ele.state);
                 ScopedBytrace eleTrace(eleInfo);
             }
-            BLOGNE("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
+            BLOGND("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
             return GSERROR_NO_BUFFER;
         }
     }

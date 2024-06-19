@@ -360,12 +360,19 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
 {
     if (buffer == nullptr) {
+        BLOGE("BufferDump failed: buffer is a nullptr.");
         return GSERROR_INVALID_ARGUMENTS;
     }
 
     size_t size = buffer->GetSize();
     if (size > 0) {
         uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
+
+        if (src == nullptr) {
+            BLOGE("BufferDump failed: src is a nullptr.");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+
         uint8_t* dest = static_cast<uint8_t*>(malloc(size));
         if (dest != nullptr) {
             // Copy through multithreading
@@ -375,7 +382,7 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
                 buffer->GetWidth(), buffer->GetHeight(), name);
             file_writer.detach();
         } else {
-            BLOGE("BufferDump dest memory alloc failed.");
+            BLOGE("BufferDump failed: dest is a nullptr.");
             return GSERROR_INTERNAL;
         }
     } else {

@@ -21,6 +21,12 @@
 #include "buffer_log.h"
 #include "surface_buffer_impl.h"
 
+#include <securec.h>
+#include <thread>
+#include <fstream>
+#include <sstream>
+#include <sys/time.h>
+
 namespace OHOS {
 void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
 {
@@ -271,5 +277,119 @@ void WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handl
     for (uint32_t index = 0; index < handle->reserveInts; index++) {
         parcel.WriteInt32(handle->reserve[index]);
     }
+}
+
+void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
+{
+    size_t block_size = 1024 * 1024; // 1 MB block size
+    size_t num_blocks = totalSize / block_size;
+    size_t last_block_size = totalSize % block_size;
+
+    // Obtain the number of parallelizable threads.
+    size_t num_threads = std::thread::hardware_concurrency();
+    num_threads = num_threads > 0 ? num_threads : 1;
+
+    size_t blocks_per_thread = num_blocks / num_threads;
+    size_t remaining_blocks = num_blocks % num_threads;
+
+    // Lambda function to copy a block of memory
+    auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
+        size_t ret = memcpy_s(current_dest, size, current_src, size);
+        if (ret != 0) {
+            BLOGE("BufferDump error ret:%{public}d", static_cast<int>(ret));
+        }
+    };
+
+    // Vector to store threads
+    std::vector<std::thread> threads;
+    uint8_t* current_dest = dest;
+    const uint8_t* current_src = src;
+
+    // Create threads and copy blocks of memory
+    for (size_t i = 0; i < num_threads; ++i) {
+        size_t blocks_to_copy = blocks_per_thread + (i < remaining_blocks ? 1 : 0);
+        size_t length_to_copy = blocks_to_copy * block_size;
+
+        threads.emplace_back(copy_block, current_dest, current_src, length_to_copy);
+
+        current_dest += length_to_copy;
+        current_src += length_to_copy;
+    }
+
+    if (last_block_size > 0) {
+        threads.emplace_back(copy_block, current_dest, current_src, last_block_size);
+    }
+
+    // Wait for all threads to finish
+    for (auto& th : threads) {
+        if (th.joinable()) {
+            th.join();
+        }
+    }
+}
+
+void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32_t width, int32_t height,
+    const std::string name)
+{
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+    constexpr int secToUsec = 1000 * 1000;
+    int64_t nowVal = (int64_t)now.tv_sec * secToUsec + (int64_t)now.tv_usec;
+
+    std::stringstream ss;
+    ss << "/data/bq_" << pid << "_" << name << "_" << nowVal << "_" << format << "_"
+        << width << "x" << height << ".raw";
+
+    // Open the file for writing in binary mode
+    std::ofstream rawDataFile(ss.str(), std::ofstream::binary);
+    if (!rawDataFile.good()) {
+        BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
+        free(dest);
+        return;
+    }
+    
+    // Write the data to the file
+    rawDataFile.write(static_cast<const char *>(dest), size);
+    rawDataFile.flush();
+    rawDataFile.close();
+
+    // Free the memory allocated for the data
+    free(dest);
+}
+
+GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
+{
+    if (buffer == nullptr) {
+        BLOGE("BufferDump failed: buffer is a nullptr.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    size_t size = buffer->GetSize();
+    if (size > 0) {
+        uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
+
+        if (src == nullptr) {
+            BLOGE("BufferDump failed: src is a nullptr.");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+
+        uint8_t* dest = static_cast<uint8_t*>(malloc(size));
+        if (dest != nullptr) {
+            // Copy through multithreading
+            CloneBuffer(dest, src, size);
+            // create dump thread，async export file
+            std::thread file_writer(WriteToFile, std::to_string(pid), dest, size, buffer->GetFormat(),
+                buffer->GetWidth(), buffer->GetHeight(), name);
+            file_writer.detach();
+        } else {
+            BLOGE("BufferDump failed: dest is a nullptr.");
+            return GSERROR_INTERNAL;
+        }
+    } else {
+        BLOGE("BufferDump buffer size error.");
+        return GSERROR_INTERNAL;
+    }
+
+    return GSERROR_OK;
 }
 } // namespace OHOS

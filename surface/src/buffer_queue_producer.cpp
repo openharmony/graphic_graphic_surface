@@ -1284,7 +1284,7 @@ void BufferQueueProducer::ProducerSurfaceDeathRecipient::OnRemoteDied(const wptr
         BLOGND("token doesn't match, ignore it.");
         return;
     }
-    BLOGNI("remote object died.");
+    BLOGND("remote object died.");
     producer->OnBufferProducerRemoteDied();
 }
 }; // namespace OHOS

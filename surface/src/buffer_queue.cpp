@@ -703,7 +703,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + std::to_string(ele.state);
             ScopedBytrace eleTrace(eleInfo);
         }
-        BLOGNE("there is no dirty buffer");
+        BLOGND("there is no dirty buffer");
     }
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
@@ -767,7 +767,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
             const auto &state = bufferQueueCache_[sequence].state;
             if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
                 ScopedBytrace bufferNotFound("invalid state: " + std::to_string(state));
-                BLOGNE("invalid state:%{public}d", state);
+                BLOGND("invalid state:%{public}d", state);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
         }

@@ -263,6 +263,8 @@ int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buff
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, false);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
         BLOGE("GetLastFlushedBuffer fail");
+        delete nwBuffer;
+        nwBuffer = nullptr;
         return ret;
     }
     *buffer = nwBuffer;
@@ -768,6 +770,8 @@ int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **bu
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, true);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
         BLOGE("GetLastFlushedBufferV2 fail");
+        delete nwBuffer;
+        nwBuffer = nullptr;
         return ret;
     }
     *buffer = nwBuffer;

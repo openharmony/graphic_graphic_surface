@@ -41,6 +41,7 @@ public:
     void SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime);
     void SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum);
     void Report(int32_t pid, const std::string& layerName);
+    void ReportCommitTime(int64_t commitTime);
 
 private:
     FrameReport();

@@ -286,7 +286,7 @@ GSError BufferQueue::RequestBufferCheckStatus()
     if (listener_ == nullptr && listenerClazz_ == nullptr) {
         ScopedBytrace func("RequestBufferCheckStatus no listener, surface name: " + name_ + " queueId: " +
             std::to_string(uniqueId_));
-        BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+        BLOGN_FAILURE_RET(SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
     }
 
     return GSERROR_OK;
@@ -566,7 +566,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
             ScopedBytrace listener("listener is nullptr");
             BLOGNE("Consumer is not ready");
             CancelBuffer(sequence, bedata);
-            return GSERROR_NO_CONSUMER;
+            return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
         }
     }
 
@@ -904,7 +904,7 @@ GSError BufferQueue::AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock
         if (bufferQueueCache_[sequence].state == BUFFER_STATE_RELEASED) {
             bufferQueueCache_[sequence].state = BUFFER_STATE_ATTACHED;
         } else {
-            BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+            BLOGN_FAILURE_RET(SURFACE_ERROR_BUFFER_STATE_INVALID);
         }
     }
 
@@ -991,8 +991,11 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
     ScopedBytrace func(__func__);
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (!GetStatus() || (listener_ == nullptr && listenerClazz_ == nullptr)) {
+        if (!GetStatus()) {
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+        }
+        if (listener_ == nullptr && listenerClazz_ == nullptr) {
+            BLOGN_FAILURE_RET(SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
         }
     }
 
@@ -1010,12 +1013,8 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
         .buffer = buffer,
         .state = BUFFER_STATE_ATTACHED,
         .config = {
-            .width = buffer->GetWidth(),
-            .height = buffer->GetHeight(),
-            .strideAlignment = 0x8,
-            .format = buffer->GetFormat(),
-            .usage = buffer->GetUsage(),
-            .timeout = timeOut,
+            .width = buffer->GetWidth(), .height = buffer->GetHeight(), .strideAlignment = 0x8,
+            .format = buffer->GetFormat(), .usage = buffer->GetUsage(), .timeout = timeOut,
         },
         .damages = { { .w = buffer->GetWidth(), .h = buffer->GetHeight(), } },
     };
@@ -1550,7 +1549,7 @@ GSError BufferQueue::SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle)
             ScopedBytrace bufferIPCSend("OnTunnelHandleChange");
             listenerClazz_->OnTunnelHandleChange();
         } else {
-            return GSERROR_NO_CONSUMER;
+            return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
         }
     }
     return GSERROR_OK;

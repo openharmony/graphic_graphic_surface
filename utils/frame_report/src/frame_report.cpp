@@ -39,6 +39,7 @@ static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, 0xD005830, 
 const std::string GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO = "GAS_NotifyFrameInfo";
 
 const std::string GAME_SF_KEY = "Surface";
+const std::string TYPE_COMMIT = "commit_time";
 constexpr int32_t REPORT_BUFFER_SIZE = 256;
 constexpr int32_t THOUSAND_COUNT = 1000;
 constexpr int32_t SKIP_HINT_STATUS = 0;
@@ -47,6 +48,7 @@ constexpr int32_t MAX_CACHE_COUNT = 5;
 constexpr int32_t FR_GAME_BACKGROUND = 0;
 constexpr int32_t FR_GAME_FOREGROUND = 1;
 constexpr int32_t FR_GAME_SCHED = 2;
+constexpr int32_t COMMIT_PID = -1;
 
 FrameReport& FrameReport::GetInstance()
 {
@@ -248,6 +250,11 @@ void FrameReport::Report(int32_t pid, const std::string& layerName)
         bufferMsg = msg;
     }
     NotifyFrameInfo(pid, layerName, timeStamp, bufferMsg);
+}
+
+void FrameReport::ReportCommitTime(int64_t commitTime)
+{
+    NotifyFrameInfo(COMMIT_PID, TYPE_COMMIT, commitTime, nullptr);
 }
 
 void FrameReport::NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp,

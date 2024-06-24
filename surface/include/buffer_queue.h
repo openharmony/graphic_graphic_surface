@@ -191,6 +191,7 @@ private:
     GSError CheckRequestConfig(const BufferRequestConfig &config);
     GSError CheckFlushConfig(const BufferFlushConfigWithDamages &config);
     void DumpCache(std::string &result);
+    void DumpMetadata(std::string &result, BufferElement element);
     void ClearLocked();
     bool CheckProducerCacheList();
     GSError SetProducerCacheCleanFlagLocked(bool flag);

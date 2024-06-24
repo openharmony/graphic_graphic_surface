@@ -59,6 +59,12 @@ static std::unordered_map<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType> NATIVE_
     {OH_COLORSPACE_DISPLAY_BT2020_PQ, CM_DISPLAY_BT2020_PQ}
 };
 
+static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NATIVE_METADATATYPE_TO_HDI_MAP = {
+    {OH_VIDEO_HDR_HLG, CM_VIDEO_HLG},
+    {OH_VIDEO_HDR_HDR10, CM_VIDEO_HDR10},
+    {OH_VIDEO_HDR_VIVID, CM_VIDEO_HDR_VIVID},
+};
+
 static OH_NativeBuffer* OH_NativeBufferFromSurfaceBuffer(SurfaceBuffer* buffer)
 {
     return buffer->SurfaceBufferToNativeBuffer();
@@ -313,6 +319,9 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         ret = MetadataHelper::SetHDRDynamicMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_STATIC_METADATA) {
         ret = MetadataHelper::SetHDRStaticMetadata(sbuffer, mD);
+    } else if (metadataKey == OH_HDR_METADATA_TYPE) {
+        OH_NativeBuffer_MetadataType hdrMetadataType = static_cast<OH_NativeBuffer_MetadataType>(*metadata);
+        ret = MetadataHelper::SetHDRMetadataType(sbuffer, NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
@@ -338,6 +347,21 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         ret = MetadataHelper::GetHDRDynamicMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_STATIC_METADATA) {
         ret = MetadataHelper::GetHDRStaticMetadata(sbuffer, mD);
+    } else if (metadataKey == OH_HDR_METADATA_TYPE) {
+        CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
+        ret = MetadataHelper::GetHDRMetadataType(sbuffer, hdrMetadataType);
+        if (ret != OHOS::SURFACE_ERROR_OK) {
+            BLOGE("GetHDRMetadataType failed! , retVal:%d", ret);
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+        *size = sizeof(OH_NativeBuffer_MetadataType);
+        for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
+            if (type.second == hdrMetadataType) {
+                *metadata = new uint8_t(static_cast<uint8_t>(type.first));
+                return OHOS::SURFACE_ERROR_OK;
+            }
+        }
+        return OHOS::SURFACE_ERROR_UNKOWN;
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
@@ -348,14 +372,14 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     }
     *size = mD.size();
     *metadata = new uint8_t[mD.size()];
-    if (!mD.empty()) {
-        errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
-        if (err != 0) {
-            BLOGE("memcpy_s failed! , retVal:%d", err);
-            return OHOS::SURFACE_ERROR_UNKOWN;
-        }
-    } else {
+    if (mD.empty()) {
         BLOGE("new metadata failed! ");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
+    if (err != 0) {
+        delete[] *metadata;
+        BLOGE("memcpy_s failed! , retVal:%d", err);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

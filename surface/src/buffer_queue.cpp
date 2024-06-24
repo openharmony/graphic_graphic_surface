@@ -26,6 +26,7 @@
 #include "buffer_utils.h"
 #include "buffer_log.h"
 #include "hitrace_meter.h"
+#include "metadata_helper.h"
 #include "sandbox_utils.h"
 #include "surface_buffer_impl.h"
 #include "sync_fence.h"
@@ -1598,6 +1599,31 @@ GSError BufferQueue::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimest
         }
     }
 }
+void BufferQueue::DumpMetadata(std::string &result, BufferElement element)
+{
+    HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
+    MetadataHelper::GetColorSpaceType(element.buffer, colorSpaceType);
+    HDI::Display::Graphic::Common::V1_0::CM_HDR_Metadata_Type hdrMetadataType =
+        HDI::Display::Graphic::Common::V1_0::CM_METADATA_NONE;
+    std::vector<uint8_t> dataStatic;
+    std::vector<uint8_t> dataDynamic;
+    MetadataHelper::GetHDRDynamicMetadata(element.buffer, dataDynamic);
+    MetadataHelper::GetHDRStaticMetadata(element.buffer, dataStatic);
+    MetadataHelper::GetHDRMetadataType(element.buffer, hdrMetadataType);
+    result += std::to_string(colorSpaceType) + ", ";
+    result += " [dynamicMetadata: ";
+    for (auto x : dataStatic) {
+        result += std::to_string(x);
+        result += " ";
+    }
+    result += " ],[staticMetadata: ";
+    for (auto x : dataDynamic) {
+        result += std::to_string(x);
+        result += " ";
+    }
+    result += " ],[metadataType: ";
+    result += std::to_string(hdrMetadataType) + "],";
+}
 
 void BufferQueue::DumpCache(std::string &result)
 {
@@ -1623,7 +1649,7 @@ void BufferQueue::DumpCache(std::string &result)
             std::to_string(element.config.timeout) + ", " +
             std::to_string(element.config.colorGamut) + ", " +
             std::to_string(element.config.transform) + "],";
-
+        DumpMetadata(result, element);
         result += " scalingMode = " + std::to_string(element.scalingMode) + ",";
         result += " HDR = " + std::to_string(element.hdrMetaDataType) + ", ";
 

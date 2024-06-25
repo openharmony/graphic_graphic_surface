@@ -19,6 +19,11 @@
 #include "sync_fence.h"
 
 namespace OHOS {
+ProducerSurfaceDelegator::~ProducerSurfaceDelegator()
+{
+    std::lock_guard<std::mutex> lockGuard(mapMutex_);
+    map_.clear();
+}
 GSError ProducerSurfaceDelegator::DequeueBuffer(int32_t slot, sptr<SurfaceBuffer> buffer)
 {
     return GSERROR_OK;

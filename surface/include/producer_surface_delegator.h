@@ -24,7 +24,7 @@
 namespace OHOS {
 class ProducerSurfaceDelegator : public TransactSurfaceDelegatorStub {
 public:
-    ~ProducerSurfaceDelegator() = default;
+    ~ProducerSurfaceDelegator();
     static sptr<ProducerSurfaceDelegator> Create()
     {
         return sptr<ProducerSurfaceDelegator>(new ProducerSurfaceDelegator());

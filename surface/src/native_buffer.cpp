@@ -333,6 +333,31 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     return OHOS::SURFACE_ERROR_OK;
 }
 
+GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_t *size, uint8_t **metadata)
+{
+    CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
+    GSError ret = MetadataHelper::GetHDRMetadataType(sbuffer, hdrMetadataType);
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("GetHDRMetadataType failed!, retVal:%d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
+        if (type.second == hdrMetadataType) {
+            *size = sizeof(OH_NativeBuffer_MetadataType);
+            *metadata = new uint8_t[*size];
+            errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
+            if (err != 0) {
+                delete[] *metadata;
+                BLOGE("memcpy_s failed! , retVal:%d", err);
+                return OHOS::SURFACE_ERROR_UNKOWN;
+            }
+            return OHOS::SURFACE_ERROR_OK;
+        }
+    }
+    BLOGE("the hdrMetadataType does not support it.");
+    return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+}
+
 int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t *size, uint8_t **metadata)
 {
@@ -348,20 +373,8 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     } else if (metadataKey == OH_HDR_STATIC_METADATA) {
         ret = MetadataHelper::GetHDRStaticMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
-        CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
-        ret = MetadataHelper::GetHDRMetadataType(sbuffer, hdrMetadataType);
-        if (ret != OHOS::SURFACE_ERROR_OK) {
-            BLOGE("GetHDRMetadataType failed! , retVal:%d", ret);
-            return OHOS::SURFACE_ERROR_UNKOWN;
-        }
-        *size = sizeof(OH_NativeBuffer_MetadataType);
-        for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
-            if (type.second == hdrMetadataType) {
-                *metadata = new uint8_t(static_cast<uint8_t>(type.first));
-                return OHOS::SURFACE_ERROR_OK;
-            }
-        }
-        return OHOS::SURFACE_ERROR_UNKOWN;
+        ret = OH_NativeBuffer_GetMatedataValueType(sbuffer, size, metadata);
+        return ret;
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;

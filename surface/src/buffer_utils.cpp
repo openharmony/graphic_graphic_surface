@@ -26,6 +26,7 @@
 #include <fstream>
 #include <sstream>
 #include <sys/time.h>
+#include <filesystem>
 
 namespace OHOS {
 void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
@@ -294,7 +295,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
 
     // Lambda function to copy a block of memory
     auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
-        size_t ret = memcpy_s(current_dest, size, current_src, size);
+        auto ret = memcpy_s(current_dest, size, current_src, size);
         if (ret != 0) {
             BLOGE("BufferDump error ret:%{public}d", static_cast<int>(ret));
         }
@@ -339,11 +340,18 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
     std::stringstream ss;
     ss << "/data/bq_" << pid << "_" << name << "_" << nowVal << "_" << format << "_"
         << width << "x" << height << ".raw";
+    
+    std::error_code ec;
+    std::filesystem::path filePath = std::filesystem::canonical(ss.str(), ec);
+    if (ec) {
+        BLOGE("BufferDump failed: It is not a conforming filePath.");
+        return;
+    }
 
     // Open the file for writing in binary mode
-    std::ofstream rawDataFile(ss.str(), std::ofstream::binary);
+    std::ofstream rawDataFile(filePath, std::ofstream::binary);
     if (!rawDataFile.good()) {
-        BLOGE("open failed: (%{public}d)%{public}s", errno, strerror(errno));
+        BLOGE("BfferDump failed : open failed (%{public}d)%{public}s", errno, strerror(errno));
         free(dest);
         return;
     }

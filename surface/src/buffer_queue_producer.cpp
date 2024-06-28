@@ -37,55 +37,6 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     if (bufferQueue_ != nullptr) {
         bufferQueue_->GetName(name_);
     }
-
-    memberFuncMap_[BUFFER_PRODUCER_GET_INIT_INFO] = &BufferQueueProducer::GetProducerInitInfoRemote;
-    memberFuncMap_[BUFFER_PRODUCER_REQUEST_BUFFER] = &BufferQueueProducer::RequestBufferRemote;
-    memberFuncMap_[BUFFER_PRODUCER_REQUEST_BUFFERS] = &BufferQueueProducer::RequestBuffersRemote;
-    memberFuncMap_[BUFFER_PRODUCER_CANCEL_BUFFER] = &BufferQueueProducer::CancelBufferRemote;
-    memberFuncMap_[BUFFER_PRODUCER_FLUSH_BUFFER] = &BufferQueueProducer::FlushBufferRemote;
-    memberFuncMap_[BUFFER_PRODUCER_FLUSH_BUFFERS] = &BufferQueueProducer::FlushBuffersRemote;
-    memberFuncMap_[BUFFER_PRODUCER_ATTACH_BUFFER] = &BufferQueueProducer::AttachBufferRemote;
-    memberFuncMap_[BUFFER_PRODUCER_DETACH_BUFFER] = &BufferQueueProducer::DetachBufferRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_QUEUE_SIZE] = &BufferQueueProducer::GetQueueSizeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_QUEUE_SIZE] = &BufferQueueProducer::SetQueueSizeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_NAME] = &BufferQueueProducer::GetNameRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_DEFAULT_WIDTH] = &BufferQueueProducer::GetDefaultWidthRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_DEFAULT_HEIGHT] = &BufferQueueProducer::GetDefaultHeightRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_DEFAULT_USAGE] = &BufferQueueProducer::GetDefaultUsageRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_UNIQUE_ID] = &BufferQueueProducer::GetUniqueIdRemote;
-    memberFuncMap_[BUFFER_PRODUCER_CLEAN_CACHE] = &BufferQueueProducer::CleanCacheRemote;
-    memberFuncMap_[BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER] = &BufferQueueProducer::RegisterReleaseListenerRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORM] = &BufferQueueProducer::SetTransformRemote;
-    memberFuncMap_[BUFFER_PRODUCER_IS_SUPPORTED_ALLOC] = &BufferQueueProducer::IsSupportedAllocRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID] = &BufferQueueProducer::GetNameAndUniqueIdRemote;
-    memberFuncMap_[BUFFER_PRODUCER_DISCONNECT] = &BufferQueueProducer::DisconnectRemote;
-    memberFuncMap_[BUFFER_PRODUCER_CONNECT] = &BufferQueueProducer::ConnectRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_SCALING_MODE] = &BufferQueueProducer::SetScalingModeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_METADATA] = &BufferQueueProducer::SetMetaDataRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_METADATASET] = &BufferQueueProducer::SetMetaDataSetRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_TUNNEL_HANDLE] = &BufferQueueProducer::SetTunnelHandleRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GO_BACKGROUND] = &BufferQueueProducer::GoBackgroundRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP] = &BufferQueueProducer::GetPresentTimestampRemote;
-    memberFuncMap_[BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER] =
-        &BufferQueueProducer::UnRegisterReleaseListenerRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER] = &BufferQueueProducer::GetLastFlushedBufferRemote;
-    memberFuncMap_[BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT] = &BufferQueueProducer::RegisterDeathRecipient;
-    memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORM] = &BufferQueueProducer::GetTransformRemote;
-    memberFuncMap_[BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE] = &BufferQueueProducer::AttachBufferToQueueRemote;
-    memberFuncMap_[BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE] = &BufferQueueProducer::DetachBufferFromQueueRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_DEFAULT_USAGE] = &BufferQueueProducer::SetDefaultUsageRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_TRANSFORMHINT] = &BufferQueueProducer::GetTransformHintRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_TRANSFORMHINT] = &BufferQueueProducer::SetTransformHintRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_BUFFER_HOLD] = &BufferQueueProducer::SetBufferHoldRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_SCALING_MODEV2] = &BufferQueueProducer::SetScalingModeV2Remote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_SOURCE_TYPE] = &BufferQueueProducer::SetSurfaceSourceTypeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_SOURCE_TYPE] = &BufferQueueProducer::GetSurfaceSourceTypeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::SetSurfaceAppFrameworkTypeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE] = &BufferQueueProducer::GetSurfaceAppFrameworkTypeRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS] =
-        &BufferQueueProducer::SetHdrWhitePointBrightnessRemote;
-    memberFuncMap_[BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS] =
-        &BufferQueueProducer::SetSdrWhitePointBrightnessRemote;
 }
 
 BufferQueueProducer::~BufferQueueProducer()
@@ -130,7 +81,7 @@ int32_t BufferQueueProducer::OnRemoteRequest(uint32_t code, MessageParcel &argum
         return ERR_INVALID_STATE;
     }
 
-    auto ret = (this->*(it->second))(arguments, reply, option);
+    auto ret = it->second(this, arguments, reply, option);
     return ret;
 }
 

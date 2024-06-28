@@ -117,7 +117,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     WriteRequestConfig(arguments, config);
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
     int32_t retCode = reply.ReadInt32();
-    if (retCode != GSERROR_OK) {
+    if (retCode != GSERROR_OK && retCode != GSERROR_NO_BUFFER) {
         BLOGND("Remote return %{public}d", retCode);
         return (GSError)retCode;
     }
@@ -125,7 +125,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     GSError ret = GSERROR_OK;
     num = reply.ReadUint32();
     if (num > SURFACE_MAX_QUEUE_SIZE || num <= 0) {
-        BLOGNE("num is invalid");
+        BLOGNE("num is invalid, %{public}u", num);
         return SURFACE_ERROR_UNKOWN;
     }
     retvalues.resize(num);

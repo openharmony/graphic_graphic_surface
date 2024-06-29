@@ -255,9 +255,7 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
         Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
-    }
-    if (Rosen::FrameReport::GetInstance().IsGameScene(connectedPid_)) {
-        Rosen::FrameReport::GetInstance().Report(connectedPid_, name_);
+        Rosen::FrameReport::GetInstance().Report(name_);
     }
 
     return 0;

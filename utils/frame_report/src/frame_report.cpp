@@ -24,26 +24,31 @@
 namespace OHOS {
 namespace Rosen {
 
-static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, 0xD005830, "FrameReport" };
-#define LOGF(...) (void)OHOS::HiviewDFX::HiLog::Fatal(LOG_LABEL, __VA_ARGS__)
-#define LOGE(...) (void)OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, __VA_ARGS__)
-#define LOGW(...) (void)OHOS::HiviewDFX::HiLog::Warn(LOG_LABEL, __VA_ARGS__)
-#define LOGI(...) (void)OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, __VA_ARGS__)
-#define LOGD(...) (void)OHOS::HiviewDFX::HiLog::Debug(LOG_LABEL, __VA_ARGS__)
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD005830  // 设置domainID
+
+#undef LOG_TAG
+#define LOG_TAG "FrameReport"  // 设置tag
+
+#define LOGF(format, ...) HILOG_FATAL(LOG_CORE, format, ##__VA_ARGS__)
+#define LOGE(format, ...) HILOG_ERROR(LOG_CORE, format, ##__VA_ARGS__)
+#define LOGW(format, ...) HILOG_WARN(LOG_CORE, format, ##__VA_ARGS__)
+#define LOGI(format, ...) HILOG_INFO(LOG_CORE, format, ##__VA_ARGS__)
+#define LOGD(format, ...) HILOG_DEBUG(LOG_CORE, format, ##__VA_ARGS__)
 
 #if (defined(__aarch64__) || defined(__x86_64__))
-    const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "/system/lib64/libgame_acc_sched_client.z.so";
+    const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "libgame_acc_sched_client.z.so";
 #else
-    const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "/system/lib/libgame_acc_sched_client.z.so";
+    const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "libgame_acc_sched_client.z.so";
 #endif
 const std::string GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO = "GAS_NotifyFrameInfo";
 
 const std::string GAME_SF_KEY = "Surface";
 const std::string TYPE_COMMIT = "commit_time";
+const std::string BUFFER_MSG = "";
 constexpr int32_t REPORT_BUFFER_SIZE = 256;
 constexpr int32_t THOUSAND_COUNT = 1000;
 constexpr int32_t SKIP_HINT_STATUS = 0;
-constexpr int32_t MAX_CACHE_COUNT = 5;
 
 constexpr int32_t FR_GAME_BACKGROUND = 0;
 constexpr int32_t FR_GAME_FOREGROUND = 1;
@@ -70,26 +75,19 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
     LOGI("FrameReport::SetGameScene pid = %{public}d state = %{public}d ", pid, state);
     switch (state) {
         case FR_GAME_BACKGROUND: {
-            if (!IsGameScene(pid)) {
-                LOGW("FrameReport::SetGameScene Local Cache Did Not Contains The Value pid = %{public}d "
+            if (IsActiveGameWithPid(pid)) {
+                LOGI("FrameReport::SetGameScene Game Background Current Pid = %{public}d "
                      "state = 0", pid);
-                return;
+                DeletePidInfo();
             }
-            DeletePidInfo(pid);
         }
         break;
         case FR_GAME_FOREGROUND: {
             LoadLibrary();
-            if (pid > FR_DEFAULT_PID) {
-                LimitingCacheSize();
-                AddPidInfo(pid);
-            }
         }
         break;
         case FR_GAME_SCHED: {
-            if (IsGameScene(pid)) {
-                activelyPid_ = pid;
-            }
+            activelyPid_.store(pid);
         }
         break;
         default: {
@@ -101,15 +99,7 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
 
 bool FrameReport::HasGameScene()
 {
-    return !gameSceneMap_.empty();
-}
-
-bool FrameReport::IsGameScene(int32_t pid)
-{
-    if (gameSceneMap_.find(pid) != gameSceneMap_.end()) {
-        return true;
-    }
-    return false;
+    return activelyPid_.load() != FR_DEFAULT_PID;
 }
 
 bool FrameReport::IsActiveGameWithPid(int32_t pid)
@@ -117,7 +107,7 @@ bool FrameReport::IsActiveGameWithPid(int32_t pid)
     if (pid <= FR_DEFAULT_PID) {
         return false;
     }
-    return pid == activelyPid_;
+    return pid == activelyPid_.load();
 }
 
 bool FrameReport::IsActiveGameWithUniqueId(uint64_t uniqueId)
@@ -125,12 +115,12 @@ bool FrameReport::IsActiveGameWithUniqueId(uint64_t uniqueId)
     if (uniqueId <= FR_DEFAULT_UNIQUEID) {
         return false;
     }
-    return uniqueId == activelyUniqueId_;
+    return uniqueId == activelyUniqueId_.load();
 }
 
 void FrameReport::SetLastSwapBufferTime(int64_t lastSwapBufferTime)
 {
-    lastSwapBufferTime_ = lastSwapBufferTime;
+    lastSwapBufferTime_.store(lastSwapBufferTime);
 }
 
 void FrameReport::SetDequeueBufferTime(const std::string& layerName, int64_t dequeueBufferTime)
@@ -138,7 +128,7 @@ void FrameReport::SetDequeueBufferTime(const std::string& layerName, int64_t deq
     if (!IsReportBySurfaceName(layerName)) {
         return;
     }
-    dequeueBufferTime_ = dequeueBufferTime;
+    dequeueBufferTime_.store(dequeueBufferTime);
 }
 
 void FrameReport::SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime)
@@ -146,8 +136,8 @@ void FrameReport::SetQueueBufferTime(uint64_t uniqueId, const std::string& layer
     if (!IsReportBySurfaceName(layerName)) {
         return;
     }
-    queueBufferTime_ = queueBufferTime;
-    activelyUniqueId_ = uniqueId;
+    queueBufferTime_.store(queueBufferTime);
+    activelyUniqueId_.store(uniqueId);
 }
 
 void FrameReport::SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum)
@@ -155,7 +145,7 @@ void FrameReport::SetPendingBufferNum(const std::string& layerName, int32_t pend
     if (!IsReportBySurfaceName(layerName)) {
         return;
     }
-    pendingBufferNum_ = pendingBufferNum;
+    pendingBufferNum_.store(pendingBufferNum);
 }
 
 bool FrameReport::IsReportBySurfaceName(const std::string& layerName)
@@ -165,20 +155,28 @@ bool FrameReport::IsReportBySurfaceName(const std::string& layerName)
 
 void FrameReport::LoadLibrary()
 {
+    std::unique_lock lock(mutex_);
     if (!isGameSoLoaded_) {
         dlerror();
         gameSoHandle_ = dlopen(GAME_ACCELERATE_SCHEDULE_SO_PATH.c_str(), RTLD_LAZY);
         if (gameSoHandle_ == nullptr) {
             LOGE("FrameReport::LoadLibrary dlopen libgame_acc_sched_client.z.so failed! error = %{public}s", dlerror());
-        } else {
-            LOGI("FrameReport::LoadLibrary dlopen libgame_acc_sched_client.z.so success!");
-            isGameSoLoaded_ = true;
+            return;
         }
+        LOGI("FrameReport::LoadLibrary dlopen libgame_acc_sched_client.z.so success!");
+        notifyFrameInfoFunc_ = (NotifyFrameInfoFunc)LoadSymbol(GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO);
+        if (notifyFrameInfoFunc_ == nullptr) {
+            return;
+        }
+        LOGI("FrameReport::LoadLibrary dlsym GAS_NotifyFrameInfo success!");
+        isGameSoLoaded_ = true;
     }
 }
 
 void FrameReport::CloseLibrary()
 {
+    std::unique_lock lock(mutex_);
+    notifyFrameInfoFunc_ = nullptr;
     if (gameSoHandle_ != nullptr) {
         if (dlclose(gameSoHandle_) != 0) {
             LOGE("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close failed!");
@@ -192,9 +190,6 @@ void FrameReport::CloseLibrary()
 
 void* FrameReport::LoadSymbol(const std::string& symName)
 {
-    if (!isGameSoLoaded_) {
-        return nullptr;
-    }
     dlerror();
     void *funcSym = dlsym(gameSoHandle_, symName.c_str());
     if (funcSym == nullptr) {
@@ -204,29 +199,13 @@ void* FrameReport::LoadSymbol(const std::string& symName)
     return funcSym;
 }
 
-void FrameReport::LimitingCacheSize()
+void FrameReport::DeletePidInfo()
 {
-    if (gameSceneMap_.size() >= MAX_CACHE_COUNT) {
-        int32_t tempPid = gameSceneMap_.begin()->first;
-        DeletePidInfo(tempPid);
-    }
+    activelyPid_.store(FR_DEFAULT_PID);
+    activelyUniqueId_.store(FR_DEFAULT_UNIQUEID);
 }
 
-void FrameReport::AddPidInfo(int32_t pid)
-{
-    gameSceneMap_[pid] = true;
-}
-
-void FrameReport::DeletePidInfo(int32_t pid)
-{
-    gameSceneMap_.erase(pid);
-    if (pid == activelyPid_) {
-        activelyPid_ = FR_DEFAULT_PID;
-        activelyUniqueId_ = FR_DEFAULT_UNIQUEID;
-    }
-}
-
-void FrameReport::Report(int32_t pid, const std::string& layerName)
+void FrameReport::Report(const std::string& layerName)
 {
     if (!IsReportBySurfaceName(layerName)) {
         return;
@@ -234,37 +213,38 @@ void FrameReport::Report(int32_t pid, const std::string& layerName)
     int64_t timeStamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     std::string bufferMsg = "";
-    if (pid == activelyPid_) {
-        char msg[REPORT_BUFFER_SIZE] = { 0 };
-        int32_t ret = sprintf_s(msg, sizeof(msg),
-                                "{\"dequeueBufferTime\":\"%d\",\"queueBufferTime\":\"%d\",\"pendingBufferNum\":\"%d\","
-                                "\"swapBufferTime\":\"%d\", \"skipHint\":\"%d\"}",
-                                static_cast<int32_t>(dequeueBufferTime_ / THOUSAND_COUNT),
-                                static_cast<int32_t>(queueBufferTime_ / THOUSAND_COUNT),
-                                pendingBufferNum_,
-                                static_cast<int32_t>(lastSwapBufferTime_ / THOUSAND_COUNT),
-                                SKIP_HINT_STATUS);
-        if (ret == -1) {
-            return;
-        }
-        bufferMsg = msg;
+    char msg[REPORT_BUFFER_SIZE] = { 0 };
+    int32_t ret = sprintf_s(msg, sizeof(msg),
+                            "{\"dequeueBufferTime\":\"%d\",\"queueBufferTime\":\"%d\",\"pendingBufferNum\":\"%d\","
+                            "\"swapBufferTime\":\"%d\", \"skipHint\":\"%d\"}",
+                            static_cast<int32_t>(dequeueBufferTime_.load() / THOUSAND_COUNT),
+                            static_cast<int32_t>(queueBufferTime_.load() / THOUSAND_COUNT),
+                            pendingBufferNum_.load(),
+                            static_cast<int32_t>(lastSwapBufferTime_.load() / THOUSAND_COUNT),
+                            SKIP_HINT_STATUS);
+    if (ret == -1) {
+        return;
     }
-    NotifyFrameInfo(pid, layerName, timeStamp, bufferMsg);
+    bufferMsg = msg;
+    NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg);
 }
 
 void FrameReport::ReportCommitTime(int64_t commitTime)
 {
-    NotifyFrameInfo(COMMIT_PID, TYPE_COMMIT, commitTime, nullptr);
+    NotifyFrameInfo(COMMIT_PID, TYPE_COMMIT, commitTime, BUFFER_MSG);
 }
 
 void FrameReport::NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp,
                                   const std::string& bufferMsg)
 {
+    std::shared_lock lock(mutex_);
     if (notifyFrameInfoFunc_ == nullptr) {
-        notifyFrameInfoFunc_ = (NotifyFrameInfoFunc)LoadSymbol(GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO);
+        return;
     }
-    if (notifyFrameInfoFunc_ != nullptr) {
-        notifyFrameInfoFunc_(pid, layerName, timeStamp, bufferMsg);
+    bool result = notifyFrameInfoFunc_(pid, layerName, timeStamp, bufferMsg);
+    if (!result) {
+        LOGW("FrameReport::NotifyFrameInfo Call GAS_NotifyFrameInfo Func Error");
+        DeletePidInfo();
     }
 }
 } // namespace Rosen

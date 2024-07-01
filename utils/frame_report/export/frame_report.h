@@ -19,11 +19,12 @@
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <shared_mutex>
 
 namespace OHOS {
 namespace Rosen {
 
-using NotifyFrameInfoFunc = void(*)(int32_t, const std::string&, int64_t, const std::string&);
+using NotifyFrameInfoFunc = bool(*)(int32_t, const std::string&, int64_t, const std::string&);
 constexpr int32_t FR_DEFAULT_PID = 0;
 constexpr uint64_t FR_DEFAULT_UNIQUEID = 0;
 
@@ -33,14 +34,13 @@ public:
 
     void SetGameScene(int32_t pid, int32_t state);
     bool HasGameScene();
-    bool IsGameScene(int32_t pid);
     bool IsActiveGameWithPid(int32_t pid);
     bool IsActiveGameWithUniqueId(uint64_t uniqueId);
     void SetLastSwapBufferTime(int64_t lastSwapBufferTime);
     void SetDequeueBufferTime(const std::string& layerName, int64_t dequeueBufferTime);
     void SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime);
     void SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum);
-    void Report(int32_t pid, const std::string& layerName);
+    void Report(const std::string& layerName);
     void ReportCommitTime(int64_t commitTime);
 
 private:
@@ -52,22 +52,21 @@ private:
     void CloseLibrary();
     void* LoadSymbol(const std::string& symName);
 
-    void LimitingCacheSize();
-    void AddPidInfo(int32_t pid);
-    void DeletePidInfo(int32_t pid);
+    void DeletePidInfo();
     void NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp, const std::string& bufferMsg);
 
-    int32_t activelyPid_ = FR_DEFAULT_PID;
-    int32_t pendingBufferNum_ = 0;
-    uint64_t activelyUniqueId_ = FR_DEFAULT_UNIQUEID;
-    int64_t lastSwapBufferTime_ = 0;
-    int64_t dequeueBufferTime_ = 0;
-    int64_t queueBufferTime_ = 0;
+    std::atomic<int32_t> activelyPid_ = FR_DEFAULT_PID;
+    std::atomic<uint64_t> activelyUniqueId_ = FR_DEFAULT_UNIQUEID;
+    std::atomic<int32_t> pendingBufferNum_ = 0;
+    std::atomic<int64_t> lastSwapBufferTime_ = 0;
+    std::atomic<int64_t> dequeueBufferTime_ = 0;
+    std::atomic<int64_t> queueBufferTime_ = 0;
+
     bool isGameSoLoaded_ = false;
     void* gameSoHandle_ = nullptr;
     NotifyFrameInfoFunc notifyFrameInfoFunc_ = nullptr;
 
-    std::unordered_map<int32_t, bool> gameSceneMap_;
+    mutable std::shared_mutex mutex_;
 };
 
 } // namespace Rosen

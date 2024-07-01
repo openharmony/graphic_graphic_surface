@@ -1610,12 +1610,12 @@ void BufferQueue::DumpMetadata(std::string &result, BufferElement element)
     MetadataHelper::GetHDRStaticMetadata(element.buffer, dataStatic);
     MetadataHelper::GetHDRMetadataType(element.buffer, hdrMetadataType);
     result += std::to_string(colorSpaceType) + ", ";
-    result += " [dynamicMetadata: ";
+    result += " [staticMetadata: ";
     for (auto x : dataStatic) {
         result += std::to_string(x);
         result += " ";
     }
-    result += " ],[staticMetadata: ";
+    result += " ],[dynamicMetadata: ";
     for (auto x : dataDynamic) {
         result += std::to_string(x);
         result += " ";

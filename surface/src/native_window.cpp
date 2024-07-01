@@ -899,7 +899,14 @@ GSError OH_NativeWindow_GetMatedataValueType(sptr<SurfaceBuffer> sfbuffer, int32
     }
     for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
         if (type.second == hdrMetadataType) {
-            *metadata = new uint8_t(static_cast<uint8_t>(type.first));
+            *size = sizeof(OH_NativeBuffer_MetadataType);
+            *metadata = new uint8_t[*size];
+            errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
+            if (err != 0) {
+                delete[] *metadata;
+                BLOGE("memcpy_s failed! , retVal:%d", err);
+                return OHOS::SURFACE_ERROR_UNKOWN;
+            }
             return OHOS::SURFACE_ERROR_OK;
         }
     }
@@ -930,7 +937,7 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         ret = MetadataHelper::GetHDRStaticMetadata(lastFlushedBuffer->sfbuffer, mD);
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
         ret = OH_NativeWindow_GetMatedataValueType(lastFlushedBuffer->sfbuffer, size, metadata);
-        return OHOS::SURFACE_ERROR_OK;
+        return ret;
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;

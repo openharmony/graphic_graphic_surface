@@ -173,9 +173,6 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffer
     }
     GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
     if (ret != GSERROR_NO_BUFFER && ret != GSERROR_OK) {
-        if (ret == GSERROR_NO_CONSUMER) {
-            CleanCache();
-        }
         BLOGND("RequestBuffers Producer report %{public}s", GSErrorStr(ret).c_str());
         return ret;
     }

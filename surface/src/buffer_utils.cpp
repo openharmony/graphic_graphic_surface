@@ -294,7 +294,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
 
     // Lambda function to copy a block of memory
     auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
-        size_t ret = memcpy_s(current_dest, size, current_src, size);
+        auto ret = memcpy_s(current_dest, size, current_src, size);
         if (ret != 0) {
             BLOGE("BufferDump error ret:%{public}d", static_cast<int>(ret));
         }

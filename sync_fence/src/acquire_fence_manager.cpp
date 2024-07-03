@@ -27,7 +27,7 @@ AcquireFenceTracker::~AcquireFenceTracker()
         delete tracker_;
         tracker_ = nullptr;
     }
-} 
+}
 
 void AcquireFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
 {

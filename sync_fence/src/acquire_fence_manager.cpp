@@ -21,7 +21,7 @@ namespace OHOS {
 
 SyncFenceTracker* AcquireFenceTracker::tracker_ = new SyncFenceTracker("Acquire Fence");
 
-~AcquireFenceTracker(){
+AcquireFenceTracker::~AcquireFenceTracker(){
     if(tracker_ != nullptr){
         delete tracker_;
         tracker_ = nullptr;

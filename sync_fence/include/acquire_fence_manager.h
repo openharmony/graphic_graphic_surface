@@ -24,7 +24,7 @@
 namespace OHOS {
 class AcquireFenceTracker {
 public:
-    AcquireFenceTracker();
+    AcquireFenceTracker() = default;
     ~AcquireFenceTracker();
     static void TrackFence(const sptr<SyncFence>& fence, bool traceTag);
     static void SetBlurSize(int32_t blurSize);

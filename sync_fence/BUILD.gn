@@ -45,6 +45,8 @@ ohos_shared_library("sync_fence") {
   }
 
   sources = [
+    "src/acquire_fence_manager.cpp",
+    "src/frame_sched.cpp",
     "src/sync_fence.cpp",
     "src/sync_fence_timeline.cpp",
     "src/sync_fence_tracker.cpp",
@@ -60,6 +62,7 @@ ohos_shared_library("sync_fence") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
+    "init:libbegetutil",
     "ipc:ipc_single",
   ]
 

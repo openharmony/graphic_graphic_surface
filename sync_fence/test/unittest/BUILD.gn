@@ -25,7 +25,11 @@ group("unittest") {
 ohos_unittest("sync_fence_test") {
   module_out_path = module_out_path
 
-  sources = [ "sync_fence_test.cpp" ]
+  sources = [
+    "acquire_fence_manager_test.cpp",
+    "frame_sched_test.cpp",
+    "sync_fence_test.cpp",
+  ]
 
   deps = [
     ":sync_fence_common",

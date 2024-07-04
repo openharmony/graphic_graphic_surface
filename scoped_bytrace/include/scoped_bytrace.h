@@ -27,7 +27,7 @@ public:
 
 private:
     std::string proc_;
-    bool isEnd = false;
+    bool isEnd_ = false;
 };
 
 class ScopedDebugTrace {

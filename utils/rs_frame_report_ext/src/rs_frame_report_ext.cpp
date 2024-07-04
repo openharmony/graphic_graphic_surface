@@ -48,7 +48,7 @@ RsFrameReportExt::~RsFrameReportExt() {}
 
 void RsFrameReportExt::Init()
 {
-    int ret = LoadLibrary();
+    bool ret = LoadLibrary();
     if (!ret) {
         HILOG_ERROR(LOG_CORE, "RsFrameReportExt:[Init] dlopen libframe_ui_intf.so failed!");
         return;
@@ -77,6 +77,10 @@ bool RsFrameReportExt::LoadLibrary()
 
 void RsFrameReportExt::CloseLibrary()
 {
+    if (!frameSchedSoLoaded_) {
+        HILOG_ERROR(LOG_CORE, "RsFrameReportExt:[CloseLibrary]libframe_ui_intf.so failed, is not loaded!");
+        return;
+    }
     if (dlclose(frameSchedHandle_) != 0) {
         HILOG_ERROR(LOG_CORE, "RsFrameReportExt:[CloseLibrary]libframe_ui_intf.so failed!");
         return;

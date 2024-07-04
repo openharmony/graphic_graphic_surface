@@ -80,20 +80,20 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
                      "state = 0", pid);
                 DeletePidInfo();
             }
+            break;
         }
-        break;
         case FR_GAME_FOREGROUND: {
             LoadLibrary();
+            break;
         }
-        break;
         case FR_GAME_SCHED: {
             activelyPid_.store(pid);
+            break;
         }
-        break;
         default: {
             LOGW("FrameReport::SetGameScene state error!");
+            break;
         }
-        break;
     }
 }
 

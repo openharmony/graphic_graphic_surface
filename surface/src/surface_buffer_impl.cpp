@@ -60,14 +60,13 @@ public:
     virtual ~DisplayBufferDiedRecipient() = default;
     void OnRemoteDied(const OHOS::wptr<OHOS::IRemoteObject>& remote) override
     {
-        std::lock_guard<std::mutex> lock(g_displayBufferMutex);
+        std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
         g_displayBuffer = nullptr;
         BLOGD("IDisplayBuffer died and g_displayBuffer is nullptr");
     };
 };
 IDisplayBufferSptr GetDisplayBuffer()
 {
-    std::lock_guard<std::mutex> lock(g_displayBufferMutex);
     if (g_displayBuffer != nullptr) {
         return g_displayBuffer;
     }
@@ -92,7 +91,7 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
 
 void SurfaceBufferImpl::DisplayBufferDeathCallback(void* data)
 {
-    std::lock_guard<std::mutex> lock(g_displayBufferMutex);
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     g_displayBuffer = nullptr;
     BLOGD("gralloc_host died and g_displayBuffer is nullptr.");
 }
@@ -143,6 +142,7 @@ bool SurfaceBufferImpl::MetaDataCached(const uint32_t key, const std::vector<uin
 
 GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -185,6 +185,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 }
 GSError SurfaceBufferImpl::Map()
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -216,6 +217,7 @@ GSError SurfaceBufferImpl::Map()
 }
 GSError SurfaceBufferImpl::Unmap()
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -243,6 +245,7 @@ GSError SurfaceBufferImpl::Unmap()
 }
 GSError SurfaceBufferImpl::FlushCache()
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return SURFACE_ERROR_UNKOWN;
@@ -266,6 +269,7 @@ GSError SurfaceBufferImpl::FlushCache()
 
 GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -292,6 +296,7 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 
 GSError SurfaceBufferImpl::InvalidateCache()
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -630,6 +635,7 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -659,6 +665,7 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -678,6 +685,7 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
 
 GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;
@@ -701,6 +709,7 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBuffer() == nullptr) {
         BLOGE("GetDisplayBuffer failed!");
         return GSERROR_INTERNAL;

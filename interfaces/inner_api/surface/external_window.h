@@ -126,13 +126,13 @@ typedef enum NativeWindowOperation {
     /**
      * get native window buffer usage,
      * variable parameter in function is
-     * [out] int32_t *usage.
+     * [out] uint64_t *usage.
      */
     GET_USAGE,
     /**
      * set native window buffer usage,
      * variable parameter in function is
-     * [in] int32_t usage.
+     * [in] uint64_t usage.
      */
     SET_USAGE,
     /**
@@ -393,6 +393,7 @@ typedef enum {
  * @return Returns the pointer to the <b>OHNativeWindow</b> instance created.
  * @since 8
  * @version 1.0
+ * @deprecated since 12
  */
 OHNativeWindow* OH_NativeWindow_CreateNativeWindow(void* pSurface);
 
@@ -416,6 +417,8 @@ void OH_NativeWindow_DestroyNativeWindow(OHNativeWindow* window);
  * @return Returns the pointer to the <b>OHNativeWindowBuffer</b> instance created.
  * @since 8
  * @version 1.0
+ * @deprecated since 12
+ * @useinstead OH_NativeWindow_CreateNativeWindowBufferFromNativeBuffer
  */
 OHNativeWindowBuffer* OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(void* pSurfaceBuffer);
 
@@ -483,6 +486,8 @@ int32_t OH_NativeWindow_NativeWindowFlushBuffer(OHNativeWindow *window, OHNative
  * @return Returns an error code, 0 is success, otherwise, failed.
  * @since 11
  * @version 1.0
+ * @deprecated since 12
+ * @useinstead OH_NativeWindow_GetLastFlushedBufferV2
  */
 int32_t OH_NativeWindow_GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer,
     int *fenceFd, float matrix[16]);

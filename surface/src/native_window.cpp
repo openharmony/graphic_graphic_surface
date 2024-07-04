@@ -99,7 +99,7 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     }
     windowConfig->width = nativeWindow->surface->GetDefaultWidth();
     windowConfig->height = nativeWindow->surface->GetDefaultHeight();
-    windowConfig->usage = BUFFER_USAGE_MEM_DMA;
+    windowConfig->usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
     windowConfig->format = GRAPHIC_PIXEL_FMT_RGBA_8888;
     windowConfig->strideAlignment = 8;   // default stride is 8
     windowConfig->timeout = 3000;        // default timeout is 3000 ms

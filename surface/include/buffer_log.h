@@ -66,10 +66,10 @@ namespace {
 #define BLOGNE(fmt, ...) B_CNPRINTF(B_EFUNC, fmt, ##__VA_ARGS__)
 
 #define BLOGN_SUCCESS(fmt, ...) \
-    BLOGNI("Success, Way: " fmt, ##__VA_ARGS__)
+    BLOGND("Success, Way: " fmt, ##__VA_ARGS__)
 
 #define BLOGN_SUCCESS_ID(id, fmt, ...) \
-    BLOGNI("Success [%{public}d], Way: " fmt, id, ##__VA_ARGS__)
+    BLOGND("Success [%{public}d], Way: " fmt, id, ##__VA_ARGS__)
 
 #define BLOGN_INVALID(fmt, ...) \
     BLOGNW("Invalid, " fmt, ##__VA_ARGS__)

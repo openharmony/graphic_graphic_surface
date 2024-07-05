@@ -12,7 +12,6 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-import("//foundation/graphic/graphic_2d/graphic_config.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
@@ -46,22 +45,9 @@ config("surface_public_config") {
     "$graphic_surface_root/utils/rs_frame_report_ext/include",
   ]
 
-  if (defined(graphic_2d_ext_configs.vendor_root)) {
-    include_dirs += graphic_2d_ext_configs.libsurface_ext_include_dirs
-  }
-
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
     include_dirs += libsurface_ext_delegator_include_dirs
   }
-
-  defines = []
-  if (graphic_2d_feature_freemem_enable) {
-    defines += [ "SURFACE_ENABLE_FREEMEM" ]
-  }
-  if (graphic_2d_feature_drivers_interface_display_enable) {
-    defines += [ "DRIVERS_INTERFACE_DISPLAY_ENABLE" ]
-  }
-  defines += gpu_defines
 
   cflags = [ "-Wno-error=deprecated-declarations" ]
 }
@@ -134,12 +120,6 @@ ohos_shared_library("surface") {
     "libnative_buffer.so",
     "libnative_window.so",
   ]
-
-  if (defined(graphic_2d_ext_configs.vendor_root)) {
-    public_deps += [ "//foundation/graphic/graphic_2d_ext/ohcore/graphic_compat_layer:libgraphic_compat_layer" ]
-
-    public_external_deps -= [ "drivers_interface_display:hdi_gralloc_client" ]
-  }
 
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
     sources += libsurface_ext_delegator_sources

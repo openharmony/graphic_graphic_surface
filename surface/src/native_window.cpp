@@ -839,7 +839,9 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
         return status;
     }
     GSError ret = MetadataHelper::GetColorSpaceType(lastFlushedBuffer->sfbuffer, colorSpaceType);
-    if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
@@ -882,7 +884,9 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     }
-    if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
@@ -893,7 +897,9 @@ GSError OH_NativeWindow_GetMatedataValueType(sptr<SurfaceBuffer> sfbuffer, int32
 {
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
     GSError ret = MetadataHelper::GetHDRMetadataType(sfbuffer, hdrMetadataType);
-    if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetHDRMetadataType failed!, retVal:%d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
@@ -942,7 +948,9 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetHDRSMetadata failed! , retVal:%d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }

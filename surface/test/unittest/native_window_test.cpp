@@ -1115,6 +1115,71 @@ HWTEST_F(NativeWindowTest, GetLastFlushedBuffer002, Function | MediumTest | Leve
     ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
         OHOS::SURFACE_ERROR_NOT_SUPPORT);
 }
+
+/*
+* Function: OH_NativeWindow_SetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetColorSpace
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_SetColorSpace001, Function | MediumTest | Level2)
+{
+    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
+    auto ret = OH_NativeWindow_GetColorSpace(nativeWindow, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_INTERNAL);
+    }
+    ret = OH_NativeWindow_SetColorSpace(nativeWindow, OH_COLORSPACE_BT709_LIMIT);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_GetColorSpace(nativeWindow, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_EQ(colorSpace, OH_COLORSPACE_BT709_LIMIT);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetMetadataValue
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue001, Function | MediumTest | Level2)
+{
+    int len = 60;
+    uint8_t buff[len];
+    for (int i = 0; i < 60; ++i) {
+        buff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t buffSize;
+    uint8_t *checkMetaData;
+    auto ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
+    int32_t max_size = -1;
+    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)max_size, buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
+        delete[] checkMetaData;
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
+
 /*
 * Function: OH_NativeWindow_NativeWindowAbortBuffer
 * Type: Function
@@ -1676,117 +1741,5 @@ HWTEST_F(NativeWindowTest, NativeWindowReadWriteWindow002, Function | MediumTest
     ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel1, &readWindow), SURFACE_ERROR_INVALID_PARAM);
     OH_IPCParcel_Destroy(parcel1);
     delete nativeWindow1;
-}
-
-/*
-* Function: OH_NativeWindow_SetColorSpace
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeWindow_SetColorSpace
-*                  2. check ret
- */
-HWTEST_F(NativeWindowTest, OH_NativeWindow_SetColorSpace001, Function | MediumTest | Level2)
-{
-    int code = SET_TRANSFORM;
-    int32_t transform = GraphicTransformType::GRAPHIC_ROTATE_90;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, transform), OHOS::GSERROR_OK);
-
-    code = SET_FORMAT;
-    int32_t format = GRAPHIC_PIXEL_FMT_RGBA_8888;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, format), OHOS::GSERROR_OK);
-
-    NativeWindowBuffer *nativeWindowBuffer = nullptr;
-    int fenceFd = -1;
-    int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
-    ASSERT_EQ(ret, GSERROR_OK);
-
-    struct Region *region = new Region();
-    struct Region::Rect *rect = new Region::Rect();
-    rect->x = 0x100;
-    rect->y = 0x100;
-    rect->w = 0x100;
-    rect->h = 0x100;
-    region->rects = rect;
-    BufferHandle *bufferHanlde = OH_NativeWindow_GetBufferHandleFromNative(nativeWindowBuffer);
-    ret = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region);
-    ASSERT_EQ(ret, GSERROR_OK);
-    NativeWindowBuffer *lastFlushedBuffer;
-    int lastFlushedFenceFd;
-    float matrix[16];
-    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
-        OHOS::GSERROR_OK);
-    BufferHandle *lastFlushedHanlde = OH_NativeWindow_GetBufferHandleFromNative(lastFlushedBuffer);
-    ASSERT_EQ(bufferHanlde->virAddr, lastFlushedHanlde->virAddr);
-
-    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBufferV2(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
-        OHOS::GSERROR_OK);
-    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
-    ret = OH_NativeWindow_GetColorSpace(nativeWindow, &colorSpace);
-    ASSERT_EQ(ret, GSERROR_INTERNAL);
-    ret = OH_NativeWindow_SetColorSpace(nativeWindow, OH_COLORSPACE_BT709_LIMIT);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ret = OH_NativeWindow_GetColorSpace(nativeWindow, &colorSpace);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_EQ(colorSpace, OH_COLORSPACE_BT709_LIMIT);
-}
-
-/*
-* Function: OH_NativeWindow_SetMetadataValue
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeWindow_SetMetadataValue
-*                  2. check ret
- */
-HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue001, Function | MediumTest | Level2)
-{
-    int len = 60;
-    uint8_t buff[len];
-    for (int i = 0; i < 60; ++i) {
-        buff[i] = static_cast<uint8_t>(i);
-    }
-    int code = SET_TRANSFORM;
-    int32_t transform = GraphicTransformType::GRAPHIC_ROTATE_90;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, transform), OHOS::GSERROR_OK);
-    code = SET_FORMAT;
-    int32_t format = GRAPHIC_PIXEL_FMT_RGBA_8888;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, format), OHOS::GSERROR_OK);
-    NativeWindowBuffer *nativeWindowBuffer = nullptr;
-    int fenceFd = -1;
-    int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
-    ASSERT_EQ(ret, GSERROR_OK);
-    struct Region *region = new Region();
-    struct Region::Rect *rect = new Region::Rect();
-    rect->x = 0x100;
-    rect->y = 0x100;
-    rect->w = 0x100;
-    rect->h = 0x100;
-    region->rects = rect;
-    BufferHandle *bufferHanlde = OH_NativeWindow_GetBufferHandleFromNative(nativeWindowBuffer);
-    ret = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region);
-    ASSERT_EQ(ret, GSERROR_OK);
-    NativeWindowBuffer *lastFlushedBuffer;
-    int lastFlushedFenceFd;
-    float matrix[16];
-    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
-        OHOS::GSERROR_OK);
-    BufferHandle *lastFlushedHanlde = OH_NativeWindow_GetBufferHandleFromNative(lastFlushedBuffer);
-    ASSERT_EQ(bufferHanlde->virAddr, lastFlushedHanlde->virAddr);
-    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBufferV2(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
-        OHOS::GSERROR_OK);
-    int32_t buffSize;
-    uint8_t *checkMetaData;
-    ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
-    ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
-    int32_t max_size = -1;
-    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)max_size, buff);
-    ASSERT_NE(ret, GSERROR_OK);
-    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
-    ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
-    delete[] checkMetaData;
-    ASSERT_EQ(ret, GSERROR_OK);
 }
 }

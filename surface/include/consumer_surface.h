@@ -165,6 +165,8 @@ public:
     GSError SetSdrWhitePointBrightness(float brightness) override;
     float GetHdrWhitePointBrightness() const override;
     float GetSdrWhitePointBrightness() const override;
+
+    GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

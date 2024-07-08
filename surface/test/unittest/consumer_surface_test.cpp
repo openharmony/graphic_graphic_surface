@@ -420,7 +420,14 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener001, Function | MediumTest
         }
     }
 
+    GraphicTransformType tranformType = ps->GetTransform();
     ret = ps->FlushBuffer(buffer, -1, flushConfig);
+    ASSERT_EQ(ps->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_180), OHOS::GSERROR_OK);
+    GraphicTransformType bufferTranformType = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(nullptr, &bufferTranformType), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(buffer, nullptr), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(buffer, &bufferTranformType), OHOS::GSERROR_OK);
+    ASSERT_EQ(bufferTranformType, tranformType);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     listener->OnTunnelHandleChange();
     listener->OnGoBackground();
@@ -461,9 +468,13 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener002, Function | MediumTest
             p[i] = i;
         }
     }
-
+    ASSERT_EQ(ps->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_90), OHOS::GSERROR_OK);
     ret = ps->FlushBuffer(buffer, -1, flushConfig);
+    GraphicTransformType bufferTranformType = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(buffer, &bufferTranformType), OHOS::GSERROR_OK);
+    ASSERT_EQ(bufferTranformType, GraphicTransformType::GRAPHIC_ROTATE_90);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(ps->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE), OHOS::GSERROR_OK);
     sptr<OHOS::SyncFence> flushFence;
     ret = cs->AcquireBuffer(buffer, flushFence, timestamp, damage);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

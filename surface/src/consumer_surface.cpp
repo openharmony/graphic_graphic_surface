@@ -662,4 +662,15 @@ float ConsumerSurface::GetSdrWhitePointBrightness() const
 {
     return consumer_->GetSdrWhitePointBrightness();
 }
+
+GSError ConsumerSurface::GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer,
+    GraphicTransformType *transformType)
+{
+    if (buffer == nullptr || transformType == nullptr) {
+        BLOGNE("input param is nullptr");
+        return SURFACE_ERROR_INVALID_PARAM;
+    }
+    *transformType = buffer->GetSurfaceBufferTransform();
+    return GSERROR_OK;
+}
 } // namespace OHOS

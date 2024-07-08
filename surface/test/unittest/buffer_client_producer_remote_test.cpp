@@ -602,4 +602,54 @@ HWTEST_F(BufferClientProducerRemoteTest, SurfaceAppFrameworkType001, Function | 
     bp->GetSurfaceAppFrameworkType(appFrameworkType);
     ASSERT_EQ(appFrameworkType, "test");
 }
+/*
+* Function: RequestBuffersAndFlushBuffers
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffers and FlushBuffers
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(BufferClientProducerRemoteTest, RequestBuffersAndFlushBuffers, Function | MediumTest | Level2)
+{
+    constexpr uint32_t size = 12;
+    bp->SetQueueSize(size);
+    std::vector<IBufferProducer::RequestBufferReturnValue> retvalues;
+    std::vector<sptr<BufferExtraData>> bedatas;
+    std::vector<BufferFlushConfigWithDamages> flushConfigs;
+    retvalues.resize(size);
+    GSError ret = bp->RequestBuffers(requestConfig, bedatas, retvalues);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    for (uint32_t i = 0; i < size * 10; ++i) {
+        sptr<BufferExtraData> data = new BufferExtraDataImpl;
+        bedatas.emplace_back(data);
+        flushConfigs.emplace_back(flushConfig);
+    }
+    ret = bp->RequestBuffers(requestConfig, bedatas, retvalues);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    bedatas.resize(size);
+    ret = bp->RequestBuffers(requestConfig, bedatas, retvalues);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    for (const auto &retval : retvalues) {
+        EXPECT_NE(retval.buffer, nullptr);
+    }
+    std::cout << "request buffers ok\n";
+    std::vector<sptr<SyncFence>> acquireFences;
+    std::vector<uint32_t> sequences;
+    ret = bp->FlushBuffers(sequences, bedatas, acquireFences, flushConfigs);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    for (const auto &i : retvalues) {
+        sequences.emplace_back(i.sequence);
+    }
+    for (uint32_t i = 0; i < size * 10; ++i) {
+        acquireFences.emplace_back(new SyncFence(-1));
+        sequences.emplace_back(i);
+    }
+    ret = bp->FlushBuffers(sequences, bedatas, acquireFences, flushConfigs);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    sequences.resize(size);
+    acquireFences.resize(size);
+    ret = bp->FlushBuffers(sequences, bedatas, acquireFences, flushConfigs);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+}
 }

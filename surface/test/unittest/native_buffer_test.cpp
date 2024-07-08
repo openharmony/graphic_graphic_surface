@@ -331,7 +331,10 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace002, Function | MediumTest
     }
     OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
     int32_t ret = OH_NativeBuffer_SetColorSpace(buffer, OH_COLORSPACE_BT709_LIMIT);
-    ret += OH_NativeBuffer_GetColorSpace(buffer, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_GetColorSpace(buffer, &colorSpace);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(colorSpace, OH_COLORSPACE_BT709_LIMIT);
         ASSERT_EQ(ret, GSERROR_OK);

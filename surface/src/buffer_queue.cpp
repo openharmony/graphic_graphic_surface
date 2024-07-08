@@ -407,13 +407,13 @@ GSError BufferQueue::ReallocBuffer(const BufferRequestConfig &config,
 GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
-    ScopedBytrace func("ReuseBuffer config width: " + std::to_string(config.width) + " height: " +
-        std::to_string(config.height) + " strideAlignment: " + std::to_string(config.strideAlignment) +
-        " format: " + std::to_string(config.format));
     if (retval.buffer == nullptr) {
         BLOGNE("input buffer is null");
         return SURFACE_ERROR_UNKOWN;
     }
+    ScopedBytrace func("ReuseBuffer config width: " + std::to_string(config.width) + " height: " +
+        std::to_string(config.height) + " strideAlignment: " + std::to_string(config.strideAlignment) +
+        " format: " + std::to_string(config.format) + " id: " + std::to_string(retval.buffer->GetSeqNum()));
     retval.sequence = retval.buffer->GetSeqNum();
     if (bufferQueueCache_.find(retval.sequence) == bufferQueueCache_.end()) {
         BLOGNE("buffer queue cache not find the buffer(%{public}u)", retval.sequence);
@@ -795,11 +795,11 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     const BufferRequestConfig &config)
 {
-    ScopedBytrace func("AllocBuffer config width: " + std::to_string(config.width) + " height: " +
-        std::to_string(config.height) + " strideAlignment: " + std::to_string(config.strideAlignment) +
-        " format: " + std::to_string(config.format));
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     uint32_t sequence = bufferImpl->GetSeqNum();
+    ScopedBytrace func("AllocBuffer config width: " + std::to_string(config.width) + " height: " +
+        std::to_string(config.height) + " strideAlignment: " + std::to_string(config.strideAlignment) +
+        " format: " + std::to_string(config.format) + " id: " + std::to_string(sequence));
 
     BufferRequestConfig updateConfig = config;
     updateConfig.usage |= defaultUsage;

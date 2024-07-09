@@ -22,19 +22,19 @@
 ScopedBytrace::ScopedBytrace(const std::string &proc) : proc_(proc)
 {
     StartTrace(HITRACE_TAG_GRAPHIC_AGP, proc_);
-    isEnd = false;
+    isEnd_ = false;
 }
 
 ScopedBytrace::~ScopedBytrace()
 {
-    if (isEnd == false) {
+    if (!isEnd_) {
         FinishTrace(HITRACE_TAG_GRAPHIC_AGP);
     }
 }
 
 void ScopedBytrace::End()
 {
-    if (isEnd == false) {
+    if (!isEnd_) {
         FinishTrace(HITRACE_TAG_GRAPHIC_AGP);
     }
 }

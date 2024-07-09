@@ -126,6 +126,10 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
 
 void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
 {
+    if (!fence) {
+        HILOG_DEBUG(LOG_CORE, "Trace fence failed, fence is null");
+        return;
+    }
     if (isGpuFence_) {
         if (!traceTag && !isGpuEnable_) {
             return;

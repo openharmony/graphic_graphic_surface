@@ -49,8 +49,8 @@ private:
         std::any val;
         ExtraDataType type;
     };
-    std::map<std::string, struct ExtraData> datas;
-    mutable std::mutex mtx;
+    std::map<std::string, struct ExtraData> datas_;
+    mutable std::mutex mtx_;
 };
 } // namespace OHOS
 

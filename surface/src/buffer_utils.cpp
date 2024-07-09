@@ -256,6 +256,7 @@ void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
     }
     if (handle->SetHandle(tunnelHandle) != GSERROR_OK) {
         BLOGE("SetHandle failed");
+        FreeExtDataHandle(tunnelHandle);
         return;
     }
     FreeExtDataHandle(tunnelHandle);

@@ -70,10 +70,10 @@ GSError BufferExtraDataImpl::ReadFromParcel(MessageParcel &parcel)
 
 GSError BufferExtraDataImpl::WriteToParcel(MessageParcel &parcel)
 {
-    std::lock_guard<std::mutex> lockGuard(mtx);
+    std::lock_guard<std::mutex> lockGuard(mtx_);
     parcel.WriteInt32(BUFFER_EXTRA_DATA_MAGIC);
-    parcel.WriteInt32(datas.size());
-    for (const auto &[key, data] : datas) {
+    parcel.WriteInt32(datas_.size());
+    for (const auto &[key, data] : datas_) {
         parcel.WriteString(key);
         parcel.WriteInt32(static_cast<int32_t>(data.type));
         switch (data.type) {
@@ -163,9 +163,9 @@ GSError BufferExtraDataImpl::ExtraSet(const std::string &key, const std::string&
 template<class T>
 GSError BufferExtraDataImpl::ExtraGet(const std::string &key, ExtraDataType type, T &value) const
 {
-    std::lock_guard<std::mutex> lockGuard(mtx);
-    auto it = datas.find(key);
-    if (it == datas.end()) {
+    std::lock_guard<std::mutex> lockGuard(mtx_);
+    auto it = datas_.find(key);
+    if (it == datas_.end()) {
         return GSERROR_NO_ENTRY;
     }
     if (it->second.type != type) {
@@ -181,14 +181,14 @@ GSError BufferExtraDataImpl::ExtraGet(const std::string &key, ExtraDataType type
 
 GSError BufferExtraDataImpl::ExtraSet(const std::string &key, ExtraDataType type, const std::any& val)
 {
-    std::lock_guard<std::mutex> lockGuard(mtx);
-    auto it = datas.find(key);
-    if (it == datas.end() && datas.size() > SURFACE_MAX_USER_DATA_COUNT) {
+    std::lock_guard<std::mutex> lockGuard(mtx_);
+    auto it = datas_.find(key);
+    if (it == datas_.end() && datas_.size() > SURFACE_MAX_USER_DATA_COUNT) {
         BLOGW("SurfaceBuffer has too many extra data, cannot save one more!!!");
         return GSERROR_OUT_OF_RANGE;
     }
-    datas[key].type = type;
-    datas[key].val = val;
+    datas_[key].type = type;
+    datas_[key].val = val;
     return GSERROR_OK;
 }
 } // namespace OHOS

@@ -109,8 +109,8 @@ uint32_t BufferQueue::GetUsedSize()
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
     info.name = name_;
-    info.width = defaultWidth;
-    info.height = defaultHeight;
+    info.width = defaultWidth_;
+    info.height = defaultHeight_;
     info.uniqueId = uniqueId_;
     return GSERROR_OK;
 }
@@ -802,7 +802,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     uint32_t sequence = bufferImpl->GetSeqNum();
 
     BufferRequestConfig updateConfig = config;
-    updateConfig.usage |= defaultUsage;
+    updateConfig.usage |= defaultUsage_;
 
     GSError ret = bufferImpl->Alloc(updateConfig);
     if (ret != GSERROR_OK) {
@@ -1206,30 +1206,30 @@ GSError BufferQueue::SetDefaultWidthAndHeight(int32_t width, int32_t height)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    defaultWidth = width;
-    defaultHeight = height;
+    defaultWidth_ = width;
+    defaultHeight_ = height;
     return GSERROR_OK;
 }
 
 int32_t BufferQueue::GetDefaultWidth()
 {
-    return defaultWidth;
+    return defaultWidth_;
 }
 
 int32_t BufferQueue::GetDefaultHeight()
 {
-    return defaultHeight;
+    return defaultHeight_;
 }
 
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
-    defaultUsage = usage;
+    defaultUsage_ = usage;
     return GSERROR_OK;
 }
 
 uint64_t BufferQueue::GetDefaultUsage()
 {
-    return defaultUsage;
+    return defaultUsage_;
 }
 
 void BufferQueue::ClearLocked()
@@ -1705,7 +1705,7 @@ void BufferQueue::Dump(std::string &result)
     ss << memSizeInKB;
     std::string str = ss.str();
     result.append("\nBufferQueue:\n");
-    result += "      default-size = [" + std::to_string(defaultWidth) + "x" + std::to_string(defaultHeight) + "]" +
+    result += "      default-size = [" + std::to_string(defaultWidth_) + "x" + std::to_string(defaultHeight_) + "]" +
         ", FIFO = " + std::to_string(queueSize_) +
         ", name = " + name_ +
         ", uniqueId = " + std::to_string(uniqueId_) +

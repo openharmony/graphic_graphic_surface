@@ -200,4 +200,57 @@ HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator003, Function | Medium
     GSError ret = bqc->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> bufferQueue = nullptr;
+    sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> fence = nullptr;
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    sptr<IRemoteObject> client = nullptr;
+    sptr<Surface> cSurface = nullptr;
+    sptr<IBufferConsumerListener> listener = nullptr;
+    IBufferConsumerListenerClazz *listenerClass = nullptr;
+    OnReleaseFunc func;
+    OnDeleteBufferFunc deleteFunc;
+    bool isForUniRedraw = false;
+    std::string result;
+    ScalingMode scalingMode;
+    HDRMetaDataType type;
+    std::vector<GraphicHDRMetaData> metaData;
+    GraphicHDRMetadataKey key;
+    std::vector<uint8_t> metaData1;
+    GraphicPresentTimestamp timestamp1;
+    ASSERT_EQ(consumer->AcquireBuffer(buffer, fence, timestamp, damages), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->ReleaseBuffer(buffer, fence), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->DetachBufferFromQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->AttachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->DetachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->RegisterSurfaceDelegator(client, cSurface), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->QueryIfBufferAvailable(), false);
+    ASSERT_EQ(consumer->RegisterConsumerListener(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->RegisterConsumerListener(listenerClass), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->RegisterReleaseListener(func), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->RegisterDeleteBufferListener(deleteFunc, isForUniRedraw), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->UnregisterConsumerListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->SetDefaultWidthAndHeight(0, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->SetDefaultUsage(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    consumer->Dump(result);
+    ASSERT_EQ(consumer->GetTransform(), GraphicTransformType::GRAPHIC_ROTATE_BUTT);
+    ASSERT_EQ(consumer->GetScalingMode(0, scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->QueryMetaDataType(0, type), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->GetMetaData(0, metaData), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->GetMetaDataSet(0, key, metaData1), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->GetTunnelHandle(), nullptr);
+    ASSERT_EQ(consumer->SetPresentTimestamp(0, timestamp1), OHOS::GSERROR_INVALID_ARGUMENTS);
+    consumer->SetBufferHold(0);
+    ASSERT_EQ(consumer->OnConsumerDied(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->GetHdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
+}
 }

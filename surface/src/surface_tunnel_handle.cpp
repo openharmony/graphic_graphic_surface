@@ -72,10 +72,9 @@ SurfaceTunnelHandle::~SurfaceTunnelHandle()
 GSError SurfaceTunnelHandle::SetHandle(const GraphicExtDataHandle *handle)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (tunnelHandle_ != nullptr) {
-        FreeExtDataHandle(tunnelHandle_);
-        tunnelHandle_ = nullptr;
-    }
+    FreeExtDataHandle(tunnelHandle_);
+    tunnelHandle_ = nullptr;
+
     if (handle == nullptr) {  // handle is nullptr, which is valid and tunnelHandle_ is nullptr now
         BLOGW("SetHandle with nullptr");
         return GSERROR_OK;
@@ -110,6 +109,9 @@ bool SurfaceTunnelHandle::Different(const sptr<SurfaceTunnelHandle> &handle)
 
     bool diffHandle = tunnelHandle_->fd != handle->GetHandle()->fd ||
                       tunnelHandle_->reserveInts != handle->GetHandle()->reserveInts;
+    if (diffHandle) {
+        return diffHandle;
+    }
     for (uint32_t index = 0; index < handle->GetHandle()->reserveInts; index++) {
         diffHandle = diffHandle || tunnelHandle_->reserve[index] != handle->GetHandle()->reserve[index];
     }

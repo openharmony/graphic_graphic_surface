@@ -67,8 +67,7 @@ GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 
 GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 {
-    int32_t timeOut = 0;
-    return AttachBuffer(buffer, timeOut);
+    return AttachBuffer(buffer, 0);
 }
 
 GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
@@ -83,6 +82,7 @@ GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t t
 GSError BufferQueueConsumer::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 {
     if (bufferQueue_ == nullptr) {
+        BLOGFE("bufferQueue is null");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->DetachBuffer(buffer);

@@ -134,6 +134,8 @@ public:
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual float GetHdrWhitePointBrightness() const = 0;
     virtual float GetSdrWhitePointBrightness() const = 0;
+
+    virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType);
 protected:
     IConsumerSurface() = default;
 };

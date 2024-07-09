@@ -204,9 +204,9 @@ private:
     GSError RequestBufferCheckStatus();
     GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
 
-    int32_t defaultWidth = 0;
-    int32_t defaultHeight = 0;
-    uint64_t defaultUsage = 0;
+    int32_t defaultWidth_ = 0;
+    int32_t defaultHeight_ = 0;
+    uint64_t defaultUsage_ = 0;
     uint32_t queueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;

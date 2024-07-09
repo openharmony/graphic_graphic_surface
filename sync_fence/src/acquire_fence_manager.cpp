@@ -34,7 +34,7 @@ void AcquireFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag
     if (tracker_ == nullptr) {
         tracker_ = new SyncFenceTracker("Acquire Fence");
         if (tracker_ == nullptr) {
-        return;
+            return;
         }
     }
     tracker_->TrackFence(fence, traceTag);

@@ -14,6 +14,7 @@
  */
 
 #include "metadata_helper.h"
+#include "buffer_log.h"
 
 #include "v1_0/buffer_handle_meta_key_type.h"
 

@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 ## Build sync_fence.so {{{
 config("sync_fence_config") {
@@ -24,16 +25,13 @@ config("sync_fence_config") {
     "-Wno-error=missing-braces",
     "-Wno-error=#warnings",
   ]
+  defines = rs_common_define
 }
 
 config("sync_fence_public_config") {
   include_dirs = [
     "include",
     "//foundation/graphic/graphic_surface/interfaces/inner_api/utils",
-    "//commonlibrary/c_utils/base/include",
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits",
-    "//base/notification/eventhandler/interfaces/inner_api",
-    "//foundation/graphic/graphic_2d/utils/log",
   ]
 }
 

@@ -20,9 +20,15 @@
 #include "frame_sched.h"
 #include "hilog/log.h"
 #include "parameters.h"
-#include "rs_trace.h"
 #include "hisysevent.h"
 #include "file_ex.h"
+
+#ifndef ROSEN_TRACE_DISABLE
+#include "hitrace_meter.h"
+#define RS_TRACE_NAME_FMT(fmt, ...) HITRACE_METER_FMT(HITRACE_TAG_GRAPHIC_AGP, fmt, ##__VA_ARGS__)
+#else
+#define RS_TRACE_NAME_FMT(fmt, ...)
+#endif //ROSEN_TRACE_DISABLE
 
 #ifdef FENCE_SCHED_ENABLE
 #include <fcntl.h>

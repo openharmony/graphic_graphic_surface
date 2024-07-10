@@ -15,7 +15,6 @@
 
 #include "acquire_fence_manager.h"
 #include "hilog/log.h"
-#include "rs_trace.h"
 
 namespace OHOS {
 

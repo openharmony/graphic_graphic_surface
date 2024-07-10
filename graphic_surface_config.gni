@@ -17,3 +17,12 @@ declare_args() {
   graphic_2d_ext_delegator = false
   graphic_2d_ext_delegator_gni = ""
 }
+rs_common_define = []
+
+rosen_cross_platform =
+    current_os == "mac" || current_os == "mingw" || current_os == "linux" ||
+    current_os == "android" || current_os == "ios"
+
+if (rosen_cross_platform) {
+  rs_common_define += [ "ROSEN_TRACE_DISABLE" ]
+}

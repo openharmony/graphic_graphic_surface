@@ -21,7 +21,6 @@
           "bytrace",
           "c_utils",
           "drivers_interface_display",
-          "drivers_interface_hwsched",
           "eventhandler",
           "hilog",
           "hisysevent",

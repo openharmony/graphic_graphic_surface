@@ -33,7 +33,6 @@ config("surface_config") {
 
 config("surface_public_config") {
   include_dirs = [
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
     "$graphic_surface_root/utils/frame_report/export",
     "$graphic_surface_root/surface/include",
     "$graphic_surface_root/interfaces/inner_api",

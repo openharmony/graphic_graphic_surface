@@ -241,6 +241,9 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
 
+    if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
+        return SURFACE_ERROR_UNKOWN;
+    }
     arguments.WriteUInt32Vector(sequences);
     for (uint32_t i = 0; i < sequences.size(); ++i) {
         bedata[i]->WriteToParcel(arguments);

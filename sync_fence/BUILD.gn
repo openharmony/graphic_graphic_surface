@@ -78,10 +78,4 @@ ohos_shared_library("sync_fence") {
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }
-
-group("test") {
-  testonly = true
-
-  deps = [ "test:test" ]
-}
 ## Build sync_fence.so }}}

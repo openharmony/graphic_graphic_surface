@@ -278,4 +278,13 @@ float BufferQueueConsumer::GetSdrWhitePointBrightness() const
     }
     return bufferQueue_->GetSdrWhitePointBrightness();
 }
+
+GSError BufferQueueConsumer::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
+{
+    if (bufferQueue_ == nullptr) {
+        BLOGNE("bufferQueue is null");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->IsSurfaceBufferInCache(seqNum, isInCache);
+}
 } // namespace OHOS

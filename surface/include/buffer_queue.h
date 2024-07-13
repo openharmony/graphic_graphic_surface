@@ -178,6 +178,8 @@ public:
     float GetHdrWhitePointBrightness() const;
     float GetSdrWhitePointBrightness() const;
 
+    GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache);
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     void DeleteBufferInCache(uint32_t sequence);

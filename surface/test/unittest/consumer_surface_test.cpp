@@ -479,6 +479,11 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener002, Function | MediumTest
     ret = cs->AcquireBuffer(buffer, flushFence, timestamp, damage);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
+    bool isInCache = false;
+    ASSERT_EQ(cs->IsSurfaceBufferInCache(buffer->GetSeqNum(), isInCache), OHOS::GSERROR_OK);
+    ASSERT_EQ(isInCache, true);
+    ASSERT_EQ(cs->IsSurfaceBufferInCache(0xFFFFFFFF, isInCache), OHOS::GSERROR_OK);
+    ASSERT_EQ(isInCache, false);
 }
 
 /*

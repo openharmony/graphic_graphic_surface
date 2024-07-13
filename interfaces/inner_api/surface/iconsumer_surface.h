@@ -135,7 +135,9 @@ public:
     virtual float GetHdrWhitePointBrightness() const = 0;
     virtual float GetSdrWhitePointBrightness() const = 0;
 
-    virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType);
+    virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) = 0;
+
+    virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) = 0;
 protected:
     IConsumerSurface() = default;
 };

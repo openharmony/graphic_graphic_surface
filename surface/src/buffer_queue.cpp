@@ -1307,6 +1307,17 @@ GSError BufferQueue::OnConsumerDied()
     return GSERROR_OK;
 }
 
+GSError BufferQueue::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (bufferQueueCache_.find(seqNum) != bufferQueueCache_.end()) {
+        isInCache = true;
+    } else {
+        isInCache = false;
+    }
+    return GSERROR_OK;
+}
+
 uint64_t BufferQueue::GetUniqueId() const
 {
     return uniqueId_;

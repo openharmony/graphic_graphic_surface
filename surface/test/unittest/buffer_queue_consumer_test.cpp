@@ -224,6 +224,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     GraphicHDRMetadataKey key;
     std::vector<uint8_t> metaData1;
     GraphicPresentTimestamp timestamp1;
+    bool isInCache = false;
     ASSERT_EQ(consumer->AcquireBuffer(buffer, fence, timestamp, damages), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->ReleaseBuffer(buffer, fence), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
@@ -252,5 +253,6 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->GetHdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->IsSurfaceBufferInCache(0, isInCache), OHOS::SURFACE_ERROR_UNKOWN);
 }
 }

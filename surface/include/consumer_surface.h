@@ -167,6 +167,7 @@ public:
     float GetSdrWhitePointBrightness() const override;
 
     GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) override;
+    GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

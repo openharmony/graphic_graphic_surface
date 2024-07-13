@@ -673,4 +673,13 @@ GSError ConsumerSurface::GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffe
     *transformType = buffer->GetSurfaceBufferTransform();
     return GSERROR_OK;
 }
+
+GSError ConsumerSurface::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
+{
+    if (consumer_ == nullptr) {
+        BLOGNE("consumer is nullptr");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->IsSurfaceBufferInCache(seqNum, isInCache);
+}
 } // namespace OHOS

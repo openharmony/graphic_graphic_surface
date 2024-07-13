@@ -545,6 +545,8 @@ HWTEST_F(NativeWindowTest, NativeWindowAttachBuffer001, Function | MediumTest | 
 {
     ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nullptr, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nullptr, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowAttachBuffer(nativeWindow, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowDetachBuffer(nativeWindow, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 void SetNativeWindowConfig(NativeWindow *nativeWindow)
@@ -1642,6 +1644,7 @@ HWTEST_F(NativeWindowTest, NativeWindowGetDefaultWidthAndHeight001, Function | M
  */
 HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest | Level1)
 {
+    NativeWindowSetBufferHold(nullptr);
     NativeWindowSetBufferHold(nativeWindow);
     int fenceFd = -1;
     struct Region *region = new Region();
@@ -1741,5 +1744,71 @@ HWTEST_F(NativeWindowTest, NativeWindowReadWriteWindow002, Function | MediumTest
     ASSERT_EQ(OH_NativeWindow_ReadFromParcel(parcel1, &readWindow), SURFACE_ERROR_INVALID_PARAM);
     OH_IPCParcel_Destroy(parcel1);
     delete nativeWindow1;
+}
+
+/*
+* Function: SurfaceErrorInvalidParameter
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call functions with invalid parameters and check ret
+*/
+HWTEST_F(NativeWindowTest, SurfaceErrorInvalidParameter001, Function | MediumTest | Level2)
+{
+    int fence = -1;
+    ASSERT_EQ(OH_NativeWindow_CreateNativeWindowBufferFromNativeBuffer(nullptr), nullptr);
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nullptr, nullptr, &fence, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, nullptr, &fence, nullptr),
+        SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(GetNativeObjectMagic(nullptr), -1);
+    ASSERT_EQ(GetSurfaceId(nativeWindow, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(NativeWindowGetTransformHint(nativeWindow, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(NativeWindowGetDefaultWidthAndHeight(nativeWindow, nullptr, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    int32_t width;
+    ASSERT_EQ(NativeWindowGetDefaultWidthAndHeight(nativeWindow, &width, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBufferV2(nullptr, nullptr, &fence, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBufferV2(nativeWindow, nullptr, &fence, nullptr),
+        SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBufferV2(nativeWindow, nullptr, nullptr, nullptr),
+        SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(NativeWindowDisconnect(nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_SetColorSpace(nullptr, OH_COLORSPACE_NONE), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetColorSpace(nullptr, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetColorSpace(nativeWindow, nullptr), SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetMetadataValue(nullptr, OH_HDR_METADATA_TYPE, nullptr, nullptr),
+        SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_METADATA_TYPE, nullptr, nullptr),
+        SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: NativeWindowSetRequestWidthAndHeight
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NativeWindowSetRequestWidthAndHeight with invalid parameters and check ret
+*                  2. call NativeWindowSetRequestWidthAndHeight with normal parameters and check ret
+*                  3. call NativeWindowSetRequestWidthAndHeight with zore width and check ret
+*                  3. call NativeWindowSetRequestWidthAndHeight with zore height and check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindowSetRequestWidthAndHeight001, Function | MediumTest | Level2)
+{
+    int fence = -1;
+    ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nullptr, 0, 0), SURFACE_ERROR_INVALID_PARAM);
+    cSurface->SetDefaultWidthAndHeight(300, 400);
+    //分支1：走使用requestWidth/Height新建config分支
+    ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 100, 200), OHOS::GSERROR_OK);
+    NativeWindowBuffer *nativeWindowBuffer1 = nullptr;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence), GSERROR_OK);
+    ASSERT_EQ(nativeWindowBuffer1->sfbuffer->GetWidth(), 100);
+    ASSERT_EQ(nativeWindowBuffer1->sfbuffer->GetHeight(), 200);
+    ASSERT_EQ(NativeWindowCancelBuffer(nativeWindow, nativeWindowBuffer1), GSERROR_OK);
+    //分支2：使用surface成员变量windowConfig_(未初始化)
+    ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 0, 200), OHOS::GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
+        SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 100, 0), OHOS::GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
+        SURFACE_ERROR_UNKOWN);
 }
 }

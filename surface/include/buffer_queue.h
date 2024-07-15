@@ -64,7 +64,6 @@ class BufferQueue : public RefBase {
 public:
     BufferQueue(const std::string &name, bool isShared = false);
     virtual ~BufferQueue();
-    GSError Init();
 
     GSError GetProducerInitInfo(ProducerInitInfo &info);
 

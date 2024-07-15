@@ -95,11 +95,6 @@ BufferQueue::~BufferQueue()
     }
 }
 
-GSError BufferQueue::Init()
-{
-    return GSERROR_OK;
-}
-
 uint32_t BufferQueue::GetUsedSize()
 {
     uint32_t used_size = bufferQueueCache_.size();

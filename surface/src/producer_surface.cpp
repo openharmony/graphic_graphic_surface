@@ -36,7 +36,11 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
         return nullptr;
     }
 
-    sptr<ProducerSurface> surf = new ProducerSurface(producer);
+    sptr<ProducerSurface> surf = new(std::nothrow) ProducerSurface(producer);
+    if (surf == nullptr) {
+        BLOGE("Failure, Reason: producerSurface is nullptr");
+        return nullptr;
+    }
     GSError ret = surf->Init();
     if (ret != GSERROR_OK) {
         BLOGE("Failure, Reason: producer surf init failed");
@@ -67,7 +71,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 
 ProducerSurface::~ProducerSurface()
 {
-    if (producer_->GetSptrRefCount() > PRODUCER_REF_COUNT_IN_PRODUCER_SURFACE) {
+    if (producer_ != nullptr && producer_->GetSptrRefCount() > PRODUCER_REF_COUNT_IN_PRODUCER_SURFACE) {
         BLOGND("Warning SptrRefCount! producer_:%{public}d", producer_->GetSptrRefCount());
     }
     BLOGND("dtor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
@@ -81,6 +85,10 @@ ProducerSurface::~ProducerSurface()
 
 GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo &info)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetProducerInitInfo failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->GetProducerInitInfo(info);
 }
 
@@ -109,6 +117,10 @@ sptr<IBufferProducer> ProducerSurface::GetProducer() const
 GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                        sptr<SyncFence>& fence, BufferRequestConfig &config)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("RequestBuffer failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     IBufferProducer::RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
     GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
@@ -164,6 +176,10 @@ GSError ProducerSurface::AddCache(sptr<BufferExtraData> &bedataimpl,
 GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
     std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("RequestBuffers failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     std::vector<IBufferProducer::RequestBufferReturnValue> retvalues;
     retvalues.resize(SURFACE_MAX_QUEUE_SIZE);
     std::vector<sptr<BufferExtraData>> bedataimpls;
@@ -196,8 +212,8 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                      BufferFlushConfigWithDamages &config)
 {
-    if (buffer == nullptr || fence == nullptr) {
-        BLOGNE("Input buffer or fence is nullptr");
+    if (buffer == nullptr || fence == nullptr || producer_ == nullptr) {
+        BLOGNE("Input buffer or fence or producer is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -213,7 +229,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
 GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
     const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &configs)
 {
-    if (buffers.empty()) {
+    if (buffers.empty() || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     for (size_t i = 0; i < buffers.size(); ++i) {
@@ -241,6 +257,10 @@ GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &bu
 GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetLastFlushedBuffer failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     auto ret = producer_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
     return ret;
 }
@@ -270,7 +290,7 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
 
 GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -299,7 +319,7 @@ GSError ProducerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenc
 
 GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
     auto ret = producer_->AttachBufferToQueue(buffer);
@@ -316,7 +336,7 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 
 GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
     auto ret = producer_->DetachBufferFromQueue(buffer);
@@ -333,7 +353,7 @@ GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 
 GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -342,7 +362,7 @@ GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 
 GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -351,7 +371,7 @@ GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeO
 
 GSError ProducerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->DetachBuffer(buffer);
@@ -401,11 +421,19 @@ bool ProducerSurface::QueryIfBufferAvailable()
 
 uint32_t ProducerSurface::GetQueueSize()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetQueueSize failed for nullptr producer.");
+        return 0;
+    }
     return producer_->GetQueueSize();
 }
 
 GSError ProducerSurface::SetQueueSize(uint32_t queueSize)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetQueueSize failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetQueueSize(queueSize);
 }
 
@@ -424,11 +452,19 @@ GSError ProducerSurface::SetDefaultWidthAndHeight(int32_t width, int32_t height)
 
 int32_t ProducerSurface::GetDefaultWidth()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetDefaultWidth failed for nullptr producer.");
+        return -1;
+    }
     return producer_->GetDefaultWidth();
 }
 
 int32_t ProducerSurface::GetDefaultHeight()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetDefaultWidth failed for nullptr producer.");
+        return -1;
+    }
     return producer_->GetDefaultHeight();
 }
 
@@ -440,6 +476,10 @@ GraphicTransformType ProducerSurface::GetTransformHint() const
 
 GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetTransformHint failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     GSError err = producer_->SetTransformHint(transformHint);
     if (err == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -450,21 +490,37 @@ GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
 
 GSError ProducerSurface::SetDefaultUsage(uint64_t usage)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetDefaultUsage failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetDefaultUsage(usage);
 }
 
 uint64_t ProducerSurface::GetDefaultUsage()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetDefaultUsage failed for nullptr producer.");
+        return 0;
+    }
     return producer_->GetDefaultUsage();
 }
 
 GSError ProducerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetSurfaceSourceType failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetSurfaceSourceType(sourceType);
 }
 
 OHSurfaceSource ProducerSurface::GetSurfaceSourceType() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetSurfaceSourceType failed for nullptr producer.");
+        return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    }
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     if (producer_->GetSurfaceSourceType(sourceType) != GSERROR_OK) {
         BLOGNE("Warning ProducerSurface GetSurfaceSourceType failed.");
@@ -475,11 +531,19 @@ OHSurfaceSource ProducerSurface::GetSurfaceSourceType() const
 
 GSError ProducerSurface::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetSurfaceAppFrameworkType failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetSurfaceAppFrameworkType(appFrameworkType);
 }
 
 std::string ProducerSurface::GetSurfaceAppFrameworkType() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetSurfaceAppFrameworkType failed for nullptr producer.");
+        return "";
+    }
     std::string appFrameworkType = "";
     if (producer_->GetSurfaceAppFrameworkType(appFrameworkType) != GSERROR_OK) {
         BLOGNE("Warning ProducerSurface GetSurfaceAppFrameworkType failed.");
@@ -541,31 +605,31 @@ GSError ProducerSurface::UnregisterConsumerListener()
 
 GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
 {
-    if (func == nullptr) {
-        BLOGNE("OnReleaseFunc is nullptr, RegisterReleaseListener failed.");
+    if (func == nullptr || producer_ == nullptr) {
+        BLOGNE("OnReleaseFunc or producer is nullptr, RegisterReleaseListener failed.");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new BufferReleaseProducerListener(func);
+    listener_ = new(std::nothrow) BufferReleaseProducerListener(func);
     return producer_->RegisterReleaseListener(listener_);
 }
 
 GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWithFence)
 {
-    if (funcWithFence == nullptr) {
-        BLOGNE("OnReleaseFuncWithFence is nullptr, RegisterReleaseListener failed.");
+    if (funcWithFence == nullptr || producer_ == nullptr) {
+        BLOGNE("OnReleaseFuncWithFence or producer is nullptr, RegisterReleaseListener failed.");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
+    listener_ = new(std::nothrow) BufferReleaseProducerListener(nullptr, funcWithFence);
     return producer_->RegisterReleaseListener(listener_);
 }
 
 GSError ProducerSurface::UnRegisterReleaseListener()
 {
-    wpPSurfaceDelegator_ = nullptr;
     if (producer_ == nullptr) {
         BLOGE("The producer in ProducerSurface is nullptr, UnRegisterReleaseListener failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
+    wpPSurfaceDelegator_ = nullptr;
     return producer_->UnRegisterReleaseListener();
 }
 
@@ -606,6 +670,10 @@ GSError ProducerSurface::ClearUserDataChangeListener()
 
 bool ProducerSurface::IsRemote()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("IsRemote failed for nullptr producer.");
+        return false;
+    }
     return producer_->AsObject()->IsProxyObject();
 }
 
@@ -624,6 +692,10 @@ void ProducerSurface::CleanAllLocked()
 
 GSError ProducerSurface::CleanCache(bool cleanAll)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("CleanCache failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     BLOGND("Queue Id:%{public}" PRIu64, queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -634,6 +706,10 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
 
 GSError ProducerSurface::GoBackground()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GoBackground failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     BLOGND("Queue Id:%{public}" PRIu64 "", queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -652,11 +728,19 @@ uint64_t ProducerSurface::GetUniqueId() const
 
 GSError ProducerSurface::SetTransform(GraphicTransformType transform)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetTransform failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetTransform(transform);
 }
 
 GraphicTransformType ProducerSurface::GetTransform() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetTransform failed for nullptr producer.");
+        return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    }
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     if (producer_->GetTransform(transform) != GSERROR_OK) {
         BLOGNE("Warning ProducerSurface GetTransform failed.");
@@ -668,7 +752,7 @@ GraphicTransformType ProducerSurface::GetTransform() const
 GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
                                           std::vector<bool> &supporteds)
 {
-    if (infos.size() == 0 || infos.size() != supporteds.size()) {
+    if (producer_ == nullptr || infos.size() == 0 || infos.size() != supporteds.size()) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->IsSupportedAlloc(infos, supporteds);
@@ -676,6 +760,10 @@ GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInf
 
 GSError ProducerSurface::Connect()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("Connect failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (!isDisconnected) {
@@ -696,6 +784,10 @@ GSError ProducerSurface::Connect()
 
 GSError ProducerSurface::Disconnect()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("Disconnect failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (isDisconnected) {
@@ -720,7 +812,7 @@ GSError ProducerSurface::Disconnect()
 
 GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
-    if (scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
+    if (producer_ == nullptr || scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
         scalingMode > ScalingMode::SCALING_MODE_SCALE_FIT) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -729,7 +821,7 @@ GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMo
 
 GSError ProducerSurface::SetScalingMode(ScalingMode scalingMode)
 {
-    if (scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
+    if (producer_ == nullptr || scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
         scalingMode > ScalingMode::SCALING_MODE_SCALE_FIT) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -752,7 +844,7 @@ GSError ProducerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingM
 
 GSError ProducerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
-    if (metaData.size() == 0) {
+    if (producer_ == nullptr || metaData.size() == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetMetaData(sequence, metaData);
@@ -761,7 +853,7 @@ GSError ProducerSurface::SetMetaData(uint32_t sequence, const std::vector<Graphi
 GSError ProducerSurface::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                         const std::vector<uint8_t> &metaData)
 {
-    if (key < GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ||
+    if (producer_ == nullptr || key < GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ||
         key > GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR_VIVID || metaData.size() == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -786,12 +878,17 @@ GSError ProducerSurface::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey
 
 GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetTunnelHandle failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetTunnelHandle(handle);
 }
 
 sptr<SurfaceTunnelHandle> ProducerSurface::GetTunnelHandle() const
 {
     // not support
+    BLOGND("GetTunnelHandle not supported by ProducerSurface.");
     return nullptr;
 }
 
@@ -803,7 +900,7 @@ GSError ProducerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPre
 GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
                                              int64_t &time) const
 {
-    if (type <= GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED ||
+    if (producer_ == nullptr || type <= GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED ||
         type > GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -874,6 +971,10 @@ BufferRequestConfig* ProducerSurface::GetWindowConfig()
 
 GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetHdrWhitePointBrightness failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     if (brightness < 0.0 || brightness > 1.0) {
         BLOGNE("input brightness over range[0.0-1.0], brightness:%{public}f", brightness);
         return GSERROR_INVALID_ARGUMENTS;
@@ -883,6 +984,10 @@ GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)
 
 GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetSdrWhitePointBrightness failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     if (brightness < 0.0 || brightness > 1.0) {
         BLOGNE("input brightness over range[0.0-1.0], brightness:%{public}f", brightness);
         return GSERROR_INVALID_ARGUMENTS;

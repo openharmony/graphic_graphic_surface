@@ -63,7 +63,6 @@ public:
 void BufferQueueConsumerTest::SetUpTestCase()
 {
     bq = new BufferQueue("test");
-    bq->Init();
     bqc = new BufferQueueConsumer(bq);
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bqc->RegisterConsumerListener(listener);

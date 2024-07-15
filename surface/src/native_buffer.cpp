@@ -98,14 +98,16 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     GSError ret = bufferImpl->Alloc(bfConfig);
     if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("Surface Buffer Alloc failed, %{public}s", GSErrorStr(ret).c_str());
+        BLOGE("Surface Buffer Alloc failed, %{public}s, config info: width[%{public}d, height[%{public}d,"
+            "format[%{public}d], usage[%{public}d]", GSErrorStr(ret).c_str(), config->width, config->height,
+            config->format, config->usage);
         return nullptr;
     }
 
     OH_NativeBuffer* buffer = OH_NativeBufferFromSurfaceBuffer(bufferImpl);
     int32_t err = OH_NativeBuffer_Reference(buffer);
     if (err != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("NativeBufferReference failed");
+        BLOGE("NativeBufferReference failed, buffer is nullptr.");
         return nullptr;
     }
     return buffer;
@@ -231,7 +233,7 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     GSError ret = MetadataHelper::SetColorSpaceType(sbuffer, NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+    if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         return OHOS::SURFACE_ERROR_UNKOWN;
@@ -291,7 +293,7 @@ int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
     GSError ret = MetadataHelper::GetColorSpaceType(sbuffer, colorSpaceType);
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+    if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
@@ -328,7 +330,7 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+    if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
@@ -341,7 +343,7 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
 {
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
     GSError ret = MetadataHelper::GetHDRMetadataType(sbuffer, hdrMetadataType);
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+    if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetHDRMetadataType failed!, retVal:%d", ret);
@@ -385,7 +387,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+    if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetHDRSMetadata failed! , retVal:%d", ret);

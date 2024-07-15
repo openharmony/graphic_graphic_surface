@@ -339,7 +339,7 @@ int32_t BufferQueueProducer::GetQueueSizeRemote(MessageParcel &arguments, Messag
 
 int32_t BufferQueueProducer::SetQueueSizeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    int32_t queueSize = arguments.ReadInt32();
+    uint32_t queueSize = arguments.ReadUint32();
     GSError sret = SetQueueSize(queueSize);
     reply.WriteInt32(sret);
     return 0;

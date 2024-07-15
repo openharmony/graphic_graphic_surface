@@ -22,15 +22,10 @@
 #include "sync_fence.h"
 
 namespace OHOS {
-namespace {
-constexpr int32_t CONSUMER_REF_COUNT_IN_CONSUMER_SURFACE = 1;
-constexpr int32_t PRODUCER_REF_COUNT_IN_CONSUMER_SURFACE = 2;
-}
-
 sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 {
-    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
-    if (!surf || surf->Init() != GSERROR_OK) {
+    sptr<ConsumerSurface> surf = new(std::nothrow) ConsumerSurface(name, isShared);
+    if (surf == nullptr || surf->Init() != GSERROR_OK) {
         BLOGE("Failure, Reason: consumer surf init failed");
         return nullptr;
     }
@@ -39,8 +34,8 @@ sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 
 sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
 {
-    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
-    if (!surf || surf->Init() != GSERROR_OK) {
+    sptr<ConsumerSurface> surf = new(std::nothrow) ConsumerSurface(name, isShared);
+    if (surf == nullptr || surf->Init() != GSERROR_OK) {
         BLOGE("Failure, Reason: consumer surf init failed");
         return nullptr;
     }
@@ -58,28 +53,24 @@ ConsumerSurface::ConsumerSurface(const std::string &name, bool isShared)
 ConsumerSurface::~ConsumerSurface()
 {
     BLOGND("dtor");
-    if (consumer_->GetSptrRefCount() > CONSUMER_REF_COUNT_IN_CONSUMER_SURFACE ||
-        producer_->GetSptrRefCount() > PRODUCER_REF_COUNT_IN_CONSUMER_SURFACE) {
-        BLOGNE("Wrong SptrRefCount! Queue Id:%{public}" PRIu64 " consumer_:%{public}d producer_:%{public}d",
-            producer_->GetUniqueId(), consumer_->GetSptrRefCount(), producer_->GetSptrRefCount());
+    if (consumer_ != nullptr) {
+        consumer_->OnConsumerDied();
+        consumer_->SetStatus(false);
     }
-    consumer_->OnConsumerDied();
-    producer_->SetStatus(false);
     consumer_ = nullptr;
     producer_ = nullptr;
 }
 
 GSError ConsumerSurface::Init()
 {
-    sptr<BufferQueue> queue_ = new BufferQueue(name_, isShared_);
-    GSError ret = queue_->Init();
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("queue init failed");
-        return ret;
+    sptr<BufferQueue> queue_ = new(std::nothrow) BufferQueue(name_, isShared_);
+    if (queue_ == nullptr) {
+        BLOGN_FAILURE("Init failed for nullptr queue");
+        return GSERROR_NOT_SUPPORT;
     }
 
-    producer_ = new BufferQueueProducer(queue_);
-    consumer_ = new BufferQueueConsumer(queue_);
+    producer_ = new(std::nothrow) BufferQueueProducer(queue_);
+    consumer_ = new(std::nothrow) BufferQueueConsumer(queue_);
     return GSERROR_OK;
 }
 
@@ -154,11 +145,19 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFen
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                        int64_t &timestamp, std::vector<Rect> &damages)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("AcquireBuffer failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->AcquireBuffer(buffer, fence, timestamp, damages);
 }
 
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("ReleaseBuffer failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->ReleaseBuffer(buffer, fence);
 }
 GSError ConsumerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
@@ -193,7 +192,11 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fen
 
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
 {
-    sptr<SyncFence> syncFence = new SyncFence(fence);
+    sptr<SyncFence> syncFence = new(std::nothrow) SyncFence(fence);
+    if (syncFence == nullptr) {
+        BLOGFE("ReleaseBuffer failed for nullptr syncFence.");
+        return GSERROR_NOT_SUPPORT;
+    }
     return ReleaseBuffer(buffer, syncFence);
 }
 
@@ -235,6 +238,10 @@ GSError ConsumerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeO
 
 GSError ConsumerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("DetachBuffer failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->DetachBuffer(buffer);
 }
 
@@ -249,16 +256,28 @@ GSError ConsumerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
 
 bool ConsumerSurface::QueryIfBufferAvailable()
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("QueryIfBufferAvailable failed for nullptr consumer.");
+        return false;
+    }
     return consumer_->QueryIfBufferAvailable();
 }
 
 uint32_t ConsumerSurface::GetQueueSize()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetQueueSize failed for nullptr producer.");
+        return 0;
+    }
     return producer_->GetQueueSize();
 }
 
 GSError ConsumerSurface::SetQueueSize(uint32_t queueSize)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetQueueSize failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetQueueSize(queueSize);
 }
 
@@ -269,26 +288,46 @@ const std::string& ConsumerSurface::GetName()
 
 GSError ConsumerSurface::SetDefaultWidthAndHeight(int32_t width, int32_t height)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("SetDefaultWidthAndHeight failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->SetDefaultWidthAndHeight(width, height);
 }
 
 int32_t ConsumerSurface::GetDefaultWidth()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetDefaultWidth failed for nullptr producer.");
+        return -1;
+    }
     return producer_->GetDefaultWidth();
 }
 
 int32_t ConsumerSurface::GetDefaultHeight()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetDefaultWidth failed for nullptr producer.");
+        return -1;
+    }
     return producer_->GetDefaultHeight();
 }
 
 GSError ConsumerSurface::SetDefaultUsage(uint64_t usage)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("SetDefaultUsage failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->SetDefaultUsage(usage);
 }
 
 uint64_t ConsumerSurface::GetDefaultUsage()
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetDefaultUsage failed for nullptr producer.");
+        return 0;
+    }
     return producer_->GetDefaultUsage();
 }
 
@@ -330,16 +369,28 @@ std::string ConsumerSurface::GetUserData(const std::string &key)
 
 GSError ConsumerSurface::RegisterConsumerListener(sptr<IBufferConsumerListener>& listener)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("RegisterConsumerListener failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->RegisterConsumerListener(listener);
 }
 
 GSError ConsumerSurface::RegisterConsumerListener(IBufferConsumerListenerClazz *listener)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("RegisterConsumerListener failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->RegisterConsumerListener(listener);
 }
 
 GSError ConsumerSurface::RegisterReleaseListener(OnReleaseFunc func)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("RegisterReleaseListener failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->RegisterReleaseListener(func);
 }
 
@@ -355,11 +406,19 @@ GSError ConsumerSurface::UnRegisterReleaseListener()
 
 GSError ConsumerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("RegisterDeleteBufferListener failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->RegisterDeleteBufferListener(func, isForUniRedraw);
 }
 
 GSError ConsumerSurface::UnregisterConsumerListener()
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("UnregisterConsumerListener failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->UnregisterConsumerListener();
 }
 
@@ -401,27 +460,49 @@ GSError ConsumerSurface::CleanCache(bool cleanAll)
 
 GSError ConsumerSurface::GoBackground()
 {
-    BLOGND("Queue Id:%{public}" PRIu64 "", producer_->GetUniqueId());
+    if (consumer_ == nullptr) {
+        BLOGFE("GoBackground failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (producer_ != nullptr) {
+        BLOGND("Queue Id:%{public}" PRIu64 "", producer_->GetUniqueId());
+    }
     return consumer_->GoBackground();
 }
 
 uint64_t ConsumerSurface::GetUniqueId() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetUniqueId failed for nullptr producer.");
+        return 0;
+    }
     return producer_->GetUniqueId();
 }
 
 void ConsumerSurface::Dump(std::string &result) const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("Dump failed for nullptr consumer.");
+        return;
+    }
     return consumer_->Dump(result);
 }
 
 GSError ConsumerSurface::SetTransform(GraphicTransformType transform)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetTransform failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetTransform(transform);
 }
 
 GraphicTransformType ConsumerSurface::GetTransform() const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetTransform failed for nullptr consumer.");
+        return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    }
     return consumer_->GetTransform();
 }
 
@@ -443,7 +524,7 @@ GSError ConsumerSurface::Disconnect()
 
 GSError ConsumerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
-    if (scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
+    if (producer_ == nullptr || scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
         scalingMode > ScalingMode::SCALING_MODE_SCALE_FIT) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -452,7 +533,7 @@ GSError ConsumerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMo
 
 GSError ConsumerSurface::SetScalingMode(ScalingMode scalingMode)
 {
-    if (scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
+    if (producer_ == nullptr || scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
         scalingMode > ScalingMode::SCALING_MODE_SCALE_FIT) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -461,12 +542,16 @@ GSError ConsumerSurface::SetScalingMode(ScalingMode scalingMode)
 
 GSError ConsumerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetScalingMode failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->GetScalingMode(sequence, scalingMode);
 }
 
 GSError ConsumerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
-    if (metaData.size() == 0) {
+    if (producer_ == nullptr || metaData.size() == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetMetaData(sequence, metaData);
@@ -475,7 +560,7 @@ GSError ConsumerSurface::SetMetaData(uint32_t sequence, const std::vector<Graphi
 GSError ConsumerSurface::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                         const std::vector<uint8_t> &metaData)
 {
-    if (key < GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ||
+    if (producer_ == nullptr || key < GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ||
         key > GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR_VIVID || metaData.size() == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -484,23 +569,35 @@ GSError ConsumerSurface::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey
 
 GSError ConsumerSurface::QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("QueryMetaDataType failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->QueryMetaDataType(sequence, type);
 }
 
 GSError ConsumerSurface::GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetMetaData failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->GetMetaData(sequence, metaData);
 }
 
 GSError ConsumerSurface::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
                                         std::vector<uint8_t> &metaData) const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetMetaDataSet failed for nullptr consumer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return consumer_->GetMetaDataSet(sequence, key, metaData);
 }
 
 GSError ConsumerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
 {
-    if (handle == nullptr || handle->reserveInts == 0) {
+    if (producer_ == nullptr || handle == nullptr || handle->reserveInts == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetTunnelHandle(handle);
@@ -508,6 +605,10 @@ GSError ConsumerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
 
 sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetTunnelHandle failed for nullptr consumer.");
+        return nullptr;
+    }
     return consumer_->GetTunnelHandle();
 }
 
@@ -522,7 +623,7 @@ void ConsumerSurface::SetBufferHold(bool hold)
 
 GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
 {
-    if (timestamp.type == GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED) {
+    if (consumer_ == nullptr || timestamp.type == GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->SetPresentTimestamp(sequence, timestamp);
@@ -572,11 +673,19 @@ GSError ConsumerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
 
 void ConsumerSurface::ConsumerRequestCpuAccess(bool on)
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("ConsumerRequestCpuAccess failed for nullptr consumer.");
+        return;
+    }
     consumer_->ConsumerRequestCpuAccess(on);
 }
 
 GraphicTransformType ConsumerSurface::GetTransformHint() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetTransformHint failed for nullptr producer.");
+        return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    }
     GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     if (producer_->GetTransformHint(transformHint) != GSERROR_OK) {
         BLOGNE("Warning ProducerSurface GetTransformHint failed.");
@@ -587,16 +696,28 @@ GraphicTransformType ConsumerSurface::GetTransformHint() const
 
 GSError ConsumerSurface::SetTransformHint(GraphicTransformType transformHint)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetTransformHint failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetTransformHint(transformHint);
 }
 
 GSError ConsumerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetSurfaceSourceType failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetSurfaceSourceType(sourceType);
 }
 
 OHSurfaceSource ConsumerSurface::GetSurfaceSourceType() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetSurfaceSourceType failed for nullptr producer.");
+        return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    }
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     if (producer_->GetSurfaceSourceType(sourceType) != GSERROR_OK) {
         BLOGNE("Warning GetSurfaceSourceType failed.");
@@ -607,11 +728,19 @@ OHSurfaceSource ConsumerSurface::GetSurfaceSourceType() const
 
 GSError ConsumerSurface::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
+    if (producer_ == nullptr) {
+        BLOGFE("SetSurfaceAppFrameworkType failed for nullptr producer.");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->SetSurfaceAppFrameworkType(appFrameworkType);
 }
 
 std::string ConsumerSurface::GetSurfaceAppFrameworkType() const
 {
+    if (producer_ == nullptr) {
+        BLOGFE("GetSurfaceAppFrameworkType failed for nullptr producer.");
+        return "";
+    }
     std::string appFrameworkType = "";
     if (producer_->GetSurfaceAppFrameworkType(appFrameworkType) != GSERROR_OK) {
         BLOGNE("Warning GetSurfaceAppFrameworkType failed.");
@@ -655,11 +784,19 @@ GSError ConsumerSurface::SetSdrWhitePointBrightness(float brightness)
 
 float ConsumerSurface::GetHdrWhitePointBrightness() const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetHdrWhitePointBrightness failed for nullptr consumer.");
+        return 0;
+    }
     return consumer_->GetHdrWhitePointBrightness();
 }
 
 float ConsumerSurface::GetSdrWhitePointBrightness() const
 {
+    if (consumer_ == nullptr) {
+        BLOGFE("GetSdrWhitePointBrightness failed for nullptr consumer.");
+        return 0;
+    }
     return consumer_->GetSdrWhitePointBrightness();
 }
 

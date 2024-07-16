@@ -71,19 +71,6 @@ void BufferQueueTest::TearDownTestCase()
 }
 
 /*
-* Function: Init
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call Init and check ret
- */
-HWTEST_F(BufferQueueTest, Init001, Function | MediumTest | Level2)
-{
-    GSError ret = bq->Init();
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-/*
 * Function: GetUsedSize
 * Type: Function
 * Rank: Important(2)

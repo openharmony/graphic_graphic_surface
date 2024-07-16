@@ -106,7 +106,6 @@ void BufferClientProducerRemoteTest::SetUpTestCase()
         ASSERT_NE(bq, nullptr);
         sptr<BufferQueueProducer> bqp = new BufferQueueProducer(bq);
         ASSERT_NE(bqp, nullptr);
-        bq->Init();
         sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
         bq->RegisterConsumerListener(listener);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();

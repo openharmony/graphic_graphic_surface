@@ -61,7 +61,6 @@ protected:
 void BufferQueueProducerTest::SetUp()
 {
     bq_ = new BufferQueue("test");
-    bq_->Init();
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bq_->RegisterConsumerListener(listener);
     if (bqp_ == nullptr) {

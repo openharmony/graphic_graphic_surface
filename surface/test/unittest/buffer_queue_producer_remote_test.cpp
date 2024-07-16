@@ -82,7 +82,6 @@ void BufferQueueProducerRemoteTest::SetUpTestCase()
     
     bq = new BufferQueue("test");
     bqp = new BufferQueueProducer(bq);
-    bq->Init();
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bq->RegisterConsumerListener(listener);
 

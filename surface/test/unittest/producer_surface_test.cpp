@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <surface.h>
 #include <consumer_surface.h>
+#include <producer_surface.h>
 #include "buffer_consumer_listener.h"
 #include <native_window.h>
 #include "sync_fence.h"
@@ -29,6 +30,8 @@ class ProducerSurfaceTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
+    void SetUp() override;
+    void TearDown() override;
 
     static inline BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -55,6 +58,7 @@ public:
     {
         return GSERROR_OK;
     }
+    sptr<ProducerSurface> surface_ = nullptr;
 };
 
 void ProducerSurfaceTest::SetUpTestCase()
@@ -75,6 +79,18 @@ void ProducerSurfaceTest::TearDownTestCase()
     pSurface = nullptr;
 }
 
+void ProducerSurfaceTest::SetUp()
+{
+    surface_ = new ProducerSurface(producer);
+    ASSERT_NE(surface_, nullptr);
+    surface_->producer_ = nullptr;
+}
+
+void ProducerSurfaceTest::TearDown()
+{
+    surface_ = nullptr;
+}
+
 /*
 * Function: ProducerSurface
 * Type: Function
@@ -85,6 +101,162 @@ void ProducerSurfaceTest::TearDownTestCase()
 HWTEST_F(ProducerSurfaceTest, ProducerSurface001, Function | MediumTest | Level2)
 {
     ASSERT_NE(pSurface, nullptr);
+}
+
+/*
+* Function: GetProducerInitInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. check pSurface
+ */
+HWTEST_F(ProducerSurfaceTest, GetProducerInitInfo001, Function | MediumTest | Level2)
+{
+    ProducerInitInfo info;
+    GSError ret = surface_->GetProducerInitInfo(info);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: RequestBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = surface_->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: RequestBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffers with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBuffers001, Function | MediumTest | Level2)
+{
+    std::vector<sptr<SurfaceBuffer>> sfbuffers;
+    std::vector<sptr<SyncFence>> releaseFences;
+    GSError ret = surface_->RequestBuffers(sfbuffers, releaseFences, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: FlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call FlushBuffer with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, FlushBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->FlushBuffer(buffer, SyncFence::INVALID_FENCE, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: FlushBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call FlushBuffers with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, FlushBuffers001, Function | MediumTest | Level2)
+{
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    buffers.push_back(SurfaceBuffer::Create());
+    std::vector<sptr<SyncFence>> flushFences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+    GSError ret = surface_->FlushBuffers(buffers, flushFences, configs);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: GetLastFlushedBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetLastFlushedBuffer with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, GetLastFlushedBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    sptr<SyncFence> fence;
+    float matrix[16];
+    GSError ret = surface_->GetLastFlushedBuffer(buffer, fence, matrix, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: CancelBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call CancelBuffer with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, CancelBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->CancelBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: AttachBufferToQueue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferToQueue with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, AttachBufferToQueue001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->AttachBufferToQueue(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+}
+
+/*
+* Function: DetachBufferFromQueue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DetachBufferFromQueue with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, DetachBufferFromQueue001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->DetachBufferFromQueue(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+}
+
+/*
+* Function: DetachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DetachBuffer with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, DetachBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->DetachBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*
@@ -108,6 +280,73 @@ HWTEST_F(ProducerSurfaceTest, QueueSize001, Function | MediumTest | Level2)
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 
     ASSERT_EQ(pSurface->GetQueueSize(), 2u);
+}
+
+/*
+* Function: SetQueueSize and GetQueueSize
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetQueueSize with producer_ is nullptr and check ret
+*                  2. call SetQueueSize with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, QueueSize002, Function | MediumTest | Level2)
+{
+    uint32_t queueSize = surface_->GetQueueSize();
+    ASSERT_EQ(queueSize, 0);
+    GSError ret = surface_->SetQueueSize(queueSize);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: GetDefaultWidth, GetDefaultHeight and SetDefaultWidthAndHeight
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetDefaultWidthAndHeight with producer_ is nullptr and check ret
+*                  2. call GetDefaultWidth with producer_ is nullptr and check ret
+*                  3. call GetDefaultHeight with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, DefaultWidthAndHeight001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->SetDefaultWidthAndHeight(0, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+    int32_t width = surface_->GetDefaultWidth();
+    ASSERT_EQ(width, -1);  // -1 is default width
+    int32_t height = surface_->GetDefaultHeight();
+    ASSERT_EQ(height, -1);  // -1 is default height
+}
+
+/*
+* Function: SetTransformHint and GetTransformHint
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTransformHint with producer_ is nullptr and check ret
+*                  2. call GetTransformHint with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, TransformHint001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->SetTransformHint(GraphicTransformType::GRAPHIC_ROTATE_NONE);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicTransformType type = surface_->GetTransformHint();
+    ASSERT_EQ(type, GraphicTransformType::GRAPHIC_ROTATE_NONE);
+}
+
+/*
+* Function: SetDefaultUsage and GetDefaultUsage
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetDefaultUsage with producer_ is nullptr and check ret
+*                  2. call GetDefaultUsage with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, DefaultUsage001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->SetDefaultUsage(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    uint64_t usage = surface_->GetDefaultUsage();
+    ASSERT_EQ(usage, 0);
 }
 
 /*
@@ -512,6 +751,22 @@ HWTEST_F(ProducerSurfaceTest, transform004, Function | MediumTest | Level1)
 }
 
 /*
+* Function: SetTransform and GetTransform
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTransform with producer_ is nullptr and check ret
+*                  2. call GetTransform with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, transform005, Function | MediumTest | Level1)
+{
+    GSError ret = surface_->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicTransformType type = surface_->GetTransform();
+    ASSERT_EQ(type, GraphicTransformType::GRAPHIC_ROTATE_BUTT);
+}
+
+/*
 * Function: IsSupportedAlloc
 * Type: Function
 * Rank: Important(2)
@@ -591,6 +846,21 @@ HWTEST_F(ProducerSurfaceTest, isSupportedAlloc003, Function | MediumTest | Level
 }
 
 /*
+* Function: IsSupportedAlloc
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call IsSupportedAlloc with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, isSupportedAlloc004, Function | MediumTest | Level2)
+{
+    std::vector<BufferVerifyAllocInfo> infos;
+    std::vector<bool> supporteds;
+    GSError ret = surface_->IsSupportedAlloc(infos, supporteds);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: SetScalingMode and GetScalingMode
 * Type: Function
 * Rank: Important(2)
@@ -641,6 +911,25 @@ HWTEST_F(ProducerSurfaceTest, scalingMode003, Function | MediumTest | Level2)
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GSError ret = pSurface->SetScalingMode(scalingMode);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SetScalingMode and GetScalingMode
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetScalingMode with producer_ is nullptr and check ret
+*                  2. call GetScalingMode and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, scalingMode004, Function | MediumTest | Level2)
+{
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    GSError ret = surface_->SetScalingMode(scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->SetScalingMode(0, scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetScalingMode(0, scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
 }
 
 /*
@@ -709,6 +998,30 @@ HWTEST_F(ProducerSurfaceTest, metaData003, Function | MediumTest | Level1)
 }
 
 /*
+* Function: SetMetaData and GetMetaData
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetMetaData with producer_ is nullptr and check ret
+*                  2. call GetMetaData and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, metaData004, Function | MediumTest | Level2)
+{
+    std::vector<GraphicHDRMetaData> metaData;
+    GSError ret = surface_->SetMetaData(0, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicHDRMetaData data = {
+        .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
+        .value = 100,  // 100 metaData value for test
+    };
+    metaData.push_back(data);
+    ret = surface_->SetMetaData(0, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetMetaData(0, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
 * Function: SetMetaDataSet and GetMetaDataSet
 * Type: Function
 * Rank: Important(2)
@@ -771,6 +1084,49 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
 
     ret = pSurface->CancelBuffer(buffer);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SetMetaDataSet and GetMetaDataSet
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetMetaDataSet with producer_ is nullptr and check ret
+*                  2. call GetMetaDataSet and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, metaDataSet004, Function | MediumTest | Level2)
+{
+    GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
+    std::vector<uint8_t> metaData;
+
+    uint8_t data = 10;  // metaData value for test
+    metaData.push_back(data);
+    GSError ret = surface_->SetMetaDataSet(0, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetMetaDataSet(0, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
+* Function: SetTunnelHandle and GetTunnelHandle
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelhandle with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, tunnelHandle001, Function | MediumTest | Level2)
+{
+    GraphicExtDataHandle *handle = nullptr;
+    handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
+    handle->fd = -1;
+    handle->reserveInts = 1;
+    handle->reserve[0] = 0;
+    GSError ret = surface_->SetTunnelHandle(handle);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    sptr<SurfaceTunnelHandle> handleGet = surface_->GetTunnelHandle();
+    ASSERT_EQ(handleGet, nullptr);
+    free(handle);
 }
 
 /*
@@ -845,6 +1201,53 @@ HWTEST_F(ProducerSurfaceTest, disconnect002, Function | MediumTest | Level1)
 {
     GSError ret = pSurface->Disconnect();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: connect
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call connect with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, connect003, Function | MediumTest | Level1)
+{
+    GSError ret = surface_->Connect();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: disconnect
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call Disconnect with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, disconnect003, Function | MediumTest | Level1)
+{
+    GSError ret = surface_->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: SetPresentTimestamp and GetPresentTimestamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetPresentTimestamp with producer_ is nullptr and check ret
+*                  2. call SetPresentTimestamp and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, presentTimestamp001, Function | MediumTest | Level2)
+{
+    uint32_t sequence = 0;
+    GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED;
+    int64_t time = 0;
+
+    GSError ret = surface_->GetPresentTimestamp(sequence, type, time);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicPresentTimestamp timestamp;
+    ret = surface_->SetPresentTimestamp(sequence, timestamp);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
 }
 
 /*
@@ -943,6 +1346,23 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer001, Function | MediumTest | Level1)
 }
 
 /*
+* Function: AttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer with producer_ is nullptr
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, AttachBuffer002, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->AttachBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->AttachBuffer(buffer, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: RegisterSurfaceDelegator000
 * Type: Function
 * Rank: Important(1)
@@ -972,6 +1392,32 @@ HWTEST_F(ProducerSurfaceTest, CleanCache001, Function | MediumTest | Level2)
 }
 
 /*
+* Function: CleanCache
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. CleanCache with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, CleanCache002, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->CleanCache(true);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: GoBackground
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. GoBackground with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, GoBackground001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->GoBackground();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: SetSurfaceSourceType and GetSurfaceSourceType
 * Type: Function
 * Rank: Important(2)
@@ -988,6 +1434,22 @@ HWTEST_F(ProducerSurfaceTest, SurfaceSourceType001, Function | MediumTest | Leve
 }
 
 /*
+* Function: SetSurfaceSourceType and GetSurfaceSourceType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceSourceType with producer_ is nullptr and check ret
+*                  2. call GetSurfaceSourceType with producer_ is nullptr and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, SurfaceSourceType002, Function | MediumTest | Level2)
+{
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
+    GSError ret = surface_->SetSurfaceSourceType(sourceType);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->GetSurfaceSourceType(), OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT);
+}
+
+/*
 * Function: SetSurfaceAppFrameworkType and GetSurfaceAppFrameworkType
 * Type: Function
 * Rank: Important(2)
@@ -1001,6 +1463,55 @@ HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, Function | MediumTest 
     GSError ret = pSurface->SetSurfaceAppFrameworkType(type);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(pSurface->GetSurfaceAppFrameworkType(), "test");
+}
+
+/*
+* Function: SetSurfaceAppFrameworkType and GetSurfaceAppFrameworkType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetSurfaceAppFrameworkType with producer_ is nullptr and check ret
+*                  2. call GetSurfaceAppFrameworkType with producer_ is nullptr and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType002, Function | MediumTest | Level2)
+{
+    std::string type = "test";
+    GSError ret = surface_->SetSurfaceAppFrameworkType(type);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->GetSurfaceAppFrameworkType(), "");
+}
+
+/*
+* Function: RegisterReleaseListener and UnRegisterReleaseListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterReleaseListener with producer_ is nullptr and check ret
+*                  2. call UnRegisterReleaseListener with producer_ is nullptr and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, ReleaseListener001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->RegisterReleaseListener(OnBufferRelease);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    OnReleaseFuncWithFence releaseFuncWithFence;
+    ret = surface_->RegisterReleaseListener(releaseFuncWithFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->UnRegisterReleaseListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: IsRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call IsRemote with producer_ is nullptr
+*                  2. check ret
+*/
+HWTEST_F(ProducerSurfaceTest, IsRemote001, Function | MediumTest | Level2)
+{
+    bool ret = surface_->IsRemote();
+    ASSERT_EQ(ret, false);
 }
 
 /*
@@ -1057,5 +1568,21 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffersAndFlushBuffers, Function | MediumTe
     }
     EXPECT_EQ(OHOS::GSERROR_NO_BUFFER, csurf->AcquireBuffer(buffer, flushFence, timestamp, damage));
     pSurface->SetQueueSize(2);
+}
+
+/*
+* Function: SetHdrWhitePointBrightness and SetSdrWhitePointBrightness
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetHdrWhitePointBrightness with producer_ is nullptr and check ret
+*                  2. call SetSdrWhitePointBrightness with producer_ is nullptr and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, WhitePointBrightness001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->SetHdrWhitePointBrightness(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->SetSdrWhitePointBrightness(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 }

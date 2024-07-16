@@ -344,7 +344,7 @@ GSError BufferClientProducer::SetQueueSize(uint32_t queueSize)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
 
-    arguments.WriteInt32(queueSize);
+    arguments.WriteUint32(queueSize);
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_QUEUE_SIZE, arguments, reply, option);
     int32_t ret = reply.ReadInt32();
@@ -474,7 +474,7 @@ uint64_t BufferClientProducer::GetDefaultUsage()
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_USAGE, arguments, reply, option);
 
-    return reply.ReadUint32();
+    return reply.ReadUint64();
 }
 
 GSError BufferClientProducer::CleanCache(bool cleanAll)

@@ -103,7 +103,10 @@ SurfaceBufferImpl::SurfaceBufferImpl()
         mutex.lock();
 
         static uint32_t sequence_number_ = 0;
-        sequenceNumber_ = sequence_number_++;
+        // 0x3FFFF is pid mask. 14 is pid offset.
+        sequenceNumber_ = (static_cast<uint32_t>(getpid()) & 0x3FFFF) << 14;
+        // 0x3FFF is seqnum mask.
+        sequenceNumber_ |= (sequence_number_++ & 0x3FFF);
 
         mutex.unlock();
     }

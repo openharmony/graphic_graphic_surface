@@ -128,7 +128,7 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
 
     arguments.ReadUint32(num);
     ReadRequestConfig(arguments, config);
-    if (num <= 0 || num > SURFACE_MAX_QUEUE_SIZE) {
+    if (num == 0 || num > SURFACE_MAX_QUEUE_SIZE) {
         return 0;
     }
     retvalues.resize(num);
@@ -219,7 +219,7 @@ int32_t BufferQueueProducer::FlushBuffersRemote(MessageParcel &arguments, Messag
     std::vector<sptr<BufferExtraData>> bedataimpls;
     std::vector<sptr<SyncFence>> fences;
     arguments.ReadUInt32Vector(&sequences);
-    if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
+    if (sequences.size() == 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
         return 0;
     }
     for (size_t i = 0; i < sequences.size(); ++i) {

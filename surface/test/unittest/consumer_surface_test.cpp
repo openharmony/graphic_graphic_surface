@@ -64,6 +64,7 @@ public:
     static inline sptr<BufferQueue> bq = nullptr;
     static inline sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
     static inline sptr<BufferQueueConsumer> consumer_ = nullptr;
+    static inline uint32_t firstSeqnum = 0;
     sptr<ConsumerSurface> surface_ = nullptr;
 };
 
@@ -390,6 +391,7 @@ HWTEST_F(ConsumerSurfaceTest, ReqCanFluAcqRel001, Function | MediumTest | Level2
     GSError ret = ps->RequestBuffer(buffer, releaseFence, requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
+    firstSeqnum = buffer->GetSeqNum();
 
     ret = ps->FlushBuffer(buffer, -1, flushConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1055,7 +1057,6 @@ HWTEST_F(ConsumerSurfaceTest, scalingMode001, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, scalingMode002, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     sptr<SurfaceBuffer> buffer;
     int releaseFence = -1;
@@ -1063,7 +1064,7 @@ HWTEST_F(ConsumerSurfaceTest, scalingMode002, Function | MediumTest | Level1)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
 
-    sequence = buffer->GetSeqNum();
+    uint32_t sequence = buffer->GetSeqNum();
     ret = cs->SetScalingMode(sequence, scalingMode);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -1100,13 +1101,12 @@ HWTEST_F(ConsumerSurfaceTest, scalingMode003, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, scalingMode004, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
-    GSError ret = surface_->SetScalingMode(sequence, scalingMode);
+    GSError ret = surface_->SetScalingMode(firstSeqnum, scalingMode);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ret = surface_->SetScalingMode(scalingMode);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    ret = surface_->GetScalingMode(sequence, scalingMode);
+    ret = surface_->GetScalingMode(firstSeqnum, scalingMode);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1119,9 +1119,8 @@ HWTEST_F(ConsumerSurfaceTest, scalingMode004, Function | MediumTest | Level1)
  */
 HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType001, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     HDRMetaDataType type = HDRMetaDataType::HDR_META_DATA;
-    GSError ret = cs->QueryMetaDataType(sequence, type);
+    GSError ret = cs->QueryMetaDataType(firstSeqnum, type);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(type, HDRMetaDataType::HDR_NOT_USED);
 }
@@ -1136,18 +1135,17 @@ HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType001, Function | MediumTest | Leve
  */
 HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType002, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetaData data = {
         .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
         .value = 1,
     };
     metaData.push_back(data);
-    GSError ret = cs->SetMetaData(sequence, metaData);
+    GSError ret = cs->SetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     HDRMetaDataType type = HDRMetaDataType::HDR_NOT_USED;
-    ret = cs->QueryMetaDataType(sequence, type);
+    ret = cs->QueryMetaDataType(firstSeqnum, type);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(type, HDRMetaDataType::HDR_META_DATA);
 }
@@ -1162,16 +1160,15 @@ HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType002, Function | MediumTest | Leve
  */
 HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType003, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
     uint8_t data = 1;
     metaData.push_back(data);
-    GSError ret = cs->SetMetaDataSet(sequence, key, metaData);
+    GSError ret = cs->SetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     HDRMetaDataType type = HDRMetaDataType::HDR_NOT_USED;
-    ret = cs->QueryMetaDataType(sequence, type);
+    ret = cs->QueryMetaDataType(firstSeqnum, type);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(type, HDRMetaDataType::HDR_META_DATA_SET);
 }
@@ -1185,9 +1182,8 @@ HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType003, Function | MediumTest | Leve
  */
 HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType004, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     HDRMetaDataType type = HDRMetaDataType::HDR_META_DATA;
-    GSError ret = surface_->QueryMetaDataType(sequence, type);
+    GSError ret = surface_->QueryMetaDataType(firstSeqnum, type);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1200,9 +1196,8 @@ HWTEST_F(ConsumerSurfaceTest, QueryMetaDataType004, Function | MediumTest | Leve
  */
 HWTEST_F(ConsumerSurfaceTest, metaData001, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
-    GSError ret = cs->SetMetaData(sequence, metaData);
+    GSError ret = cs->SetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1215,14 +1210,13 @@ HWTEST_F(ConsumerSurfaceTest, metaData001, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, metaData002, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetaData data = {
         .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
         .value = 100,  // for test
     };
     metaData.push_back(data);
-    GSError ret = cs->SetMetaData(sequence, metaData);
+    GSError ret = cs->SetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
@@ -1236,7 +1230,6 @@ HWTEST_F(ConsumerSurfaceTest, metaData002, Function | MediumTest | Level1)
  */
 HWTEST_F(ConsumerSurfaceTest, metaData003, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetaData data = {
         .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
@@ -1250,7 +1243,7 @@ HWTEST_F(ConsumerSurfaceTest, metaData003, Function | MediumTest | Level1)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
 
-    sequence = buffer->GetSeqNum();
+    uint32_t sequence = buffer->GetSeqNum();
     ret = cs->SetMetaData(sequence, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -1276,11 +1269,10 @@ HWTEST_F(ConsumerSurfaceTest, metaData003, Function | MediumTest | Level1)
  */
 HWTEST_F(ConsumerSurfaceTest, metaData004, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
-    GSError ret = surface_->SetMetaData(sequence, metaData);
+    GSError ret = surface_->SetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    ret = surface_->GetMetaData(sequence, metaData);
+    ret = surface_->GetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1293,10 +1285,9 @@ HWTEST_F(ConsumerSurfaceTest, metaData004, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, metaDataSet001, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
-    GSError ret = cs->SetMetaDataSet(sequence, key, metaData);
+    GSError ret = cs->SetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1309,12 +1300,11 @@ HWTEST_F(ConsumerSurfaceTest, metaDataSet001, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, metaDataSet002, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
     uint8_t data = 10;  // for test
     metaData.push_back(data);
-    GSError ret = cs->SetMetaDataSet(sequence, key, metaData);
+    GSError ret = cs->SetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
@@ -1328,7 +1318,6 @@ HWTEST_F(ConsumerSurfaceTest, metaDataSet002, Function | MediumTest | Level1)
  */
 HWTEST_F(ConsumerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
     uint8_t data = 10;  // for test
@@ -1340,7 +1329,7 @@ HWTEST_F(ConsumerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
 
-    sequence = buffer->GetSeqNum();
+    uint32_t sequence = buffer->GetSeqNum();
     ret = cs->SetMetaDataSet(sequence, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -1367,12 +1356,11 @@ HWTEST_F(ConsumerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
  */
 HWTEST_F(ConsumerSurfaceTest, metaDataSet004, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
-    GSError ret = surface_->SetMetaDataSet(sequence, key, metaData);
+    GSError ret = surface_->SetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    ret = surface_->GetMetaDataSet(sequence, key, metaData);
+    ret = surface_->GetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1494,9 +1482,8 @@ HWTEST_F(ConsumerSurfaceTest, presentTimestamp003, Function | MediumTest | Level
  */
 HWTEST_F(ConsumerSurfaceTest, presentTimestamp004, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     GraphicPresentTimestamp timestamp = {GRAPHIC_DISPLAY_PTS_DELAY, 0};
-    GSError ret = cs->SetPresentTimestamp(sequence, timestamp);
+    GSError ret = cs->SetPresentTimestamp(firstSeqnum, timestamp);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
@@ -1510,9 +1497,8 @@ HWTEST_F(ConsumerSurfaceTest, presentTimestamp004, Function | MediumTest | Level
  */
 HWTEST_F(ConsumerSurfaceTest, presentTimestamp005, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     GraphicPresentTimestamp timestamp = {GRAPHIC_DISPLAY_PTS_TIMESTAMP, 0};
-    GSError ret = cs->SetPresentTimestamp(sequence, timestamp);
+    GSError ret = cs->SetPresentTimestamp(firstSeqnum, timestamp);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
@@ -1525,12 +1511,11 @@ HWTEST_F(ConsumerSurfaceTest, presentTimestamp005, Function | MediumTest | Level
  */
 HWTEST_F(ConsumerSurfaceTest, presentTimestamp006, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     GraphicPresentTimestamp timestamp = {GRAPHIC_DISPLAY_PTS_TIMESTAMP, 0};
-    GSError ret = surface_->SetPresentTimestamp(sequence, timestamp);
+    GSError ret = surface_->SetPresentTimestamp(firstSeqnum, timestamp);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     int64_t time = 0;
-    ret = surface_->GetPresentTimestamp(sequence, GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP, time);
+    ret = surface_->GetPresentTimestamp(firstSeqnum, GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP, time);
     ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
 }
 

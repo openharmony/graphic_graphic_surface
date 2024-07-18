@@ -124,7 +124,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
 
     GSError ret = GSERROR_OK;
     num = reply.ReadUint32();
-    if (num > SURFACE_MAX_QUEUE_SIZE || num <= 0) {
+    if (num > SURFACE_MAX_QUEUE_SIZE || num == 0) {
         BLOGNE("num is invalid, %{public}u", num);
         return SURFACE_ERROR_UNKOWN;
     }

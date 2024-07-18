@@ -170,7 +170,8 @@ public:
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const override;
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) override;
-    SURFACE_HIDDEN GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) const override
+    SURFACE_HIDDEN GSError GetPresentTimestamp(uint32_t sequence,
+        GraphicPresentTimestampType type, int64_t &time) const override
     {
         return GSERROR_NOT_SUPPORT;
     }

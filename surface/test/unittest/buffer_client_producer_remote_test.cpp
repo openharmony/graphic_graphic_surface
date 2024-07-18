@@ -646,8 +646,8 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestBuffersAndFlushBuffers, Function
     }
     ret = bp->FlushBuffers(sequences, bedatas, acquireFences, flushConfigs);
     EXPECT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
-    sequences.resize(size);
-    acquireFences.resize(size);
+    sequences.resize(retvalues.size());
+    acquireFences.resize(retvalues.size());
     ret = bp->FlushBuffers(sequences, bedatas, acquireFences, flushConfigs);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 }

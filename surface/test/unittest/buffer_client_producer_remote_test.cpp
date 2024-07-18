@@ -63,6 +63,7 @@ public:
     static inline int pipe1Fd[2] = {};
     static inline int32_t systemAbilityID = 345135;
     static inline sptr<BufferExtraData> bedata = new BufferExtraDataImpl;
+    static inline uint32_t firstSeqnum = 0;
 };
 
 static void InitNativeTokenInfo()
@@ -194,6 +195,7 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqCan001, Function | MediumTest | Leve
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(retval.buffer, nullptr);
+    firstSeqnum = retval.buffer->GetSeqNum();
 
     ret = bp->CancelBuffer(retval.sequence, bedata);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -506,9 +508,8 @@ HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode002, Function | MediumTes
 */
 HWTEST_F(BufferClientProducerRemoteTest, SetMetaData001, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
-    GSError ret = bp->SetMetaData(sequence, metaData);
+    GSError ret = bp->SetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -524,8 +525,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetMetaDataSet001, Function | MediumTes
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
 
-    uint32_t sequence = 0;
-    GSError ret = bp->SetMetaDataSet(sequence, key, metaData);
+    GSError ret = bp->SetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 

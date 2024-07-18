@@ -84,6 +84,7 @@ public:
     static inline sptr<OHOS::SurfaceBuffer> sBuffer = nullptr;
     static inline NativeWindow* nativeWindow = nullptr;
     static inline NativeWindowBuffer* nativeWindowBuffer = nullptr;
+    static inline uint32_t firstSeqnum = 0;
 };
 
 void NativeWindowTest::SetUpTestCase()
@@ -104,6 +105,7 @@ void NativeWindowTest::SetUpTestCase()
     pSurface = Surface::CreateSurfaceAsProducer(producer);
     int32_t fence;
     pSurface->RequestBuffer(sBuffer, fence, requestConfig);
+    firstSeqnum = sBuffer->GetSeqNum();
 }
 
 void NativeWindowTest::TearDownTestCase()
@@ -1327,8 +1329,7 @@ HWTEST_F(NativeWindowTest, SetScalingMode002, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetScalingMode003, Function | MediumTest | Level2)
 {
-    int32_t sequence = 0;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingMode(nativeWindow, sequence,
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingMode(nativeWindow, firstSeqnum,
                                          static_cast<OHScalingMode>(OHScalingMode::OH_SCALING_MODE_NO_SCALE_CROP + 1)),
                                          OHOS::GSERROR_INVALID_ARGUMENTS);
 }
@@ -1343,9 +1344,8 @@ HWTEST_F(NativeWindowTest, SetScalingMode003, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetScalingMode004, Function | MediumTest | Level1)
 {
-    int32_t sequence = 0;
     OHScalingMode scalingMode = OHScalingMode::OH_SCALING_MODE_SCALE_TO_WINDOW;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingMode(nativeWindow, sequence, scalingMode), OHOS::GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingMode(nativeWindow, firstSeqnum, scalingMode), OHOS::GSERROR_OK);
 }
 
 /*
@@ -1397,8 +1397,7 @@ HWTEST_F(NativeWindowTest, SetMetaData002, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetMetaData003, Function | MediumTest | Level2)
 {
-    int32_t sequence = 0;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaData(nativeWindow, sequence, 0, nullptr),
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaData(nativeWindow, firstSeqnum, 0, nullptr),
               OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1411,9 +1410,8 @@ HWTEST_F(NativeWindowTest, SetMetaData003, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetMetaData004, Function | MediumTest | Level2)
 {
-    int32_t sequence = 0;
     int32_t size = 1;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaData(nativeWindow, sequence, size, nullptr),
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaData(nativeWindow, firstSeqnum, size, nullptr),
               OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1440,10 +1438,9 @@ HWTEST_F(NativeWindowTest, SetMetaData005, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetMetaData006, Function | MediumTest | Level1)
 {
-    int32_t sequence = 0;
     int32_t size = 1;
     const OHHDRMetaData metaData[] = {{OH_METAKEY_RED_PRIMARY_X, 0}};
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaData(nativeWindow, sequence, size, metaData), OHOS::GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaData(nativeWindow, firstSeqnum, size, metaData), OHOS::GSERROR_OK);
 }
 
 /*
@@ -1483,9 +1480,8 @@ HWTEST_F(NativeWindowTest, SetMetaDataSet002, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetMetaDataSet003, Function | MediumTest | Level2)
 {
-    int32_t sequence = 0;
     OHHDRMetadataKey key = OHHDRMetadataKey::OH_METAKEY_HDR10_PLUS;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaDataSet(nativeWindow, sequence, key, 0, nullptr),
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaDataSet(nativeWindow, firstSeqnum, key, 0, nullptr),
               OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1498,10 +1494,9 @@ HWTEST_F(NativeWindowTest, SetMetaDataSet003, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetMetaDataSet004, Function | MediumTest | Level2)
 {
-    int32_t sequence = 0;
     int32_t size = 1;
     OHHDRMetadataKey key = OHHDRMetadataKey::OH_METAKEY_HDR10_PLUS;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaDataSet(nativeWindow, sequence, key, size, nullptr),
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaDataSet(nativeWindow, firstSeqnum, key, size, nullptr),
               OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1530,11 +1525,10 @@ HWTEST_F(NativeWindowTest, SetMetaDataSet005, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, SetMetaDataSet006, Function | MediumTest | Level1)
 {
-    int32_t sequence = 0;
     int32_t size = 1;
     OHHDRMetadataKey key = OHHDRMetadataKey::OH_METAKEY_HDR10_PLUS;
     const uint8_t metaData[] = {0};
-    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaDataSet(nativeWindow, sequence, key, size, metaData),
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetMetaDataSet(nativeWindow, firstSeqnum, key, size, metaData),
               OHOS::GSERROR_OK);
 }
 

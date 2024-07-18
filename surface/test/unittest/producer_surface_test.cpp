@@ -53,6 +53,7 @@ public:
     static inline sptr<IBufferProducer> producer = nullptr;
     static inline sptr<Surface> pSurface = nullptr;
     static inline sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
+    static inline uint32_t firstSeqnum = 0;
 
     static inline GSError OnBufferRelease(sptr<SurfaceBuffer> &buffer)
     {
@@ -131,6 +132,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer001, Function | MediumTest | Level2)
     int releaseFence = -1;
     GSError ret = surface_->RequestBuffer(buffer, releaseFence, requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    firstSeqnum = buffer->GetSeqNum();
 }
 
 /*
@@ -941,9 +943,8 @@ HWTEST_F(ProducerSurfaceTest, scalingMode004, Function | MediumTest | Level2)
  */
 HWTEST_F(ProducerSurfaceTest, metaData001, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
-    GSError ret = pSurface->SetMetaData(sequence, metaData);
+    GSError ret = pSurface->SetMetaData(firstSeqnum, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -976,7 +977,6 @@ HWTEST_F(ProducerSurfaceTest, metaData002, Function | MediumTest | Level2)
  */
 HWTEST_F(ProducerSurfaceTest, metaData003, Function | MediumTest | Level1)
 {
-    uint32_t sequence = 0;
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetaData data = {
         .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
@@ -989,7 +989,7 @@ HWTEST_F(ProducerSurfaceTest, metaData003, Function | MediumTest | Level1)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
 
-    sequence = buffer->GetSeqNum();
+    uint32_t sequence = buffer->GetSeqNum();
     ret = pSurface->SetMetaData(sequence, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -1033,8 +1033,7 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet001, Function | MediumTest | Level2)
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
 
-    uint32_t sequence = 0;
-    GSError ret = pSurface->SetMetaDataSet(sequence, key, metaData);
+    GSError ret = pSurface->SetMetaDataSet(firstSeqnum, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -1068,7 +1067,6 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
 {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
-    uint32_t sequence = 0;
     uint8_t data = 10;  // for test
     metaData.push_back(data);
 
@@ -1078,7 +1076,7 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
 
-    sequence = buffer->GetSeqNum();
+    uint32_t sequence = buffer->GetSeqNum();
     ret = pSurface->SetMetaDataSet(sequence, key, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -1239,14 +1237,13 @@ HWTEST_F(ProducerSurfaceTest, disconnect003, Function | MediumTest | Level1)
  */
 HWTEST_F(ProducerSurfaceTest, presentTimestamp001, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED;
     int64_t time = 0;
 
-    GSError ret = surface_->GetPresentTimestamp(sequence, type, time);
+    GSError ret = surface_->GetPresentTimestamp(firstSeqnum, type, time);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     GraphicPresentTimestamp timestamp;
-    ret = surface_->SetPresentTimestamp(sequence, timestamp);
+    ret = surface_->SetPresentTimestamp(firstSeqnum, timestamp);
     ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
 }
 
@@ -1260,11 +1257,10 @@ HWTEST_F(ProducerSurfaceTest, presentTimestamp001, Function | MediumTest | Level
  */
 HWTEST_F(ProducerSurfaceTest, presentTimestamp002, Function | MediumTest | Level2)
 {
-    uint32_t sequence = 0;
     GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED;
     int64_t time = 0;
 
-    GSError ret = pSurface->GetPresentTimestamp(sequence, type, time);
+    GSError ret = pSurface->GetPresentTimestamp(firstSeqnum, type, time);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 

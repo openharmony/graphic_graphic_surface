@@ -28,6 +28,8 @@ config("surface_config") {
     "-Wall",
     "-Werror",
     "-g3",
+    "-fno-rtti",
+    "-Os",
   ]
 }
 

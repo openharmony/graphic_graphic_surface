@@ -30,6 +30,7 @@
 #include "consumer_surface_delegator.h"
 
 namespace OHOS {
+#define SURFACE_HIDDEN __attribute__((visibility("hidden")))
 enum BufferState {
     BUFFER_STATE_RELEASED,
     BUFFER_STATE_REQUESTED,
@@ -60,7 +61,7 @@ using BufferElement = struct BufferElement {
     GraphicPresentTimestamp presentTimestamp = {GRAPHIC_DISPLAY_PTS_UNSUPPORTED, 0};
 };
 
-class BufferQueue : public RefBase {
+class SURFACE_HIDDEN BufferQueue : public RefBase {
 public:
     BufferQueue(const std::string &name, bool isShared = false);
     virtual ~BufferQueue();

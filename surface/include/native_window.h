@@ -23,13 +23,13 @@
 #include <surface_buffer.h>
 #include <unordered_map>
 
-struct NativeWindowMagic : public OHOS::RefBase {
+struct __attribute__((visibility("hidden"))) NativeWindowMagic : public OHOS::RefBase {
     NativeWindowMagic(NativeObjectMagic m) : magic(m) {}
     virtual ~NativeWindowMagic() {}
     NativeObjectMagic magic;
 };
 
-struct NativeWindow : public NativeWindowMagic {
+struct __attribute__((visibility("hidden"))) NativeWindow : public NativeWindowMagic {
     NativeWindow();
     ~NativeWindow();
     OHOS::sptr<OHOS::Surface> surface;
@@ -38,7 +38,7 @@ struct NativeWindow : public NativeWindowMagic {
     std::unordered_map<uint32_t, NativeWindowBuffer*> bufferCache_;
 };
 
-struct NativeWindowBuffer : public NativeWindowMagic {
+struct __attribute__((visibility("hidden"))) NativeWindowBuffer : public NativeWindowMagic {
     NativeWindowBuffer();
     ~NativeWindowBuffer();
     OHOS::sptr<OHOS::SurfaceBuffer> sfbuffer;

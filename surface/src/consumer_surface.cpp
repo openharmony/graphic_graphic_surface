@@ -52,10 +52,13 @@ ConsumerSurface::ConsumerSurface(const std::string &name, bool isShared)
 
 ConsumerSurface::~ConsumerSurface()
 {
-    BLOGND("dtor");
     if (consumer_ != nullptr) {
         consumer_->OnConsumerDied();
         consumer_->SetStatus(false);
+    }
+    if (producer_ != nullptr) {
+        BLOGNI("~ConsumerSurface queueId:%{public}" PRIu64 "producer_:%{public}d",
+            producer_->GetUniqueId(), producer_->GetSptrRefCount());
     }
     consumer_ = nullptr;
     producer_ = nullptr;

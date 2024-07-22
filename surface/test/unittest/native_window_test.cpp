@@ -1126,12 +1126,58 @@ HWTEST_F(NativeWindowTest, GetLastFlushedBuffer002, Function | MediumTest | Leve
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_SetColorSpace001, Function | MediumTest | Level2)
 {
+    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_BT709_LIMIT;
+    auto ret = OH_NativeWindow_GetColorSpace(nullptr, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_INTERNAL);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_SetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetColorSpace
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_SetColorSpace002, Function | MediumTest | Level2)
+{
+    auto ret = OH_NativeWindow_SetColorSpace(nativeWindow, OH_COLORSPACE_BT709_LIMIT);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_GetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_GetColorSpace
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetColorSpace001, Function | MediumTest | Level2)
+{
     OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
     auto ret = OH_NativeWindow_GetColorSpace(nativeWindow, &colorSpace);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_INTERNAL);
     }
-    ret = OH_NativeWindow_SetColorSpace(nativeWindow, OH_COLORSPACE_BT709_LIMIT);
+}
+
+/*
+* Function: OH_NativeWindow_GetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_GetColorSpace
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetColorSpace002, Function | MediumTest | Level2)
+{
+    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
+    auto ret = OH_NativeWindow_SetColorSpace(nativeWindow, OH_COLORSPACE_BT709_LIMIT);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_OK);
     }
@@ -1163,23 +1209,132 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue001, Function | Mediu
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_NE(ret, GSERROR_OK);
     }
-    int32_t max_size = -1;
-    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)max_size, buff);
+    ret = OH_NativeWindow_SetMetadataValue(nullptr, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_NE(ret, GSERROR_OK);
     }
-    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
+}
+
+/*
+* Function: OH_NativeWindow_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetMetadataValue
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue002, Function | MediumTest | Level2)
+{
+    int len = 60;
+    uint8_t buff[len];
+    for (int i = 0; i < 60; ++i) {
+        buff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t max_size = -1;
+    auto ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)max_size, buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetMetadataValue
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue003, Function | MediumTest | Level2)
+{
+    int len = 60;
+    uint8_t buff[len];
+    for (int i = 0; i < 60; ++i) {
+        buff[i] = static_cast<uint8_t>(i);
+    }
+    auto ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_OK);
     }
-    ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
+    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_DYNAMIC_METADATA, (int32_t)len, buff);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_GetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetMetadataValue
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue001, Function | MediumTest | Level2)
+{
+    int32_t buffSize;
+    uint8_t *checkMetaData;
+    auto ret = OH_NativeWindow_GetMetadataValue(nullptr, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_GetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_GetMetadataValue
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue002, Function | MediumTest | Level2)
+{
+    uint8_t *checkMetaData;
+    auto ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, nullptr, &checkMetaData);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
+}
+
+/*
+* Function: OH_NativeWindow_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_SetMetadataValue
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue003, Function | MediumTest | Level2)
+{
+    int len = 60;
+    uint8_t buff[len];
+    for (int i = 0; i < 60; ++i) {
+        buff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t buffSize;
+    uint8_t *checkMetaData;
+    auto ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, &buffSize, &checkMetaData);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
+        ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
+        delete[] checkMetaData;
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_DYNAMIC_METADATA, (int32_t)len, buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_DYNAMIC_METADATA, &buffSize, &checkMetaData);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
         ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
         delete[] checkMetaData;
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }
-
 /*
 * Function: OH_NativeWindow_NativeWindowAbortBuffer
 * Type: Function

@@ -174,8 +174,6 @@ private:
     int32_t SetHdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
-    using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
-        MessageParcel &reply, MessageOption &option);
     std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_ = {
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_INIT_INFO, GetProducerInitInfoRemote),

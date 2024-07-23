@@ -274,6 +274,8 @@ void SyncFenceTracker::SetBlurSize(int32_t blurSize)
 
 void SyncFenceTracker::SetContainerNodeNum(int containerNodeNum)
 {
-    processedNodeNum_ += containerNodeNum;
+    if (isGpuEnable_) {
+        processedNodeNum_ += containerNodeNum;
+    }
 }
 } // namespace OHOS

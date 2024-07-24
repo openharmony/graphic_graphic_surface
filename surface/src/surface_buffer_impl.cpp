@@ -126,6 +126,8 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("dtor ~[%{public}u]", sequenceNumber_);
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     FreeBufferHandleLocked();
 }
 
@@ -190,7 +192,6 @@ GSError SurfaceBufferImpl::Map()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -205,11 +206,10 @@ GSError SurfaceBufferImpl::Map()
             return GSERROR_OK;
         }
         handle = handle_;
-    }
-
-    if (handle->usage & BUFFER_USAGE_PROTECTED) {
-        BLOGD("handle usage is BUFFER_USAGE_PROTECTED, do not Map");
-        return GSERROR_OK;
+        if (handle->usage & BUFFER_USAGE_PROTECTED) {
+            BLOGD("handle usage is BUFFER_USAGE_PROTECTED, do not Map");
+            return GSERROR_OK;
+        }
     }
 
     void *virAddr = g_displayBuffer->Mmap(*handle);
@@ -222,7 +222,6 @@ GSError SurfaceBufferImpl::Unmap()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
     BufferHandle *handle = nullptr;
@@ -240,6 +239,7 @@ GSError SurfaceBufferImpl::Unmap()
 
     auto dret = g_displayBuffer->Unmap(*handle);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
+        std::lock_guard<std::mutex> lock(mutex_);
         handle_->virAddr = nullptr;
         return GSERROR_OK;
     }
@@ -250,7 +250,6 @@ GSError SurfaceBufferImpl::FlushCache()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return SURFACE_ERROR_UNKOWN;
     }
     BufferHandle *handle = nullptr;
@@ -301,7 +300,6 @@ GSError SurfaceBufferImpl::InvalidateCache()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
     BufferHandle *handle = nullptr;
@@ -459,6 +457,7 @@ void* SurfaceBufferImpl::GetVirAddr()
         BLOGW("Map failed");
         return nullptr;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     return handle_->virAddr;
 }
 
@@ -640,7 +639,6 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
     }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -670,7 +668,6 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -690,7 +687,6 @@ GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -714,7 +710,6 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 

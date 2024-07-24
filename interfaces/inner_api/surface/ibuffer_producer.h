@@ -103,7 +103,6 @@ public:
     virtual GSError UnRegisterReleaseListener() = 0;
     virtual GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix) = 0;
-    virtual GSError SendAddDeathRecipientObject() = 0;
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
 
     virtual GSError GetTransform(GraphicTransformType &transform) = 0;

@@ -104,7 +104,6 @@ public:
 
     sptr<NativeSurface> GetNativeSurface() override;
 
-    GSError SendAddDeathRecipientObject() override;
     void OnBufferProducerRemoteDied();
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
@@ -158,7 +157,6 @@ private:
     int32_t GoBackgroundRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetPresentTimestampRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t RegisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AttachBufferToQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DetachBufferFromQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
@@ -208,7 +206,6 @@ private:
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, GetPresentTimestampRemote),
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, UnRegisterReleaseListenerRemote),
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, GetLastFlushedBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT, RegisterDeathRecipient),
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORM, GetTransformRemote),
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, AttachBufferToQueueRemote),
             BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, DetachBufferFromQueueRemote),

@@ -89,8 +89,6 @@ public:
 
     sptr<NativeSurface> GetNativeSurface() override;
 
-    GSError SendAddDeathRecipientObject() override;
-
     GSError GetTransform(GraphicTransformType &transform) override;
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;

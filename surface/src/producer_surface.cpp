@@ -54,9 +54,6 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
     producer_ = producer;
-    if (producer_) {
-        producer_->SendAddDeathRecipientObject();
-    }
     GetProducerInitInfo(initInfo_);
     windowConfig_.width = initInfo_.width;
     windowConfig_.height = initInfo_.height;

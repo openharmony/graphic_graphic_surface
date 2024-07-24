@@ -162,6 +162,13 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     reply.WriteInt32(info.height);
     reply.WriteUint64(info.uniqueId);
     reply.WriteString(info.name);
+    sptr<IRemoteObject> token = arguments.ReadRemoteObject();
+    if (token == nullptr) {
+        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    bool result = HandleDeathRecipient(token);
+    reply.WriteInt32(result ? GSERROR_OK : GSERROR_NO_ENTRY);
     return 0;
 }
 
@@ -549,23 +556,6 @@ int32_t BufferQueueProducer::GetPresentTimestampRemote(MessageParcel &arguments,
     reply.WriteInt32(sret);
     if (sret == GSERROR_OK) {
         reply.WriteInt64(time);
-    }
-    return 0;
-}
-
-int32_t BufferQueueProducer::RegisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply,
-                                                    MessageOption &option)
-{
-    sptr<IRemoteObject> token = arguments.ReadRemoteObject();
-    if (token == nullptr) {
-        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    bool result = HandleDeathRecipient(token);
-    if (result) {
-        reply.WriteInt32(GSERROR_OK);
-    } else {
-        reply.WriteInt32(GSERROR_NO_ENTRY);
     }
     return 0;
 }
@@ -1185,11 +1175,6 @@ sptr<NativeSurface> BufferQueueProducer::GetNativeSurface()
 {
     BLOGND("BufferQueueProducer::GetNativeSurface not support.");
     return nullptr;
-}
-
-GSError BufferQueueProducer::SendAddDeathRecipientObject()
-{
-    return GSERROR_OK;
 }
 
 void BufferQueueProducer::OnBufferProducerRemoteDied()

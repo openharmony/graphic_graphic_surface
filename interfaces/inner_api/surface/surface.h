@@ -40,7 +40,7 @@ public:
                                   int32_t &fence, BufferRequestConfig &config) = 0;
 
     virtual GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
-        std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config);
+        std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config) = 0;
 
     virtual GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) = 0;
 
@@ -145,15 +145,14 @@ public:
     virtual void SetRequestWidthAndHeight(int32_t width, int32_t height) = 0;
     virtual int32_t GetRequestWidth() = 0;
     virtual int32_t GetRequestHeight() = 0;
+
+    virtual void SetBufferHold(bool hold) = 0;
+    virtual BufferRequestConfig* GetWindowConfig() = 0;
+    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
     virtual OHSurfaceSource GetSurfaceSourceType() const = 0;
     virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) = 0;
     virtual std::string GetSurfaceAppFrameworkType() const = 0;
-
-    virtual void SetBufferHold(bool hold) = 0;
-    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
-
-    virtual BufferRequestConfig* GetWindowConfig() = 0;
     virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
     virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
 protected:

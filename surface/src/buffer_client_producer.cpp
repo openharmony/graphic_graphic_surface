@@ -187,11 +187,18 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    token_ = new IRemoteStub<IBufferProducerToken>();
+    arguments.WriteRemoteObject(token_->AsObject());
     SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
     reply.ReadInt32(info.width);
     reply.ReadInt32(info.height);
     reply.ReadUint64(info.uniqueId);
     reply.ReadString(info.name);
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return static_cast<GSError>(ret);
+    }
     return GSERROR_OK;
 }
 
@@ -694,21 +701,6 @@ sptr<NativeSurface> BufferClientProducer::GetNativeSurface()
 {
     BLOGND("BufferClientProducer::GetNativeSurface not support.");
     return nullptr;
-}
-
-GSError BufferClientProducer::SendAddDeathRecipientObject()
-{
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
-    token_ = new IRemoteStub<IBufferProducerToken>();
-    arguments.WriteRemoteObject(token_->AsObject());
-    SEND_REQUEST(BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT, arguments, reply, option);
-
-    int32_t ret = reply.ReadInt32();
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
-    }
-    return GSERROR_OK;
 }
 
 GSError BufferClientProducer::GetTransform(GraphicTransformType &transform)

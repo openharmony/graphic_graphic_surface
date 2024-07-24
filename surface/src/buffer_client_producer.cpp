@@ -26,7 +26,7 @@
 #define DEFINE_MESSAGE_VARIABLES(arg, ret, opt)       \
     MessageOption opt;                                \
     MessageParcel arg;                                \
-    MessageParcel ret;
+    MessageParcel ret
 
 #define SEND_REQUEST(COMMAND, arguments, reply, option)                    \
     do {                                                                   \

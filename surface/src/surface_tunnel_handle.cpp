@@ -59,13 +59,13 @@ void FreeExtDataHandle(GraphicExtDataHandle *handle)
 
 SurfaceTunnelHandle::SurfaceTunnelHandle()
 {
-    BLOGD("ctor");
+    BLOGD("SurfaceTunnelHandle ctor");
 }
 
 SurfaceTunnelHandle::~SurfaceTunnelHandle()
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    BLOGD("dtor tunnelHandle_");
+    BLOGD("~SurfaceTunnelHandle dtor tunnelHandle_");
     FreeExtDataHandle(tunnelHandle_);
 }
 

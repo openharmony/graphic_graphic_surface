@@ -32,7 +32,6 @@ GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<Syn
     int64_t &timestamp, std::vector<Rect> &damages)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AcquireBuffer(buffer, fence, timestamp, damages);
@@ -41,7 +40,6 @@ GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<Syn
 GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->ReleaseBuffer(buffer, fence);
@@ -50,7 +48,6 @@ GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sp
 GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::CONSUMER_INVOKER);
@@ -59,7 +56,6 @@ GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::CONSUMER_INVOKER);
@@ -73,7 +69,6 @@ GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("bufferQueue is null");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->AttachBuffer(buffer, timeOut);
@@ -82,7 +77,6 @@ GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t t
 GSError BufferQueueConsumer::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("bufferQueue is null");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->DetachBuffer(buffer);
@@ -91,7 +85,6 @@ GSError BufferQueueConsumer::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 GSError BufferQueueConsumer::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<Surface> cSurface)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("RegisterSurfaceDelegator failed for nullptr bufferqueue.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->RegisterSurfaceDelegator(client, cSurface);
@@ -239,7 +232,6 @@ void BufferQueueConsumer::SetStatus(bool status)
 void BufferQueueConsumer::SetBufferHold(bool hold)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGFE("SetBufferHold failed for nullptr bufferqueue.");
         return;
     }
     bufferQueue_->SetBufferHold(hold);
@@ -264,7 +256,6 @@ GSError BufferQueueConsumer::GoBackground()
 float BufferQueueConsumer::GetHdrWhitePointBrightness() const
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetHdrWhitePointBrightness();
@@ -273,7 +264,6 @@ float BufferQueueConsumer::GetHdrWhitePointBrightness() const
 float BufferQueueConsumer::GetSdrWhitePointBrightness() const
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetSdrWhitePointBrightness();
@@ -282,7 +272,6 @@ float BufferQueueConsumer::GetSdrWhitePointBrightness() const
 GSError BufferQueueConsumer::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->IsSurfaceBufferInCache(seqNum, isInCache);

@@ -23,45 +23,21 @@
 #include "securec.h"
 #include "rs_frame_report_ext.h"
 
-#define DEFINE_MESSAGE_VARIABLES(arg, ret, opt, LOGE) \
+#define DEFINE_MESSAGE_VARIABLES(arg, ret, opt)       \
     MessageOption opt;                                \
     MessageParcel arg;                                \
-    MessageParcel ret;                                \
-    if (!(arg).WriteInterfaceToken(GetDescriptor())) {  \
-        LOGE("write interface token failed");         \
-    }
+    MessageParcel ret
 
-#define SEND_REQUEST(COMMAND, arguments, reply, option)                         \
-    do {                                                                        \
-        int32_t ret = Remote()->SendRequest(COMMAND, arguments, reply, option); \
-        if (ret != ERR_NONE) {                                                  \
-            BLOGN_FAILURE("SendRequest return %{public}d", ret);                 \
-            return GSERROR_BINDER;                                  \
-        }                                                                       \
-    } while (0)
-
-#define SEND_REQUEST_WITH_SEQ(COMMAND, arguments, reply, option, sequence)      \
-    do {                                                                        \
-        int32_t ret = Remote()->SendRequest(COMMAND, arguments, reply, option); \
-        if (ret != ERR_NONE) {                                                  \
-            BLOGN_FAILURE_ID(sequence, "SendRequest return %{public}d", ret);    \
-            return GSERROR_BINDER;                                  \
-        }                                                                       \
-    } while (0)
-
-#define CHECK_RETVAL_WITH_SEQ(reply, sequence)                          \
-    do {                                                                \
-        int32_t ret = (reply).ReadInt32();                                \
-        if (ret != GSERROR_OK) {                                  \
-            BLOGN_FAILURE_ID(sequence, "Remote return %{public}d", ret); \
-            return (GSError)ret;                                   \
-        }                                                               \
+#define SEND_REQUEST(COMMAND, arguments, reply, option)                    \
+    do {                                                                   \
+        GSError ret = SendRequest(COMMAND, arguments, reply, option);      \
+        if (ret != GSERROR_OK) {                                           \
+            return ret;                                                    \
+        }                                                                  \
     } while (0)
 
 namespace OHOS {
 namespace {
-    int32_t g_CancelBufferConsecutiveFailedCount  = 0;
-    constexpr int32_t MAX_COUNT = 2;
     constexpr size_t MATRIX4_SIZE = 16;
 }
 BufferClientProducer::BufferClientProducer(const sptr<IRemoteObject>& impl)
@@ -73,23 +49,50 @@ BufferClientProducer::~BufferClientProducer()
 {
 }
 
+void BufferClientProducer::MessageVariables(MessageParcel &arg)
+{
+    if (!(arg).WriteInterfaceToken(GetDescriptor())) {
+        BLOGE("write interface token failed");
+    }
+}
+
+GSError BufferClientProducer::SendRequest(uint32_t command, MessageParcel &arg,
+                                          MessageParcel &reply, MessageOption &opt)
+{
+    int32_t ret = Remote()->SendRequest(command, arg, reply, opt);
+    if (ret != ERR_NONE) {
+        BLOGN_FAILURE("SendRequest return %{public}d", ret);
+        return GSERROR_BINDER;
+    }
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
+{
+    int32_t ret = reply.ReadInt32();
+    if (ret != GSERROR_OK) {
+        BLOGN_FAILURE("Remote return %{public}d", ret);
+        return (GSError)ret;
+    }
+    return GSERROR_OK;
+}
+
 GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                             RequestBufferReturnValue &retval)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     WriteRequestConfig(arguments, config);
 
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFER, arguments, reply, option);
-    int32_t retCode = reply.ReadInt32();
-    if (retCode != GSERROR_OK) {
-        BLOGND("Remote return %{public}d", retCode);
-        return (GSError)retCode;
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
     }
 
-    GSError ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
+    ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
         return SURFACE_ERROR_UNKOWN;
     }
     if (retval.buffer != nullptr) {
@@ -98,7 +101,6 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
 
     ret = bedata->ReadFromParcel(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read extra data from parcel failed, return %{public}d", ret);
         return SURFACE_ERROR_UNKOWN;
     }
     retval.fence = SyncFence::ReadFromMessageParcel(reply);
@@ -110,19 +112,19 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
 GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     uint32_t num = static_cast<uint32_t>(bedata.size());
     arguments.WriteUint32(num);
     WriteRequestConfig(arguments, config);
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
-    int32_t retCode = reply.ReadInt32();
-    if (retCode != GSERROR_OK && retCode != GSERROR_NO_BUFFER) {
-        BLOGND("Remote return %{public}d", retCode);
-        return (GSError)retCode;
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
     }
 
-    GSError ret = GSERROR_OK;
+    ret = GSERROR_OK;
     num = reply.ReadUint32();
     if (num > SURFACE_MAX_QUEUE_SIZE || num == 0) {
         BLOGNE("num is invalid, %{public}u", num);
@@ -133,7 +135,6 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
         auto &retval = retvalues[i];
         ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
         if (ret != GSERROR_OK) {
-            BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
             return SURFACE_ERROR_UNKOWN;
         }
         if (retval.buffer != nullptr) {
@@ -141,7 +142,6 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
         }
         ret = bedata[i]->ReadFromParcel(reply);
         if (ret != GSERROR_OK) {
-            BLOGN_FAILURE("Read extra data from parcel failed, return %{public}d", ret);
             return SURFACE_ERROR_UNKOWN;
         }
         retval.fence = SyncFence::ReadFromMessageParcel(reply);
@@ -153,23 +153,21 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
 GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteBool(isUseNewMatrix);
     SEND_REQUEST(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, arguments, reply, option);
-    int32_t retCode = reply.ReadInt32();
-    if (retCode != GSERROR_OK) {
-        BLOGND("Remote return %{public}d", retCode);
-        return (GSError)retCode;
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
     }
     uint32_t sequence;
-    GSError ret = ReadSurfaceBufferImpl(reply, sequence, buffer);
+    ret = ReadSurfaceBufferImpl(reply, sequence, buffer);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
         return SURFACE_ERROR_UNKOWN;
     }
     ret = buffer->ReadBufferRequestConfig(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("ReadBufferRequestConfig failed, return %{public}d", ret);
         return SURFACE_ERROR_UNKOWN;
     }
 
@@ -186,7 +184,8 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 
 GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
     reply.ReadInt32(info.width);
     reply.ReadInt32(info.height);
@@ -197,36 +196,36 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 
 GSError BufferClientProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteUint32(sequence);
     bedata->WriteToParcel(arguments);
 
-    SEND_REQUEST_WITH_SEQ(BUFFER_PRODUCER_CANCEL_BUFFER, arguments, reply, option, sequence);
-    int32_t ret = reply.ReadInt32();
+    SEND_REQUEST(BUFFER_PRODUCER_CANCEL_BUFFER, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        g_CancelBufferConsecutiveFailedCount++;
-        if (g_CancelBufferConsecutiveFailedCount < MAX_COUNT) {
-            BLOGN_FAILURE_ID(sequence, "Remote return %{public}d", ret);
-        }
-        return (GSError)ret;
+        return ret;
     }
-    g_CancelBufferConsecutiveFailedCount = 0;
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
                                           sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteUint32(sequence);
     bedata->WriteToParcel(arguments);
     fence->WriteToMessageParcel(arguments);
     WriteFlushConfig(arguments, config);
 
-    SEND_REQUEST_WITH_SEQ(BUFFER_PRODUCER_FLUSH_BUFFER, arguments, reply, option, sequence);
-    CHECK_RETVAL_WITH_SEQ(reply, sequence);
+    SEND_REQUEST(BUFFER_PRODUCER_FLUSH_BUFFER, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
 
     if (OHOS::RsFrameReportExt::GetInstance().GetEnable()) {
         OHOS::RsFrameReportExt::GetInstance().HandleSwapBuffer();
@@ -239,7 +238,8 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
     const std::vector<sptr<SyncFence>> &fences,
     const std::vector<BufferFlushConfigWithDamages> &configs)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
         return SURFACE_ERROR_UNKOWN;
@@ -251,35 +251,42 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
         WriteFlushConfig(arguments, configs[i]);
     }
     SEND_REQUEST(BUFFER_PRODUCER_FLUSH_BUFFERS, arguments, reply, option);
-    int32_t retCode = reply.ReadInt32();
-    if (retCode != GSERROR_OK) {
-        BLOGND("Remote return %{public}d", retCode);
-        return (GSError)retCode;
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
     }
     return GSERROR_OK;
 }
 GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     uint32_t sequence = buffer->GetSeqNum();
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
-    auto ret = buffer->WriteBufferRequestConfig(arguments);
+    GSError ret = buffer->WriteBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("WriteBufferRequestConfig failed, return %{public}d", ret);
         return ret;
     }
-    SEND_REQUEST_WITH_SEQ(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, arguments, reply, option, sequence);
-    CHECK_RETVAL_WITH_SEQ(reply, sequence);
+    SEND_REQUEST(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, arguments, reply, option);
+    ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     uint32_t sequence = buffer->GetSeqNum();
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
-    SEND_REQUEST_WITH_SEQ(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, arguments, reply, option, sequence);
-    CHECK_RETVAL_WITH_SEQ(reply, sequence);
+    SEND_REQUEST(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     return GSERROR_OK;
 }
 
@@ -290,12 +297,16 @@ GSError BufferClientProducer::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 
 GSError BufferClientProducer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     uint32_t sequence = buffer->GetSeqNum();
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
     arguments.WriteInt32(timeOut);
-    SEND_REQUEST_WITH_SEQ(BUFFER_PRODUCER_ATTACH_BUFFER, arguments, reply, option, sequence);
-    CHECK_RETVAL_WITH_SEQ(reply, sequence);
+    SEND_REQUEST(BUFFER_PRODUCER_ATTACH_BUFFER, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     return GSERROR_OK;
 }
 
@@ -306,34 +317,35 @@ GSError BufferClientProducer::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 
 GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> listener)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteRemoteObject(listener->AsObject());
 
     SEND_REQUEST(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::UnRegisterReleaseListener()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
     return GSERROR_OK;
 }
 
 uint32_t BufferClientProducer::GetQueueSize()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_QUEUE_SIZE, arguments, reply, option);
 
@@ -342,15 +354,15 @@ uint32_t BufferClientProducer::GetQueueSize()
 
 GSError BufferClientProducer::SetQueueSize(uint32_t queueSize)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteUint32(queueSize);
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_QUEUE_SIZE, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -365,13 +377,13 @@ GSError BufferClientProducer::GetName(std::string &name)
             return GSERROR_OK;
         }
     }
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_NAME, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
     if (reply.ReadString(name) == false) {
         BLOGN_FAILURE("reply.ReadString return false");
@@ -381,7 +393,7 @@ GSError BufferClientProducer::GetName(std::string &name)
         std::lock_guard<std::mutex> lockGuard(mutex_);
         name_ = name;
     }
-    return static_cast<GSError>(ret);
+    return ret;
 }
 
 uint64_t BufferClientProducer::GetUniqueId()
@@ -392,7 +404,8 @@ uint64_t BufferClientProducer::GetUniqueId()
             return uniqueId_;
         }
     }
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_UNIQUE_ID, arguments, reply, option);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -411,13 +424,13 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
             return GSERROR_OK;
         }
     }
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
     if (reply.ReadString(name) == false) {
         BLOGN_FAILURE("reply.ReadString return false");
@@ -430,12 +443,13 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
         name_ = name;
         uniqueId_ = uniqueId;
     }
-    return static_cast<GSError>(ret);
+    return ret;
 }
 
 int32_t BufferClientProducer::GetDefaultWidth()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_WIDTH, arguments, reply, option);
 
@@ -444,7 +458,8 @@ int32_t BufferClientProducer::GetDefaultWidth()
 
 int32_t BufferClientProducer::GetDefaultHeight()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_HEIGHT, arguments, reply, option);
 
@@ -453,16 +468,16 @@ int32_t BufferClientProducer::GetDefaultHeight()
 
 GSError BufferClientProducer::SetDefaultUsage(uint64_t usage)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteUint64(usage);
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_DEFAULT_USAGE, arguments, reply, option);
 
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -470,7 +485,8 @@ GSError BufferClientProducer::SetDefaultUsage(uint64_t usage)
 
 uint64_t BufferClientProducer::GetDefaultUsage()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_USAGE, arguments, reply, option);
 
@@ -479,14 +495,14 @@ uint64_t BufferClientProducer::GetDefaultUsage()
 
 GSError BufferClientProducer::CleanCache(bool cleanAll)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteBool(cleanAll);
     SEND_REQUEST(BUFFER_PRODUCER_CLEAN_CACHE, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -494,13 +510,13 @@ GSError BufferClientProducer::CleanCache(bool cleanAll)
 
 GSError BufferClientProducer::GoBackground()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GO_BACKGROUND, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -516,19 +532,19 @@ GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
         lastSetTransformType_ = transform;
     }
 
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteUint32(static_cast<uint32_t>(transform));
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_TRANSFORM, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
         {
             std::lock_guard<std::mutex> lockGuard(mutex_);
             lastSetTransformType_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
         }
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -537,15 +553,15 @@ GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
 GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
                                                std::vector<bool> &supporteds)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     WriteVerifyAllocInfo(arguments, infos);
 
     SEND_REQUEST(BUFFER_PRODUCER_IS_SUPPORTED_ALLOC, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
 
     if (reply.ReadBoolVector(&supporteds) == false) {
@@ -558,40 +574,40 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
 
 GSError BufferClientProducer::Connect()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_CONNECT, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Connect Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::Disconnect()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_DISCONNECT, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     arguments.WriteInt32(static_cast<int32_t>(scalingMode));
     SEND_REQUEST(BUFFER_PRODUCER_SET_SCALING_MODE, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -599,13 +615,13 @@ GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scal
 
 GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteInt32(static_cast<int32_t>(scalingMode));
     SEND_REQUEST(BUFFER_PRODUCER_SET_SCALING_MODEV2, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -613,13 +629,13 @@ GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
 
 GSError BufferClientProducer::SetBufferHold(bool hold)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteBool(hold);
     SEND_REQUEST(BUFFER_PRODUCER_SET_BUFFER_HOLD, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -627,14 +643,14 @@ GSError BufferClientProducer::SetBufferHold(bool hold)
 
 GSError BufferClientProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     WriteHDRMetaData(arguments, metaData);
     SEND_REQUEST(BUFFER_PRODUCER_SET_METADATA, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -643,15 +659,15 @@ GSError BufferClientProducer::SetMetaData(uint32_t sequence, const std::vector<G
 GSError BufferClientProducer::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                              const std::vector<uint8_t> &metaData)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     arguments.WriteUint32(static_cast<uint32_t>(key));
     WriteHDRMetaDataSet(arguments, metaData);
     SEND_REQUEST(BUFFER_PRODUCER_SET_METADATASET, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -659,7 +675,8 @@ GSError BufferClientProducer::SetMetaDataSet(uint32_t sequence, GraphicHDRMetada
 
 GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     if (handle == nullptr) {
         arguments.WriteBool(false);
     } else {
@@ -667,24 +684,23 @@ GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle
         WriteExtDataHandle(arguments, handle);
     }
     SEND_REQUEST(BUFFER_PRODUCER_SET_TUNNEL_HANDLE, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     arguments.WriteUint32(static_cast<uint32_t>(type));
     SEND_REQUEST(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
     time = reply.ReadInt64();
     return static_cast<GSError>(ret);
@@ -692,33 +708,32 @@ GSError BufferClientProducer::GetPresentTimestamp(uint32_t sequence, GraphicPres
 
 sptr<NativeSurface> BufferClientProducer::GetNativeSurface()
 {
-    BLOGND("BufferClientProducer::GetNativeSurface not support.");
     return nullptr;
 }
 
 GSError BufferClientProducer::SendAddDeathRecipientObject()
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     token_ = new IRemoteStub<IBufferProducerToken>();
     arguments.WriteRemoteObject(token_->AsObject());
     SEND_REQUEST(BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT, arguments, reply, option);
 
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return static_cast<GSError>(ret);
+        return ret;
     }
     return GSERROR_OK;
 }
 
 GSError BufferClientProducer::GetTransform(GraphicTransformType &transform)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_TRANSFORM, arguments, reply, option);
 
-    auto ret = static_cast<GSError>(reply.ReadInt32());
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", static_cast<int>(ret));
         return ret;
     }
     transform = static_cast<GraphicTransformType>(reply.ReadUint32());
@@ -732,15 +747,15 @@ GSError BufferClientProducer::GetTransformHint(GraphicTransformType &transformHi
 
 GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHint)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteUint32(static_cast<uint32_t>(transformHint));
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_TRANSFORMHINT, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -748,13 +763,13 @@ GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHin
 
 GSError BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteUint32(static_cast<uint32_t>(sourceType));
     SEND_REQUEST(BUFFER_PRODUCER_SET_SOURCE_TYPE, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -762,11 +777,11 @@ GSError BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
 
 GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_SOURCE_TYPE, arguments, reply, option);
-    auto ret = static_cast<GSError>(reply.ReadInt32());
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", static_cast<int>(ret));
         return ret;
     }
     sourceType = static_cast<OHSurfaceSource>(reply.ReadUint32());
@@ -775,13 +790,13 @@ GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
 
 GSError BufferClientProducer::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     arguments.WriteString(appFrameworkType);
     SEND_REQUEST(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -789,11 +804,11 @@ GSError BufferClientProducer::SetSurfaceAppFrameworkType(std::string appFramewor
 
 GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFrameworkType)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE, arguments, reply, option);
-    auto ret = static_cast<GSError>(reply.ReadInt32());
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", static_cast<int>(ret));
         return ret;
     }
     appFrameworkType = static_cast<std::string>(reply.ReadString());
@@ -802,15 +817,15 @@ GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFramewo
 
 GSError BufferClientProducer::SetHdrWhitePointBrightness(float brightness)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteFloat(brightness);
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;
@@ -818,15 +833,15 @@ GSError BufferClientProducer::SetHdrWhitePointBrightness(float brightness)
 
 GSError BufferClientProducer::SetSdrWhitePointBrightness(float brightness)
 {
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option, BLOGE);
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    MessageVariables(arguments);
 
     arguments.WriteFloat(brightness);
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
-    int32_t ret = reply.ReadInt32();
+    GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return ret;
     }
 
     return GSERROR_OK;

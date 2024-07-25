@@ -62,7 +62,6 @@ SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const wptr<Surface> &surface)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surface == nullptr) {
-        BLOGE(" surface is nullptr.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (surfaceCache_.count(uniqueId) == 0) {
@@ -324,7 +323,6 @@ void* SurfaceUtils::GetNativeWindow(uint64_t uniqueId)
 SurfaceError SurfaceUtils::AddNativeWindow(uint64_t uniqueId, void *nativeWidow)
 {
     if (nativeWidow == nullptr) {
-        BLOGE("nativeWidow is nullptr.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);

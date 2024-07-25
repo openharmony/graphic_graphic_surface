@@ -25,6 +25,10 @@
 #include "frame_report.h"
 #include "sync_fence.h"
 
+#define BUFFER_PRODUCER_API_FUNC_PAIR(apiSequenceNum, func) \
+    {apiSequenceNum, [](BufferQueueProducer *that, MessageParcel &arguments, MessageParcel &reply, \
+        MessageOption &option){return that->func(arguments, reply, option);}} \
+
 namespace OHOS {
 namespace {
 constexpr int32_t BUFFER_MATRIX_SIZE = 16;
@@ -37,6 +41,55 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     if (bufferQueue_ != nullptr) {
         bufferQueue_->GetName(name_);
     }
+    memberFuncMap_ = {
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_INIT_INFO, GetProducerInitInfoRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_BUFFER, RequestBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_BUFFERS, RequestBuffersRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CANCEL_BUFFER, CancelBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_FLUSH_BUFFER, FlushBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_FLUSH_BUFFERS, FlushBuffersRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER, AttachBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DETACH_BUFFER, DetachBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_QUEUE_SIZE, GetQueueSizeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_QUEUE_SIZE, SetQueueSizeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAME, GetNameRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_DEFAULT_WIDTH, GetDefaultWidthRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_DEFAULT_HEIGHT, GetDefaultHeightRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_DEFAULT_USAGE, GetDefaultUsageRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_UNIQUE_ID, GetUniqueIdRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_CACHE, CleanCacheRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, RegisterReleaseListenerRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORM, SetTransformRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_IS_SUPPORTED_ALLOC, IsSupportedAllocRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, GetNameAndUniqueIdRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT, DisconnectRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT, ConnectRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SCALING_MODE, SetScalingModeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_METADATA, SetMetaDataRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_METADATASET, SetMetaDataSetRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TUNNEL_HANDLE, SetTunnelHandleRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GO_BACKGROUND, GoBackgroundRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, GetPresentTimestampRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, UnRegisterReleaseListenerRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, GetLastFlushedBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT, RegisterDeathRecipient),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORM, GetTransformRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, AttachBufferToQueueRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, DetachBufferFromQueueRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_DEFAULT_USAGE, SetDefaultUsageRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORMHINT, GetTransformHintRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORMHINT, SetTransformHintRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_BUFFER_HOLD, SetBufferHoldRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SCALING_MODEV2, SetScalingModeV2Remote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SOURCE_TYPE, SetSurfaceSourceTypeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_SOURCE_TYPE, GetSurfaceSourceTypeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, SetSurfaceAppFrameworkTypeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE, GetSurfaceAppFrameworkTypeRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(
+            BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS, SetHdrWhitePointBrightnessRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(
+            BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, SetSdrWhitePointBrightnessRemote),
+    };
 }
 
 BufferQueueProducer::~BufferQueueProducer()
@@ -265,19 +318,12 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     sptr<SurfaceBuffer> buffer = nullptr;
     uint32_t sequence;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+    if (ret != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
-        return 0;
-    }
-    if (buffer == nullptr) {
-        BLOGN_FAILURE("Read buffer is nullptr");
-        reply.WriteInt32(GSERROR_INTERNAL);
         return 0;
     }
     ret = buffer->ReadBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("ReadBufferRequestConfig failed, return %{public}d", ret);
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
         return 0;
     }
@@ -292,14 +338,8 @@ int32_t BufferQueueProducer::DetachBufferFromQueueRemote(MessageParcel &argument
     sptr<SurfaceBuffer> buffer = nullptr;
     uint32_t sequence;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+    if (ret != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
-        return 0;
-    }
-    if (buffer == nullptr) {
-        BLOGN_FAILURE("Read buffer is nullptr");
-        reply.WriteInt32(GSERROR_INTERNAL);
         return 0;
     }
     ret = DetachBufferFromQueue(buffer);
@@ -313,8 +353,7 @@ int32_t BufferQueueProducer::AttachBufferRemote(MessageParcel &arguments, Messag
     uint32_t sequence;
     int32_t timeOut;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+    if (ret != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(ret);
         return 0;
     }
@@ -327,7 +366,6 @@ int32_t BufferQueueProducer::AttachBufferRemote(MessageParcel &arguments, Messag
 
 int32_t BufferQueueProducer::DetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    BLOGNE("BufferQueueProducer::DetachBufferRemote not support remote");
     return 0;
 }
 
@@ -683,7 +721,6 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
                                            RequestBufferReturnValue &retval)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
 
@@ -698,7 +735,6 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     {
@@ -729,7 +765,6 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
 GSError BufferQueueProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetProducerInitInfo(info);
@@ -738,7 +773,6 @@ GSError BufferQueueProducer::GetProducerInitInfo(ProducerInitInfo &info)
 GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->CancelBuffer(sequence, bedata);
@@ -748,7 +782,6 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
                                          sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
@@ -760,7 +793,6 @@ GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences
     const std::vector<BufferFlushConfigWithDamages> &configs)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     GSError ret;
@@ -778,7 +810,6 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
@@ -787,7 +818,6 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
@@ -796,7 +826,6 @@ GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 GSError BufferQueueProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::PRODUCER_INVOKER);
@@ -1030,7 +1059,6 @@ GSError BufferQueueProducer::SetHdrWhitePointBrightness(float brightness)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetHdrWhitePointBrightness(brightness);
@@ -1040,7 +1068,6 @@ GSError BufferQueueProducer::SetSdrWhitePointBrightness(float brightness)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetSdrWhitePointBrightness(brightness);
@@ -1080,7 +1107,6 @@ GSError BufferQueueProducer::Connect()
 GSError BufferQueueProducer::Disconnect()
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
 
@@ -1166,7 +1192,6 @@ GSError BufferQueueProducer::GetPresentTimestamp(uint32_t sequence, GraphicPrese
 bool BufferQueueProducer::GetStatus() const
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("BufferQueueProducer::bufferQueue is nullptr.");
         return false;
     }
     return bufferQueue_->GetStatus();
@@ -1175,7 +1200,6 @@ bool BufferQueueProducer::GetStatus() const
 void BufferQueueProducer::SetStatus(bool status)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("BufferQueueProducer::bufferQueue is nullptr.");
         return;
     }
     bufferQueue_->SetStatus(status);
@@ -1183,7 +1207,6 @@ void BufferQueueProducer::SetStatus(bool status)
 
 sptr<NativeSurface> BufferQueueProducer::GetNativeSurface()
 {
-    BLOGND("BufferQueueProducer::GetNativeSurface not support.");
     return nullptr;
 }
 
@@ -1195,7 +1218,6 @@ GSError BufferQueueProducer::SendAddDeathRecipientObject()
 void BufferQueueProducer::OnBufferProducerRemoteDied()
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNI("this bufferQueue_ is null");
         return;
     }
 

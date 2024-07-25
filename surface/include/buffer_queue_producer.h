@@ -28,10 +28,6 @@
 
 #include "buffer_queue.h"
 
-#define BUFFER_PRODUCER_API_FUNC_PAIR(apiSequenceNum, func) \
-    {apiSequenceNum, [](BufferQueueProducer *that, MessageParcel &arguments, MessageParcel &reply, \
-        MessageOption &option){return that->func(arguments, reply, option);}} \
-
 namespace OHOS {
 class BufferQueueProducer : public IRemoteStub<IBufferProducer> {
 public:
@@ -175,55 +171,7 @@ private:
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
-        MessageParcel &reply, MessageOption &option)>> memberFuncMap_ = {
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_INIT_INFO, GetProducerInitInfoRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_BUFFER, RequestBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_BUFFERS, RequestBuffersRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CANCEL_BUFFER, CancelBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_FLUSH_BUFFER, FlushBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_FLUSH_BUFFERS, FlushBuffersRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER, AttachBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DETACH_BUFFER, DetachBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_QUEUE_SIZE, GetQueueSizeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_QUEUE_SIZE, SetQueueSizeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAME, GetNameRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_DEFAULT_WIDTH, GetDefaultWidthRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_DEFAULT_HEIGHT, GetDefaultHeightRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_DEFAULT_USAGE, GetDefaultUsageRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_UNIQUE_ID, GetUniqueIdRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_CACHE, CleanCacheRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, RegisterReleaseListenerRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORM, SetTransformRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_IS_SUPPORTED_ALLOC, IsSupportedAllocRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, GetNameAndUniqueIdRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT, DisconnectRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT, ConnectRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SCALING_MODE, SetScalingModeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_METADATA, SetMetaDataRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_METADATASET, SetMetaDataSetRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TUNNEL_HANDLE, SetTunnelHandleRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GO_BACKGROUND, GoBackgroundRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, GetPresentTimestampRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, UnRegisterReleaseListenerRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, GetLastFlushedBufferRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT, RegisterDeathRecipient),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORM, GetTransformRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, AttachBufferToQueueRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, DetachBufferFromQueueRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_DEFAULT_USAGE, SetDefaultUsageRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORMHINT, GetTransformHintRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORMHINT, SetTransformHintRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_BUFFER_HOLD, SetBufferHoldRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SCALING_MODEV2, SetScalingModeV2Remote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SOURCE_TYPE, SetSurfaceSourceTypeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_SOURCE_TYPE, GetSurfaceSourceTypeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, SetSurfaceAppFrameworkTypeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE, GetSurfaceAppFrameworkTypeRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(
-                BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS, SetHdrWhitePointBrightnessRemote),
-            BUFFER_PRODUCER_API_FUNC_PAIR(
-                BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, SetSdrWhitePointBrightnessRemote),
-        };
+        MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
 
     class ProducerSurfaceDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

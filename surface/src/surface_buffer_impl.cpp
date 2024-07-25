@@ -120,12 +120,12 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
     metaDataCache_.clear();
     sequenceNumber_ = seqNum;
     bedata_ = new BufferExtraDataImpl;
-    BLOGD("ctor =[%{public}u]", sequenceNumber_);
+    BLOGD("SurfaceBufferImpl ctor =[%{public}u]", sequenceNumber_);
 }
 
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
-    BLOGD("dtor ~[%{public}u]", sequenceNumber_);
+    BLOGD("~SurfaceBufferImpl dtor ~[%{public}u]", sequenceNumber_);
     FreeBufferHandleLocked();
 }
 
@@ -147,7 +147,6 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -190,7 +189,6 @@ GSError SurfaceBufferImpl::Map()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -198,7 +196,6 @@ GSError SurfaceBufferImpl::Map()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         } else if (handle_->virAddr != nullptr) {
             BLOGD("handle_->virAddr has been maped");
@@ -222,14 +219,12 @@ GSError SurfaceBufferImpl::Unmap()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
     BufferHandle *handle = nullptr;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         } else if (handle_->virAddr == nullptr) {
             BLOGW("handle has been unmaped");
@@ -250,14 +245,12 @@ GSError SurfaceBufferImpl::FlushCache()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return SURFACE_ERROR_UNKOWN;
     }
     BufferHandle *handle = nullptr;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         }
         handle = handle_;
@@ -274,14 +267,12 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
     BufferHandle *handle = nullptr;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         } else if (planesInfo_.planeCount != 0) {
             return GSERROR_OK;
@@ -301,14 +292,12 @@ GSError SurfaceBufferImpl::InvalidateCache()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
     BufferHandle *handle = nullptr;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         }
         handle = handle_;
@@ -396,7 +385,6 @@ int32_t SurfaceBufferImpl::GetWidth() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return -1;
     }
     return handle_->width;
@@ -406,7 +394,6 @@ int32_t SurfaceBufferImpl::GetHeight() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return -1;
     }
     return handle_->height;
@@ -416,7 +403,6 @@ int32_t SurfaceBufferImpl::GetStride() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return -1;
     }
     return handle_->stride;
@@ -426,7 +412,6 @@ int32_t SurfaceBufferImpl::GetFormat() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return -1;
     }
     return handle_->format;
@@ -436,7 +421,6 @@ uint64_t SurfaceBufferImpl::GetUsage() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return -1;
     }
     return handle_->usage;
@@ -446,7 +430,6 @@ uint64_t SurfaceBufferImpl::GetPhyAddr() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return 0;
     }
     return handle_->phyAddr;
@@ -466,7 +449,6 @@ int32_t SurfaceBufferImpl::GetFileDescriptor() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("handle is nullptr");
         return -1;
     }
     return handle_->fd;
@@ -476,7 +458,6 @@ uint32_t SurfaceBufferImpl::GetSize() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGW("handle is nullptr");
         return 0;
     }
     return handle_->size;
@@ -547,7 +528,6 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("Failure, Reason: handle_ is nullptr");
             return GSERROR_NOT_INIT;
         }
         handle = handle_;
@@ -555,7 +535,6 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
 
     bool ret = WriteBufferHandle(parcel, *handle);
     if (ret == false) {
-        BLOGE("Failure, Reason: WriteBufferHandle return false");
         return GSERROR_API_FAILED;
     }
 
@@ -640,13 +619,11 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
     }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("Failure, Reason: handle_ is nullptr");
         return GSERROR_NOT_INIT;
     }
 
@@ -670,13 +647,11 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("Failure, Reason: handle_ is nullptr");
         return GSERROR_NOT_INIT;
     }
     auto dret = g_displayBuffer->GetMetadata(*handle_, key, value);
@@ -690,14 +665,12 @@ GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
     keys.clear();
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("Failure, Reason: handle_ is nullptr");
         return GSERROR_NOT_INIT;
     }
     auto dret = g_displayBuffer->ListMetadataKeys(*handle_, keys);
@@ -714,13 +687,11 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
-        BLOGE("Failure, Reason: handle_ is nullptr");
         return GSERROR_NOT_INIT;
     }
     auto dret = g_displayBuffer->EraseMetadataKey(*handle_, key);

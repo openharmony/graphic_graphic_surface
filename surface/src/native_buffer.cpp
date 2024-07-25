@@ -83,7 +83,6 @@ static const SurfaceBuffer* OH_NativeBufferToSurfaceBuffer(const OH_NativeBuffer
 OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
 {
     if (config == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return nullptr;
     }
     BufferRequestConfig bfConfig = {};
@@ -116,7 +115,6 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
 int32_t OH_NativeBuffer_Reference(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(buffer);
@@ -127,7 +125,6 @@ int32_t OH_NativeBuffer_Reference(OH_NativeBuffer *buffer)
 int32_t OH_NativeBuffer_Unreference(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(buffer);
@@ -138,7 +135,6 @@ int32_t OH_NativeBuffer_Unreference(OH_NativeBuffer *buffer)
 void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* config)
 {
     if (buffer == nullptr || config == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return;
     }
     const SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -152,7 +148,6 @@ void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* 
 int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
 {
     if (buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -169,7 +164,6 @@ int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
 int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -184,7 +178,6 @@ int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer)
 uint32_t OH_NativeBuffer_GetSeqNum(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return UINT_MAX;
     }
     const SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -194,7 +187,6 @@ uint32_t OH_NativeBuffer_GetSeqNum(OH_NativeBuffer *buffer)
 const BufferHandle* OH_NativeBuffer_GetBufferHandle(const OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return nullptr;
     }
     const SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -204,7 +196,6 @@ const BufferHandle* OH_NativeBuffer_GetBufferHandle(const OH_NativeBuffer *buffe
 void OH_NativeBuffer_GetNativeBufferConfig(const OH_NativeBuffer *buffer, OH_NativeBuffer_Config* config)
 {
     if (buffer == nullptr || config == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return;
     }
     const SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -218,7 +209,6 @@ void OH_NativeBuffer_GetNativeBufferConfig(const OH_NativeBuffer *buffer, OH_Nat
 OH_NativeBuffer* OH_NativeBufferFromNativeWindowBuffer(OHNativeWindowBuffer* nativeWindowBuffer)
 {
     if (nativeWindowBuffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return nullptr;
     }
     OH_NativeBuffer* buffer = OH_NativeBufferFromSurfaceBuffer(nativeWindowBuffer->sfbuffer);
@@ -228,7 +218,6 @@ OH_NativeBuffer* OH_NativeBufferFromNativeWindowBuffer(OHNativeWindowBuffer* nat
 int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace)
 {
     if (buffer == nullptr || NATIVE_COLORSPACE_TO_HDI_MAP.find(colorSpace) == NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -244,7 +233,6 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
 int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_NativeBuffer_Planes *outPlanes)
 {
     if (buffer == nullptr || virAddr == nullptr || outPlanes == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -273,7 +261,6 @@ int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_Na
 int32_t OH_NativeBuffer_FromNativeWindowBuffer(OHNativeWindowBuffer *nativeWindowBuffer, OH_NativeBuffer **buffer)
 {
     if (nativeWindowBuffer == nullptr || buffer == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     *buffer = OH_NativeBufferFromSurfaceBuffer(nativeWindowBuffer->sfbuffer);
@@ -287,7 +274,6 @@ int32_t OH_NativeBuffer_FromNativeWindowBuffer(OHNativeWindowBuffer *nativeWindo
 int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace *colorSpace)
 {
     if (buffer == nullptr || colorSpace == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -313,7 +299,6 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     int32_t size, uint8_t *metadata)
 {
     if (buffer == nullptr || metadata == nullptr || size <= 0) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -370,7 +355,6 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     int32_t *size, uint8_t **metadata)
 {
     if (buffer == nullptr || metadata == nullptr || size == nullptr) {
-        BLOGE("parameter error, please check input parameter");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);

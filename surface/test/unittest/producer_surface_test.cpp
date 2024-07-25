@@ -132,7 +132,6 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer001, Function | MediumTest | Level2)
     int releaseFence = -1;
     GSError ret = surface_->RequestBuffer(buffer, releaseFence, requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    firstSeqnum = buffer->GetSeqNum();
 }
 
 /*
@@ -368,6 +367,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel001, Function | MediumTest | Level2
     GSError ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer, nullptr);
+    firstSeqnum = buffer->GetSeqNum();
 
     ret = pSurface->FlushBuffer(buffer, -1, flushConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

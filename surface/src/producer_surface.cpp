@@ -25,14 +25,10 @@
 #include "surface_utils.h"
 
 namespace OHOS {
-namespace {
-constexpr int32_t PRODUCER_REF_COUNT_IN_PRODUCER_SURFACE = 1;
-}
 
 sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 {
     if (producer == nullptr) {
-        BLOGE("Failure, Reason: producer is nullptr");
         return nullptr;
     }
 
@@ -63,19 +59,13 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.timeout = 3000;          // default timeout is 3000 ms
     windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    BLOGND("ctor");
+    BLOGND("ProducerSurface ctor");
 }
 
 ProducerSurface::~ProducerSurface()
 {
-    if (producer_ != nullptr && producer_->GetSptrRefCount() > PRODUCER_REF_COUNT_IN_PRODUCER_SURFACE) {
-        BLOGND("Warning SptrRefCount! producer_:%{public}d", producer_->GetSptrRefCount());
-    }
-    BLOGND("dtor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
-    auto ret = Disconnect();
-    if (ret != GSERROR_OK) {
-        BLOGND("Disconnect failed, %{public}s", GSErrorStr(ret).c_str());
-    }
+    BLOGND("~ProducerSurface dtor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
+    Disconnect();
     auto utils = SurfaceUtils::GetInstance();
     utils->Remove(GetUniqueId());
 }
@@ -83,7 +73,6 @@ ProducerSurface::~ProducerSurface()
 GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo &info)
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetProducerInitInfo failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->GetProducerInitInfo(info);
@@ -115,7 +104,6 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                        sptr<SyncFence>& fence, BufferRequestConfig &config)
 {
     if (producer_ == nullptr) {
-        BLOGFE("RequestBuffer failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     IBufferProducer::RequestBufferReturnValue retval;
@@ -174,7 +162,6 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffer
     std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
 {
     if (producer_ == nullptr) {
-        BLOGFE("RequestBuffers failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     std::vector<IBufferProducer::RequestBufferReturnValue> retvalues;
@@ -210,7 +197,6 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
                                      BufferFlushConfigWithDamages &config)
 {
     if (buffer == nullptr || fence == nullptr || producer_ == nullptr) {
-        BLOGNE("Input buffer or fence or producer is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -255,7 +241,6 @@ GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetLastFlushedBuffer failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     auto ret = producer_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
@@ -377,7 +362,6 @@ GSError ProducerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
 {
     if (client == nullptr) {
-        BLOGE("RegisterSurfaceDelegator failed for the delegator client is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
     sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
@@ -419,7 +403,6 @@ bool ProducerSurface::QueryIfBufferAvailable()
 uint32_t ProducerSurface::GetQueueSize()
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetQueueSize failed for nullptr producer.");
         return 0;
     }
     return producer_->GetQueueSize();
@@ -428,7 +411,6 @@ uint32_t ProducerSurface::GetQueueSize()
 GSError ProducerSurface::SetQueueSize(uint32_t queueSize)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetQueueSize failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetQueueSize(queueSize);
@@ -450,7 +432,6 @@ GSError ProducerSurface::SetDefaultWidthAndHeight(int32_t width, int32_t height)
 int32_t ProducerSurface::GetDefaultWidth()
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetDefaultWidth failed for nullptr producer.");
         return -1;
     }
     return producer_->GetDefaultWidth();
@@ -459,7 +440,6 @@ int32_t ProducerSurface::GetDefaultWidth()
 int32_t ProducerSurface::GetDefaultHeight()
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetDefaultWidth failed for nullptr producer.");
         return -1;
     }
     return producer_->GetDefaultHeight();
@@ -474,7 +454,6 @@ GraphicTransformType ProducerSurface::GetTransformHint() const
 GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetTransformHint failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     GSError err = producer_->SetTransformHint(transformHint);
@@ -488,7 +467,6 @@ GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
 GSError ProducerSurface::SetDefaultUsage(uint64_t usage)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetDefaultUsage failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetDefaultUsage(usage);
@@ -497,7 +475,6 @@ GSError ProducerSurface::SetDefaultUsage(uint64_t usage)
 uint64_t ProducerSurface::GetDefaultUsage()
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetDefaultUsage failed for nullptr producer.");
         return 0;
     }
     return producer_->GetDefaultUsage();
@@ -506,7 +483,6 @@ uint64_t ProducerSurface::GetDefaultUsage()
 GSError ProducerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetSurfaceSourceType failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetSurfaceSourceType(sourceType);
@@ -515,7 +491,6 @@ GSError ProducerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
 OHSurfaceSource ProducerSurface::GetSurfaceSourceType() const
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetSurfaceSourceType failed for nullptr producer.");
         return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     }
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
@@ -529,7 +504,6 @@ OHSurfaceSource ProducerSurface::GetSurfaceSourceType() const
 GSError ProducerSurface::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetSurfaceAppFrameworkType failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetSurfaceAppFrameworkType(appFrameworkType);
@@ -538,7 +512,6 @@ GSError ProducerSurface::SetSurfaceAppFrameworkType(std::string appFrameworkType
 std::string ProducerSurface::GetSurfaceAppFrameworkType() const
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetSurfaceAppFrameworkType failed for nullptr producer.");
         return "";
     }
     std::string appFrameworkType = "";
@@ -603,7 +576,6 @@ GSError ProducerSurface::UnregisterConsumerListener()
 GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
 {
     if (func == nullptr || producer_ == nullptr) {
-        BLOGNE("OnReleaseFunc or producer is nullptr, RegisterReleaseListener failed.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     listener_ = new(std::nothrow) BufferReleaseProducerListener(func);
@@ -613,7 +585,6 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
 GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWithFence)
 {
     if (funcWithFence == nullptr || producer_ == nullptr) {
-        BLOGNE("OnReleaseFuncWithFence or producer is nullptr, RegisterReleaseListener failed.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     listener_ = new(std::nothrow) BufferReleaseProducerListener(nullptr, funcWithFence);
@@ -623,7 +594,6 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
 GSError ProducerSurface::UnRegisterReleaseListener()
 {
     if (producer_ == nullptr) {
-        BLOGE("The producer in ProducerSurface is nullptr, UnRegisterReleaseListener failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
     wpPSurfaceDelegator_ = nullptr;
@@ -668,7 +638,6 @@ GSError ProducerSurface::ClearUserDataChangeListener()
 bool ProducerSurface::IsRemote()
 {
     if (producer_ == nullptr) {
-        BLOGFE("IsRemote failed for nullptr producer.");
         return false;
     }
     return producer_->AsObject()->IsProxyObject();
@@ -690,7 +659,6 @@ void ProducerSurface::CleanAllLocked()
 GSError ProducerSurface::CleanCache(bool cleanAll)
 {
     if (producer_ == nullptr) {
-        BLOGFE("CleanCache failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     BLOGND("Queue Id:%{public}" PRIu64, queueId_);
@@ -704,7 +672,6 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
 GSError ProducerSurface::GoBackground()
 {
     if (producer_ == nullptr) {
-        BLOGFE("GoBackground failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     BLOGND("Queue Id:%{public}" PRIu64 "", queueId_);
@@ -726,7 +693,6 @@ uint64_t ProducerSurface::GetUniqueId() const
 GSError ProducerSurface::SetTransform(GraphicTransformType transform)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetTransform failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetTransform(transform);
@@ -735,7 +701,6 @@ GSError ProducerSurface::SetTransform(GraphicTransformType transform)
 GraphicTransformType ProducerSurface::GetTransform() const
 {
     if (producer_ == nullptr) {
-        BLOGFE("GetTransform failed for nullptr producer.");
         return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     }
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
@@ -758,7 +723,6 @@ GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInf
 GSError ProducerSurface::Connect()
 {
     if (producer_ == nullptr) {
-        BLOGFE("Connect failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     {
@@ -782,7 +746,6 @@ GSError ProducerSurface::Connect()
 GSError ProducerSurface::Disconnect()
 {
     if (producer_ == nullptr) {
-        BLOGFE("Disconnect failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     {
@@ -828,7 +791,6 @@ GSError ProducerSurface::SetScalingMode(ScalingMode scalingMode)
 void ProducerSurface::SetBufferHold(bool hold)
 {
     if (producer_ == nullptr) {
-        BLOGNE("ProducerSurface::SetBufferHold producer is nullptr.");
         return;
     }
     producer_->SetBufferHold(hold);
@@ -876,7 +838,6 @@ GSError ProducerSurface::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey
 GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetTunnelHandle failed for nullptr consumer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetTunnelHandle(handle);
@@ -885,7 +846,6 @@ GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
 sptr<SurfaceTunnelHandle> ProducerSurface::GetTunnelHandle() const
 {
     // not support
-    BLOGND("GetTunnelHandle not supported by ProducerSurface.");
     return nullptr;
 }
 
@@ -906,31 +866,26 @@ GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTi
 
 int32_t ProducerSurface::GetDefaultFormat()
 {
-    BLOGND("ProducerSurface::GetDefaultFormat not support.");
     return 0;
 }
 
 GSError ProducerSurface::SetDefaultFormat(int32_t format)
 {
-    BLOGND("ProducerSurface::SetDefaultFormat not support.");
     return GSERROR_NOT_SUPPORT;
 }
 
 int32_t ProducerSurface::GetDefaultColorGamut()
 {
-    BLOGND("ProducerSurface::GetDefaultColorGamut not support.");
     return 0;
 }
 
 GSError ProducerSurface::SetDefaultColorGamut(int32_t colorGamut)
 {
-    BLOGND("ProducerSurface::SetDefaultColorGamut not support.");
     return GSERROR_NOT_SUPPORT;
 }
 
 sptr<NativeSurface> ProducerSurface::GetNativeSurface()
 {
-    BLOGND("ProducerSurface::GetNativeSurface not support.");
     return nullptr;
 }
 
@@ -969,7 +924,6 @@ BufferRequestConfig* ProducerSurface::GetWindowConfig()
 GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetHdrWhitePointBrightness failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (brightness < 0.0 || brightness > 1.0) {
@@ -982,7 +936,6 @@ GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)
 GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
 {
     if (producer_ == nullptr) {
-        BLOGFE("SetSdrWhitePointBrightness failed for nullptr producer.");
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (brightness < 0.0 || brightness > 1.0) {

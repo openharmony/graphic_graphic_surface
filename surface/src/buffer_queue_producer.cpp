@@ -324,19 +324,12 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     sptr<SurfaceBuffer> buffer = nullptr;
     uint32_t sequence;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+    if (ret != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
-        return 0;
-    }
-    if (buffer == nullptr) {
-        BLOGN_FAILURE("Read buffer is nullptr");
-        reply.WriteInt32(GSERROR_INTERNAL);
         return 0;
     }
     ret = buffer->ReadBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("ReadBufferRequestConfig failed, return %{public}d", ret);
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
         return 0;
     }
@@ -351,14 +344,8 @@ int32_t BufferQueueProducer::DetachBufferFromQueueRemote(MessageParcel &argument
     sptr<SurfaceBuffer> buffer = nullptr;
     uint32_t sequence;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+    if (ret != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
-        return 0;
-    }
-    if (buffer == nullptr) {
-        BLOGN_FAILURE("Read buffer is nullptr");
-        reply.WriteInt32(GSERROR_INTERNAL);
         return 0;
     }
     ret = DetachBufferFromQueue(buffer);
@@ -372,8 +359,7 @@ int32_t BufferQueueProducer::AttachBufferRemote(MessageParcel &arguments, Messag
     uint32_t sequence;
     int32_t timeOut;
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Read surface buffer impl failed, return %{public}d", ret);
+    if (ret != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(ret);
         return 0;
     }
@@ -386,7 +372,6 @@ int32_t BufferQueueProducer::AttachBufferRemote(MessageParcel &arguments, Messag
 
 int32_t BufferQueueProducer::DetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    BLOGNE("BufferQueueProducer::DetachBufferRemote not support remote");
     return 0;
 }
 
@@ -725,7 +710,6 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
                                            RequestBufferReturnValue &retval)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
 
@@ -740,7 +724,6 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     {
@@ -771,7 +754,6 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
 GSError BufferQueueProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetProducerInitInfo(info);
@@ -780,7 +762,6 @@ GSError BufferQueueProducer::GetProducerInitInfo(ProducerInitInfo &info)
 GSError BufferQueueProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->CancelBuffer(sequence, bedata);
@@ -790,7 +771,6 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
                                          sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
@@ -802,7 +782,6 @@ GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences
     const std::vector<BufferFlushConfigWithDamages> &configs)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     GSError ret;
@@ -820,7 +799,6 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
@@ -829,7 +807,6 @@ GSError BufferQueueProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
@@ -838,7 +815,6 @@ GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 GSError BufferQueueProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::PRODUCER_INVOKER);
@@ -1072,7 +1048,6 @@ GSError BufferQueueProducer::SetHdrWhitePointBrightness(float brightness)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetHdrWhitePointBrightness(brightness);
@@ -1082,7 +1057,6 @@ GSError BufferQueueProducer::SetSdrWhitePointBrightness(float brightness)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetSdrWhitePointBrightness(brightness);
@@ -1122,7 +1096,6 @@ GSError BufferQueueProducer::Connect()
 GSError BufferQueueProducer::Disconnect()
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("bufferQueue is null");
         return SURFACE_ERROR_UNKOWN;
     }
 
@@ -1208,7 +1181,6 @@ GSError BufferQueueProducer::GetPresentTimestamp(uint32_t sequence, GraphicPrese
 bool BufferQueueProducer::GetStatus() const
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("BufferQueueProducer::bufferQueue is nullptr.");
         return false;
     }
     return bufferQueue_->GetStatus();
@@ -1217,7 +1189,6 @@ bool BufferQueueProducer::GetStatus() const
 void BufferQueueProducer::SetStatus(bool status)
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNE("BufferQueueProducer::bufferQueue is nullptr.");
         return;
     }
     bufferQueue_->SetStatus(status);
@@ -1225,14 +1196,12 @@ void BufferQueueProducer::SetStatus(bool status)
 
 sptr<NativeSurface> BufferQueueProducer::GetNativeSurface()
 {
-    BLOGND("BufferQueueProducer::GetNativeSurface not support.");
     return nullptr;
 }
 
 void BufferQueueProducer::OnBufferProducerRemoteDied()
 {
     if (bufferQueue_ == nullptr) {
-        BLOGNI("this bufferQueue_ is null");
         return;
     }
 

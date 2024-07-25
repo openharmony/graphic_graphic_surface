@@ -220,7 +220,7 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
         return GSERROR_INVALID_ARGUMENTS;
     }
     bool result = HandleDeathRecipient(token);
-    reply.WriteInt32(result ? GSERROR_OK : GSERROR_NO_ENTRY);
+    reply.WriteInt32(result ? GSERROR_OK : SURFACE_ERROR_UNKOWN);
     return 0;
 }
 

@@ -96,7 +96,7 @@ public:
 
 private:
     void FreeBufferHandleLocked();
-    bool MetaDataCached(const uint32_t key, const std::vector<uint8_t>& value);
+    bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
     GSError GetImageLayout(void *layout);
 
     BufferHandle *handle_ = nullptr;

@@ -113,19 +113,18 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
     metaDataCache_.clear();
     sequenceNumber_ = seqNum;
     bedata_ = new BufferExtraDataImpl;
-    BLOGD("ctor =[%{public}u]", sequenceNumber_);
+    BLOGD("SurfaceBufferImpl ctor =[%{public}u]", sequenceNumber_);
 }
 
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
-    BLOGD("dtor ~[%{public}u]", sequenceNumber_);
+    BLOGD("~SurfaceBufferImpl dtor ~[%{public}u]", sequenceNumber_);
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     FreeBufferHandleLocked();
 }
 
-bool SurfaceBufferImpl::MetaDataCached(const uint32_t key, const std::vector<uint8_t>& value)
+bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (metaDataCache_.find(key) != metaDataCache_.end() &&
         metaDataCache_[key] == value) {
         return true;
@@ -137,7 +136,6 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
 
@@ -215,7 +213,6 @@ GSError SurfaceBufferImpl::Unmap()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         } else if (handle_->virAddr == nullptr) {
             BLOGW("handle has been unmaped");
@@ -245,7 +242,6 @@ GSError SurfaceBufferImpl::FlushCache()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         }
         handle = handle_;
@@ -262,14 +258,12 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (GetDisplayBufferLocked() == nullptr) {
-        BLOGE("GetDisplayBufferLocked failed!");
         return GSERROR_INTERNAL;
     }
     BufferHandle *handle = nullptr;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         } else if (planesInfo_.planeCount != 0) {
             return GSERROR_OK;
@@ -295,7 +289,6 @@ GSError SurfaceBufferImpl::InvalidateCache()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("handle is nullptr");
             return GSERROR_INVALID_OPERATING;
         }
         handle = handle_;
@@ -530,7 +523,6 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (handle_ == nullptr) {
-            BLOGE("Failure, Reason: handle_ is nullptr");
             return GSERROR_NOT_INIT;
         }
         handle = handle_;
@@ -538,7 +530,6 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
 
     bool ret = WriteBufferHandle(parcel, *handle);
     if (ret == false) {
-        BLOGE("Failure, Reason: WriteBufferHandle return false");
         return GSERROR_API_FAILED;
     }
 

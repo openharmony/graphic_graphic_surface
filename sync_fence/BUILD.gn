@@ -46,6 +46,7 @@ ohos_shared_library("sync_fence") {
     "src/acquire_fence_manager.cpp",
     "src/frame_sched.cpp",
     "src/sync_fence.cpp",
+    "src/sync_fence_timeline.cpp",
     "src/sync_fence_tracker.cpp",
   ]
 

@@ -76,7 +76,7 @@ static bool IsLocalRender()
 BufferQueue::BufferQueue(const std::string &name, bool isShared)
     : name_(name), uniqueId_(GetUniqueIdImpl()), isShared_(isShared), isLocalRender_(IsLocalRender())
 {
-    BLOGND("ctor, Queue id: %{public}" PRIu64 " isShared: %{public}d", uniqueId_, isShared);
+    BLOGND("BufferQueue ctor, Queue id: %{public}" PRIu64 " isShared: %{public}d", uniqueId_, isShared);
     if (isShared_ == true) {
         queueSize_ = 1;
     }
@@ -84,7 +84,7 @@ BufferQueue::BufferQueue(const std::string &name, bool isShared)
 
 BufferQueue::~BufferQueue()
 {
-    BLOGND("dtor, Queue id: %{public}" PRIu64, uniqueId_);
+    BLOGND("~BufferQueue dtor, Queue id: %{public}" PRIu64, uniqueId_);
     for (auto &[id, _] : bufferQueueCache_) {
         if (onBufferDeleteForRSMainThread_ != nullptr) {
             onBufferDeleteForRSMainThread_(id);

@@ -29,13 +29,9 @@ struct BufferWrapper {};
 namespace OHOS {
 class SurfaceBufferImpl : public SurfaceBuffer {
 public:
-    static void DisplayBufferDeathCallback(void* data);
-
     SurfaceBufferImpl();
     SurfaceBufferImpl(uint32_t seqNum);
     virtual ~SurfaceBufferImpl();
-
-    static SurfaceBufferImpl *FromBase(const sptr<SurfaceBuffer>& buffer);
 
     GSError Alloc(const BufferRequestConfig &config) override;
     GSError Map() override;
@@ -54,8 +50,8 @@ public:
     int32_t GetFileDescriptor() const override;
     uint32_t GetSize() const override;
 
-    const GraphicColorGamut& GetSurfaceBufferColorGamut() const override;
-    const GraphicTransformType& GetSurfaceBufferTransform() const override;
+    GraphicColorGamut GetSurfaceBufferColorGamut() const override;
+    GraphicTransformType GetSurfaceBufferTransform() const override;
     void SetSurfaceBufferColorGamut(const GraphicColorGamut& colorGamut) override;
     void SetSurfaceBufferTransform(const GraphicTransformType& transform) override;
 
@@ -92,7 +88,7 @@ public:
 
     GSError WriteBufferRequestConfig(MessageParcel &parcel) override;
     GSError ReadBufferRequestConfig(MessageParcel &parcel) override;
-    const BufferRequestConfig* GetBufferRequestConfig() const override;
+    BufferRequestConfig GetBufferRequestConfig() const override;
     void SetBufferRequestConfig(const BufferRequestConfig &config) override;
     void SetConsumerAttachBufferFlag(bool value) override;
     bool GetConsumerAttachBufferFlag() override;

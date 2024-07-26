@@ -45,8 +45,8 @@ public:
     virtual int32_t GetFileDescriptor() const = 0;
     virtual uint32_t GetSize() const = 0;
 
-    virtual const GraphicColorGamut& GetSurfaceBufferColorGamut() const = 0;
-    virtual const GraphicTransformType& GetSurfaceBufferTransform() const = 0;
+    virtual GraphicColorGamut GetSurfaceBufferColorGamut() const = 0;
+    virtual GraphicTransformType GetSurfaceBufferTransform() const = 0;
     virtual void SetSurfaceBufferColorGamut(const GraphicColorGamut& colorGamut) = 0;
     virtual void SetSurfaceBufferTransform(const GraphicTransformType& transform) = 0;
 
@@ -107,10 +107,7 @@ public:
         (void)parcel;
         return GSERROR_OK;
     };
-    virtual const BufferRequestConfig* GetBufferRequestConfig() const
-    {
-        return nullptr;
-    };
+    virtual BufferRequestConfig GetBufferRequestConfig() const = 0;
     virtual void SetBufferRequestConfig(const BufferRequestConfig &config)
     {
         (void)config;

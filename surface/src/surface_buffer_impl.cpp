@@ -159,7 +159,6 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
     }
     auto dret = g_displayBuffer->AllocMem(info, handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
-        std::lock_guard<std::mutex> lock(mutex_);
         surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(config.colorGamut);
         transform_ = static_cast<GraphicTransformType>(config.transform);
         surfaceBufferWidth_ = config.width;
@@ -284,8 +283,8 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
             handle_->virAddr = nullptr;
         }
         FreeBufferHandle(handle_);
+        handle_ = nullptr;
     }
-    handle_ = nullptr;
 }
 
 BufferHandle *SurfaceBufferImpl::GetBufferHandle() const

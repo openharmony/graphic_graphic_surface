@@ -106,7 +106,7 @@ public:
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;
 private:
-    void MessageVariables(MessageParcel &arg);
+    GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);
     GSError CheckRetval(MessageParcel &reply);
     static inline BrokerDelegator<BufferClientProducer> delegator_;

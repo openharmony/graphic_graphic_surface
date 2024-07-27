@@ -406,6 +406,10 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, Function | Mediu
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_OK);
     }
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, len, outbuff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
 }
 
 /*
@@ -474,11 +478,23 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | Mediu
     int32_t buffSize = 0;
     uint8_t *buff;
     ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_STATIC_METADATA, &buffSize, &buff);
-    if (buff != nullptr) {
-        ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
-        delete[] buff;
-    }
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        if (buff != nullptr) {
+            ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
+            delete[] buff;
+        }
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, len, outbuff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, &buffSize, &buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        if (buff != nullptr) {
+            ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
+            delete[] buff;
+        }
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }

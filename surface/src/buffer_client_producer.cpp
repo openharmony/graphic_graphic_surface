@@ -23,10 +23,16 @@
 #include "securec.h"
 #include "rs_frame_report_ext.h"
 
-#define DEFINE_MESSAGE_VARIABLES(arg, ret, opt)       \
-    MessageOption opt;                                \
-    MessageParcel arg;                                \
-    MessageParcel ret
+#define DEFINE_MESSAGE_VARIABLES(arg, ret, opt)                            \
+    MessageOption opt;                                                     \
+    MessageParcel arg;                                                     \
+    MessageParcel ret;                                                     \
+    do {                                                                   \
+        GSError retCode = MessageVariables(arg);                           \
+        if (retCode != GSERROR_OK) {                                       \
+            return retCode;                                                \
+        }                                                                  \
+    } while (0)
 
 #define SEND_REQUEST(COMMAND, arguments, reply, option)                    \
     do {                                                                   \
@@ -49,11 +55,13 @@ BufferClientProducer::~BufferClientProducer()
 {
 }
 
-void BufferClientProducer::MessageVariables(MessageParcel &arg)
+GSError BufferClientProducer::MessageVariables(MessageParcel &arg)
 {
     if (!(arg).WriteInterfaceToken(GetDescriptor())) {
         BLOGE("write interface token failed");
+        return GSERROR_BINDER;
     }
+    return GSERROR_OK;
 }
 
 GSError BufferClientProducer::SendRequest(uint32_t command, MessageParcel &arg,
@@ -81,7 +89,6 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
                                             RequestBufferReturnValue &retval)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     WriteRequestConfig(arguments, config);
 
@@ -113,7 +120,6 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     uint32_t num = static_cast<uint32_t>(bedata.size());
     arguments.WriteUint32(num);
@@ -154,7 +160,6 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteBool(isUseNewMatrix);
     SEND_REQUEST(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -185,7 +190,6 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     token_ = new IRemoteStub<IBufferProducerToken>();
     arguments.WriteRemoteObject(token_->AsObject());
     SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
@@ -204,7 +208,6 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 GSError BufferClientProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteUint32(sequence);
     bedata->WriteToParcel(arguments);
@@ -221,7 +224,6 @@ GSError BufferClientProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraDat
                                           sptr<SyncFence> fence, BufferFlushConfigWithDamages &config)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteUint32(sequence);
     bedata->WriteToParcel(arguments);
@@ -246,7 +248,6 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
     const std::vector<BufferFlushConfigWithDamages> &configs)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
         return SURFACE_ERROR_UNKOWN;
@@ -267,7 +268,6 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
 GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     uint32_t sequence = buffer->GetSeqNum();
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
     GSError ret = buffer->WriteBufferRequestConfig(arguments);
@@ -286,7 +286,6 @@ GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 GSError BufferClientProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     uint32_t sequence = buffer->GetSeqNum();
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
     SEND_REQUEST(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, arguments, reply, option);
@@ -305,7 +304,6 @@ GSError BufferClientProducer::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 GSError BufferClientProducer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     uint32_t sequence = buffer->GetSeqNum();
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
     arguments.WriteInt32(timeOut);
@@ -325,7 +323,6 @@ GSError BufferClientProducer::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> listener)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteRemoteObject(listener->AsObject());
 
@@ -340,7 +337,6 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
 GSError BufferClientProducer::UnRegisterReleaseListener()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
@@ -352,7 +348,6 @@ GSError BufferClientProducer::UnRegisterReleaseListener()
 uint32_t BufferClientProducer::GetQueueSize()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_QUEUE_SIZE, arguments, reply, option);
 
@@ -362,7 +357,6 @@ uint32_t BufferClientProducer::GetQueueSize()
 GSError BufferClientProducer::SetQueueSize(uint32_t queueSize)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteUint32(queueSize);
 
@@ -385,7 +379,6 @@ GSError BufferClientProducer::GetName(std::string &name)
         }
     }
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_NAME, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -412,13 +405,12 @@ uint64_t BufferClientProducer::GetUniqueId()
         }
     }
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_UNIQUE_ID, arguments, reply, option);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         uniqueId_ = reply.ReadUint64();
+        return uniqueId_;
     }
-    return uniqueId_;
 }
 
 GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& uniqueId)
@@ -432,7 +424,6 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
         }
     }
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -456,7 +447,6 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
 int32_t BufferClientProducer::GetDefaultWidth()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_WIDTH, arguments, reply, option);
 
@@ -466,7 +456,6 @@ int32_t BufferClientProducer::GetDefaultWidth()
 int32_t BufferClientProducer::GetDefaultHeight()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_HEIGHT, arguments, reply, option);
 
@@ -476,7 +465,6 @@ int32_t BufferClientProducer::GetDefaultHeight()
 GSError BufferClientProducer::SetDefaultUsage(uint64_t usage)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteUint64(usage);
 
@@ -493,7 +481,6 @@ GSError BufferClientProducer::SetDefaultUsage(uint64_t usage)
 uint64_t BufferClientProducer::GetDefaultUsage()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_USAGE, arguments, reply, option);
 
@@ -503,7 +490,6 @@ uint64_t BufferClientProducer::GetDefaultUsage()
 GSError BufferClientProducer::CleanCache(bool cleanAll)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteBool(cleanAll);
     SEND_REQUEST(BUFFER_PRODUCER_CLEAN_CACHE, arguments, reply, option);
@@ -518,7 +504,6 @@ GSError BufferClientProducer::CleanCache(bool cleanAll)
 GSError BufferClientProducer::GoBackground()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_GO_BACKGROUND, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -540,7 +525,6 @@ GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
     }
 
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteUint32(static_cast<uint32_t>(transform));
 
@@ -561,7 +545,6 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
                                                std::vector<bool> &supporteds)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     WriteVerifyAllocInfo(arguments, infos);
 
@@ -582,7 +565,6 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
 GSError BufferClientProducer::Connect()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_CONNECT, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -595,7 +577,6 @@ GSError BufferClientProducer::Connect()
 GSError BufferClientProducer::Disconnect()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     SEND_REQUEST(BUFFER_PRODUCER_DISCONNECT, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -608,7 +589,6 @@ GSError BufferClientProducer::Disconnect()
 GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     arguments.WriteInt32(static_cast<int32_t>(scalingMode));
     SEND_REQUEST(BUFFER_PRODUCER_SET_SCALING_MODE, arguments, reply, option);
@@ -623,7 +603,6 @@ GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scal
 GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteInt32(static_cast<int32_t>(scalingMode));
     SEND_REQUEST(BUFFER_PRODUCER_SET_SCALING_MODEV2, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -637,7 +616,6 @@ GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
 GSError BufferClientProducer::SetBufferHold(bool hold)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteBool(hold);
     SEND_REQUEST(BUFFER_PRODUCER_SET_BUFFER_HOLD, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -651,7 +629,6 @@ GSError BufferClientProducer::SetBufferHold(bool hold)
 GSError BufferClientProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     WriteHDRMetaData(arguments, metaData);
     SEND_REQUEST(BUFFER_PRODUCER_SET_METADATA, arguments, reply, option);
@@ -667,7 +644,6 @@ GSError BufferClientProducer::SetMetaDataSet(uint32_t sequence, GraphicHDRMetada
                                              const std::vector<uint8_t> &metaData)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     arguments.WriteUint32(static_cast<uint32_t>(key));
     WriteHDRMetaDataSet(arguments, metaData);
@@ -683,7 +659,6 @@ GSError BufferClientProducer::SetMetaDataSet(uint32_t sequence, GraphicHDRMetada
 GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     if (handle == nullptr) {
         arguments.WriteBool(false);
     } else {
@@ -701,7 +676,6 @@ GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle
 GSError BufferClientProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteUint32(sequence);
     arguments.WriteUint32(static_cast<uint32_t>(type));
     SEND_REQUEST(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, arguments, reply, option);
@@ -721,7 +695,6 @@ sptr<NativeSurface> BufferClientProducer::GetNativeSurface()
 GSError BufferClientProducer::GetTransform(GraphicTransformType &transform)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_TRANSFORM, arguments, reply, option);
 
     GSError ret = CheckRetval(reply);
@@ -740,7 +713,6 @@ GSError BufferClientProducer::GetTransformHint(GraphicTransformType &transformHi
 GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHint)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteUint32(static_cast<uint32_t>(transformHint));
 
@@ -756,7 +728,6 @@ GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHin
 GSError BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteUint32(static_cast<uint32_t>(sourceType));
     SEND_REQUEST(BUFFER_PRODUCER_SET_SOURCE_TYPE, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -770,7 +741,6 @@ GSError BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
 GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_SOURCE_TYPE, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
@@ -783,7 +753,6 @@ GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
 GSError BufferClientProducer::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     arguments.WriteString(appFrameworkType);
     SEND_REQUEST(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -797,7 +766,6 @@ GSError BufferClientProducer::SetSurfaceAppFrameworkType(std::string appFramewor
 GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFrameworkType)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
     SEND_REQUEST(BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
@@ -810,7 +778,6 @@ GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFramewo
 GSError BufferClientProducer::SetHdrWhitePointBrightness(float brightness)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteFloat(brightness);
 
@@ -826,7 +793,6 @@ GSError BufferClientProducer::SetHdrWhitePointBrightness(float brightness)
 GSError BufferClientProducer::SetSdrWhitePointBrightness(float brightness)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    MessageVariables(arguments);
 
     arguments.WriteFloat(brightness);
 

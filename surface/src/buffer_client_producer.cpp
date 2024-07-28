@@ -126,7 +126,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     WriteRequestConfig(arguments, config);
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
     GSError ret = CheckRetval(reply);
-    if (ret != GSERROR_OK) {
+    if (ret != GSERROR_OK && ret != GSERROR_NO_BUFFER) {
         return ret;
     }
 
@@ -156,12 +156,12 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     return ret;
 }
 
-GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
+GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& buffer,
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix, uint32_t command)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     arguments.WriteBool(isUseNewMatrix);
-    SEND_REQUEST(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, arguments, reply, option);
+    SEND_REQUEST(command, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
         return ret;
@@ -185,6 +185,13 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         return SURFACE_ERROR_UNKOWN;
     }
     return GSERROR_OK;
+}
+
+GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
+{
+    return GetLastFlushedBufferCommon(buffer, fence,
+        matrix, isUseNewMatrix, BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER);
 }
 
 GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
@@ -804,6 +811,26 @@ GSError BufferClientProducer::SetSdrWhitePointBrightness(float brightness)
     arguments.WriteFloat(brightness);
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+    float matrix[16], bool isUseNewMatrix)
+{
+    return GetLastFlushedBufferCommon(buffer, fence,
+        matrix, isUseNewMatrix, BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER);
+}
+
+GSError BufferClientProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    arguments.WriteUint32(sequence);
+    SEND_REQUEST(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
         return ret;

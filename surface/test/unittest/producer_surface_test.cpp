@@ -1567,6 +1567,97 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffersAndFlushBuffers, Function | MediumTe
 }
 
 /*
+* Function: AcquireLastFlushedBuffer and ReleaseLastFlushedBuffer
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call AcquireLastFlushedBuffer OK
+*                  2. call AcquireLastFlushedBuffer FAIL
+*                  3. call ReleaseLastFlushedBuffer
+ */
+HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    EXPECT_EQ(producer->SetQueueSize(3), OHOS::GSERROR_OK);
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->FlushBuffer(buffer, -1, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t flushFence;
+    ret = csurf->AcquireBuffer(buffer, flushFence, timestamp, damage);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    ret = csurf->ReleaseBuffer(buffer, -1);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer1 = nullptr;
+    sptr<SyncFence> fence = nullptr;
+    float matrix[16];
+
+    ret = pSurface->AcquireLastFlushedBuffer(buffer1, fence, matrix, false);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_EQ(buffer->GetSeqNum(), buffer1->GetSeqNum());
+
+    ret = pSurface->AcquireLastFlushedBuffer(buffer1, fence, matrix, false);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_STATE_INVALID);
+
+    sptr<SurfaceBuffer> buffer2;
+    ret = pSurface->RequestBuffer(buffer2, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer3;
+    ret = pSurface->RequestBuffer(buffer3, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer4;
+    ret = pSurface->RequestBuffer(buffer4, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+
+    ret = pSurface->ReleaseLastFlushedBuffer(buffer1);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->RequestBuffer(buffer4, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->FlushBuffer(buffer2, -1, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->FlushBuffer(buffer3, -1, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->FlushBuffer(buffer4, -1, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->ReleaseLastFlushedBuffer(buffer2);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_STATE_INVALID);
+
+    EXPECT_EQ(pSurface->CleanCache(), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: AcquireLastFlushedBuffer and ReleaseLastFlushedBuffer
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call AcquireLastFlushedBuffer FAIL
+*                  3. call ReleaseLastFlushedBuffer FAIL
+ */
+HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer002, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer1 = nullptr;
+    sptr<SyncFence> fence = nullptr;
+    float matrix[16];
+    GSError ret = surface_->AcquireLastFlushedBuffer(buffer1, fence, matrix, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->ReleaseLastFlushedBuffer(buffer1);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = pSurface->ReleaseLastFlushedBuffer(nullptr);
+    EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: SetHdrWhitePointBrightness and SetSdrWhitePointBrightness
 * Type: Function
 * Rank: Important(2)

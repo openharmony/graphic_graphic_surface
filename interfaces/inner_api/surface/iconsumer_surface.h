@@ -138,6 +138,9 @@ public:
     virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) = 0;
 
     virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) = 0;
+    virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+        float matrix[16], bool isUseNewMatrix) = 0;
+    virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) = 0;
 protected:
     IConsumerSurface() = default;
 };

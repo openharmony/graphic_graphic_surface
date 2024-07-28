@@ -156,6 +156,9 @@ public:
     virtual BufferRequestConfig* GetWindowConfig() = 0;
     virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
     virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
+    virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+        float matrix[16], bool isUseNewMatrix) = 0;
+    virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) = 0;
 protected:
     Surface() = default;
 };

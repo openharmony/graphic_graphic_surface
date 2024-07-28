@@ -41,6 +41,7 @@ constexpr uint32_t UNIQUE_ID_OFFSET = 32;
 constexpr uint32_t BUFFER_MEMSIZE_RATE = 1024;
 constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
 constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
+constexpr uint32_t INVALID_SEQUENCE = 0xFFFFFFFF;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -80,6 +81,7 @@ BufferQueue::BufferQueue(const std::string &name, bool isShared)
     if (isShared_ == true) {
         queueSize_ = 1;
     }
+    acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
 }
 
 BufferQueue::~BufferQueue()
@@ -121,15 +123,24 @@ GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
     for (auto it = freeList_.begin(); it != freeList_.end(); it++) {
         auto mapIter = bufferQueueCache_.find(*it);
         if (mapIter != bufferQueueCache_.end() && mapIter->second.config == config) {
+            if (mapIter->first == acquireLastFlushedBufSequence_) {
+                continue;
+            }
             buffer = mapIter->second.buffer;
             freeList_.erase(it);
             return GSERROR_OK;
         }
     }
 
-    if (freeList_.empty() || GetUsedSize() < GetQueueSize()) {
+    if (freeList_.empty() || GetUsedSize() < GetQueueSize() ||
+        (freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) {
         buffer = nullptr;
         return GSERROR_NO_BUFFER;
+    }
+
+    if (freeList_.front() == acquireLastFlushedBufSequence_) {
+        freeList_.pop_front();
+        freeList_.push_back(acquireLastFlushedBufSequence_);
     }
 
     buffer = bufferQueueCache_[freeList_.front()].buffer;
@@ -289,6 +300,12 @@ GSError BufferQueue::RequestBufferCheckStatus()
     return GSERROR_OK;
 }
 
+bool BufferQueue::WaitForCondition()
+{
+    return (!freeList_.empty() && !(freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) ||
+        (GetUsedSize() < GetQueueSize()) || !GetStatus();
+}
+
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
@@ -321,7 +338,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     // check queue size
     if (GetUsedSize() >= GetQueueSize()) {
         waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
-            [this]() { return !freeList_.empty() || (GetUsedSize() < GetQueueSize()) || !GetStatus(); });
+            [this]() { return WaitForCondition(); });
         if (!GetStatus() && !isBatch_) {
             ScopedBytrace status("Status wrong, status: " + std::to_string(GetStatus()));
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
@@ -589,9 +606,13 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
 }
 
 GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix, bool needRecordSequence)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (needRecordSequence && acquireLastFlushedBufSequence_ != INVALID_SEQUENCE) {
+        BLOGNE("GetLastFlushedBuffer fail, last flushed buffer(%{public}d) is using", acquireLastFlushedBufSequence_);
+        return SURFACE_ERROR_BUFFER_STATE_INVALID;
+    }
     if (bufferQueueCache_.find(lastFlusedSequence_) == bufferQueueCache_.end()) {
         BLOGNE("buffer queue cache ont find the buffer(%{public}u)", lastFlusedSequence_);
         return SURFACE_ERROR_UNKOWN;
@@ -618,6 +639,33 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     } else {
         utils->ComputeTransformMatrix(matrix, buffer, lastFlushedTransform_, damage);
     }
+
+    if (needRecordSequence) {
+        acquireLastFlushedBufSequence_ = lastFlusedSequence_;
+        ScopedBytrace trace("GetLastFlushedBuffer(needRecordSequence) name: " + name_ +
+            " queueId: " + std::to_string(uniqueId_) + " seq: " + std::to_string(acquireLastFlushedBufSequence_));
+    }
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+    float matrix[16], bool isUseNewMatrix)
+{
+    return GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix, true);
+}
+
+GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
+{
+    ScopedBytrace trace("ReleaseLastFlushedBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
+        " seq: " + std::to_string(sequence));
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (acquireLastFlushedBufSequence_ == INVALID_SEQUENCE || acquireLastFlushedBufSequence_ != sequence) {
+        BLOGE("ReleaseLastFlushedBuffer lastFlushBuffer:%{public}d sequence:%{public}d",
+            acquireLastFlushedBufSequence_, sequence);
+        return SURFACE_ERROR_BUFFER_STATE_INVALID;
+    }
+    acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
+    waitReqCon_.notify_all();
     return GSERROR_OK;
 }
 

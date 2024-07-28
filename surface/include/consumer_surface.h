@@ -241,6 +241,15 @@ public:
 
     GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) override;
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) override;
+    SURFACE_HIDDEN GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+        float matrix[16], bool isUseNewMatrix) override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+    SURFACE_HIDDEN GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

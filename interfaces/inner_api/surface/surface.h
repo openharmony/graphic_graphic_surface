@@ -157,8 +157,19 @@ public:
     virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
     virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
     virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix) = 0;
-    virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) = 0;
+        float matrix[16], bool isUseNewMatrix)
+    {
+        (void)buffer;
+        (void)fence;
+        (void)matrix;
+        (void)isUseNewMatrix;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
+    virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
+    {
+        (void)buffer;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
 protected:
     Surface() = default;
 };

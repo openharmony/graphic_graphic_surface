@@ -72,7 +72,6 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, GetPresentTimestampRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, UnRegisterReleaseListenerRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, GetLastFlushedBufferRemote),
-        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_DEATH_RECIPIENT, RegisterDeathRecipient),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORM, GetTransformRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, AttachBufferToQueueRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, DetachBufferFromQueueRemote),
@@ -217,6 +216,13 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     reply.WriteInt32(info.height);
     reply.WriteUint64(info.uniqueId);
     reply.WriteString(info.name);
+    sptr<IRemoteObject> token = arguments.ReadRemoteObject();
+    if (token == nullptr) {
+        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    bool result = HandleDeathRecipient(token);
+    reply.WriteInt32(result ? GSERROR_OK : SURFACE_ERROR_UNKOWN);
     return 0;
 }
 
@@ -589,23 +595,6 @@ int32_t BufferQueueProducer::GetPresentTimestampRemote(MessageParcel &arguments,
     reply.WriteInt32(sret);
     if (sret == GSERROR_OK) {
         reply.WriteInt64(time);
-    }
-    return 0;
-}
-
-int32_t BufferQueueProducer::RegisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply,
-                                                    MessageOption &option)
-{
-    sptr<IRemoteObject> token = arguments.ReadRemoteObject();
-    if (token == nullptr) {
-        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    bool result = HandleDeathRecipient(token);
-    if (result) {
-        reply.WriteInt32(GSERROR_OK);
-    } else {
-        reply.WriteInt32(GSERROR_NO_ENTRY);
     }
     return 0;
 }
@@ -1256,11 +1245,6 @@ void BufferQueueProducer::SetStatus(bool status)
 sptr<NativeSurface> BufferQueueProducer::GetNativeSurface()
 {
     return nullptr;
-}
-
-GSError BufferQueueProducer::SendAddDeathRecipientObject()
-{
-    return GSERROR_OK;
 }
 
 void BufferQueueProducer::OnBufferProducerRemoteDied()

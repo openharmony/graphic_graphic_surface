@@ -247,11 +247,11 @@ private:
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     bool isBufferHold_ = false;
+    bool isBatch_ = false;
     OHSurfaceSource sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     std::string appFrameworkType_ = "";
     float hdrWhitePointBrightness_ = 0.0;
     float sdrWhitePointBrightness_ = 0.0;
-    bool isBatch_ = false;
     uint32_t acquireLastFlushedBufSequence_;
 };
 }; // namespace OHOS

@@ -71,10 +71,10 @@ int32_t NativeWindowSetTransformHint(OHNativeWindow *window, OH_NativeBuffer_Tra
 int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *width, int32_t *height);
 int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t width, int32_t height);
 void NativeWindowSetBufferHold(OHNativeWindow *window);
-int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode);
 int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel);
 int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window);
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16]);
+int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 scalingMode);
 int32_t NativeWindowDisconnect(OHNativeWindow *window);
 int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace colorSpace);
 int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace *colorSpace);

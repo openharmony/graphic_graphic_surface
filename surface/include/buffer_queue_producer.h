@@ -100,7 +100,6 @@ public:
 
     sptr<NativeSurface> GetNativeSurface() override;
 
-    GSError SendAddDeathRecipientObject() override;
     void OnBufferProducerRemoteDied();
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
@@ -158,7 +157,6 @@ private:
     int32_t GoBackgroundRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetPresentTimestampRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t RegisterDeathRecipient(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AttachBufferToQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DetachBufferFromQueueRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

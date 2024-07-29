@@ -23,8 +23,8 @@
           "drivers_interface_display",
           "eventhandler",
           "hilog",
-          "hisysevent",
           "hitrace",
+          "hisysevent",
           "init",
           "ipc"
         ]

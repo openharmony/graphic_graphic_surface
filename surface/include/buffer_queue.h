@@ -209,6 +209,7 @@ private:
     GSError RequestBufferCheckStatus();
     GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
     bool WaitForCondition();
+    void RequestBufferDebugInfo();
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

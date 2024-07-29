@@ -306,6 +306,16 @@ bool BufferQueue::WaitForCondition()
         (GetUsedSize() < GetQueueSize()) || !GetStatus();
 }
 
+void BufferQueue::RequestBufferDebugInfo()
+{
+    ScopedBytrace trace("lockLastFlushedBuffer seq: " + std::to_string(acquireLastFlushedBufSequence_));
+    for (auto &[id, ele] : bufferQueueCache_) {
+        std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + std::to_string(ele.state);
+        ScopedBytrace eleTrace(eleInfo);
+    }
+    BLOGND("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
+}
+
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
@@ -348,11 +358,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         if (ret == GSERROR_OK) {
             return ReuseBuffer(config, bedata, retval);
         } else if (GetUsedSize() >= GetQueueSize()) {
-            for (auto &[id, ele] : bufferQueueCache_) {
-                std::string eleInfo = "buffer id: " + std::to_string(id) + " state: " + std::to_string(ele.state);
-                ScopedBytrace eleTrace(eleInfo);
-            }
-            BLOGND("all buffer are using, Queue id: %{public}" PRIu64, uniqueId_);
+            RequestBufferDebugInfo();
             return GSERROR_NO_BUFFER;
         }
     }
@@ -1769,7 +1775,8 @@ void BufferQueue::Dump(std::string &result)
         ", dirtyBufferListLen = " + std::to_string(dirtyList_.size()) +
         ", totalBuffersMemSize = " + str + "(KiB)" +
         ", hdrWhitePointBrightness = " + std::to_string(hdrWhitePointBrightness_) +
-        ", sdrWhitePointBrightness = " + std::to_string(sdrWhitePointBrightness_) + "\n";
+        ", sdrWhitePointBrightness = " + std::to_string(sdrWhitePointBrightness_) +
+        ", lockLastFlushedBuffer seq = " + std::to_string(acquireLastFlushedBufSequence_) + "\n";
 
     result.append("      bufferQueueCache:\n");
     DumpCache(result);

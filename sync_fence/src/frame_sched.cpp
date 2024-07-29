@@ -31,11 +31,7 @@ static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, 0xD001404, 
 #define LOGI(...) (void)OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, __VA_ARGS__)
 #define LOGD(...) (void)OHOS::HiviewDFX::HiLog::Debug(LOG_LABEL, __VA_ARGS__)
 
-#if (defined(__aarch64__) || defined(__x86_64__))
-    const std::string FRAME_AWARE_SO_PATH = "/system/lib64/libframe_ui_intf.z.so";
-#else
-    const std::string FRAME_AWARE_SO_PATH = "/system/lib/libframe_ui_intf.z.so";
-#endif
+const std::string FRAME_AWARE_SO_PATH = "libframe_ui_intf.z.so";
 
 FrameSched& FrameSched::GetInstance()
 {

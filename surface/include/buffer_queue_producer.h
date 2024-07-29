@@ -117,6 +117,10 @@ public:
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;
 
+    GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+        float matrix[16], bool isUseNewMatrix) override;
+    GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
+
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -167,6 +171,8 @@ private:
     int32_t GetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetHdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t ReleaseLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;

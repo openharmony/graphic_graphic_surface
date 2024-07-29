@@ -82,7 +82,7 @@ public:
                           sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-        float matrix[16], bool isUseNewMatrix);
+        float matrix[16], bool isUseNewMatrix, bool needRecordSequence = false);
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                           int64_t &timestamp, std::vector<Rect> &damages);
@@ -179,6 +179,10 @@ public:
 
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache);
 
+    GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+        float matrix[16], bool isUseNewMatrix);
+    GSError ReleaseLastFlushedBuffer(uint32_t sequence);
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     void DeleteBufferInCache(uint32_t sequence);
@@ -204,6 +208,7 @@ private:
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);
     GSError RequestBufferCheckStatus();
     GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
+    bool WaitForCondition();
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
@@ -247,6 +252,7 @@ private:
     std::string appFrameworkType_ = "";
     float hdrWhitePointBrightness_ = 0.0;
     float sdrWhitePointBrightness_ = 0.0;
+    uint32_t acquireLastFlushedBufSequence_;
 };
 }; // namespace OHOS
 

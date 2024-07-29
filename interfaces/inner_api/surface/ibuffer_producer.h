@@ -121,6 +121,9 @@ public:
 
     virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
     virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
+    virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+        float matrix[16], bool isUseNewMatrix) = 0;
+    virtual GSError ReleaseLastFlushedBuffer(uint32_t sequence) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -168,7 +171,9 @@ protected:
         BUFFER_PRODUCER_REQUEST_BUFFERS,
         BUFFER_PRODUCER_FLUSH_BUFFERS,
         BUFFER_PRODUCER_GET_INIT_INFO,
-        BUFFER_PRODUCER_CONNECT
+        BUFFER_PRODUCER_CONNECT,
+        BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER,
+        BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER,
     };
 };
 } // namespace OHOS

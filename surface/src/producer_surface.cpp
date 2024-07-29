@@ -243,8 +243,7 @@ GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    auto ret = producer_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
-    return ret;
+    return producer_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
 }
 
 GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
@@ -845,5 +844,25 @@ GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetSdrWhitePointBrightness(brightness);
+}
+
+GSError ProducerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+    float matrix[16], bool isUseNewMatrix)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->AcquireLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
+}
+
+GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (buffer == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->ReleaseLastFlushedBuffer(buffer->GetSeqNum());
 }
 } // namespace OHOS

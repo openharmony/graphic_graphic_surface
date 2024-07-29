@@ -88,6 +88,8 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
             BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS, SetHdrWhitePointBrightnessRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(
             BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, SetSdrWhitePointBrightnessRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER, AcquireLastFlushedBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, ReleaseLastFlushedBufferRemote),
     };
 }
 
@@ -704,6 +706,52 @@ int32_t BufferQueueProducer::SetSdrWhitePointBrightnessRemote(
     GSError sret = SetSdrWhitePointBrightness(brightness);
     reply.WriteInt32(sret);
     return 0;
+}
+
+int32_t BufferQueueProducer::AcquireLastFlushedBufferRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    sptr<SurfaceBuffer> buffer;
+    sptr<SyncFence> fence;
+    float matrix[BUFFER_MATRIX_SIZE];
+    bool isUseNewMatrix = arguments.ReadBool();
+    GSError sret = AcquireLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
+    reply.WriteInt32(sret);
+    if (sret == GSERROR_OK) {
+        uint32_t sequence = buffer->GetSeqNum();
+        WriteSurfaceBufferImpl(reply, sequence, buffer);
+        buffer->WriteBufferRequestConfig(reply);
+        fence->WriteToMessageParcel(reply);
+        std::vector<float> writeMatrixVector(matrix, matrix + sizeof(matrix) / sizeof(float));
+        reply.WriteFloatVector(writeMatrixVector);
+    }
+    return 0;
+}
+
+int32_t BufferQueueProducer::ReleaseLastFlushedBufferRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    uint32_t sequence = arguments.ReadUint32();
+    GSError sret = ReleaseLastFlushedBuffer(sequence);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
+GSError BufferQueueProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer,
+    sptr<SyncFence> &fence, float matrix[16], bool isUseNewMatrix)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->AcquireLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
+}
+
+GSError BufferQueueProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->ReleaseLastFlushedBuffer(sequence);
 }
 
 GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,

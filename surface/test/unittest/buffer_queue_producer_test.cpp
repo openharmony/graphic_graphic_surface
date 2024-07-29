@@ -524,6 +524,9 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
         time), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GetStatus(), false);
     bqpTmp->SetStatus(false);
+    EXPECT_EQ(bqpTmp->AcquireLastFlushedBuffer(retval.buffer, acquireFence, nullptr, false),
+        OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->ReleaseLastFlushedBuffer(0), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
 }

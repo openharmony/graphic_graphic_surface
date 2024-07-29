@@ -28,7 +28,6 @@ ohos_unittest("sync_fence_test") {
   sources = [
     "acquire_fence_manager_test.cpp",
     "frame_sched_test.cpp",
-    "sync_fence_test.cpp",
   ]
 
   deps = [

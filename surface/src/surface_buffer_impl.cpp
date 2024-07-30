@@ -287,6 +287,7 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
     }
 }
 
+// return BufferHandle* is dangerous, need to refactor
 BufferHandle *SurfaceBufferImpl::GetBufferHandle() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -479,6 +480,7 @@ void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
 
 GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!parcel.WriteInt32(bufferRequestConfig_.width) || !parcel.WriteInt32(bufferRequestConfig_.height) ||
         !parcel.WriteInt32(bufferRequestConfig_.strideAlignment) || !parcel.WriteInt32(bufferRequestConfig_.format) ||
         !parcel.WriteUint64(bufferRequestConfig_.usage) || !parcel.WriteInt32(bufferRequestConfig_.timeout) ||
@@ -506,6 +508,7 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel &parcel)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     uint32_t colorGamut = 0;
     uint32_t transform = 0;
     if (!parcel.ReadInt32(bufferRequestConfig_.width) || !parcel.ReadInt32(bufferRequestConfig_.height) ||
@@ -533,6 +536,7 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel)
     return GSERROR_OK;
 }
 
+// return OH_NativeBuffer* is dangerous, need to refactor
 OH_NativeBuffer* SurfaceBufferImpl::SurfaceBufferToNativeBuffer()
 {
     return reinterpret_cast<OH_NativeBuffer *>(this);
@@ -571,8 +575,7 @@ GSError SurfaceBufferImpl::CheckBufferConfig(int32_t width, int32_t height,
 
 BufferWrapper SurfaceBufferImpl::GetBufferWrapper()
 {
-    BufferWrapper wrapper;
-    return wrapper;
+    return {};
 }
 
 void SurfaceBufferImpl::SetBufferWrapper(BufferWrapper wrapper) {}

@@ -127,8 +127,8 @@ SurfaceBufferImpl::~SurfaceBufferImpl()
 
 bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value)
 {
-    if (metaDataCache_.find(key) != metaDataCache_.end() &&
-        metaDataCache_[key] == value) {
+    auto iter = metaDataCache_.find(key);
+    if (iter != metaDataCache_.end() && (*iter).second == value) {
         return true;
     }
     return false;
@@ -492,16 +492,11 @@ GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
 {
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_NOT_INIT;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_NOT_INIT;
     }
-
-    bool ret = WriteBufferHandle(parcel, *handle);
+    bool ret = WriteBufferHandle(parcel, *handle_);
     if (ret == false) {
         return GSERROR_API_FAILED;
     }
@@ -530,6 +525,7 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel)
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     std::lock_guard<std::mutex> lock(mutex_);
     FreeBufferHandleLocked();
+    g_displayBufferMutex.unlock();
     handle_ = ReadBufferHandle(parcel);
     if (handle_ == nullptr) {
         return GSERROR_API_FAILED;

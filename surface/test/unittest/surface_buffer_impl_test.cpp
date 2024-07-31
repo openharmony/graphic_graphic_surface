@@ -235,7 +235,7 @@ HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | 
     buffer = new SurfaceBufferImpl();
     MessageParcel parcel;
     buffer->SetBufferRequestConfig(requestConfig);
-    ASSERT_EQ(*buffer->GetBufferRequestConfig(), requestConfig);
+    ASSERT_EQ(buffer->GetBufferRequestConfig(), requestConfig);
     ASSERT_EQ(buffer->WriteBufferRequestConfig(parcel), GSERROR_OK);
     ASSERT_EQ(buffer->ReadBufferRequestConfig(parcel), GSERROR_OK);
 }

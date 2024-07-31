@@ -89,13 +89,6 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
     return surfaceBufferImpl;
 }
 
-void SurfaceBufferImpl::DisplayBufferDeathCallback(void* data)
-{
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    g_displayBuffer = nullptr;
-    BLOGD("gralloc_host died and g_displayBuffer is nullptr.");
-}
-
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
     {
@@ -126,18 +119,16 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("~SurfaceBufferImpl dtor ~[%{public}u]", sequenceNumber_);
-    FreeBufferHandleLocked();
+    {
+        std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
+        FreeBufferHandleLocked();
+    }
 }
 
-SurfaceBufferImpl *SurfaceBufferImpl::FromBase(const sptr<SurfaceBuffer>& buffer)
+bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value)
 {
-    return static_cast<SurfaceBufferImpl*>(buffer.GetRefPtr());
-}
-
-bool SurfaceBufferImpl::MetaDataCached(const uint32_t key, const std::vector<uint8_t>& value)
-{
-    if (metaDataCache_.find(key) != metaDataCache_.end() &&
-        metaDataCache_[key] == value) {
+    auto iter = metaDataCache_.find(key);
+    if (iter != metaDataCache_.end() && (*iter).second == value) {
         return true;
     }
     return false;
@@ -150,11 +141,9 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
         return GSERROR_INTERNAL;
     }
 
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ != nullptr) {
-            FreeBufferHandleLocked();
-        }
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ != nullptr) {
+        FreeBufferHandleLocked();
     }
 
     GSError ret = CheckBufferConfig(config.width, config.height, config.format, config.usage);
@@ -162,22 +151,19 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    BufferHandle *handle = nullptr;
     OHOS::HDI::Display::Buffer::V1_0::AllocInfo info = {config.width, config.height, config.usage, config.format};
     static bool debugHebcDisabled =
         std::atoi((system::GetParameter("persist.graphic.debug_hebc.disabled", "0")).c_str()) != 0;
     if (debugHebcDisabled) {
         info.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
     }
-    auto dret = g_displayBuffer->AllocMem(info, handle);
+    auto dret = g_displayBuffer->AllocMem(info, handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
-        std::lock_guard<std::mutex> lock(mutex_);
         surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(config.colorGamut);
         transform_ = static_cast<GraphicTransformType>(config.transform);
         surfaceBufferWidth_ = config.width;
         surfaceBufferHeight_ = config.height;
         bufferRequestConfig_ = config;
-        handle_ = handle;
         BLOGD("buffer handle w: %{public}d h: %{public}d t: %{public}d",
             handle_->width, handle_->height, config.transform);
         return GSERROR_OK;
@@ -192,24 +178,19 @@ GSError SurfaceBufferImpl::Map()
         return GSERROR_INTERNAL;
     }
 
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_OPERATING;
-        } else if (handle_->virAddr != nullptr) {
-            BLOGD("handle_->virAddr has been maped");
-            return GSERROR_OK;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_OPERATING;
+    } else if (handle_->virAddr != nullptr) {
+        BLOGD("handle_->virAddr has been maped");
+        return GSERROR_OK;
     }
-
-    if (handle->usage & BUFFER_USAGE_PROTECTED) {
+    if (handle_->usage & BUFFER_USAGE_PROTECTED) {
         BLOGD("handle usage is BUFFER_USAGE_PROTECTED, do not Map");
         return GSERROR_OK;
     }
 
-    void *virAddr = g_displayBuffer->Mmap(*handle);
+    void *virAddr = g_displayBuffer->Mmap(*handle_);
     if (virAddr == nullptr || virAddr == MAP_FAILED) {
         return GSERROR_API_FAILED;
     }
@@ -221,19 +202,14 @@ GSError SurfaceBufferImpl::Unmap()
     if (GetDisplayBufferLocked() == nullptr) {
         return GSERROR_INTERNAL;
     }
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_OPERATING;
-        } else if (handle_->virAddr == nullptr) {
-            BLOGW("handle has been unmaped");
-            return GSERROR_OK;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_OPERATING;
+    } else if (handle_->virAddr == nullptr) {
+        BLOGW("handle has been unmaped");
+        return GSERROR_OK;
     }
-
-    auto dret = g_displayBuffer->Unmap(*handle);
+    auto dret = g_displayBuffer->Unmap(*handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         handle_->virAddr = nullptr;
         return GSERROR_OK;
@@ -247,15 +223,11 @@ GSError SurfaceBufferImpl::FlushCache()
     if (GetDisplayBufferLocked() == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_OPERATING;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_OPERATING;
     }
-    auto dret = g_displayBuffer->FlushCache(*handle);
+    auto dret = g_displayBuffer->FlushCache(*handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
@@ -269,17 +241,13 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
     if (GetDisplayBufferLocked() == nullptr) {
         return GSERROR_INTERNAL;
     }
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_OPERATING;
-        } else if (planesInfo_.planeCount != 0) {
-            return GSERROR_OK;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_OPERATING;
+    } else if (planesInfo_.planeCount != 0) {
+        return GSERROR_OK;
     }
-    auto dret = g_displayBuffer->GetImageLayout(*handle,
+    auto dret = g_displayBuffer->GetImageLayout(*handle_,
         *(static_cast<OHOS::HDI::Display::Buffer::V1_2::ImageLayout*>(layout)));
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
@@ -294,16 +262,12 @@ GSError SurfaceBufferImpl::InvalidateCache()
     if (GetDisplayBufferLocked() == nullptr) {
         return GSERROR_INTERNAL;
     }
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_OPERATING;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_OPERATING;
     }
 
-    auto dret = g_displayBuffer->InvalidateCache(*handle);
+    auto dret = g_displayBuffer->InvalidateCache(*handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
@@ -319,10 +283,11 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
             handle_->virAddr = nullptr;
         }
         FreeBufferHandle(handle_);
+        handle_ = nullptr;
     }
-    handle_ = nullptr;
 }
 
+// return BufferHandle* is dangerous, need to refactor
 BufferHandle *SurfaceBufferImpl::GetBufferHandle() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -337,7 +302,7 @@ void SurfaceBufferImpl::SetSurfaceBufferColorGamut(const GraphicColorGamut& colo
     }
 }
 
-const GraphicColorGamut& SurfaceBufferImpl::GetSurfaceBufferColorGamut() const
+GraphicColorGamut SurfaceBufferImpl::GetSurfaceBufferColorGamut() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return surfaceBufferColorGamut_;
@@ -351,7 +316,7 @@ void SurfaceBufferImpl::SetSurfaceBufferTransform(const GraphicTransformType& tr
     }
 }
 
-const GraphicTransformType& SurfaceBufferImpl::GetSurfaceBufferTransform() const
+GraphicTransformType SurfaceBufferImpl::GetSurfaceBufferTransform() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return transform_;
@@ -439,7 +404,10 @@ void* SurfaceBufferImpl::GetVirAddr()
 {
     GSError ret = this->Map();
     if (ret != GSERROR_OK) {
-        BLOGW("Map failed");
+        return nullptr;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
         return nullptr;
     }
     return handle_->virAddr;
@@ -502,6 +470,7 @@ sptr<BufferExtraData> SurfaceBufferImpl::GetExtraData() const
 
 void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ != nullptr) {
         FreeBufferHandleLocked();
@@ -511,6 +480,7 @@ void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
 
 GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!parcel.WriteInt32(bufferRequestConfig_.width) || !parcel.WriteInt32(bufferRequestConfig_.height) ||
         !parcel.WriteInt32(bufferRequestConfig_.strideAlignment) || !parcel.WriteInt32(bufferRequestConfig_.format) ||
         !parcel.WriteUint64(bufferRequestConfig_.usage) || !parcel.WriteInt32(bufferRequestConfig_.timeout) ||
@@ -524,16 +494,11 @@ GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
 {
-    BufferHandle *handle = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_NOT_INIT;
-        }
-        handle = handle_;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == nullptr) {
+        return GSERROR_NOT_INIT;
     }
-
-    bool ret = WriteBufferHandle(parcel, *handle);
+    bool ret = WriteBufferHandle(parcel, *handle_);
     if (ret == false) {
         return GSERROR_API_FAILED;
     }
@@ -543,6 +508,7 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel &parcel)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     uint32_t colorGamut = 0;
     uint32_t transform = 0;
     if (!parcel.ReadInt32(bufferRequestConfig_.width) || !parcel.ReadInt32(bufferRequestConfig_.height) ||
@@ -559,8 +525,10 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel)
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     std::lock_guard<std::mutex> lock(mutex_);
     FreeBufferHandleLocked();
+    g_displayBufferMutex.unlock();
     handle_ = ReadBufferHandle(parcel);
     if (handle_ == nullptr) {
         return GSERROR_API_FAILED;
@@ -568,6 +536,7 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel)
     return GSERROR_OK;
 }
 
+// return OH_NativeBuffer* is dangerous, need to refactor
 OH_NativeBuffer* SurfaceBufferImpl::SurfaceBufferToNativeBuffer()
 {
     return reinterpret_cast<OH_NativeBuffer *>(this);
@@ -606,8 +575,7 @@ GSError SurfaceBufferImpl::CheckBufferConfig(int32_t width, int32_t height,
 
 BufferWrapper SurfaceBufferImpl::GetBufferWrapper()
 {
-    BufferWrapper wrapper;
-    return wrapper;
+    return {};
 }
 
 void SurfaceBufferImpl::SetBufferWrapper(BufferWrapper wrapper) {}
@@ -627,7 +595,7 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
         return GSERROR_NOT_INIT;
     }
 
-    if (MetaDataCached(key, value)) {
+    if (MetaDataCachedLocked(key, value)) {
         return GSERROR_OK;
     }
 
@@ -702,10 +670,10 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
-const BufferRequestConfig* SurfaceBufferImpl::GetBufferRequestConfig() const
+BufferRequestConfig SurfaceBufferImpl::GetBufferRequestConfig() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    return &bufferRequestConfig_;
+    return bufferRequestConfig_;
 }
 
 void SurfaceBufferImpl::SetBufferRequestConfig(const BufferRequestConfig &config)

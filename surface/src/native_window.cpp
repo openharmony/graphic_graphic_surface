@@ -76,13 +76,20 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
     {OH_VIDEO_HDR_VIVID, CM_VIDEO_HDR_VIVID},
 };
 
+namespace {
+    constexpr int32_t INVALID_PARAM = -1;
+}
+
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
 {
     if (pSurface == nullptr) {
         return nullptr;
     }
 
-    OHNativeWindow* nativeWindow = new OHNativeWindow();
+    OHNativeWindow* nativeWindow = new(std::nothrow) OHNativeWindow();
+    if (nativeWindow == nullptr) {
+        return nullptr;
+    }
     nativeWindow->surface =
                 *reinterpret_cast<OHOS::sptr<OHOS::Surface> *>(pSurface);
     if (nativeWindow->surface == nullptr) {
@@ -186,7 +193,10 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     }
     uint32_t seqNum = sfbuffer->GetSeqNum();
     if (window->bufferCache_.find(seqNum) == window->bufferCache_.end()) {
-        OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
+        OHNativeWindowBuffer *nwBuffer = new(std::nothrow) OHNativeWindowBuffer();
+        if (nwBuffer == nullptr) {
+            return OHOS::SURFACE_ERROR_NOMEM;
+        }
         nwBuffer->sfbuffer = sfbuffer;
         nwBuffer->uiTimestamp = window->uiTimestamp;
         *buffer = nwBuffer;
@@ -509,7 +519,7 @@ BufferHandle *GetBufferHandleFromNative(OHNativeWindowBuffer *buffer)
 int32_t GetNativeObjectMagic(void *obj)
 {
     if (obj == nullptr) {
-        return -1;
+        return INVALID_PARAM;
     }
     NativeWindowMagic* nativeWindowMagic = reinterpret_cast<NativeWindowMagic *>(obj);
     return nativeWindowMagic->magic;
@@ -627,7 +637,10 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
         return OHOS::GSERROR_OK;
     }
 
-    OHNativeWindow *nativeWindow = new OHNativeWindow();
+    OHNativeWindow *nativeWindow = new(std::nothrow) OHNativeWindow();
+    if (nativeWindow == nullptr) {
+        return OHOS::SURFACE_ERROR_NOMEM;
+    }
     nativeWindow->surface = utils->GetSurface(surfaceId);
     if (nativeWindow->surface == nullptr) {
         BLOGE("window surface is null");

@@ -80,7 +80,7 @@ GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
     int32_t ret = reply.ReadInt32();
     if (ret != GSERROR_OK) {
         BLOGN_FAILURE("Remote return %{public}d", ret);
-        return (GSError)ret;
+        return static_cast<GSError>(ret);
     }
     return GSERROR_OK;
 }
@@ -111,7 +111,7 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
         return SURFACE_ERROR_UNKOWN;
     }
     retval.fence = SyncFence::ReadFromMessageParcel(reply);
-    reply.ReadInt32Vector(&retval.deletingBuffers);
+    reply.ReadUInt32Vector(&retval.deletingBuffers);
 
     return GSERROR_OK;
 }
@@ -130,12 +130,13 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
         return ret;
     }
 
-    ret = GSERROR_OK;
     num = reply.ReadUint32();
     if (num > SURFACE_MAX_QUEUE_SIZE || num == 0) {
         BLOGNE("num is invalid, %{public}u", num);
         return SURFACE_ERROR_UNKOWN;
     }
+    
+    ret = GSERROR_OK;
     retvalues.resize(num);
     for (size_t i = 0; i < num; ++i) {
         auto &retval = retvalues[i];
@@ -151,7 +152,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
             return SURFACE_ERROR_UNKOWN;
         }
         retval.fence = SyncFence::ReadFromMessageParcel(reply);
-        reply.ReadInt32Vector(&retval.deletingBuffers);
+        reply.ReadUInt32Vector(&retval.deletingBuffers);
     }
     return ret;
 }

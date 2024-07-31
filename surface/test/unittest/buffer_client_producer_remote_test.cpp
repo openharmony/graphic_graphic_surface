@@ -57,7 +57,7 @@ public:
     };
     static inline sptr<IRemoteObject> robj = nullptr;
     static inline sptr<IBufferProducer> bp = nullptr;
-    static inline std::vector<int32_t> deletingBuffers;
+    static inline std::vector<uint32_t> deletingBuffers;
     static inline pid_t pid = 0;
     static inline int pipeFd[2] = {};
     static inline int pipe1Fd[2] = {};

@@ -70,7 +70,7 @@ ProducerSurface::~ProducerSurface()
     utils->Remove(GetUniqueId());
 }
 
-GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo &info)
+GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo& info)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -101,7 +101,7 @@ sptr<IBufferProducer> ProducerSurface::GetProducer() const
 }
 
 GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
-                                       sptr<SyncFence>& fence, BufferRequestConfig &config)
+                                       sptr<SyncFence>& fence, BufferRequestConfig& config)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -122,8 +122,8 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     return GSERROR_OK;
 }
 
-GSError ProducerSurface::AddCache(sptr<BufferExtraData> &bedataimpl,
-    IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config)
+GSError ProducerSurface::AddCache(sptr<BufferExtraData>& bedataimpl,
+    IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (isDisconnected) {
@@ -148,7 +148,7 @@ GSError ProducerSurface::AddCache(sptr<BufferExtraData> &bedataimpl,
         bufferProducerCache_.erase(seqNum);
         auto spNativeWindow = wpNativeWindow_.promote();
         if (spNativeWindow != nullptr) {
-            auto &bufferCache = spNativeWindow->bufferCache_;
+            auto& bufferCache = spNativeWindow->bufferCache_;
             if (bufferCache.find(seqNum) != bufferCache.end()) {
                 NativeObjectUnreference(bufferCache[seqNum]);
                 bufferCache.erase(seqNum);
@@ -158,8 +158,8 @@ GSError ProducerSurface::AddCache(sptr<BufferExtraData> &bedataimpl,
     return SURFACE_ERROR_OK;
 }
 
-GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
-    std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
+GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffers,
+    std::vector<sptr<SyncFence>>& fences, BufferRequestConfig& config)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -185,7 +185,7 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffer
 }
 
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
-                                     const sptr<SyncFence>& fence, BufferFlushConfig &config)
+                                     const sptr<SyncFence>& fence, BufferFlushConfig& config)
 {
     BufferFlushConfigWithDamages configWithDamages;
     configWithDamages.damages.push_back(config.damage);
@@ -194,7 +194,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
 }
 
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-                                     BufferFlushConfigWithDamages &config)
+                                     BufferFlushConfigWithDamages& config)
 {
     if (buffer == nullptr || fence == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -209,8 +209,8 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
     return ret;
 }
 
-GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
-    const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &configs)
+GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& buffers,
+    const std::vector<sptr<SyncFence>>& fences, const std::vector<BufferFlushConfigWithDamages>& configs)
 {
     if (buffers.empty() || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -247,7 +247,7 @@ GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 }
 
 GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
-    int32_t &fence, BufferRequestConfig &config)
+    int32_t& fence, BufferRequestConfig& config)
 {
     sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
     auto ret = RequestBuffer(buffer, syncFence, config);
@@ -270,7 +270,7 @@ GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
 }
 
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
-    int32_t fence, BufferFlushConfig &config)
+    int32_t fence, BufferFlushConfig& config)
 {
     // fence need close?
     sptr<SyncFence> syncFence = new SyncFence(fence);
@@ -355,8 +355,8 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     surfaceDelegator->SetSurface(this);
     wpPSurfaceDelegator_ = surfaceDelegator;
 
-    auto releaseBufferCallBack = [weakThis = wptr(this)] (const sptr<SurfaceBuffer> &buffer,
-        const sptr<SyncFence> &fence) -> GSError {
+    auto releaseBufferCallBack = [weakThis = wptr(this)] (const sptr<SurfaceBuffer>& buffer,
+        const sptr<SyncFence>& fence) -> GSError {
         auto pSurface = weakThis.promote();
         if (pSurface == nullptr) {
             BLOGE("releaseBuffer failed, pSurface already destory");
@@ -495,7 +495,7 @@ std::string ProducerSurface::GetSurfaceAppFrameworkType() const
     return appFrameworkType;
 }
 
-GSError ProducerSurface::SetUserData(const std::string &key, const std::string &val)
+GSError ProducerSurface::SetUserData(const std::string& key, const std::string& val)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.size() >= SURFACE_MAX_USER_DATA_COUNT) {
@@ -521,7 +521,7 @@ GSError ProducerSurface::SetUserData(const std::string &key, const std::string &
     return GSERROR_OK;
 }
 
-std::string ProducerSurface::GetUserData(const std::string &key)
+std::string ProducerSurface::GetUserData(const std::string& key)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.find(key) != userData_.end()) {
@@ -563,7 +563,7 @@ GSError ProducerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, b
     return GSERROR_NOT_SUPPORT;
 }
 
-GSError ProducerSurface::RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func)
+GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
@@ -575,7 +575,7 @@ GSError ProducerSurface::RegisterUserDataChangeListener(const std::string &funcN
     return GSERROR_OK;
 }
 
-GSError ProducerSurface::UnRegisterUserDataChangeListener(const std::string &funcName)
+GSError ProducerSurface::UnRegisterUserDataChangeListener(const std::string& funcName)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.erase(funcName) == 0) {
@@ -606,8 +606,8 @@ void ProducerSurface::CleanAllLocked()
     bufferProducerCache_.clear();
     auto spNativeWindow = wpNativeWindow_.promote();
     if (spNativeWindow != nullptr) {
-        auto &bufferCache = spNativeWindow->bufferCache_;
-        for (auto &[seqNum, buffer] : bufferCache) {
+        auto& bufferCache = spNativeWindow->bufferCache_;
+        for (auto& [seqNum, buffer] : bufferCache) {
             NativeObjectUnreference(buffer);
         }
         bufferCache.clear();
@@ -669,8 +669,8 @@ GraphicTransformType ProducerSurface::GetTransform() const
     return transform;
 }
 
-GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                          std::vector<bool> &supporteds)
+GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo>& infos,
+                                          std::vector<bool>& supporteds)
 {
     if (producer_ == nullptr || infos.size() == 0 || infos.size() != supporteds.size()) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -754,7 +754,7 @@ void ProducerSurface::SetBufferHold(bool hold)
     producer_->SetBufferHold(hold);
 }
 
-GSError ProducerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
+GSError ProducerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData>& metaData)
 {
     if (producer_ == nullptr || metaData.size() == 0) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -763,7 +763,7 @@ GSError ProducerSurface::SetMetaData(uint32_t sequence, const std::vector<Graphi
 }
 
 GSError ProducerSurface::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
-                                        const std::vector<uint8_t> &metaData)
+                                        const std::vector<uint8_t>& metaData)
 {
     if (producer_ == nullptr || key < GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ||
         key > GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR_VIVID || metaData.size() == 0) {
@@ -781,7 +781,7 @@ GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
 }
 
 GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
-                                             int64_t &time) const
+                                             int64_t& time) const
 {
     if (producer_ == nullptr || type <= GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED ||
         type > GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP) {
@@ -846,7 +846,7 @@ GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
     return producer_->SetSdrWhitePointBrightness(brightness);
 }
 
-GSError ProducerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+GSError ProducerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
     float matrix[16], bool isUseNewMatrix)
 {
     if (producer_ == nullptr) {

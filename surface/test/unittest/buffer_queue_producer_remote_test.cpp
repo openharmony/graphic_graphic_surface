@@ -48,7 +48,7 @@ public:
             }
         },
     };
-    static inline std::vector<int32_t> deletingBuffers;
+    static inline std::vector<uint32_t> deletingBuffers;
     static inline int64_t timestamp = 0;
     static inline std::vector<Rect> damages = {};
     static inline sptr<IRemoteObject> robj = nullptr;

@@ -42,7 +42,7 @@ sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
     return surf;
 }
 
-ConsumerSurface::ConsumerSurface(const std::string &name, bool isShared)
+ConsumerSurface::ConsumerSurface(const std::string& name, bool isShared)
     : name_(name), isShared_(isShared)
 {
     BLOGND("ConsumerSurface ctor, name: %{public}s", name.c_str());
@@ -87,13 +87,13 @@ sptr<IBufferProducer> ConsumerSurface::GetProducer() const
     return producer_;
 }
 
-GSError ConsumerSurface::GetProducerInitInfo(ProducerInitInfo &info)
+GSError ConsumerSurface::GetProducerInitInfo(ProducerInitInfo& info)
 {
     return GSERROR_NOT_SUPPORT;
 }
 
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                                       int64_t &timestamp, Rect &damage)
+                                       int64_t& timestamp, Rect& damage)
 {
     std::vector<Rect> damages;
     GSError ret = AcquireBuffer(buffer, fence, timestamp, damages);
@@ -110,7 +110,7 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFen
 }
 
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                                       int64_t &timestamp, std::vector<Rect> &damages)
+                                       int64_t& timestamp, std::vector<Rect>& damages)
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -126,8 +126,8 @@ GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<S
     return consumer_->ReleaseBuffer(buffer, fence);
 }
 
-GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
-                                       int64_t &timestamp, Rect &damage)
+GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t& fence,
+                                       int64_t& timestamp, Rect& damage)
 {
     sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
     auto ret = AcquireBuffer(buffer, syncFence, timestamp, damage);
@@ -268,7 +268,7 @@ uint64_t ConsumerSurface::GetDefaultUsage()
     return producer_->GetDefaultUsage();
 }
 
-GSError ConsumerSurface::SetUserData(const std::string &key, const std::string &val)
+GSError ConsumerSurface::SetUserData(const std::string& key, const std::string& val)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.size() >= SURFACE_MAX_USER_DATA_COUNT) {
@@ -294,7 +294,7 @@ GSError ConsumerSurface::SetUserData(const std::string &key, const std::string &
     return GSERROR_OK;
 }
 
-std::string ConsumerSurface::GetUserData(const std::string &key)
+std::string ConsumerSurface::GetUserData(const std::string& key)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.find(key) != userData_.end()) {
@@ -344,7 +344,7 @@ GSError ConsumerSurface::UnregisterConsumerListener()
     return consumer_->UnregisterConsumerListener();
 }
 
-GSError ConsumerSurface::RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func)
+GSError ConsumerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
@@ -356,7 +356,7 @@ GSError ConsumerSurface::RegisterUserDataChangeListener(const std::string &funcN
     return GSERROR_OK;
 }
 
-GSError ConsumerSurface::UnRegisterUserDataChangeListener(const std::string &funcName)
+GSError ConsumerSurface::UnRegisterUserDataChangeListener(const std::string& funcName)
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.erase(funcName) == 0) {
@@ -393,7 +393,7 @@ uint64_t ConsumerSurface::GetUniqueId() const
     return producer_->GetUniqueId();
 }
 
-void ConsumerSurface::Dump(std::string &result) const
+void ConsumerSurface::Dump(std::string& result) const
 {
     if (consumer_ == nullptr) {
         return;
@@ -435,7 +435,7 @@ GSError ConsumerSurface::SetScalingMode(ScalingMode scalingMode)
     return producer_->SetScalingMode(scalingMode);
 }
 
-GSError ConsumerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
+GSError ConsumerSurface::GetScalingMode(uint32_t sequence, ScalingMode& scalingMode)
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -443,7 +443,7 @@ GSError ConsumerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingM
     return consumer_->GetScalingMode(sequence, scalingMode);
 }
 
-GSError ConsumerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
+GSError ConsumerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData>& metaData)
 {
     if (producer_ == nullptr || metaData.size() == 0) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -452,7 +452,7 @@ GSError ConsumerSurface::SetMetaData(uint32_t sequence, const std::vector<Graphi
 }
 
 GSError ConsumerSurface::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
-                                        const std::vector<uint8_t> &metaData)
+                                        const std::vector<uint8_t>& metaData)
 {
     if (producer_ == nullptr || key < GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ||
         key > GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR_VIVID || metaData.size() == 0) {
@@ -461,7 +461,7 @@ GSError ConsumerSurface::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey
     return producer_->SetMetaDataSet(sequence, key, metaData);
 }
 
-GSError ConsumerSurface::QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const
+GSError ConsumerSurface::QueryMetaDataType(uint32_t sequence, HDRMetaDataType& type) const
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -469,7 +469,7 @@ GSError ConsumerSurface::QueryMetaDataType(uint32_t sequence, HDRMetaDataType &t
     return consumer_->QueryMetaDataType(sequence, type);
 }
 
-GSError ConsumerSurface::GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const
+GSError ConsumerSurface::GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData>& metaData) const
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -477,8 +477,8 @@ GSError ConsumerSurface::GetMetaData(uint32_t sequence, std::vector<GraphicHDRMe
     return consumer_->GetMetaData(sequence, metaData);
 }
 
-GSError ConsumerSurface::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
-                                        std::vector<uint8_t> &metaData) const
+GSError ConsumerSurface::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey& key,
+                                        std::vector<uint8_t>& metaData) const
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -510,7 +510,7 @@ void ConsumerSurface::SetBufferHold(bool hold)
     consumer_->SetBufferHold(hold);
 }
 
-GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
+GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp& timestamp)
 {
     if (consumer_ == nullptr || timestamp.type == GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -648,7 +648,7 @@ GSError ConsumerSurface::GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffe
     return GSERROR_OK;
 }
 
-GSError ConsumerSurface::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
+GSError ConsumerSurface::IsSurfaceBufferInCache(uint32_t seqNum, bool& isInCache)
 {
     if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;

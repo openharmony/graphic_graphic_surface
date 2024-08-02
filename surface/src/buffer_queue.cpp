@@ -170,10 +170,7 @@ GSError BufferQueue::PopFromDirtyList(sptr<SurfaceBuffer> &buffer)
 GSError BufferQueue::CheckRequestConfig(const BufferRequestConfig &config)
 {
     uint32_t align = config.strideAlignment;
-    bool isValidStrideAlignment = true;
-    isValidStrideAlignment = isValidStrideAlignment && (SURFACE_MIN_STRIDE_ALIGNMENT <= align);
-    isValidStrideAlignment = isValidStrideAlignment && (SURFACE_MAX_STRIDE_ALIGNMENT >= align);
-    if (!isValidStrideAlignment) {
+    if (align < SURFACE_MIN_STRIDE_ALIGNMENT || align > SURFACE_MAX_STRIDE_ALIGNMENT) {
         BLOGN_INVALID("config.strideAlignment [%{public}d, %{public}d], now is %{public}d",
                       SURFACE_MIN_STRIDE_ALIGNMENT, SURFACE_MAX_STRIDE_ALIGNMENT, align);
         return GSERROR_INVALID_ARGUMENTS;
@@ -206,7 +203,7 @@ GSError BufferQueue::CheckFlushConfig(const BufferFlushConfigWithDamages &config
     for (decltype(config.damages.size()) i = 0; i < config.damages.size(); i++) {
         if (config.damages[i].w < 0 || config.damages[i].h < 0) {
             BLOGN_INVALID("config.damages width and height should >= 0, "
-                "now damages[%{public}zu].w is %{public}d, .h is %{public}d, ",
+                "now damages[%{public}zu].w is %{public}d, .h is %{public}d",
                 i, config.damages[i].w, config.damages[i].h);
             return GSERROR_INVALID_ARGUMENTS;
         }
@@ -768,10 +765,7 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
         if (onBufferRelease_ != nullptr) {
             ScopedBytrace func("OnBufferRelease_ sequence: " + std::to_string(buffer->GetSeqNum()));
             sptr<SurfaceBuffer> buf = buffer;
-            auto sret = onBufferRelease_(buf);
-            if (sret == GSERROR_OK) {   // need to check why directly return?
-                // We think that onBufferRelase is not used by anyone, so delete 'return sret' temporarily;
-            }
+            (void)onBufferRelease_(buf);
         }
     }
 

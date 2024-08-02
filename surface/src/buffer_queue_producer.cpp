@@ -161,7 +161,7 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
         WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
         bedataimpl->WriteToParcel(reply);
         retval.fence->WriteToMessageParcel(reply);
-        reply.WriteInt32Vector(retval.deletingBuffers);
+        reply.WriteUInt32Vector(retval.deletingBuffers);
     }
 
     if (isActiveGame) {
@@ -201,7 +201,7 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
             WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer);
             bedataimpls[i]->WriteToParcel(reply);
             retvalues[i].fence->WriteToMessageParcel(reply);
-            reply.WriteInt32Vector(retvalues[i].deletingBuffers);
+            reply.WriteUInt32Vector(retvalues[i].deletingBuffers);
         }
     }
     return 0;
@@ -1056,6 +1056,7 @@ GSError BufferQueueProducer::GetTransformHint(GraphicTransformType &transformHin
 
 GSError BufferQueueProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -1075,6 +1076,7 @@ GSError BufferQueueProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
 
 GSError BufferQueueProducer::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }

@@ -43,7 +43,7 @@ public:
         uint32_t sequence;
         sptr<SurfaceBuffer> buffer;
         sptr<SyncFence> fence;
-        std::vector<int32_t> deletingBuffers;
+        std::vector<uint32_t> deletingBuffers;
     };
     virtual GSError GetProducerInitInfo(ProducerInitInfo &info) = 0;
 

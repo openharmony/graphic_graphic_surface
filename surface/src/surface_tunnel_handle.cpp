@@ -48,7 +48,7 @@ void FreeExtDataHandle(GraphicExtDataHandle *handle)
 {
     if (handle == nullptr) {
         BLOGW("FreeExtDataHandle with nullptr handle");
-        return ;
+        return;
     }
     if (handle->fd >= 0) {
         close(handle->fd);
@@ -71,14 +71,12 @@ SurfaceTunnelHandle::~SurfaceTunnelHandle()
 
 GSError SurfaceTunnelHandle::SetHandle(const GraphicExtDataHandle *handle)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    FreeExtDataHandle(tunnelHandle_);
-    tunnelHandle_ = nullptr;
-
     if (handle == nullptr) {  // handle is nullptr, which is valid and tunnelHandle_ is nullptr now
         BLOGW("SetHandle with nullptr");
         return GSERROR_OK;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
+    FreeExtDataHandle(tunnelHandle_);
     tunnelHandle_ = AllocExtDataHandle(handle->reserveInts);
     if (tunnelHandle_ == nullptr) {
         BLOGE("SetHandle failed because of AllocExtDataHandle failed");

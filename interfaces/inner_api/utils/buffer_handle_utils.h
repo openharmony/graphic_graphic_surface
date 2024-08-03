@@ -38,13 +38,6 @@ BufferHandle *AllocateBufferHandle(uint32_t reserveInts, uint32_t reserveFds);
 */
 int32_t FreeBufferHandle(BufferHandle *handle);
 
-/**
-* @Description: clone a new buffer handle based on given buffer handle
-* @param handle Buffer handle which is to be cloned.
-* @return  Returns pointer to buffer handle if the operation is successful; returns <b>nullptr</b> otherwise.
-*/
-BufferHandle *CloneBufferHandle(const BufferHandle *handle);
-
 #ifdef __cplusplus
 }
 #endif

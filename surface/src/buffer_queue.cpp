@@ -99,8 +99,7 @@ BufferQueue::~BufferQueue()
 
 uint32_t BufferQueue::GetUsedSize()
 {
-    uint32_t used_size = bufferQueueCache_.size();
-    return used_size;
+    return static_cast<uint32_t>(bufferQueueCache_.size());
 }
 
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
@@ -274,18 +273,22 @@ void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
 
 void BufferQueue::SetBatchHandle(bool batch)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     isBatch_ = batch;
 }
 
 GSError BufferQueue::RequestBufferCheckStatus()
 {
-    if (isBatch_) {
-        return GSERROR_OK;
-    }
-    if (!GetStatus()) {
-        ScopedBytrace func("RequestBufferCheckStatus status wrong, surface name: " + name_ + " queueId: " +
-            std::to_string(uniqueId_) + " status: " + std::to_string(GetStatus()));
-        BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (isBatch_) {
+            return GSERROR_OK;
+        }
+        if (!GetStatusLocked()) {
+            ScopedBytrace func("RequestBufferCheckStatus status wrong, surface name: " + name_ + " queueId: " +
+                std::to_string(uniqueId_) + " status: " + std::to_string(GetStatusLocked()));
+            BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+        }
     }
     std::lock_guard<std::mutex> lockGuard(listenerMutex_);
     if (listener_ == nullptr && listenerClazz_ == nullptr) {
@@ -300,7 +303,7 @@ GSError BufferQueue::RequestBufferCheckStatus()
 bool BufferQueue::WaitForCondition()
 {
     return (!freeList_.empty() && !(freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) ||
-        (GetUsedSize() < GetQueueSize()) || !GetStatus();
+        (GetUsedSize() < GetQueueSize()) || !GetStatusLocked();
 }
 
 void BufferQueue::RequestBufferDebugInfo()
@@ -346,8 +349,8 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     if (GetUsedSize() >= GetQueueSize()) {
         waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
             [this]() { return WaitForCondition(); });
-        if (!GetStatus() && !isBatch_) {
-            ScopedBytrace status("Status wrong, status: " + std::to_string(GetStatus()));
+        if (!GetStatusLocked() && !isBatch_) {
+            ScopedBytrace status("Status wrong, status: " + std::to_string(GetStatusLocked()));
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
         // try dequeue from free list again
@@ -561,9 +564,12 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
 {
     ScopedBytrace func("FlushBuffer name: " + name_ + " queueId: " + std::to_string(uniqueId_) +
         " sequence: " + std::to_string(sequence));
-    if (!GetStatus()) {
-        ScopedBytrace status("status: " + std::to_string(GetStatus()));
-        BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (!GetStatusLocked()) {
+            ScopedBytrace status("status: " + std::to_string(GetStatusLocked()));
+            BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+        }
     }
     // check param
     auto sret = CheckFlushConfig(config);
@@ -609,7 +615,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
 }
 
 GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix, bool needRecordSequence)
+    sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, bool needRecordSequence)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (needRecordSequence && acquireLastFlushedBufSequence_ != INVALID_SEQUENCE) {
@@ -638,9 +644,9 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     }
     auto utils = SurfaceUtils::GetInstance();
     if (isUseNewMatrix) {
-        utils->ComputeTransformMatrixV2(matrix, buffer, lastFlushedTransform_, damage);
+        utils->ComputeTransformMatrixV2(matrix, matrixSize, buffer, lastFlushedTransform_, damage);
     } else {
-        utils->ComputeTransformMatrix(matrix, buffer, lastFlushedTransform_, damage);
+        utils->ComputeTransformMatrix(matrix, matrixSize, buffer, lastFlushedTransform_, damage);
     }
 
     if (needRecordSequence) {
@@ -652,9 +658,9 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 }
 
 GSError BufferQueue::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-    float matrix[16], bool isUseNewMatrix)
+    float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
 {
-    return GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix, true);
+    return GetLastFlushedBuffer(buffer, fence, matrix, matrixSize, isUseNewMatrix, true);
 }
 
 GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
@@ -1035,10 +1041,13 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
 {
     ScopedBytrace func(__func__);
     {
-        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (!GetStatus()) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (!GetStatusLocked()) {
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ == nullptr && listenerClazz_ == nullptr) {
             BLOGN_FAILURE_RET(SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
         }
@@ -1145,8 +1154,8 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    if (queueSize <= 0) {
-        BLOGN_INVALID("queue size (%{public}u) <= 0", queueSize);
+    if (queueSize == 0) {
+        BLOGN_INVALID("queue size (%{public}u) == 0", queueSize);
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -1250,6 +1259,7 @@ GSError BufferQueue::SetDefaultWidthAndHeight(int32_t width, int32_t height)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     defaultWidth_ = width;
     defaultHeight_ = height;
     return GSERROR_OK;
@@ -1257,22 +1267,26 @@ GSError BufferQueue::SetDefaultWidthAndHeight(int32_t width, int32_t height)
 
 int32_t BufferQueue::GetDefaultWidth()
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return defaultWidth_;
 }
 
 int32_t BufferQueue::GetDefaultHeight()
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return defaultHeight_;
 }
 
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     defaultUsage_ = usage;
     return GSERROR_OK;
 }
 
 uint64_t BufferQueue::GetDefaultUsage()
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     return defaultUsage_;
 }
 
@@ -1363,16 +1377,20 @@ GSError BufferQueue::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
 
 uint64_t BufferQueue::GetUniqueId() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return uniqueId_;
 }
 
 GSError BufferQueue::SetTransform(GraphicTransformType transform)
 {
-    if (transform_ == transform) {
-        return GSERROR_OK;
-    }
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (transform_ == transform) {
+            return GSERROR_OK;
+        }
 
-    transform_ = transform;
+        transform_ = transform;
+    }
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {
@@ -1388,50 +1406,59 @@ GSError BufferQueue::SetTransform(GraphicTransformType transform)
 
 GraphicTransformType BufferQueue::GetTransform() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return transform_;
 }
 
 GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     transformHint_ = transformHint;
     return GSERROR_OK;
 }
 
 GraphicTransformType BufferQueue::GetTransformHint() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return transformHint_;
 }
 
 GSError BufferQueue::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     sourceType_ = sourceType;
     return GSERROR_OK;
 }
 
 OHSurfaceSource BufferQueue::GetSurfaceSourceType() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return sourceType_;
 }
 
 GSError BufferQueue::SetHdrWhitePointBrightness(float brightness)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     hdrWhitePointBrightness_ = brightness;
     return GSERROR_OK;
 }
 
 GSError BufferQueue::SetSdrWhitePointBrightness(float brightness)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     sdrWhitePointBrightness_ = brightness;
     return GSERROR_OK;
 }
 
 float BufferQueue::GetHdrWhitePointBrightness() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return hdrWhitePointBrightness_;
 }
 
 float BufferQueue::GetSdrWhitePointBrightness() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return sdrWhitePointBrightness_;
 }
 
@@ -1443,12 +1470,14 @@ GSError BufferQueue::SetSurfaceAppFrameworkType(std::string appFrameworkType)
     if (appFrameworkType.size() > MAXIMUM_LENGTH_OF_APP_FRAMEWORK) {
         return GSERROR_OUT_OF_RANGE;
     }
+    std::unique_lock<std::mutex> lock(mutex_);
     appFrameworkType_ = appFrameworkType;
     return GSERROR_OK;
 }
 
 std::string BufferQueue::GetSurfaceAppFrameworkType() const
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     return appFrameworkType_;
 }
 
@@ -1469,6 +1498,7 @@ GSError BufferQueue::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &
 
 GSError BufferQueue::SetBufferHold(bool hold)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     isBufferHold_ = hold;
     return GSERROR_OK;
 }
@@ -1776,13 +1806,20 @@ void BufferQueue::Dump(std::string &result)
     DumpCache(result);
 }
 
-bool BufferQueue::GetStatus() const
+bool BufferQueue::GetStatusLocked() const
 {
     return isValidStatus_;
 }
 
+bool BufferQueue::GetStatus() const
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return GetStatusLocked();
+}
+
 void BufferQueue::SetStatus(bool status)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     isValidStatus_ = status;
     waitReqCon_.notify_all();
 }

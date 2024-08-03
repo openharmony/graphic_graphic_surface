@@ -213,7 +213,7 @@ public:
     GSError SetSdrWhitePointBrightness(float brightness) override;
     GSError GetProducerInitInfo(ProducerInitInfo &info) override;
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix) override;
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
 private:
     bool IsRemote();

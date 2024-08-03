@@ -690,7 +690,7 @@ int32_t NativeWindowGetDefaultWidthAndHeight(OHNativeWindow *window, int32_t *wi
 
 int32_t NativeWindowSetRequestWidthAndHeight(OHNativeWindow *window, int32_t width, int32_t height)
 {
-    if (window == nullptr) {
+    if (window == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     window->surface->SetRequestWidthAndHeight(width, height);
@@ -787,7 +787,7 @@ int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     }
     OHNativeWindowBuffer *lastFlushedBuffer;
     int lastFlushFenceFd;
-    float matrix[16];
+    float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetLastFlushedBuffer fail");
@@ -810,7 +810,7 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
     OHNativeWindowBuffer *lastFlushedBuffer;
     int lastFlushFenceFd;
-    float matrix[16];
+    float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetLastFlushedBuffer fail");
@@ -841,7 +841,7 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     }
     OHNativeWindowBuffer *lastFlushedBuffer;
     int lastFlushFenceFd;
-    float matrix[16];
+    float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetLastFlushedBuffer fail");
@@ -905,7 +905,7 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     }
     OHNativeWindowBuffer *lastFlushedBuffer;
     int lastFlushFenceFd;
-    float matrix[16];
+    float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetLastFlushedBuffer fail");

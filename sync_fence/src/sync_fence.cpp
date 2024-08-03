@@ -148,7 +148,7 @@ int32_t SyncFence::Wait(uint32_t timeout)
 int SyncFence::SyncMerge(const char *name, int fd1, int fd2)
 {
     int retCode = -1;
-    struct sync_merge_data syncMergeData = {0};
+    struct sync_merge_data syncMergeData = {};
     syncMergeData.fd2 = fd2;
     if (strcpy_s(syncMergeData.name, sizeof(syncMergeData.name), name)) {
         UTILS_LOGE("SyncMerge ctrcpy fence name failed.");
@@ -223,7 +223,11 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     struct sync_file_info arg;
     struct sync_file_info *infoPtr = nullptr;
 
-    (void)memset_s(&arg, sizeof(struct sync_file_info), 0, sizeof(struct sync_file_info));
+    errno_t retCode = memset_s(&arg, sizeof(struct sync_file_info), 0, sizeof(struct sync_file_info));
+    if (retCode != 0) {
+        UTILS_LOGE("memset_s error, retCode = %{public}d", retCode);
+        return {};
+    }
     int32_t ret = ioctl(fenceFd_, SYNC_IOC_FILE_INFO, &arg);
     if (ret < 0) {
         UTILS_LOGD("GetFenceInfo SYNC_IOC_FILE_INFO ioctl failed, ret: %{public}d", ret);
@@ -241,7 +245,11 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
         UTILS_LOGD("GetFenceInfo malloc failed oom");
         return {};
     }
-    (void)memset_s(infoPtr, syncFileInfoMemSize, 0, syncFileInfoMemSize);
+    retCode = memset_s(infoPtr, syncFileInfoMemSize, 0, syncFileInfoMemSize);
+    if (retCode != 0) {
+        UTILS_LOGE("memset_s error, retCode = %{public}d", retCode);
+        return {};
+    }
     infoPtr->num_fences = arg.num_fences;
     infoPtr->sync_fence_info = static_cast<uint64_t>(uintptr_t(infoPtr + 1));
 

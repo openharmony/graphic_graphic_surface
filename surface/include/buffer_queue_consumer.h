@@ -30,7 +30,8 @@ public:
 
     GSError AcquireBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
                                int64_t &timestamp, std::vector<Rect> &damages);
-
+    GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
+                          bool isUsingAutoTimestamp);
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence);
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer);
@@ -81,7 +82,7 @@ public:
     float GetHdrWhitePointBrightness() const;
     float GetSdrWhitePointBrightness() const;
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache);
-
+    uint32_t GetAvailableBufferCount() const;
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

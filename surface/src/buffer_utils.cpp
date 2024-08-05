@@ -114,6 +114,7 @@ GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &con
         config.damages.emplace_back(rect);
     }
     config.timestamp = parcel.ReadInt64();
+    config.desiredPresentTimestamp = parcel.ReadInt64();
     return GSERROR_OK;
 }
 
@@ -134,6 +135,10 @@ GSError WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages con
         }
     }
     if (!parcel.WriteInt64(config.timestamp)) {
+        return GSERROR_BINDER;
+    }
+    
+    if (!parcel.WriteInt64(config.desiredPresentTimestamp)) {
         return GSERROR_BINDER;
     }
     return GSERROR_OK;

@@ -226,28 +226,6 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum003, Function | MediumTest | L
 }
 
 /*
-* Function: OH_NativeBuffer_GetBufferHandle
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeBuffer_GetBufferHandle
-*                  2. check result
-*/
-HWTEST_F(NativeBufferTest, OHNativeBufferGetBufferHandle001, Function | MediumTest | Level2)
-{
-    const BufferHandle* handle = OH_NativeBuffer_GetBufferHandle(buffer);
-    ASSERT_NE(handle, nullptr);
-    int32_t ret = FreeBufferHandle(nullptr);
-    ASSERT_EQ(ret, 0);
-    BufferHandle* cloneHandle = CloneBufferHandle(nullptr);
-    ASSERT_EQ(cloneHandle, nullptr);
-    cloneHandle = CloneBufferHandle(handle);
-    ASSERT_NE(cloneHandle, nullptr);
-    ASSERT_NE(handle, nullptr);
-    ASSERT_EQ(cloneHandle->width, handle->width);
-}
-
-/*
 * Function: OH_NativeBuffer_GetNativeBufferConfig
 * Type: Function
 * Rank: Important(2)

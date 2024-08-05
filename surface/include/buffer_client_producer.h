@@ -107,14 +107,14 @@ public:
     GSError SetSdrWhitePointBrightness(float brightness) override;
 
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix) override;
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);
     GSError CheckRetval(MessageParcel &reply);
     GSError GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& buffer,
-        sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix, uint32_t command);
+        sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, uint32_t command);
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     std::string name_ = "not init";
     uint64_t uniqueId_ = 0;

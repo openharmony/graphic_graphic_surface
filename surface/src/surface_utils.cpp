@@ -187,7 +187,7 @@ void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
     }
 }
 
-void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE],
+void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
 {
     float tx = 0.f;
@@ -215,7 +215,7 @@ void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE],
         transformMatrix = MatrixProduct(cropMatrix, transformMatrix);
     }
 
-    auto ret = memcpy_s(matrix, sizeof(transformMatrix),
+    auto ret = memcpy_s(matrix, matrixSize * sizeof(float),
                         transformMatrix.data(), sizeof(transformMatrix));
     if (ret != EOK) {
         BLOGE("ComputeTransformMatrix: transformMatrix memcpy_s failed");
@@ -272,7 +272,7 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
     }
 }
 
-void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE],
+void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
 {
     float tx = 0.f;
@@ -303,7 +303,7 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE],
     const std::array<float, TRANSFORM_MATRIX_ELE_COUNT> flipV = {1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1};
     transformMatrix = MatrixProductV2(flipV, transformMatrix);
 
-    auto ret = memcpy_s(matrix, sizeof(transformMatrix),
+    auto ret = memcpy_s(matrix, matrixSize * sizeof(float),
                         transformMatrix.data(), sizeof(transformMatrix));
     if (ret != EOK) {
         BLOGE("ComputeTransformMatrixV2: transformMatrix memcpy_s failed");

@@ -156,11 +156,12 @@ public:
     virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
     virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
     virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix)
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
     {
         (void)buffer;
         (void)fence;
         (void)matrix;
+        (void)matrixSize;
         (void)isUseNewMatrix;
         return SURFACE_ERROR_NOT_SUPPORT;
     };

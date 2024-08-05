@@ -139,11 +139,12 @@ public:
 
     virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) = 0;
     virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix)
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
     {
         (void)buffer;
         (void)fence;
         (void)matrix;
+        (void)matrixSize;
         (void)isUseNewMatrix;
         return SURFACE_ERROR_NOT_SUPPORT;
     };

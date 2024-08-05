@@ -67,6 +67,9 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
 
 static OH_NativeBuffer* OH_NativeBufferFromSurfaceBuffer(SurfaceBuffer* buffer)
 {
+    if (buffer == nullptr) {
+        return nullptr;
+    }
     return buffer->SurfaceBufferToNativeBuffer();
 }
 
@@ -94,7 +97,10 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     bfConfig.timeout = 0;
     bfConfig.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     bfConfig.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
+    sptr<SurfaceBuffer> bufferImpl = new(std::nothrow) SurfaceBufferImpl();
+    if (bufferImpl == nullptr) {
+        return nullptr;
+    }
     GSError ret = bufferImpl->Alloc(bfConfig);
     if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("Surface Buffer Alloc failed, %{public}s, config info: width[%{public}d, height[%{public}d,"
@@ -147,7 +153,7 @@ void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* 
 
 int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || virAddr == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -378,7 +384,10 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();
-    *metadata = new uint8_t[mD.size()];
+    *metadata = new(std::nothrow) uint8_t[mD.size()];
+    if (*metadata == nullptr) {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    }
     if (mD.empty()) {
         BLOGE("new metadata failed! ");
         return OHOS::SURFACE_ERROR_UNKOWN;

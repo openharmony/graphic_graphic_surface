@@ -67,7 +67,9 @@ ProducerSurface::~ProducerSurface()
     BLOGND("~ProducerSurface dtor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
     Disconnect();
     auto utils = SurfaceUtils::GetInstance();
-    utils->Remove(GetUniqueId());
+    if (utils != nullptr) {
+        utils->Remove(GetUniqueId());
+    }
 }
 
 GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo& info)
@@ -107,7 +109,10 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         return GSERROR_INVALID_ARGUMENTS;
     }
     IBufferProducer::RequestBufferReturnValue retval;
-    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    sptr<BufferExtraData> bedataimpl = new(std::nothrow) BufferExtraDataImpl;
+    if (bedataimpl == nullptr) {
+        return GSERROR_NOT_SUPPORT;
+    }
     GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
     if (ret != GSERROR_OK) {
         if (ret == GSERROR_NO_CONSUMER) {
@@ -168,7 +173,10 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffer
     retvalues.resize(SURFACE_MAX_QUEUE_SIZE);
     std::vector<sptr<BufferExtraData>> bedataimpls;
     for (size_t i = 0; i < retvalues.size(); ++i) {
-        sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+        sptr<BufferExtraData> bedataimpl = new(std::nothrow) BufferExtraDataImpl;
+        if (bedataimpl == nullptr) {
+            return GSERROR_NOT_SUPPORT;
+        }
         bedataimpls.emplace_back(bedataimpl);
     }
     GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
@@ -201,6 +209,9 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
     }
 
     sptr<BufferExtraData> bedata = buffer->GetExtraData();
+    if (bedata == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     auto ret = producer_->FlushBuffer(buffer->GetSeqNum(), bedata, fence, config);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
@@ -212,11 +223,11 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
 GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& buffers,
     const std::vector<sptr<SyncFence>>& fences, const std::vector<BufferFlushConfigWithDamages>& configs)
 {
-    if (buffers.empty() || producer_ == nullptr) {
+    if (buffers.size() == 0 || buffers.size() != fences.size() || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     for (size_t i = 0; i < buffers.size(); ++i) {
-        if (buffers[i] == nullptr || fences[i] == 0) {
+        if (buffers[i] == nullptr || fences[i] == nullptr) {
             BLOGNE("FlushBuffers Producer report: one buffer or fence is nullptr");
             return GSERROR_INVALID_ARGUMENTS;
         }
@@ -266,6 +277,9 @@ GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
     }
 
     sptr<BufferExtraData> bedata = buffer->GetExtraData();
+    if (bedata == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
 }
 
@@ -273,7 +287,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
     int32_t fence, BufferFlushConfig& config)
 {
     // fence need close?
-    sptr<SyncFence> syncFence = new SyncFence(fence);
+    sptr<SyncFence> syncFence = new(std::nothrow) SyncFence(fence);
     return FlushBuffer(buffer, syncFence, config);
 }
 
@@ -565,6 +579,9 @@ GSError ProducerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, b
 
 GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)
 {
+    if (func == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
         BLOGND("func already register");
@@ -595,7 +612,7 @@ GSError ProducerSurface::ClearUserDataChangeListener()
 
 bool ProducerSurface::IsRemote()
 {
-    if (producer_ == nullptr) {
+    if (producer_ == nullptr || producer_->AsObject() == nullptr) {
         return false;
     }
     return producer_->AsObject()->IsProxyObject();
@@ -857,10 +874,7 @@ GSError ProducerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, s
 
 GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
 {
-    if (producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->ReleaseLastFlushedBuffer(buffer->GetSeqNum());

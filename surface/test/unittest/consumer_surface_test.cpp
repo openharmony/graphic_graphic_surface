@@ -308,9 +308,29 @@ HWTEST_F(ConsumerSurfaceTest, DefaultUsage002, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, AcquireBuffer001, Function | MediumTest | Level2)
 {
-    sptr<SurfaceBuffer> buffer;
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     sptr<OHOS::SyncFence> fence;
     GSError ret = surface_->AcquireBuffer(buffer, fence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: AcquireBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AcquireBuffer with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AcquireBuffer002, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<OHOS::SyncFence> fence;
+    GSError ret = surface_->AcquireBuffer(buffer, fence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    buffer = SurfaceBuffer::Create();
+    fence = nullptr;
+    ret = surface_->AcquireBuffer(buffer, fence, timestamp, damage);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -324,9 +344,29 @@ HWTEST_F(ConsumerSurfaceTest, AcquireBuffer001, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, ReleaseBuffer001, Function | MediumTest | Level2)
 {
-    sptr<SurfaceBuffer> buffer;
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     sptr<OHOS::SyncFence> fence;
     GSError ret = surface_->ReleaseBuffer(buffer, fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: ReleaseBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ReleaseBuffer with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseBuffer002, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<OHOS::SyncFence> fence;
+    GSError ret = surface_->ReleaseBuffer(buffer, fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    SurfaceBuffer::Create();
+    fence = nullptr;
+    ret = surface_->ReleaseBuffer(buffer, fence);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -341,6 +381,21 @@ HWTEST_F(ConsumerSurfaceTest, ReleaseBuffer001, Function | MediumTest | Level2)
 HWTEST_F(ConsumerSurfaceTest, DetachBuffer001, Function | MediumTest | Level2)
 {
     sptr<SurfaceBuffer> buffer;
+    GSError ret = surface_->DetachBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: DetachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DetachBuffer with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DetachBuffer002, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
     GSError ret = surface_->DetachBuffer(buffer);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
@@ -718,13 +773,15 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener002, Function | MediumTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RegisterConsumerListener with consumer_ is nullptr
+* CaseDescription: 1. call RegisterConsumerListener with nullptr params
 *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener003, Function | MediumTest | Level2)
 {
+    GSError ret = surface_->RegisterConsumerListener(nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
-    GSError ret = surface_->RegisterConsumerListener(listener);
+    ret = surface_->RegisterConsumerListener(listener);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -733,13 +790,15 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener003, Function | MediumTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RegisterConsumerListener with consumer_ is nullptr
+* CaseDescription: 1. call RegisterConsumerListener with nullptr params
 *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener004, Function | MediumTest | Level2)
 {
+    GSError ret = surface_->RegisterConsumerListener(nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     TestConsumerListenerClazz* listenerClazz = new TestConsumerListenerClazz();
-    GSError ret = surface_->RegisterConsumerListener(listenerClazz);
+    ret = surface_->RegisterConsumerListener(listenerClazz);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     delete listenerClazz;
 }
@@ -749,7 +808,7 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener004, Function | MediumTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RegisterReleaseListener with consumer_ is nullptr
+* CaseDescription: 1. call RegisterReleaseListener with nullptr param
 *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterReleaseListener001, Function | MediumTest | Level2)
@@ -774,7 +833,7 @@ HWTEST_F(ConsumerSurfaceTest, RegisterReleaseListener002, Function | MediumTest 
     ASSERT_NE(surface_->consumer_, nullptr);
     OnReleaseFunc onBufferRelease = nullptr;
     GSError ret = surface_->RegisterReleaseListener(onBufferRelease);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*
@@ -836,9 +895,9 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener002, Function | Medium
     ASSERT_NE(surface_->consumer_, nullptr);
     OnDeleteBufferFunc func = nullptr;
     GSError ret = surface_->RegisterDeleteBufferListener(func, false);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ret = surface_->RegisterDeleteBufferListener(func, true);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*
@@ -870,6 +929,20 @@ HWTEST_F(ConsumerSurfaceTest, UnregisterConsumerListener002, Function | MediumTe
     ASSERT_NE(surface_->consumer_, nullptr);
     GSError ret = surface_->UnregisterConsumerListener();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: RegisterUserDataChangeListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterUserDataChangeListener with nullptr param
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterUserDataChangeListener001, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->RegisterUserDataChangeListener("test", nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*
@@ -1608,6 +1681,37 @@ HWTEST_F(ConsumerSurfaceTest, AttachBuffer003, Function | MediumTest | Level2)
 }
 
 /*
+* Function: AttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AttachBuffer004, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    GSError ret = surface_->AttachBuffer(buffer);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: AttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AttachBuffer005, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int32_t timeOut = 1;
+    GSError ret = surface_->AttachBuffer(buffer, timeOut);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: RegisterSurfaceDelegator
 * Type: Function
 * Rank: Important(2)
@@ -1619,6 +1723,25 @@ HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator001, Function | MediumTest
 {
     GSError ret = cs->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
     ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: RegisterSurfaceDelegator
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterSurfaceDelegator with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator002, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->RegisterSurfaceDelegator(nullptr);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+    ASSERT_NE(surfaceDelegator, nullptr);
+    sptr<IRemoteObject> client = surfaceDelegator->AsObject();
+    ASSERT_NE(client, nullptr);
+    ret = surface_->RegisterSurfaceDelegator(client);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
 }
 
 /*

@@ -45,6 +45,7 @@ private:
     std::map<int32_t, std::vector<sptr<SurfaceBuffer>>> map_;
     std::vector<sptr<SurfaceBuffer>> pendingReleaseBuffer_;
     std::unordered_set<int> dequeueFailedSet_;
+    std::mutex dequeueFailedSetMutex_;
     std::mutex mapMutex_;
     std::mutex mstate_;
     uint32_t mAncoDataspace = 0;
@@ -54,5 +55,8 @@ private:
     int32_t GetSlotLocked(const sptr<SurfaceBuffer>& buffer);
     GSError RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence, BufferFlushConfig& config);
 };
+    bool HasSlotInSet(int32_t slot);
+    void InsertSlotIntoSet(int32_t slot);
+    void EraseSlotFromSet(int32_t slot);
 } // namespace OHOS
 #endif // PRODUCER_SURFACE_DELEGATOR_H

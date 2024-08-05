@@ -101,6 +101,7 @@ void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config
         config.damages.emplace_back(rect);
     }
     config.timestamp = parcel.ReadInt64();
+    config.desiredPresentTimestamp = parcel.ReadInt64();
 }
 
 void WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const & config)
@@ -117,7 +118,9 @@ void WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const 
         parcel.WriteInt32(rect.w);
         parcel.WriteInt32(rect.h);
     }
+
     parcel.WriteInt64(config.timestamp);
+    parcel.WriteInt64(config.desiredPresentTimestamp);
 }
 
 GSError ReadSurfaceBufferImpl(MessageParcel &parcel,

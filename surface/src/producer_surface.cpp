@@ -238,6 +238,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
     BufferFlushConfigWithDamages configWithDamages;
     configWithDamages.damages.push_back(config.damage);
     configWithDamages.timestamp = config.timestamp;
+    configWithDamages.desiredPresentTimestamp = config.desiredPresentTimestamp;
     return FlushBuffer(buffer, fence, configWithDamages);
 }
 

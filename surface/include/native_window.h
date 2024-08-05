@@ -22,6 +22,7 @@
 #include <surface.h>
 #include <surface_buffer.h>
 #include <unordered_map>
+#include <atomic>
 
 struct NativeWindowMagic : public OHOS::RefBase {
     NativeWindowMagic(NativeObjectMagic m) : magic(m) {}
@@ -36,6 +37,7 @@ struct NativeWindow : public NativeWindowMagic {
     int64_t uiTimestamp = 0;
     uint32_t lastBufferSeqNum = 0;
     std::unordered_map<uint32_t, NativeWindowBuffer*> bufferCache_;
+    std::atomic<uint64_t> desiredPresentTimestamp{0};
 };
 
 struct NativeWindowBuffer : public NativeWindowMagic {

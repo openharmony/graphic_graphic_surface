@@ -37,6 +37,15 @@ GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<Syn
     return bufferQueue_->AcquireBuffer(buffer, fence, timestamp, damages);
 }
 
+GSError BufferQueueConsumer::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue,
+                                           int64_t expectPresentTimestamp, bool isUsingAutoTimestamp)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->AcquireBuffer(returnValue, expectPresentTimestamp, isUsingAutoTimestamp);
+}
+
 GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     if (bufferQueue_ == nullptr) {
@@ -275,5 +284,13 @@ GSError BufferQueueConsumer::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInC
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->IsSurfaceBufferInCache(seqNum, isInCache);
+}
+
+uint32_t BufferQueueConsumer::GetAvailableBufferCount() const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetAvailableBufferCount();
 }
 } // namespace OHOS

@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include <mutex>
+#include <unordered_set>
 
 #include "transact_surface_delegator_stub.h"
 
@@ -43,6 +44,7 @@ public:
 private:
     std::map<int32_t, std::vector<sptr<SurfaceBuffer>>> map_;
     std::vector<sptr<SurfaceBuffer>> pendingReleaseBuffer_;
+    std::unordered_set<int> dequeueFailedSet_;
     std::mutex mapMutex_;
     std::mutex mstate_;
     uint32_t mAncoDataspace = 0;

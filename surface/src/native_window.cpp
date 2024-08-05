@@ -78,6 +78,7 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
 
 namespace {
     constexpr int32_t INVALID_PARAM = -1;
+    constexpr int32_t META_DATA_MAX_SIZE = 3000;
 }
 
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
@@ -836,7 +837,7 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
 int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t size, uint8_t *metadata)
 {
-    if (window == nullptr || metadata == nullptr || size <= 0) {
+    if (window == nullptr || metadata == nullptr || size <= 0 || size > META_DATA_MAX_SIZE) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *lastFlushedBuffer;

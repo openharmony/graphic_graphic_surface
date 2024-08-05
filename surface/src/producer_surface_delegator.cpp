@@ -100,17 +100,20 @@ GSError ProducerSurfaceDelegator::RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, 
     return GSERROR_OK;
 }
 
-bool ProducerSurfaceDelegator::HasSlotInSet(int32_t slot) {
+bool ProducerSurfaceDelegator::HasSlotInSet(int32_t slot)
+{
     std::lock_guard<std::mutex> mapLock(dequeueFailedSetMutex_);
     return dequeueFailedSet_.find(slot) != dequeueFailedSet_.end();
 }
 
-void ProducerSurfaceDelegator::InsertSlotIntoSet(int32_t slot) {
+void ProducerSurfaceDelegator::InsertSlotIntoSet(int32_t slot)
+{
     std::lock_guard<std::mutex> mapLock(dequeueFailedSetMutex_);
     dequeueFailedSet_.insert(slot);
 }
 
-void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot) {
+void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot)
+{
     std::lock_guard<std::mutex> mapLock(dequeueFailedSetMutex_);
     if (dequeueFailedSet_.find(slot) != dequeueFailedSet_.end()) {
         dequeueFailedSet_.erase(slot);

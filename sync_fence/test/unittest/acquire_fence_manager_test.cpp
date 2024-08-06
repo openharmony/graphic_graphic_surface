@@ -79,4 +79,18 @@ HWTEST_F(AcquireFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest 
     int containerNodeNum = 1000;
     AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
 }
+
+/*
+* Function: GetStatus
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetStatus with invaild fd
+*                  2. check ret is ERROR
+*/
+HWTEST_F(AcquireFenceTrackerTest, GetStatus001, Function | MediumTest | Level2)
+{
+    sptr<SyncFence> syncFence = new SyncFence(-1);
+    EXPECT_EQ(syncFence->GetStatus(), ERROR);
+}
 }

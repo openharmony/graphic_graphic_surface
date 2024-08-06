@@ -60,6 +60,24 @@ void NativeBufferTest::TearDownTestCase()
 }
 
 /*
+* Function: OH_NativeBufferFromSurfaceBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBufferFromSurfaceBuffer by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBufferFromSurfaceBuffer001, Function | MediumTest | Level2)
+{
+    sptr<OHOS::SurfaceBuffer> surfaceBuffer = OHOS::SurfaceBuffer::Create();
+    NativeWindowBuffer* nativeWindowBuffer = OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(&surfaceBuffer);
+    ASSERT_NE(nativeWindowBuffer, nullptr);
+    nativeWindowBuffer->sfbuffer = nullptr;
+    OH_NativeBuffer* nativeBuffer = OH_NativeBufferFromNativeWindowBuffer(nativeWindowBuffer);
+    ASSERT_EQ(nativeBuffer, nullptr);
+}
+
+/*
 * Function: OH_NativeBuffer_Alloc
 * Type: Function
 * Rank: Important(2)

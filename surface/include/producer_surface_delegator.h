@@ -54,9 +54,9 @@ private:
     sptr<SurfaceBuffer> GetBufferLocked(int32_t slot);
     int32_t GetSlotLocked(const sptr<SurfaceBuffer>& buffer);
     GSError RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence, BufferFlushConfig& config);
-};
     bool HasSlotInSet(int32_t slot);
     void InsertSlotIntoSet(int32_t slot);
     void EraseSlotFromSet(int32_t slot);
+};
 } // namespace OHOS
 #endif // PRODUCER_SURFACE_DELEGATOR_H

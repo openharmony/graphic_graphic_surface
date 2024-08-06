@@ -120,7 +120,7 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFen
 
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
-    if (buffer == nullptr || fence == nullptr || consumer_ == nullptr) {
+    if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->ReleaseBuffer(buffer, fence);

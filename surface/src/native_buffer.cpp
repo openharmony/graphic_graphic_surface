@@ -347,6 +347,7 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
             errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
             if (err != 0) {
                 delete[] *metadata;
+                *metadata = nullptr;
                 BLOGE("memcpy_s failed! , retVal:%d", err);
                 return OHOS::SURFACE_ERROR_UNKOWN;
             }
@@ -389,12 +390,15 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     }
     if (mD.empty()) {
+        delete *metadata;
+        *metadata = nullptr;
         BLOGE("new metadata failed! ");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
     if (err != 0) {
         delete[] *metadata;
+        *metadata = nullptr;
         BLOGE("memcpy_s failed! , retVal:%d", err);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }

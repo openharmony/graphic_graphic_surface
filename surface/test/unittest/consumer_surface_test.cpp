@@ -364,10 +364,6 @@ HWTEST_F(ConsumerSurfaceTest, ReleaseBuffer002, Function | MediumTest | Level2)
     sptr<OHOS::SyncFence> fence;
     GSError ret = surface_->ReleaseBuffer(buffer, fence);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    SurfaceBuffer::Create();
-    fence = nullptr;
-    ret = surface_->ReleaseBuffer(buffer, fence);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*

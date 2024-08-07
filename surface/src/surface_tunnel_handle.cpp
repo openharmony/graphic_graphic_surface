@@ -21,19 +21,19 @@ namespace OHOS {
 GraphicExtDataHandle *AllocExtDataHandle(uint32_t reserveInts)
 {
     if ((size_t)reserveInts > (SIZE_MAX - sizeof(GraphicExtDataHandle)) / sizeof(int32_t)) {
-        BLOGE("AllocExtDataHandle failed, reserveInts: %u is too large", reserveInts);
+        BLOGE("reserveInts: %u is too large", reserveInts);
         return nullptr;
     }
     size_t handleSize = sizeof(GraphicExtDataHandle) + (sizeof(int32_t) * reserveInts);
     GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(malloc(handleSize));
     if (handle == nullptr) {
-        BLOGE("AllocExtDataHandle malloc %zu failed", handleSize);
+        BLOGE("malloc %zu failed", handleSize);
         return nullptr;
     }
     auto ret = memset_s(handle, handleSize, 0, handleSize);
     if (ret != EOK) {
         free(handle);
-        BLOGE("AllocExtDataHandle memset_s failed");
+        BLOGE("memset_s failed, ret: %{public}d", ret);
         return nullptr;
     }
     handle->fd = -1;
@@ -79,7 +79,7 @@ GSError SurfaceTunnelHandle::SetHandle(const GraphicExtDataHandle *handle)
     FreeExtDataHandle(tunnelHandle_);
     tunnelHandle_ = AllocExtDataHandle(handle->reserveInts);
     if (tunnelHandle_ == nullptr) {
-        BLOGE("SetHandle failed because of AllocExtDataHandle failed");
+        BLOGE("AllocExtDataHandle failed");
         return GSERROR_INVALID_OPERATING;
     }
     tunnelHandle_->fd = handle->fd;

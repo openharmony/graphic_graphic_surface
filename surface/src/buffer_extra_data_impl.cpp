@@ -24,15 +24,15 @@ constexpr int32_t BUFFER_EXTRA_DATA_MAGIC = 0x4567;
 
 GSError BufferExtraDataImpl::ReadFromParcel(MessageParcel &parcel)
 {
-    int32_t magic;
+    int32_t magic = 0;
     if (parcel.ReadInt32(magic) == false || magic != BUFFER_EXTRA_DATA_MAGIC) {
-        BLOGW("read failed, magic is error");
+        BLOGW("read failed, magic: %{public}d", magic);
         return GSERROR_INTERNAL;
     }
 
     int32_t size = parcel.ReadInt32();
     if (size > SURFACE_MAX_USER_DATA_COUNT) {
-        BLOGE("Too much data obtained from Parcel");
+        BLOGE("ReadFromParcel size: %{public}d", size);
         return GSERROR_INTERNAL;
     }
 
@@ -61,7 +61,7 @@ GSError BufferExtraDataImpl::ReadFromParcel(MessageParcel &parcel)
         }
 
         if (ret != GSERROR_OK) {
-            BLOGE("Set extra data failed, return %{public}d", ret);
+            BLOGE("ExtraSet failed, ret %{public}d", ret);
             break;
         }
     }

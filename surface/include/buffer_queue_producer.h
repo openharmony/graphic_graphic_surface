@@ -194,6 +194,7 @@ private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";
     std::mutex mutex_;
+    uint64_t uniqueId_ = 0;
 };
 }; // namespace OHOS
 

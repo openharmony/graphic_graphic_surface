@@ -726,8 +726,8 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     if (dumpBufferEnabled) {
         // Wait for the status of the fence to change to SIGNALED.
         int32_t ret = fence->Wait(-1);
-        if (ret == 0 && access("/data/bq_dump", F_OK) == 0) {
-            DumpToFileAsync(GetRealPid(), name_, bufferQueueCache_[sequence].buffer);
+        if (ret == 0 && (access("/data/bq_dump", F_OK) == 0 || access("/data/storage/el1/base/bq_dump", F_OK) == 0)) {
+            DumpToFileAsync(isLocalRender_, GetRealPid(), name_, bufferQueueCache_[sequence].buffer);
         }
     }
     

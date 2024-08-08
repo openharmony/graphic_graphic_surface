@@ -1070,6 +1070,8 @@ HWTEST_F(NativeWindowTest, GetLastFlushedBuffer001, Function | MediumTest | Leve
     NativeWindowBuffer *lastFlushedBuffer;
     int lastFlushedFenceFd;
     float matrix[16];
+    ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, &lastFlushedBuffer, nullptr, matrix),
+        SURFACE_ERROR_INVALID_PARAM);
     ASSERT_EQ(OH_NativeWindow_GetLastFlushedBuffer(nativeWindow, &lastFlushedBuffer, &lastFlushedFenceFd, matrix),
         OHOS::GSERROR_OK);
     BufferHandle *lastFlushedHanlde = OH_NativeWindow_GetBufferHandleFromNative(lastFlushedBuffer);
@@ -1928,6 +1930,44 @@ HWTEST_F(NativeWindowTest, SurfaceErrorInvalidParameter001, Function | MediumTes
         SURFACE_ERROR_INVALID_PARAM);
     ASSERT_EQ(OH_NativeWindow_GetMetadataValue(nativeWindow, OH_HDR_METADATA_TYPE, nullptr, nullptr),
         SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: SurfaceErrorInvalidParameter
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call functions with invalid parameters and check ret
+*/
+HWTEST_F(NativeWindowTest, SurfaceErrorInvalidParameter002, Function | MediumTest | Level2)
+{
+    OHNativeWindow *nativeWindowTemp = new OHNativeWindow();
+    NativeWindowBuffer *nativeWindowBuffer1;
+    Region region;
+    int32_t height;
+    int32_t width;
+    int fence = -1;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, nullptr),
+        SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(NativeWindowFlushBuffer(nativeWindowTemp, nativeWindowBuffer, fence, region),
+        SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindowTemp, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OHScalingMode scalingMode1 = OHScalingMode::OH_SCALING_MODE_SCALE_TO_WINDOW;
+    OHScalingModeV2 scalingMode2 = OHScalingModeV2::OH_SCALING_MODE_SCALE_TO_WINDOW_V2;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowSetScalingMode(nativeWindowTemp, firstSeqnum, scalingMode1),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(NativeWindowSetScalingModeV2(nativeWindowTemp, scalingMode2), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(NativeWindowSetScalingModeV2(nullptr, scalingMode2), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(NativeWindowSetMetaData(nativeWindowTemp, 0, 0, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OHHDRMetadataKey key = OHHDRMetadataKey::OH_METAKEY_HDR10_PLUS;
+    ASSERT_EQ(NativeWindowSetMetaDataSet(nativeWindowTemp, 0, key, 0, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OHExtDataHandle *handle = AllocOHExtDataHandle(1);
+    ASSERT_EQ(NativeWindowSetTunnelHandle(nativeWindowTemp, handle), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OH_NativeBuffer_TransformType transform = OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_180;
+    ASSERT_EQ(NativeWindowGetTransformHint(nativeWindowTemp, &transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(NativeWindowSetTransformHint(nativeWindowTemp, transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(NativeWindowGetDefaultWidthAndHeight(nativeWindowTemp, &width, &height), OHOS::GSERROR_INVALID_ARGUMENTS);
+    NativeWindowSetBufferHold(nativeWindowTemp);
 }
 
 /*

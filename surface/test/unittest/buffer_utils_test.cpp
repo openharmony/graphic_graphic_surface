@@ -86,7 +86,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2
     buffer->Alloc(requestConfig);
 
     // Call DumpToFileAsync
-    GSError ret = DumpToFileAsync(pid, name_, buffer);
+    GSError ret = DumpToFileAsync(true, pid, name_, buffer);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     // Expect Buffer Dump to be completed within 20ms.

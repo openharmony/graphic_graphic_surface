@@ -15,6 +15,7 @@
 
 #include "buffer_queue_producer.h"
 
+#include <cinttypes>
 #include <mutex>
 #include <set>
 
@@ -40,6 +41,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
     bufferQueue_ = std::move(bufferQueue);
     if (bufferQueue_ != nullptr) {
         bufferQueue_->GetName(name_);
+        uniqueId_ = bufferQueue_->GetUniqueId();
     }
     memberFuncMap_ = {
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_INIT_INFO, GetProducerInitInfoRemote),
@@ -104,12 +106,12 @@ BufferQueueProducer::~BufferQueueProducer()
 GSError BufferQueueProducer::CheckConnectLocked()
 {
     if (connectedPid_ == 0) {
-        BLOGNW("this BufferQueue has no connections");
+        BLOGW("no connections, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
 
     if (connectedPid_ != GetCallingPid()) {
-        BLOGNW("this BufferQueue has been connected by :%{public}d, you can not disconnect", connectedPid_);
+        BLOGW("connected by: %{public}d, uniqueId: %{public}" PRIu64 ".", connectedPid_, uniqueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
 
@@ -121,12 +123,12 @@ int32_t BufferQueueProducer::OnRemoteRequest(uint32_t code, MessageParcel &argum
 {
     auto it = memberFuncMap_.find(code);
     if (it == memberFuncMap_.end()) {
-        BLOGN_FAILURE("cannot process %{public}u", code);
+        BLOGE("cannot process %{public}u", code);
         return 0;
     }
 
     if (it->second == nullptr) {
-        BLOGN_FAILURE("memberFuncMap_[%{public}u] is nullptr", code);
+        BLOGE("memberFuncMap_[%{public}u] is nullptr", code);
         return 0;
     }
 
@@ -778,7 +780,7 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
         std::lock_guard<std::mutex> lock(mutex_);
         auto callingPid = GetCallingPid();
         if (connectedPid_ != 0 && connectedPid_ != callingPid) {
-            BLOGNW("this BufferQueue has been connected by :%{public}d", connectedPid_);
+            BLOGW("connected by: %{public}d, uniqueId: %{public}" PRIu64 ".", connectedPid_, uniqueId_);
             return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
         }
         connectedPid_ = callingPid;
@@ -836,7 +838,7 @@ GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences
     for (size_t i = 0; i < sequences.size(); ++i) {
         ret = bufferQueue_->FlushBuffer(sequences[i], bedata[i], fences[i], configs[i]);
         if (ret != GSERROR_OK) {
-            BLOGNE("BufferQueue FlushBuffers failed");
+            BLOGE("FlushBuffer failed: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
             return ret;
         }
     }
@@ -1136,7 +1138,8 @@ GSError BufferQueueProducer::Connect()
     std::lock_guard<std::mutex> lock(mutex_);
     auto callingPid = GetCallingPid();
     if (connectedPid_ != 0 && connectedPid_ != callingPid) {
-        BLOGNW("this BufferQueue has been connected by :%{public}d", connectedPid_);
+        BLOGW("connected by: %{public}d, request by: %{public}d , uniqueId: %{public}" PRIu64 ".",
+            connectedPid_, callingPid, uniqueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
     connectedPid_ = callingPid;
@@ -1258,7 +1261,7 @@ void BufferQueueProducer::OnBufferProducerRemoteDied()
     {
         std::lock_guard<std::mutex> lock(mutex_);
         if (connectedPid_ == 0) {
-            BLOGND("this bufferQueue has no connections");
+            BLOGD("no connections, uniqueId: %{public}" PRIu64 ".", uniqueId_);
             return;
         }
         connectedPid_ = 0;
@@ -1275,21 +1278,21 @@ void BufferQueueProducer::ProducerSurfaceDeathRecipient::OnRemoteDied(const wptr
 {
     auto remoteToken = remoteObject.promote();
     if (remoteToken == nullptr) {
-        BLOGNW("can't promote remote object.");
+        BLOGW("can't promote remote object.");
         return;
     }
 
     auto producer = producer_.promote();
     if (producer == nullptr) {
-        BLOGND("BufferQueueProducer was dead, do nothing.");
+        BLOGD("producer is nullptr");
         return;
     }
 
     if (producer->token_ != remoteToken) {
-        BLOGND("token doesn't match, ignore it.");
+        BLOGD("token doesn't match, ignore it, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());
         return;
     }
-    BLOGND("remote object died.");
+    BLOGD("remote object died, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());
     producer->OnBufferProducerRemoteDied();
 }
 }; // namespace OHOS

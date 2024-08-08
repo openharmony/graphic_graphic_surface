@@ -252,6 +252,7 @@ private:
     bool isShared_ = false;
     std::map<std::string, OnUserDataChangeFunc> onUserDataChange_;
     std::mutex lockMutex_;
+    uint64_t uniqueId_ = 0;
 };
 } // namespace OHOS
 

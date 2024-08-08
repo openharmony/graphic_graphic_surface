@@ -103,8 +103,8 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     }
     GSError ret = bufferImpl->Alloc(bfConfig);
     if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("Surface Buffer Alloc failed, %{public}s, config info: width[%{public}d, height[%{public}d,"
-            "format[%{public}d], usage[%{public}d]", GSErrorStr(ret).c_str(), config->width, config->height,
+        BLOGE("Alloc failed ret: %{public}d, config info: width[%{public}d, height[%{public}d,"
+            "format[%{public}d], usage[%{public}d]", ret, config->width, config->height,
             config->format, config->usage);
         return nullptr;
     }
@@ -112,7 +112,7 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     OH_NativeBuffer* buffer = OH_NativeBufferFromSurfaceBuffer(bufferImpl);
     int32_t err = OH_NativeBuffer_Reference(buffer);
     if (err != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("NativeBufferReference failed, buffer is nullptr.");
+        BLOGE("NativeBufferReference failed, err: %{public}d.", err);
         return nullptr;
     }
     return buffer;
@@ -161,7 +161,7 @@ int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
     if (ret == OHOS::SURFACE_ERROR_OK) {
         *virAddr = sbuffer->GetVirAddr();
     } else {
-        BLOGE("buffer map failed, ret:%{public}d", ret);
+        BLOGE("Map failed, ret:%{public}d", ret);
         ret = OHOS::SURFACE_ERROR_UNKOWN;
     }
     return ret;
@@ -175,7 +175,7 @@ int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer)
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     int32_t ret = sbuffer->Unmap();
     if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("buffer unmap failed, ret:%{public}d", ret);
+        BLOGE("Unmap failed, ret:%{public}d", ret);
         ret = OHOS::SURFACE_ERROR_UNKOWN;
     }
     return ret;
@@ -246,13 +246,13 @@ int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_Na
     if (ret == OHOS::SURFACE_ERROR_OK) {
         *virAddr = sbuffer->GetVirAddr();
     } else {
-        BLOGE("Surface Buffer Map failed, %{public}d", ret);
+        BLOGE("Map failed, %{public}d", ret);
         return ret;
     }
     OH_NativeBuffer_Planes *planes = nullptr;
     GSError retVal = sbuffer->GetPlanesInfo(reinterpret_cast<void**>(&planes));
     if (retVal != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("Get planesInfo failed, retVal:%d", retVal);
+        BLOGE("GetPlanesInfo failed, retVal:%d", retVal);
         return retVal;
     }
     outPlanes->planeCount = planes->planeCount;
@@ -337,7 +337,7 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
     if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetHDRMetadataType failed!, retVal:%d", ret);
+        BLOGE("GetHDRMetadataType failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
@@ -348,7 +348,7 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
             if (err != 0) {
                 delete[] *metadata;
                 *metadata = nullptr;
-                BLOGE("memcpy_s failed! , retVal:%d", err);
+                BLOGE("memcpy_s failed!, ret: %d", err);
                 return OHOS::SURFACE_ERROR_UNKOWN;
             }
             return OHOS::SURFACE_ERROR_OK;
@@ -381,7 +381,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     if (ret == OHOS::GSERROR_API_FAILED) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRSMetadata failed! , retVal:%d", ret);
+        BLOGE("SetHDRSMetadata failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();
@@ -392,14 +392,14 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     if (mD.empty()) {
         delete *metadata;
         *metadata = nullptr;
-        BLOGE("new metadata failed! ");
+        BLOGE("new metadata failed!");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
     if (err != 0) {
         delete[] *metadata;
         *metadata = nullptr;
-        BLOGE("memcpy_s failed! , retVal:%d", err);
+        BLOGE("memcpy_s failed!, ret: %d", err);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

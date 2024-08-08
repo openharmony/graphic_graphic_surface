@@ -112,6 +112,22 @@ HWTEST_F(BufferQueueProducerTest, QueueSize001, Function | MediumTest | Level2)
 }
 
 /*
+* Function: SetStatus and GetStatus
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetStatus with false and check get status value
+*                  2. call SetStatus with true and check get status value
+ */
+HWTEST_F(BufferQueueProducerTest, Status001, Function | MediumTest | Level2)
+{
+    bqp_->SetStatus(false);
+    EXPECT_EQ(bqp_->GetStatus(), false);
+    bqp_->SetStatus(true);
+    EXPECT_EQ(bqp_->GetStatus(), true);
+}
+
+/*
 * Function: RequestBuffer and CancelBuffer
 * Type: Function
 * Rank: Important(2)
@@ -512,6 +528,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->GetNameAndUniqueId(name, uniqueId), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->Disconnect(), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetScalingMode(0, ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->SetScalingMode(ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> meta;
     EXPECT_EQ(bqpTmp->SetMetaData(0, meta), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<uint8_t> metaData;
@@ -527,6 +544,33 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->AcquireLastFlushedBuffer(retval.buffer, acquireFence, nullptr, 0, false),
         OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->ReleaseLastFlushedBuffer(0), OHOS::SURFACE_ERROR_UNKOWN);
+    bqpTmp->OnBufferProducerRemoteDied();
+    EXPECT_EQ(bqpTmp->SetBufferHold(false), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->SetSdrWhitePointBrightness(1), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->SetHdrWhitePointBrightness(1), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->SetSurfaceAppFrameworkType(name), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->GetSurfaceAppFrameworkType(name), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OHSurfaceSource sourceType = OH_SURFACE_SOURCE_DEFAULT;
+    EXPECT_EQ(bqpTmp->SetSurfaceSourceType(sourceType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->GetSurfaceSourceType(sourceType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
+    EXPECT_EQ(bqpTmp->SetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->GetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->CleanCache(true), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->SetDefaultUsage(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->AttachBufferToQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->DetachBufferFromQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
+    ProducerInitInfo info;
+    EXPECT_EQ(bqpTmp->GetProducerInitInfo(info), OHOS::SURFACE_ERROR_UNKOWN);
+    vector<uint32_t> sequences;
+    vector<sptr<SyncFence>> fences;
+    vector<sptr<BufferExtraData>> bedata;
+    vector<BufferFlushConfigWithDamages> damages;
+    vector<BufferQueueProducer::RequestBufferReturnValue> retvalues;
+    BufferRequestConfig config;
+    EXPECT_EQ(bqpTmp->RequestBuffers(config, bedata, retvalues), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->FlushBuffers(sequences, bedata, fences, damages), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
 }

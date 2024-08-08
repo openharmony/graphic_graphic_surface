@@ -105,7 +105,7 @@ SurfaceBufferImpl::SurfaceBufferImpl()
     }
     metaDataCache_.clear();
     bedata_ = new BufferExtraDataImpl;
-    BLOGD("ctor +[%{public}u]", sequenceNumber_);
+    BLOGD("SurfaceBufferImpl ctor, seq: %{public}u", sequenceNumber_);
 }
 
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
@@ -113,12 +113,12 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
     metaDataCache_.clear();
     sequenceNumber_ = seqNum;
     bedata_ = new BufferExtraDataImpl;
-    BLOGD("SurfaceBufferImpl ctor =[%{public}u]", sequenceNumber_);
+    BLOGD("SurfaceBufferImpl ctor, seq: %{public}u", sequenceNumber_);
 }
 
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
-    BLOGD("~SurfaceBufferImpl dtor ~[%{public}u]", sequenceNumber_);
+    BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
     {
         std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
         FreeBufferHandleLocked();
@@ -164,11 +164,11 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
         surfaceBufferWidth_ = config.width;
         surfaceBufferHeight_ = config.height;
         bufferRequestConfig_ = config;
-        BLOGD("buffer handle w: %{public}d h: %{public}d t: %{public}d",
-            handle_->width, handle_->height, config.transform);
+        BLOGD("handle w: %{public}d h: %{public}d t: %{public}d, seq: %{public}u",
+            handle_->width, handle_->height, config.transform, sequenceNumber_);
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
+    BLOGW("Alloc Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 GSError SurfaceBufferImpl::Map()
@@ -182,11 +182,11 @@ GSError SurfaceBufferImpl::Map()
     if (handle_ == nullptr) {
         return GSERROR_INVALID_OPERATING;
     } else if (handle_->virAddr != nullptr) {
-        BLOGD("handle_->virAddr has been maped");
+        BLOGD("handle_->virAddr has been maped, seq: %{public}u", sequenceNumber_);
         return GSERROR_OK;
     }
     if (handle_->usage & BUFFER_USAGE_PROTECTED) {
-        BLOGD("handle usage is BUFFER_USAGE_PROTECTED, do not Map");
+        BLOGD("usage is BUFFER_USAGE_PROTECTED, do not Map, seq: %{public}u", sequenceNumber_);
         return GSERROR_OK;
     }
 
@@ -206,7 +206,7 @@ GSError SurfaceBufferImpl::Unmap()
     if (handle_ == nullptr) {
         return GSERROR_INVALID_OPERATING;
     } else if (handle_->virAddr == nullptr) {
-        BLOGW("handle has been unmaped");
+        BLOGW("handle has been unmaped, seq: %{public}u", sequenceNumber_);
         return GSERROR_OK;
     }
     auto dret = g_displayBuffer->Unmap(*handle_);
@@ -214,7 +214,7 @@ GSError SurfaceBufferImpl::Unmap()
         handle_->virAddr = nullptr;
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
+    BLOGW("Unmap Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 GSError SurfaceBufferImpl::FlushCache()
@@ -231,7 +231,7 @@ GSError SurfaceBufferImpl::FlushCache()
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
+    BLOGW("FlushCache Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
@@ -252,7 +252,7 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGE("Failed with %{public}d", dret);
+    BLOGW("GetImageLayout Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
@@ -271,7 +271,7 @@ GSError SurfaceBufferImpl::InvalidateCache()
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("Failed with %{public}d", dret);
+    BLOGW("InvalidateCache Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
     return GenerateError(GSERROR_API_FAILED, dret);
 }
 
@@ -436,7 +436,7 @@ GSError SurfaceBufferImpl::GetPlanesInfo(void **planesInfo)
     OHOS::HDI::Display::Buffer::V1_2::ImageLayout layout;
     GSError ret = GetImageLayout(&layout);
     if (ret != GSERROR_OK) {
-        BLOGW("GetImageLayout failed, ret:%d", ret);
+        BLOGW("GetImageLayout failed, ret:%d, seq: %{public}u", ret, sequenceNumber_);
         return ret;
     }
 
@@ -486,7 +486,7 @@ GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)
         !parcel.WriteUint64(bufferRequestConfig_.usage) || !parcel.WriteInt32(bufferRequestConfig_.timeout) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.transform))) {
-        BLOGE("%{public}s a lot failed", __func__);
+        BLOGE("parcel write fail, seq: %{public}u.", sequenceNumber_);
         return SURFACE_ERROR_UNKOWN;
     }
     return GSERROR_OK;
@@ -515,7 +515,7 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel &parcel)
         !parcel.ReadInt32(bufferRequestConfig_.strideAlignment) || !parcel.ReadInt32(bufferRequestConfig_.format) ||
         !parcel.ReadUint64(bufferRequestConfig_.usage) || !parcel.ReadInt32(bufferRequestConfig_.timeout) ||
         !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform)) {
-        BLOGE("%{public}s a lot failed", __func__);
+        BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);
         return GSERROR_API_FAILED;
     }
     bufferRequestConfig_.colorGamut = static_cast<GraphicColorGamut>(colorGamut);
@@ -561,12 +561,12 @@ GSError SurfaceBufferImpl::CheckBufferConfig(int32_t width, int32_t height,
                                              int32_t format, uint64_t usage)
 {
     if (width <= 0 || height <= 0) {
-        BLOGE("width or height is greater than 0, now is w %{public}d h %{public}d", width, height);
+        BLOGE("width %{public}d height %{public}d", width, height);
         return GSERROR_INVALID_ARGUMENTS;
     }
 
     if (format < 0 || format > GRAPHIC_PIXEL_FMT_BUTT) {
-        BLOGE("format [0, %{public}d], now is %{public}d", GRAPHIC_PIXEL_FMT_BUTT, format);
+        BLOGE("format is %{public}d", format);
         return GSERROR_INVALID_ARGUMENTS;
     }
 

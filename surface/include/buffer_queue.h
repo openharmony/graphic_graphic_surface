@@ -211,6 +211,7 @@ private:
     bool WaitForCondition();
     void RequestBufferDebugInfo();
     bool GetStatusLocked() const;
+    void CallConsumerListener();
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

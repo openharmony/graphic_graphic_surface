@@ -82,11 +82,11 @@ void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config
 {
     uint32_t size = parcel.ReadUint32();
     if (size == 0) {
-        BLOGE("The size of damages read from message parcel is 0");
+        BLOGE("ReadFlushConfig size is 0");
         return;
     }
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("The size of damages read from message parcel exceed the limit");
+        BLOGE("ReadFlushConfig size more than limit, size: %{public}u", size);
         return;
     }
     config.damages.clear();
@@ -107,7 +107,7 @@ void WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const 
 {
     uint32_t size = config.damages.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("The size of damages read from message parcel exceed the limit");
+        BLOGE("WriteFlushConfig size more than limit, size: %{public}u", size);
         return;
     }
     parcel.WriteUint32(size);
@@ -147,7 +147,7 @@ void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInf
 {
     uint32_t size = parcel.ReadUint32();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from Parcel");
+        BLOGE("ReadVerifyAllocInfo size more than limit, size: %{public}u", size);
         return;
     }
     infos.clear();
@@ -165,7 +165,7 @@ void WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyA
 {
     uint32_t size = infos.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from BufferVerifyAllocInfos");
+        BLOGE("WriteVerifyAllocInfo size more than limit, size: %{public}u", size);
         return;
     }
     parcel.WriteUint32(size);
@@ -181,7 +181,7 @@ void ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &met
 {
     uint32_t size = parcel.ReadUint32();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from Parcel");
+        BLOGE("ReadHDRMetaData size more than limit, size: %{public}u", size);
         return;
     }
     metaData.clear();
@@ -197,7 +197,7 @@ void WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaDat
 {
     uint32_t size = metaData.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from GraphicHDRMetaDatas");
+        BLOGE("WriteHDRMetaData size more than limit, size: %{public}u", size);
         return;
     }
     parcel.WriteUint32(size);
@@ -211,7 +211,7 @@ void ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData)
 {
     uint32_t size = parcel.ReadUint32();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from Parcel");
+        BLOGE("ReadHDRMetaDataSet size more than limit, size: %{public}u", size);
         return;
     }
     metaData.clear();
@@ -225,7 +225,7 @@ void WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &meta
 {
     uint32_t size = metaData.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from metaDatas");
+        BLOGE("WriteHDRMetaDataSet size more than limit, size: %{public}u", size);
         return;
     }
     parcel.WriteUint32(size);
@@ -237,12 +237,12 @@ void WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &meta
 void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
 {
     if (handle == nullptr) {
-        BLOGE("ReadExtDataHandle failed, handle is null");
+        BLOGE("handle is null");
         return;
     }
     uint32_t reserveInts = parcel.ReadUint32();
     if (reserveInts > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from parcel");
+        BLOGE("ReadExtDataHandle size more than limit, size: %{public}u", reserveInts);
         return;
     }
     GraphicExtDataHandle *tunnelHandle = AllocExtDataHandle(reserveInts);
@@ -265,12 +265,12 @@ void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
 void WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle)
 {
     if (handle == nullptr) {
-        BLOGE("WriteExtDataHandle failed, handle is null");
+        BLOGE("handle is null");
         return;
     }
     uint32_t reserveInts = handle->reserveInts;
     if (reserveInts > SURFACE_PARCEL_SIZE_LIMIT) {
-        BLOGE("Too much data obtained from reserveInts");
+        BLOGE("WriteExtDataHandle size more than limit, size: %{public}u", reserveInts);
         return;
     }
     parcel.WriteUint32(reserveInts);
@@ -297,7 +297,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
         auto ret = memcpy_s(current_dest, size, current_src, size);
         if (ret != 0) {
-            BLOGE("BufferDump error ret:%{public}d", static_cast<int>(ret));
+            BLOGE("memcpy_s ret:%{public}d", static_cast<int>(ret));
         }
     };
 
@@ -361,7 +361,7 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
 {
     if (buffer == nullptr) {
-        BLOGE("BufferDump failed: buffer is a nullptr.");
+        BLOGE("buffer is a nullptr.");
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -370,7 +370,7 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
         uint8_t* src = static_cast<uint8_t*>(buffer->GetVirAddr());
 
         if (src == nullptr) {
-            BLOGE("BufferDump failed: src is a nullptr.");
+            BLOGE("src is a nullptr.");
             return GSERROR_INVALID_ARGUMENTS;
         }
 
@@ -383,11 +383,11 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
                 buffer->GetWidth(), buffer->GetHeight(), name);
             file_writer.detach();
         } else {
-            BLOGE("BufferDump failed: dest is a nullptr.");
+            BLOGE("dest is a nullptr.");
             return GSERROR_INTERNAL;
         }
     } else {
-        BLOGE("BufferDump buffer size error.");
+        BLOGE("BufferDump buffer size(%{public}zu) error.", size);
         return GSERROR_INTERNAL;
     }
 

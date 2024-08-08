@@ -116,7 +116,7 @@ private:
         GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
         if (ret != GSERROR_OK) {
             BLOGE("ReadSurfaceBufferImpl failed, return %{public}d", ret);
-            return ret;
+            return OnBufferReleasedWithFence(buffer, fence);
         }
         if (arguments.ReadBool()) {
             fence = SyncFence::ReadFromMessageParcel(arguments);

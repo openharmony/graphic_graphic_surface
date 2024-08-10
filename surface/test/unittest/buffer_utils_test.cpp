@@ -113,4 +113,64 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2
 
     ASSERT_EQ(dumpFileSize, buffer->GetSize());
 }
+
+/*
+* Function: WriteToFile
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DumpToFileAsync
+*                  2. check ret
+ */
+HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, Function | MediumTest | Level2)
+{
+    buffer = nullptr;
+    GSError ret = DumpToFileAsync(0, name_, buffer);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SizeLimitTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. make size bigger than SURFACE_PARCEL_SIZE_LIMIT and check the ret
+ */
+HWTEST_F(BufferUtilsTest, SizeLimitTest001, Function | MediumTest | Level2)
+{
+    MessageParcel parcel;
+    uint32_t size = SURFACE_PARCEL_SIZE_LIMIT + 1;
+
+    BufferFlushConfigWithDamages flushConfig = {
+        .damages = std::vector<Rect>(size),
+    };
+    WriteFlushConfig(parcel, flushConfig);
+    parcel.WriteUint32(size);
+    ReadFlushConfig(parcel, flushConfig);
+
+    auto infos = std::vector<BufferVerifyAllocInfo>(size);
+    WriteVerifyAllocInfo(parcel, infos);
+    parcel.WriteUint32(size);
+    ReadVerifyAllocInfo(parcel, infos);
+
+    auto metaData = std::vector<GraphicHDRMetaData>(size);
+    WriteHDRMetaData(parcel, metaData);
+    parcel.WriteUint32(size);
+    ReadHDRMetaData(parcel, metaData);
+
+    auto metaDataSet = std::vector<uint8_t>(size);
+    WriteHDRMetaDataSet(parcel, metaDataSet);
+    parcel.WriteUint32(size);
+    ReadHDRMetaDataSet(parcel, metaDataSet);
+
+    GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(
+        malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t)));
+    handle->fd = -1;
+    handle->reserveInts = size;
+    handle->reserve[0] = 0;
+    sptr<SurfaceTunnelHandle> tunnelHandle = new SurfaceTunnelHandle();
+    WriteExtDataHandle(parcel, handle);
+    parcel.WriteUint32(size);
+    ReadExtDataHandle(parcel, tunnelHandle);
+}
 }

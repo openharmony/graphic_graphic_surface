@@ -687,4 +687,41 @@ HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, Function | 
     EXPECT_EQ(bp->SetHdrWhitePointBrightness(1), GSERROR_OK);
     EXPECT_EQ(bp->SetSdrWhitePointBrightness(1), GSERROR_OK);
 }
+
+/*
+* Function: AcquireAndReleaseLastFlushedBuffer
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call AcquireLastFlushedBuffer and check the ret
+*                  2. call ReleaseLastFlushedBuffer and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer;
+    sptr<SyncFence> fence;
+    float matrix[16];
+    GSError ret = bp->AcquireLastFlushedBuffer(buffer, fence, matrix, 16, false);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_NE(buffer, nullptr);
+    ret = bp->ReleaseLastFlushedBuffer(buffer->GetSeqNum());
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: AttachAndDetachBuffer
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferFromQueue and check the ret
+*                  2. call DetachBufferFromQueue and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = bp->AttachBufferToQueue(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    ret = bp->DetachBufferFromQueue(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+}
 }

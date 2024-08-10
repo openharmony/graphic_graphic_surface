@@ -487,6 +487,90 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, Function 
 }
 
 /*
+* Function: SetWhitePointBrightness
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetHdrWhitePointBrightness, SetSdrWhitePointBrightness
+*                  2. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetWhitePointBrightness001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteFloat(1);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetHdrWhitePointBrightnessRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+    ret = bqp_->SetSdrWhitePointBrightnessRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
+* Function: SetDefaultUsage
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetDefaultUsage
+*                  2. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetDefaultUsage001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteUint64(0);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetDefaultUsageRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
+* Function: SetBufferHold
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferHold
+*                  2. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetBufferHold001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetBufferHoldRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+}
+
+/*
+* Function: TransformHint
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call TransformHint
+*                  2. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, TransformHint001, Function | MediumTest | Level2)
+{
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
+
+    MessageParcel arguments;
+    arguments.WriteUint32(transform);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetBufferHoldRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+    int32_t err = reply.ReadInt32();
+    EXPECT_EQ(err, OHOS::GSERROR_OK);
+
+    ret = bqp_->GetTransformHintRemote(arguments, reply, option);
+    EXPECT_EQ(ret, 0);
+    err = reply.ReadInt32();
+    EXPECT_EQ(err, OHOS::GSERROR_OK);
+}
+
+
+/*
 * Function: BufferQueueProducer member function nullptr test
 * Type: Function
 * Rank: Important(2)

@@ -253,4 +253,38 @@ HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | 
     ASSERT_EQ(buffer->WriteBufferRequestConfig(parcel), GSERROR_OK);
     ASSERT_EQ(buffer->ReadBufferRequestConfig(parcel), GSERROR_OK);
 }
+
+/*
+* Function: EglData
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call SetEglData
+*                  3. call GetEglData and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, EglData001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    sptr<EglData> data = nullptr;
+    buffer->SetEglData(data);
+    ASSERT_EQ(buffer->GetEglData(), nullptr);
+}
+
+/*
+* Function: BufferWrapper
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call SetBufferWrapper
+*                  3. call GetBufferWrapper and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, BufferWrapper001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    BufferWrapper wrapper = {};
+    buffer->SetBufferWrapper(wrapper);
+    buffer->GetBufferWrapper();
+}
 }

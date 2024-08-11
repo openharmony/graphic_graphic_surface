@@ -13,40 +13,29 @@
 
 import("//build/test.gni")
 
-module_out_path = "graphic_surface/sync_fence"
+module_out_path = "graphic_surface/utils"
 
 group("unittest") {
   testonly = true
 
-  deps = [ ":sync_fence_test" ]
+  deps = [ ":scoped_bytrace_test" ]
 }
 
-## UnitTest sync_fence_test {{{
-ohos_unittest("sync_fence_test") {
+## UnitTest scoped_bytrace_test {{{
+ohos_unittest("scoped_bytrace_test") {
   module_out_path = module_out_path
 
-  sources = [
-    "acquire_fence_manager_test.cpp",
-    "frame_sched_test.cpp",
-    "sync_fence_tracker_test.cpp",
-  ]
+  sources = [ "scoped_bytrace_test.cpp" ]
 
-  deps = [
-    ":sync_fence_common",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
-  ]
+  deps = [ ":scoped_bytrace_common" ]
 
-  external_deps = [
-    "c_utils:utils",
-    "graphic_surface:sync_fence",
-    "hilog:libhilog",
-  ]
+  external_deps = [ "graphic_surface:scoped_bytrace" ]
 }
 
-## UnitTest sync_fence_test }}}
+## UnitTest scoped_bytrace_test }}}
 
-## Build sync_fence_common.a {{{
-config("sync_fence_common_public_config") {
+## Build scoped_bytrace_common.a {{{
+config("scoped_bytrace_common_public_config") {
   cflags = [
     "-Wall",
     "-Werror",
@@ -56,13 +45,13 @@ config("sync_fence_common_public_config") {
   ]
 }
 
-ohos_static_library("sync_fence_common") {
+ohos_static_library("scoped_bytrace_common") {
   visibility = [ ":*" ]
   testonly = true
 
-  public_configs = [ ":sync_fence_common_public_config" ]
+  public_configs = [ ":scoped_bytrace_common_public_config" ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"
 }
-## Build sync_fence_common.a }}}
+## Build scoped_bytrace_common.a }}}

@@ -89,24 +89,24 @@ int32_t SyncFence::Wait(uint32_t timeout)
     return retCode < 0 ? -errno : 0;
 }
 
-int SyncFence::SyncMerge(const char *name, int fd1, int fd2)
+int32_t SyncFence::SyncMerge(const char *name, int32_t fd1, int32_t fd2, int32_t &newFenceFd)
 {
-    int retCode = -1;
     struct sync_merge_data syncMergeData = {};
     syncMergeData.fd2 = fd2;
     if (strcpy_s(syncMergeData.name, sizeof(syncMergeData.name), name)) {
         UTILS_LOGE("SyncMerge ctrcpy fence name failed.");
-        return retCode;
+        return -1;
     }
 
-    retCode = ioctl(fd1, SYNC_IOC_MERGE, &syncMergeData);
+    int32_t retCode = ioctl(fd1, SYNC_IOC_MERGE, &syncMergeData);
     if (retCode < 0) {
         errno = EINVAL;
-        UTILS_LOGE("Fence merge failed, errno is %{public}d.", errno);
-        return retCode;
+        UTILS_LOGE("Fence merge failed, errno: %{public}d, ret: %{public}d.", errno, retCode);
+        return -1;
     }
 
-    return syncMergeData.fence;
+    newFenceFd = syncMergeData.fence;
+    return 0;
 }
 
 sptr<SyncFence> SyncFence::MergeFence(const std::string &name,
@@ -117,11 +117,11 @@ sptr<SyncFence> SyncFence::MergeFence(const std::string &name,
     int32_t fenceFd2 = fence2->fenceFd_;
 
     if (fenceFd1 >= 0 && fenceFd2 >= 0) {
-        newFenceFd = SyncFence::SyncMerge(name.c_str(), fenceFd1, fenceFd2);
+        (void)SyncFence::SyncMerge(name.c_str(), fenceFd1, fenceFd2, newFenceFd);
     } else if (fenceFd1 >= 0) {
-        newFenceFd = SyncFence::SyncMerge(name.c_str(), fenceFd1, fenceFd1);
+        (void)SyncFence::SyncMerge(name.c_str(), fenceFd1, fenceFd1, newFenceFd);
     } else if (fenceFd2 >= 0) {
-        newFenceFd = SyncFence::SyncMerge(name.c_str(), fenceFd2, fenceFd2);
+        (void)SyncFence::SyncMerge(name.c_str(), fenceFd2, fenceFd2, newFenceFd);
     } else {
         return INVALID_FENCE;
     }

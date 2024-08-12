@@ -29,6 +29,7 @@ ScopedBytrace::~ScopedBytrace()
 {
     if (!isEnd_) {
         FinishTrace(HITRACE_TAG_GRAPHIC_AGP);
+        isEnd_ = true;
     }
 }
 
@@ -36,6 +37,7 @@ void ScopedBytrace::End()
 {
     if (!isEnd_) {
         FinishTrace(HITRACE_TAG_GRAPHIC_AGP);
+        isEnd_ = true;
     }
 }
 

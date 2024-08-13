@@ -29,7 +29,7 @@ SurfaceUtils* SurfaceUtils::GetInstance()
     if (instance == nullptr) {
         std::lock_guard<std::mutex> lockGuard(mutextinstance_);
         if (instance == nullptr) {
-            instance = new(std::nothrow) SurfaceUtils();
+            instance = new SurfaceUtils();
         }
     }
 

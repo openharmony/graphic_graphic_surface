@@ -1991,4 +1991,19 @@ HWTEST_F(ConsumerSurfaceTest, WhitePointBrightness001, Function | MediumTest | L
     ret = surface_->GetSdrWhitePointBrightness();
     ASSERT_EQ(static_cast<int32_t>(ret), 0);
 }
+
+/*
+* Function: InvalidParameter
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call interface with invaild input nullptr and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, InvalidParameter001, Function | MediumTest | Level2)
+{
+    sptr<OHOS::SurfaceBuffer> sBuffer = nullptr;
+    sptr<OHOS::SyncFence> fence = nullptr;
+    ASSERT_EQ(surface_->AcquireLastFlushedBuffer(sBuffer, fence, nullptr, 0, false), GSERROR_NOT_SUPPORT);
+    ASSERT_EQ(surface_->ReleaseLastFlushedBuffer(sBuffer), GSERROR_NOT_SUPPORT);
+}
 }

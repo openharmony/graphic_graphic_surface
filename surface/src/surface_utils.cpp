@@ -110,33 +110,6 @@ std::array<float, MATRIX_ARRAY_SIZE> SurfaceUtils::MatrixProduct(const std::arra
     };
 }
 
-std::array<float, MATRIX_ARRAY_SIZE> SurfaceUtils::MatrixProductV2(const std::array<float, MATRIX_ARRAY_SIZE>& lMat,
-    const std::array<float, MATRIX_ARRAY_SIZE>& rMat)
-{
-    // Product matrix 4 * 4 = 16
-    return std::array<float, MATRIX_ARRAY_SIZE> {
-        lMat[0] * rMat[0] + lMat[1] * rMat[4] + lMat[2] * rMat[8] + lMat[3] * rMat[12],
-        lMat[0] * rMat[1] + lMat[1] * rMat[5] + lMat[2] * rMat[9] + lMat[3] * rMat[13],
-        lMat[0] * rMat[2] + lMat[1] * rMat[6] + lMat[2] * rMat[10] + lMat[3] * rMat[14],
-        lMat[0] * rMat[3] + lMat[1] * rMat[7] + lMat[2] * rMat[11] + lMat[3] * rMat[15],
-
-        lMat[4] * rMat[0] + lMat[5] * rMat[4] + lMat[6] * rMat[8] + lMat[7] * rMat[12],
-        lMat[4] * rMat[1] + lMat[5] * rMat[5] + lMat[6] * rMat[9] + lMat[7] * rMat[13],
-        lMat[4] * rMat[2] + lMat[5] * rMat[6] + lMat[6] * rMat[10] + lMat[7] * rMat[14],
-        lMat[4] * rMat[3] + lMat[5] * rMat[7] + lMat[6] * rMat[11] + lMat[7] * rMat[15],
-
-        lMat[8] * rMat[0] + lMat[9] * rMat[4] + lMat[10] * rMat[8] + lMat[11] * rMat[12],
-        lMat[8] * rMat[1] + lMat[9] * rMat[5] + lMat[10] * rMat[9] + lMat[11] * rMat[13],
-        lMat[8] * rMat[2] + lMat[9] * rMat[6] + lMat[10] * rMat[10] + lMat[11] * rMat[14],
-        lMat[8] * rMat[3] + lMat[9] * rMat[7] + lMat[10] * rMat[11] + lMat[11] * rMat[15],
-
-        lMat[12] * rMat[0] + lMat[13] * rMat[4] + lMat[14] * rMat[8] + lMat[15] * rMat[12],
-        lMat[12] * rMat[1] + lMat[13] * rMat[5] + lMat[14] * rMat[9] + lMat[15] * rMat[13],
-        lMat[12] * rMat[2] + lMat[13] * rMat[6] + lMat[14] * rMat[10] + lMat[15] * rMat[14],
-        lMat[12] * rMat[3] + lMat[13] * rMat[7] + lMat[14] * rMat[11] + lMat[15] * rMat[15]
-    };
-}
-
 void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
     std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix)
 {
@@ -250,10 +223,10 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
             *transformMatrix = flipV;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT90:
-            *transformMatrix = MatrixProductV2(flipV, rotate90);
+            *transformMatrix = MatrixProduct(flipV, rotate90);
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V_ROT90:
-            *transformMatrix = MatrixProductV2(flipH, rotate90);
+            *transformMatrix = MatrixProduct(flipH, rotate90);
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT180:
             *transformMatrix = flipV;
@@ -262,10 +235,10 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
             *transformMatrix = flipH;
             break;
         case GraphicTransformType::GRAPHIC_FLIP_H_ROT270:
-            *transformMatrix = MatrixProductV2(flipH, rotate90);
+            *transformMatrix = MatrixProduct(flipH, rotate90);
             break;
         case GraphicTransformType::GRAPHIC_FLIP_V_ROT270:
-            *transformMatrix = MatrixProductV2(flipV, rotate90);
+            *transformMatrix = MatrixProduct(flipV, rotate90);
             break;
         default:
             break;
@@ -279,6 +252,16 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
     float ty = 0.f;
     float sx = 1.f;
     float sy = 1.f;
+    switch (transform) {
+        case GraphicTransformType::GRAPHIC_ROTATE_90:
+            transform = GraphicTransformType::GRAPHIC_ROTATE_270;
+            break;
+        case GraphicTransformType::GRAPHIC_ROTATE_270:
+            transform = GraphicTransformType::GRAPHIC_ROTATE_90;
+            break;
+        default:
+            break;
+    }
     std::array<float, TRANSFORM_MATRIX_ELE_COUNT> transformMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
     ComputeTransformByMatrixV2(transform, &transformMatrix);
 
@@ -297,11 +280,11 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
     }
     if (changeFlag) {
         std::array<float, MATRIX_ARRAY_SIZE> cropMatrix = {sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1};
-        transformMatrix = MatrixProductV2(cropMatrix, transformMatrix);
+        transformMatrix = MatrixProduct(cropMatrix, transformMatrix);
     }
 
     const std::array<float, TRANSFORM_MATRIX_ELE_COUNT> flipV = {1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1};
-    transformMatrix = MatrixProductV2(flipV, transformMatrix);
+    transformMatrix = MatrixProduct(flipV, transformMatrix);
 
     auto ret = memcpy_s(matrix, matrixSize * sizeof(float),
                         transformMatrix.data(), sizeof(transformMatrix));

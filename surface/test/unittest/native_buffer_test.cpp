@@ -661,6 +661,10 @@ HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer003, Function | Med
     NativeWindowBuffer nativeWindowBuffer;
     ret = OH_NativeBuffer_FromNativeWindowBuffer(&nativeWindowBuffer, nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    OH_NativeBuffer_GetNativeBufferConfig(nullptr, nullptr);
+    OH_NativeBuffer_GetNativeBufferConfig(buffer, nullptr);
+    ASSERT_EQ(OH_NativeBuffer_GetBufferHandle(nullptr), nullptr);
 }
 
 /*

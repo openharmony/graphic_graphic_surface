@@ -97,10 +97,7 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     bfConfig.timeout = 0;
     bfConfig.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     bfConfig.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    sptr<SurfaceBuffer> bufferImpl = new(std::nothrow) SurfaceBufferImpl();
-    if (bufferImpl == nullptr) {
-        return nullptr;
-    }
+    sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     GSError ret = bufferImpl->Alloc(bfConfig);
     if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("Alloc failed ret: %{public}d, config info: width[%{public}d, height[%{public}d,"
@@ -385,10 +382,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();
-    *metadata = new(std::nothrow) uint8_t[mD.size()];
-    if (*metadata == nullptr) {
-        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
-    }
+    *metadata = new uint8_t[mD.size()];
     if (mD.empty()) {
         delete *metadata;
         *metadata = nullptr;

@@ -24,8 +24,8 @@
 namespace OHOS {
 sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 {
-    sptr<ConsumerSurface> surf = new(std::nothrow) ConsumerSurface(name, isShared);
-    if (surf == nullptr || surf->Init() != GSERROR_OK) {
+    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
+    if (surf->Init() != GSERROR_OK) {
         BLOGE("consumer surf init failed");
         return nullptr;
     }
@@ -34,8 +34,8 @@ sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 
 sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
 {
-    sptr<ConsumerSurface> surf = new(std::nothrow) ConsumerSurface(name, isShared);
-    if (surf == nullptr || surf->Init() != GSERROR_OK) {
+    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
+    if (surf->Init() != GSERROR_OK) {
         BLOGE("consumer surf init failed");
         return nullptr;
     }
@@ -65,14 +65,9 @@ ConsumerSurface::~ConsumerSurface()
 
 GSError ConsumerSurface::Init()
 {
-    sptr<BufferQueue> queue_ = new(std::nothrow) BufferQueue(name_, isShared_);
-    if (queue_ == nullptr) {
-        BLOGE("New BufferQueue fail");
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    producer_ = new(std::nothrow) BufferQueueProducer(queue_);
-    consumer_ = new(std::nothrow) BufferQueueConsumer(queue_);
+    sptr<BufferQueue> queue_ = new BufferQueue(name_, isShared_);
+    producer_ = new BufferQueueProducer(queue_);
+    consumer_ = new BufferQueueConsumer(queue_);
     uniqueId_ = GetUniqueId();
     BLOGD("ConsumerSurface Init, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     return GSERROR_OK;
@@ -141,11 +136,7 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t& fen
 
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
 {
-    sptr<SyncFence> syncFence = new(std::nothrow) SyncFence(fence);
-    if (syncFence == nullptr) {
-        BLOGD("syncFence is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
-        return GSERROR_NOT_SUPPORT;
-    }
+    sptr<SyncFence> syncFence = new SyncFence(fence);
     return ReleaseBuffer(buffer, syncFence);
 }
 

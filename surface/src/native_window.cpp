@@ -87,10 +87,7 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
         return nullptr;
     }
 
-    OHNativeWindow* nativeWindow = new(std::nothrow) OHNativeWindow();
-    if (nativeWindow == nullptr) {
-        return nullptr;
-    }
+    OHNativeWindow* nativeWindow = new OHNativeWindow();
     nativeWindow->surface =
                 *reinterpret_cast<OHOS::sptr<OHOS::Surface> *>(pSurface);
     if (nativeWindow->surface == nullptr) {
@@ -194,10 +191,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     }
     uint32_t seqNum = sfbuffer->GetSeqNum();
     if (window->bufferCache_.find(seqNum) == window->bufferCache_.end()) {
-        OHNativeWindowBuffer *nwBuffer = new(std::nothrow) OHNativeWindowBuffer();
-        if (nwBuffer == nullptr) {
-            return OHOS::SURFACE_ERROR_NOMEM;
-        }
+        OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
         nwBuffer->sfbuffer = sfbuffer;
         nwBuffer->uiTimestamp = window->uiTimestamp;
         *buffer = nwBuffer;

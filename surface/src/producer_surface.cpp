@@ -115,7 +115,26 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     AddCache(bedataimpl, retval, config);
     buffer = retval.buffer;
     fence = retval.fence;
+
+    OutputRequestBufferLog(buffer);
+
     return GSERROR_OK;
+}
+
+void ProducerSurface::OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer)
+{
+    if (name_ != "RosenWeb") {
+        return;
+    }
+
+    static uint64_t fdRec[1024] = { 0 };
+    uint32_t fd = buffer->GetBufferHandle()->fd;
+    uint32_t fdTmp = fd < 1024 ? fd : fd % 1024;
+
+    if (fdRec[fdTmp] != queueId_) {
+        BLOGD("RequestBuffer, surfaceId %{public}" PRIu64 ", bufferFd: %{public}d.", queueId_, fd);
+        fdRec[fdTmp] = queueId_;
+    }
 }
 
 GSError ProducerSurface::AddCache(sptr<BufferExtraData>& bedataimpl,

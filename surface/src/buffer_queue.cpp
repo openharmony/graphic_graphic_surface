@@ -1319,12 +1319,17 @@ uint64_t BufferQueue::GetDefaultUsage()
 
 void BufferQueue::ClearLocked()
 {
-    for (auto &[id, _] : bufferQueueCache_) {
+    for (auto &[id, ele] : bufferQueueCache_) {
         if (onBufferDeleteForRSMainThread_ != nullptr) {
             onBufferDeleteForRSMainThread_(id);
         }
         if (onBufferDeleteForRSHardwareThread_ != nullptr) {
             onBufferDeleteForRSHardwareThread_(id);
+        }
+
+        if (name_  == "RosenWeb") {
+            BLOGD("ClearLocked, bufferFd: %{public}d, refCount: %{public}d.",
+                    ele.buffer->GetBufferHandle()->fd, ele.buffer->GetSptrRefCount());
         }
     }
     bufferQueueCache_.clear();
@@ -1359,6 +1364,7 @@ GSError BufferQueue::GoBackground()
 
 GSError BufferQueue::CleanCache(bool cleanAll)
 {
+    BLOGD("CleanCache, uniqueId: %{public}" PRIu64 ". cleanAll: %{public}d.", uniqueId_, cleanAll);
     sptr<IBufferConsumerListener> listener;
     IBufferConsumerListenerClazz *listenerClazz;
     {

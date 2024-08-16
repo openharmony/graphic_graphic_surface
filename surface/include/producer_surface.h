@@ -215,6 +215,7 @@ public:
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
+    GSError SetGlobalAlpha(int32_t alpha) override;
 private:
     bool IsRemote();
     void CleanAllLocked();

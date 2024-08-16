@@ -55,6 +55,7 @@ public:
     GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const;
     GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const;
     GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key, std::vector<uint8_t> &metaData) const;
+    int32_t GetGlobalAlpha() const;
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const;
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp);
 

@@ -34,6 +34,7 @@
 #include "sync_fence_tracker.h"
 #include "surface_utils.h"
 #include "v1_1/buffer_handle_meta_key_type.h"
+#include "v2_0/buffer_handle_meta_key_type.h"
 
 namespace OHOS {
 namespace {
@@ -1726,6 +1727,30 @@ GSError BufferQueue::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimest
         }
     }
 }
+
+void BufferQueue::SetSurfaceBufferGlobalAlpha(sptr<SurfaceBuffer> buffer)
+{
+    if (buffer == nullptr) {
+        return;
+    }
+    using namespace HDI::Display::Graphic::Common;
+    V2_0::BufferHandleAttrKey key = V2_0::BufferHandleAttrKey::ATTRKEY_FORCE_GLOBAL_ALPHA;
+    std::vector<uint8_t> values;
+    values.push_back(static_cast<uint8_t>(globalAlpha_));
+    buffer->SetMetadata(key, values);
+}
+
+GSError BufferQueue::SetGlobalAlpha(int32_t alpha)
+{
+    globalAlpha_ = alpha;
+    return GSERROR_OK;
+}
+
+int32_t BufferQueue::GetGlobalAlpha() const
+{
+    return globalAlpha_;
+}
+
 void BufferQueue::DumpMetadata(std::string &result, BufferElement element)
 {
     HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;

@@ -92,6 +92,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
             BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, SetSdrWhitePointBrightnessRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER, AcquireLastFlushedBufferRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, ReleaseLastFlushedBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_GLOBALALPHA, SetGlobalAlphaRemote),
     };
 }
 
@@ -739,6 +740,14 @@ int32_t BufferQueueProducer::ReleaseLastFlushedBufferRemote(
     return 0;
 }
 
+int32_t BufferQueueProducer::SetGlobalAlpha(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    int32_t alpha = arguments.ReadInt32();
+    GSError sret = SetGlobalAlpha(alpha);
+    reply.WriteInt32(sret);
+    return 0;
+}
+
 GSError BufferQueueProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
 {
@@ -1245,6 +1254,14 @@ void BufferQueueProducer::SetStatus(bool status)
         return;
     }
     bufferQueue_->SetStatus(status);
+}
+
+GSError BufferQueueProducer::SetGlobalAlpha(int32_t alpha)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetGlobalAlpha(alpha);
 }
 
 sptr<NativeSurface> BufferQueueProducer::GetNativeSurface()

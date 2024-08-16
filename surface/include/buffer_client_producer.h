@@ -109,6 +109,7 @@ public:
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
+    GSError SetGlobalAlpha(int32_t alpha) override;
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);

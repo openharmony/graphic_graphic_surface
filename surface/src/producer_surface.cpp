@@ -869,4 +869,12 @@ GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
     }
     return producer_->ReleaseLastFlushedBuffer(buffer->GetSeqNum());
 }
+
+GSError ProducerSurface::SetGlobalAlpha(int32_t alpha)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetGlobalAlpha(alpha);
+}
 } // namespace OHOS

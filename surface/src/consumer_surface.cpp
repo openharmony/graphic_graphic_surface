@@ -663,4 +663,18 @@ GSError ConsumerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
 {
     return GSERROR_NOT_SUPPORT;
 }
+
+GSError ConsumerSurface::SetGlobalAlpha(int32_t alpha)
+{
+    (void)alpha;
+    return GSERROR_OK;
+}
+
+int32_t ConsumerSurface::GetGlobalAlpha() const
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetGlobalAlpha();
+}
 } // namespace OHOS

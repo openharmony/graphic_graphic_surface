@@ -276,4 +276,12 @@ GSError BufferQueueConsumer::IsSurfaceBufferInCache(uint32_t seqNum, bool &isInC
     }
     return bufferQueue_->IsSurfaceBufferInCache(seqNum, isInCache);
 }
+
+int32_t BufferQueueConsumer::GetGlobalAlpha() const
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->GetGlobalAlpha();
+}
 } // namespace OHOS

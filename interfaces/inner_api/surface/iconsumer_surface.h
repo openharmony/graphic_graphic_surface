@@ -153,6 +153,7 @@ public:
         (void)buffer;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual int32_t GetGlobalAlpha() const = 0;
 protected:
     IConsumerSurface() = default;
 };

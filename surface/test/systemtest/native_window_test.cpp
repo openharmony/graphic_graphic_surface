@@ -38,26 +38,43 @@ public:
 
     // OH_NativeWindow_CreateNativeWindow001
     pid_t ChildNativeWindowProcess001();
-    int32_t CreateNativeWindowAndRequestBuffer001(NativeWindow **nativeWindow);
+    int32_t CreateNativeWindowAndRequestBuffer001(sptr<IRemoteObject> robj, NativeWindow **nativeWindow);
 
     // OH_NativeWindow_CreateNativeWindow002
     pid_t ChildNativeWindowProcess002();
-    int32_t CreateNativeWindowAndRequestBuffer002(NativeWindow **nativeWindow);
+    int32_t CreateNativeWindowAndRequestBuffer002(sptr<IRemoteObject> robj, NativeWindow **nativeWindow);
 
     static inline sptr<OHOS::IConsumerSurface> cSurface = nullptr;
-    static inline sptr<Surface> pSurface = nullptr;
     static inline int32_t pipeFd[2] = {};
+    static inline int32_t ipcSystemAbilityID = 34567;
 };
 
-void NativeWindowTest::SetUpTestCase() {}
+void NativeWindowTest::SetUpTestCase()
+{
+    uint64_t tokenId;
+    const char *perms[2];
+    perms[0] = "ohos.permission.DISTRIBUTED_DATASYNC";
+    perms[1] = "ohos.permission.CAMERA";
+    NativeTokenInfoParams infoInstance = {
+        .dcapsNum = 0, .permsNum = 2, .aclsNum = 0, .dcaps = NULL, .perms = perms, .acls = NULL,
+        .processName = "OH_NativeWindow_CreateNativeWindow001", .aplStr = "system_basic",
+    };
+    tokenId = GetAccessTokenId(&infoInstance);
+    SetSelfTokenID(tokenId);
+    int32_t rett = Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
+    ASSERT_EQ(rett, Security::AccessToken::RET_SUCCESS);
+}
 
 void NativeWindowTest::OnBufferAvailable()
 {
 
 }
 
-int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer001(NativeWindow **nativeWindow)
+int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer001(sptr<IRemoteObject> robj, NativeWindow **nativeWindow)
 {
+    auto producer = iface_cast<IBufferProducer>(robj);
+    sptr<Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+
     *nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
     struct NativeWindowBuffer *nativeWindowBuffer = nullptr;
 
@@ -100,8 +117,17 @@ pid_t NativeWindowTest::ChildNativeWindowProcess001()
     int64_t data;
     read(pipeFd[0], &data, sizeof(data));
 
+    sptr<IRemoteObject> robj = nullptr;
+    while (true) {
+        auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        robj = sam->GetSystemAbility(ipcSystemAbilityID);
+        if (robj != nullptr) {
+            break;
+        }
+        sleep(0);
+    }
     NativeWindow *nativeWindow = nullptr;
-    int32_t ret = CreateNativeWindowAndRequestBuffer001(&nativeWindow);
+    int32_t ret = CreateNativeWindowAndRequestBuffer001(robj, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
         write(pipeFd[1], &data, sizeof(data));
@@ -125,19 +151,21 @@ pid_t NativeWindowTest::ChildNativeWindowProcess001()
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. produce surface by nativewindow interface
-*                  2. consume surface and check buffer
+* CaseDescription: 1. produce surface by nativewindo675F4V interface
+*                  2. consume surface and check buff675F4Vr
 * @tc.require: issueI5GMZN issueI5IWHW
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, Function | MediumTest | Level2)
 {
+    // ipcSystemAbilityID++;
     auto pid = ChildNativeWindowProcess001();
     ASSERT_GE(pid, 0);
 
     cSurface = IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindow001");
     cSurface->RegisterConsumerListener(this);
     auto producer = cSurface->GetProducer();
-    pSurface = Surface::CreateSurfaceAsProducer(producer);
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 0;
     write(pipeFd[1], &data, sizeof(data));
@@ -159,8 +187,8 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, Function | Med
     write(pipeFd[1], &data, sizeof(data));
     close(pipeFd[0]);
     close(pipeFd[1]);
+    sam->RemoveSystemAbility(ipcSystemAbilityID);
     waitpid(pid, nullptr, 0);
-    pSurface = nullptr;
     cSurface = nullptr;
 }
 
@@ -186,8 +214,11 @@ bool NativeWindowTest::GetData(sptr<SurfaceBuffer> &buffer)
     return true;
 }
 
-int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer002(NativeWindow **nativeWindow)
+int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer002(sptr<IRemoteObject> robj, NativeWindow **nativeWindow)
 {
+    auto producer = iface_cast<IBufferProducer>(robj);
+    sptr<Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+
     *nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
     struct NativeWindowBuffer *nativeWindowBuffer = nullptr;
 
@@ -235,8 +266,17 @@ pid_t NativeWindowTest::ChildNativeWindowProcess002()
     int64_t data;
     read(pipeFd[0], &data, sizeof(data));
 
+    sptr<IRemoteObject> robj = nullptr;
+    while (true) {
+        auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        robj = sam->GetSystemAbility(ipcSystemAbilityID);
+        if (robj != nullptr) {
+            break;
+        }
+        sleep(0);
+    }
     NativeWindow *nativeWindow = nullptr;
-    int32_t ret = CreateNativeWindowAndRequestBuffer002(&nativeWindow);
+    int32_t ret = CreateNativeWindowAndRequestBuffer002(robj, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
         write(pipeFd[1], &data, sizeof(data));
@@ -266,13 +306,15 @@ pid_t NativeWindowTest::ChildNativeWindowProcess002()
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, Function | MediumTest | Level2)
 {
+    // ipcSystemAbilityID++;
     auto pid = ChildNativeWindowProcess002();
     ASSERT_GE(pid, 0);
 
     cSurface = IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindow002");
     cSurface->RegisterConsumerListener(this);
     auto producer = cSurface->GetProducer();
-    pSurface = Surface::CreateSurfaceAsProducer(producer);
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 0;
     write(pipeFd[1], &data, sizeof(data));
@@ -295,8 +337,8 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, Function | Med
     write(pipeFd[1], &data, sizeof(data));
     close(pipeFd[0]);
     close(pipeFd[1]);
+    sam->RemoveSystemAbility(ipcSystemAbilityID);
     waitpid(pid, nullptr, 0);
-    pSurface = nullptr;
     cSurface = nullptr;
 }
 }

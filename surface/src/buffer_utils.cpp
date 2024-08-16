@@ -358,8 +358,14 @@ void WriteToFile(std::string prefixPath, std::string pid, void* dest, size_t siz
     free(dest);
 }
 
-GSError DumpToFileAsync(bool isLocalRender, pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
+GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
 {
+    bool rsDumpFlag = access("/data/bq_dump", F_OK) == 0;
+    bool appDumpFlag = access("/data/storage/el1/base/bq_dump", F_OK) == 0;
+    if (!rsDumpFlag && !appDumpFlag) {
+        return GSERROR_OK;
+    }
+
     if (buffer == nullptr) {
         BLOGE("buffer is a nullptr.");
         return GSERROR_INVALID_ARGUMENTS;
@@ -379,9 +385,9 @@ GSError DumpToFileAsync(bool isLocalRender, pid_t pid, std::string name, sptr<Su
             // Copy through multithreading
             CloneBuffer(dest, src, size);
 
-            // Is texture export
             std::string prefixPath = "/data/bq_";
-            if (!isLocalRender) {
+            if (appDumpFlag) {
+                // Is app texture export
                 prefixPath = "/data/storage/el1/base/bq_";
             }
 

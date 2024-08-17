@@ -35,8 +35,7 @@
           "//foundation/graphic/graphic_surface/surface:surface",
           "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
           "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle",
-          "//foundation/graphic/graphic_surface/utils/frame_report:frame_report",
-          "//foundation/graphic/graphic_surface/scoped_bytrace:scoped_bytrace"
+          "//foundation/graphic/graphic_surface/utils/frame_report:frame_report"
         ],
         "inner_kits": [
           {
@@ -101,24 +100,13 @@
               ],
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
             }
-          },
-          {
-            "type": "so",
-            "name": "//foundation/graphic/graphic_surface/scoped_bytrace:scoped_bytrace",
-            "header": {
-              "header_files": [
-                "scoped_bytrace.h"
-              ],
-              "header_base": "//foundation/graphic/graphic_surface/scoped_bytrace/include"
-            }
           }
         ],
         "test": [
           "//foundation/graphic/graphic_surface/surface/test:test",
           "//foundation/graphic/graphic_surface/buffer_handle/test:test",
           "//foundation/graphic/graphic_surface/sync_fence/test:test",
-          "//foundation/graphic/graphic_surface/utils/frame_report/test:test",
-          "//foundation/graphic/graphic_surface/scoped_bytrace/test:test"
+          "//foundation/graphic/graphic_surface/utils/frame_report/test:test"
         ]
       }
     }

@@ -192,6 +192,7 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     retCode = memset_s(infoPtr, syncFileInfoMemSize, 0, syncFileInfoMemSize);
     if (retCode != 0) {
         UTILS_LOGE("memset_s error, retCode = %{public}d", retCode);
+        free(infoPtr);
         return {};
     }
     infoPtr->num_fences = arg.num_fences;

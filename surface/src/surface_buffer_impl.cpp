@@ -159,7 +159,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
     }
     auto dret = g_displayBuffer->AllocMem(info, handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
-        if (handle_!= nullptr) {
+        if (handle_ != nullptr) {
             dret = g_displayBuffer->RegisterBuffer(*handle_);
             if (dret != GRAPHIC_DISPLAY_SUCCESS && dret != GRAPHIC_DISPLAY_NOT_SUPPORT) {
                 BLOGE("AllocMem RegisterBuffer Failed with %{public}d", dret);

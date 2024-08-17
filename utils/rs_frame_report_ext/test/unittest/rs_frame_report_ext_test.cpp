@@ -42,8 +42,7 @@ void RsFrameReportExtTest::TearDown() {}
  */
 HWTEST_F(RsFrameReportExtTest, Init001, Function | MediumTest | Level2)
 {
-    RsFrameReportExt rsFrameReportExt_;
-    rsFrameReportExt_.Init();
+    RsFrameReportExt::GetInstance();
 }
 
 /**
@@ -54,8 +53,7 @@ HWTEST_F(RsFrameReportExtTest, Init001, Function | MediumTest | Level2)
  */
 HWTEST_F(RsFrameReportExtTest, GetEnable001, Function | MediumTest | Level2)
 {
-    RsFrameReportExt rsFrameReportExt_;
-    rsFrameReportExt_.GetEnable();
+    RsFrameReportExt::GetInstance().GetEnable();
 }
 
 /**
@@ -66,7 +64,6 @@ HWTEST_F(RsFrameReportExtTest, GetEnable001, Function | MediumTest | Level2)
  */
 HWTEST_F(RsFrameReportExtTest, HandleSwapBuffer001, Function | MediumTest | Level2)
 {
-    RsFrameReportExt rsFrameReportExt_;
-    rsFrameReportExt_.HandleSwapBuffer();
+    RsFrameReportExt::GetInstance().HandleSwapBuffer();
 }
 } // namespace OHOS

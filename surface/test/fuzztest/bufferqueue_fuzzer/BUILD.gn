@@ -24,7 +24,7 @@ ohos_fuzztest("BufferQueueFuzzTest") {
 
   include_dirs = [
     "$graphic_surface_root/surface/include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
+    "$graphic_surface_root/surface/test/fuzztest/common",
   ]
   cflags = [
     "-g",

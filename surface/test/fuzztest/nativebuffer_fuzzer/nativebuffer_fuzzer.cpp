@@ -18,50 +18,13 @@
 #include <securec.h>
 #include <string>
 
+#include "data_generate.h"
 #include "native_buffer.h"
+#include "native_window.h"
+
+using namespace g_fuzzCommon;
 
 namespace OHOS {
-    namespace {
-        constexpr size_t STR_LEN = 10;
-        const uint8_t* g_data = nullptr;
-        size_t g_size = 0;
-        size_t g_pos;
-    }
-
-    /*
-    * describe: get data from outside untrusted data(g_data) which size is according to sizeof(T)
-    * tips: only support basic type
-    */
-    template<class T>
-    T GetData()
-    {
-        T object {};
-        size_t objectSize = sizeof(object);
-        if (g_data == nullptr || objectSize > g_size - g_pos) {
-            return object;
-        }
-        errno_t ret = memcpy_s(&object, objectSize, g_data + g_pos, objectSize);
-        if (ret != EOK) {
-            return {};
-        }
-        g_pos += objectSize;
-        return object;
-    }
-
-    /*
-    * get a string from g_data
-    */
-    std::string GetStringFromData(int strlen)
-    {
-        char cstr[strlen];
-        cstr[strlen - 1] = '\0';
-        for (int i = 0; i < strlen - 1; i++) {
-            cstr[i] = GetData<char>();
-        }
-        std::string str(cstr);
-        return str;
-    }
-
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         if (data == nullptr) {
@@ -82,6 +45,7 @@ namespace OHOS {
 
         // test
         OH_NativeBuffer* buffer = OH_NativeBuffer_Alloc(&config);
+        CreateNativeWindowBufferFromNativeBuffer(buffer);
         OH_NativeBuffer_GetSeqNum(buffer);
         OH_NativeBuffer_GetConfig(buffer, &checkConfig);
         OH_NativeBuffer_Reference(buffer);

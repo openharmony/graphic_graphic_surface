@@ -237,7 +237,9 @@ namespace OHOS {
         cSurface->GetName();
         cSurface->GetDefaultHeight();
         cSurface->GetSdrWhitePointBrightness();
+        SurfaceFuzzTest1(pSurface, cSurface);
         SurfaceFuzzTest3(pSurface, cSurface);
+        SurfaceFuzzTest4(pSurface, cSurface);
         MetadataHelperFuzzTest();
     }
 

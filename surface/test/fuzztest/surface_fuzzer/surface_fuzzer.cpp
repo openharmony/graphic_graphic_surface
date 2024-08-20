@@ -177,7 +177,7 @@ namespace OHOS {
         pSurface->FlushBuffer(buffer, fenceFd, flushConfig);
         pSurface->AttachBuffer(buffer);
         pSurface->DetachBuffer(buffer);
-        int32_t timeout = GetData<int32_t>();
+        int32_t timeout = 0;
         pSurface->AttachBuffer(buffer, timeout);
         pSurface->DetachBuffer(buffer);
         pSurface->SetQueueSize(queueSize);

@@ -116,8 +116,7 @@ namespace OHOS {
         pSurface->RequestBuffers(buffers, fences, config);
         BufferFlushConfigWithDamages flushConfig = GetData<BufferFlushConfigWithDamages>();
         std::vector<BufferFlushConfigWithDamages> flushConfigs;
-        constexpr uint32_t bufferSize = 10;
-        for (size_t i = 0; i < buffers.size() || i < bufferSize; i++) {
+        for (size_t i = 0; i < buffers.size(); i++) {
             flushConfigs.emplace_back(flushConfig);
             fences.emplace_back(SyncFence::INVALID_FENCE);
         }

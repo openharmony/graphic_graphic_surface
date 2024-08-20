@@ -365,6 +365,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     ret = AllocBuffer(buffer, config);
     if (ret == GSERROR_OK) {
         SetSurfaceBufferHebcMetaLocked(buffer);
+        SetSurfaceBufferGlobalAlpha(buffer);
         SetReturnValue(buffer, bedata, retval);
         BLOGD("Success alloc Buffer[%{public}d %{public}d] seq: %{public}d, uniqueId: %{public}" PRIu64 ".",
             config.width, config.height, retval.sequence, uniqueId_);
@@ -450,6 +451,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     retval.fence = bufferQueueCache_[retval.sequence].fence;
     bedata = retval.buffer->GetExtraData();
     SetSurfaceBufferHebcMetaLocked(retval.buffer);
+    SetSurfaceBufferGlobalAlpha(retval.buffer);
 
     auto &dbs = retval.deletingBuffers;
     dbs.reserve(dbs.size() + deletingList_.size());

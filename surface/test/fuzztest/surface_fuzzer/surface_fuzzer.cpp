@@ -103,6 +103,8 @@ namespace OHOS {
         cSurface->GetUserData(key);
         cSurface->GetQueueSize();
         cSurface->GetSurfaceSourceType();
+        GraphicExtDataHandle handle = GetData<GraphicExtDataHandle>();
+        cSurface->SetTunnelHandle(&handle);
         cSurface->GetSurfaceAppFrameworkType();
     }
 
@@ -114,7 +116,8 @@ namespace OHOS {
         pSurface->RequestBuffers(buffers, fences, config);
         BufferFlushConfigWithDamages flushConfig = GetData<BufferFlushConfigWithDamages>();
         std::vector<BufferFlushConfigWithDamages> flushConfigs;
-        for (size_t i = 0; i < buffers.size(); i++) {
+        constexpr uint32_t bufferSize = 10;
+        for (size_t i = 0; i < buffers.size() || i < bufferSize; i++) {
             flushConfigs.emplace_back(flushConfig);
             fences.emplace_back(SyncFence::INVALID_FENCE);
         }
@@ -122,6 +125,7 @@ namespace OHOS {
         ScalingMode scalingMode = GetData<ScalingMode>();
         uint32_t sequence = GetData<uint32_t>();
         cSurface->SetScalingMode(sequence, scalingMode);
+        cSurface->SetScalingMode(scalingMode);
         cSurface->GetScalingMode(sequence, scalingMode);
         GraphicHDRMetaData metaData = GetData<GraphicHDRMetaData>();
         std::vector<GraphicHDRMetaData> metaDatas = {metaData};
@@ -284,6 +288,8 @@ namespace OHOS {
         pSurface->UnRegisterUserDataChangeListener(funcName);
         pSurface->ClearUserDataChangeListener();
         cSurface->ClearUserDataChangeListener();
+        sptr<OHOS::Surface> tmp = OHOS::Surface::CreateSurfaceAsConsumer();
+        tmp->RegisterConsumerListener(nullptr);
         return true;
     }
 } // namespace OHOS

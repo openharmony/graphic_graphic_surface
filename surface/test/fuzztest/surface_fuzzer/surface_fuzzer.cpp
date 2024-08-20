@@ -116,7 +116,7 @@ namespace OHOS {
         std::vector<BufferFlushConfigWithDamages> flushConfigs;
         for (size_t i = 0; i < buffers.size(); i++) {
             flushConfigs.emplace_back(flushConfig);
-            fences.emplace_back(new SyncFence(-1));
+            fences.emplace_back(SyncFence::INVALID_FENCE);
         }
         pSurface->FlushBuffers(buffers, fences, flushConfigs);
         ScalingMode scalingMode = GetData<ScalingMode>();
@@ -260,6 +260,10 @@ namespace OHOS {
         sptr<OHOS::Surface> pSurface = OHOS::Surface::CreateSurfaceAsProducer(producer);
         sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
         pSurface->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
+        pSurface->RegisterReleaseListener([](sptr<SurfaceBuffer> &buffer) ->
+            GSError {
+                return GSERROR_OK;
+        });
         pSurface->RegisterReleaseListener([](const sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence) ->
             GSError {
                 return GSERROR_OK;

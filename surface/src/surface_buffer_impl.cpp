@@ -31,19 +31,11 @@ namespace OHOS {
 namespace {
 GSError GenerateError(GSError err, GraphicDispErrCode code)
 {
-    switch (code) {
-        case GRAPHIC_DISPLAY_SUCCESS: return static_cast<GSError>(err + 0);
-        case GRAPHIC_DISPLAY_FAILURE: return static_cast<GSError>(err + LOWERROR_FAILURE);
-        case GRAPHIC_DISPLAY_FD_ERR: return static_cast<GSError>(err + EBADF);
-        case GRAPHIC_DISPLAY_PARAM_ERR: return static_cast<GSError>(err + EINVAL);
-        case GRAPHIC_DISPLAY_NULL_PTR: return static_cast<GSError>(err + EINVAL);
-        case GRAPHIC_DISPLAY_NOT_SUPPORT: return static_cast<GSError>(err + EOPNOTSUPP);
-        case GRAPHIC_DISPLAY_NOMEM: return static_cast<GSError>(err + ENOMEM);
-        case GRAPHIC_DISPLAY_SYS_BUSY: return static_cast<GSError>(err + EBUSY);
-        case GRAPHIC_DISPLAY_NOT_PERM: return static_cast<GSError>(err + EPERM);
-        default: break;
+    if (code == GRAPHIC_DISPLAY_SUCCESS) {
+        return err;
     }
-    return static_cast<GSError>(err + LOWERROR_INVALID);
+    BLOGE("Generate HDI error %{public}d, code %{public}d", err, code);
+    return GSERROR_HDI_ERROR;
 }
 
 inline GSError GenerateError(GSError err, int32_t code)

@@ -33,11 +33,12 @@
 #include "sync_fence.h"
 #include "sync_fence_tracker.h"
 #include "surface_utils.h"
-#include "v1_1/buffer_handle_meta_key_type.h"
 #include "v2_0/buffer_handle_meta_key_type.h"
 
 namespace OHOS {
 namespace {
+constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
+constexpr int32_t FORCE_GLOBAL_ALPHA_MAX = 255;
 constexpr uint32_t UNIQUE_ID_OFFSET = 32;
 constexpr uint32_t BUFFER_MEMSIZE_RATE = 1024;
 constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
@@ -257,12 +258,12 @@ void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
         return;
     }
 
-    V1_1::BufferHandleAttrKey key = V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
+    v2_0::BufferHandleAttrKey key = v2_0::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
     std::vector<uint8_t> values;
     if (isCpuAccessable_) { // hebc is off
-        values.push_back(static_cast<uint8_t>(V1_1::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
+        values.push_back(static_cast<uint8_t>(v2_0::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
     } else { // hebc is on
-        values.push_back(static_cast<uint8_t>(V1_1::HebcAccessType::HEBC_ACCESS_HW_ONLY));
+        values.push_back(static_cast<uint8_t>(v2_0::HebcAccessType::HEBC_ACCESS_HW_ONLY));
     }
 
     buffer->SetMetadata(key, values);
@@ -1732,7 +1733,8 @@ GSError BufferQueue::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimest
 
 void BufferQueue::SetSurfaceBufferGlobalAlpha(sptr<SurfaceBuffer> buffer)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || globalAlpha_ < FORCE_GLOBAL_ALPHA_MIN || globalAlpha_ > FORCE_GLOBAL_ALPHA_MAX) {
+        BLOGE("Invalid global alpha value: %{public}d", globalAlpha_);
         return;
     }
     using namespace HDI::Display::Graphic::Common;

@@ -24,7 +24,8 @@ ohos_fuzztest("BufferUtilsFuzzTest") {
 
   include_dirs = [
     "$graphic_surface_root/surface/include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
+    "$graphic_surface_root/interfaces/inner_api/surface",
+    "$graphic_surface_root/surface/test/fuzztest/common",
   ]
   cflags = [
     "-g",
@@ -37,7 +38,7 @@ ohos_fuzztest("BufferUtilsFuzzTest") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
   ]
 }
 

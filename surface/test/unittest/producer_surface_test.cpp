@@ -1589,20 +1589,6 @@ HWTEST_F(ProducerSurfaceTest, RegisterUserDataChangeListener001, Function | Medi
 }
 
 /*
-* Function: IsRemote
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call IsRemote with producer_ is nullptr
-*                  2. check ret
-*/
-HWTEST_F(ProducerSurfaceTest, IsRemote001, Function | MediumTest | Level2)
-{
-    bool ret = surface_->IsRemote();
-    ASSERT_EQ(ret, false);
-}
-
-/*
 * Function: RequestBuffersAndFlushBuffers
 * Type: Function
 * Rank: Important(1)

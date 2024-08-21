@@ -372,8 +372,10 @@ static void HandleNativeWindowSetSurfaceSourceType(OHNativeWindow *window, va_li
 static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window, va_list args)
 {
     char* appFrameworkType = va_arg(args, char*);
-    std::string typeStr(appFrameworkType);
-    window->surface->SetSurfaceAppFrameworkType(typeStr);
+    if (appFrameworkType != nullptr) {
+        std::string typeStr(appFrameworkType);
+        window->surface->SetSurfaceAppFrameworkType(typeStr);
+    }
 }
 
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)

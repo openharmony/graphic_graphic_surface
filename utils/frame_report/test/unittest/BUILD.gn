@@ -42,10 +42,7 @@ ohos_static_library("frame_report_test_common") {
   testonly = true
   public_configs = [ ":frame_report_test_config" ]
 
-  public_deps = [
-    "$graphic_surface_root/surface:surface",
-    "//third_party/googletest:gtest_main",
-  ]
+  public_deps = [ "$graphic_surface_root/surface:surface" ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"

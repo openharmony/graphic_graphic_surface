@@ -25,7 +25,8 @@
 #include "surface_utils.h"
 
 namespace OHOS {
-
+constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
+constexpr int32_t FORCE_GLOBAL_ALPHA_MAX = 255;
 sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 {
     if (producer == nullptr) {
@@ -872,7 +873,8 @@ GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
 
 GSError ProducerSurface::SetGlobalAlpha(int32_t alpha)
 {
-    if (producer_ == nullptr) {
+    if (producer_ == nullptr || alpha < FORCE_GLOBAL_ALPHA_MIN || alpha > FORCE_GLOBAL_ALPHA_MAX) {
+        BLOGE("Invalid producer global alpha value: %{public}", alpha);
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetGlobalAlpha(alpha);

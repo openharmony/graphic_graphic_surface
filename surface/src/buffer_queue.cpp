@@ -33,7 +33,6 @@
 #include "sync_fence_tracker.h"
 #include "surface_utils.h"
 #include "surface_trace.h"
-#include "v1_1/buffer_handle_meta_key_type.h"
 #include "v2_0/buffer_handle_meta_key_type.h"
 
 namespace OHOS {

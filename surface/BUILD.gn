@@ -40,8 +40,8 @@ config("surface_public_config") {
     "$graphic_surface_root/interfaces/inner_api/common",
     "$graphic_surface_root/interfaces/inner_api/utils",
     "$graphic_surface_root/sandbox",
-    "$graphic_surface_root/scoped_bytrace/include",
     "$graphic_surface_root/utils/rs_frame_report_ext/include",
+    "$graphic_surface_root/utils/trace",
   ]
 
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
@@ -96,7 +96,6 @@ ohos_shared_library("surface") {
   deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle",
     "$graphic_surface_root/sandbox:sandbox_utils",
-    "$graphic_surface_root/scoped_bytrace:scoped_bytrace",
     "$graphic_surface_root/sync_fence:sync_fence",
     "$graphic_surface_root/utils/frame_report:frame_report",
     "$graphic_surface_root/utils/rs_frame_report_ext:rs_frame_report_ext_surface",
@@ -109,6 +108,7 @@ ohos_shared_library("surface") {
     "drivers_interface_display:libdisplay_commontype_proxy_1.0",
     "drivers_interface_display:libdisplay_commontype_proxy_1.1",
     "drivers_interface_display:libdisplay_commontype_proxy_2.0",
+    "eventhandler:libeventhandler",
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hitrace:hitrace_meter",

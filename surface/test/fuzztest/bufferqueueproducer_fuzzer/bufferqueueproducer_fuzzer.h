@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,29 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef UTILS_TRACE_SCOPED_BYTRACE_H
-#define UTILS_TRACE_SCOPED_BYTRACE_H
+#ifndef TEST_FUZZTEST_BUFFER_QUEUE_PRODUCER_FUZZER_H
+#define TEST_FUZZTEST_BUFFER_QUEUE_PRODUCER_FUZZER_H
 
-#include <string>
+#define FUZZ_PROJECT_NAME "bufferqueueproducer_fuzzer"
 
-class ScopedBytrace {
-public:
-    ScopedBytrace(const std::string &proc);
-    ~ScopedBytrace();
-
-    void End();
-
-private:
-    std::string proc_;
-    bool isEnd_ = false;
-};
-
-class ScopedDebugTrace {
-public:
-    ScopedDebugTrace(const std::string &traceStr);
-    ~ScopedDebugTrace();
-private:
-    static bool debugTraceEnabled_;
-};
-
-#endif // UTILS_TRACE_SCOPED_BYTRACE_H
+#endif // TEST_FUZZTEST_BUFFER_QUEUE_PRODUCER_FUZZER_H

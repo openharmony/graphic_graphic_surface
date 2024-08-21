@@ -40,8 +40,6 @@ RsFrameReportExt::RsFrameReportExt()
     Init();
 }
 
-RsFrameReportExt::~RsFrameReportExt() {}
-
 void RsFrameReportExt::Init()
 {
     bool ret = LoadLibrary();
@@ -69,21 +67,6 @@ bool RsFrameReportExt::LoadLibrary()
     }
     HILOG_INFO(LOG_CORE, "RsFrameReportExt:[LoadLibrary] load library success!");
     return true;
-}
-
-void RsFrameReportExt::CloseLibrary()
-{
-    if (!frameSchedSoLoaded_) {
-        HILOG_ERROR(LOG_CORE, "RsFrameReportExt:[CloseLibrary]libframe_ui_intf.so failed, is not loaded!");
-        return;
-    }
-    if (dlclose(frameSchedHandle_) != 0) {
-        HILOG_ERROR(LOG_CORE, "RsFrameReportExt:[CloseLibrary]libframe_ui_intf.so failed!");
-        return;
-    }
-    frameSchedHandle_ = nullptr;
-    frameSchedSoLoaded_ = false;
-    HILOG_INFO(LOG_CORE, "RsFrameReportExt:[CloseLibrary]libframe_ui_intf.so close success!");
 }
 
 void *RsFrameReportExt::LoadSymbol(const char *symName)

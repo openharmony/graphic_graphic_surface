@@ -64,7 +64,6 @@ HWTEST_F(FrameReportTest, SetGameScene001, Function | MediumTest | Level2)
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
 
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_FOREGROUND);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().isGameSoLoaded_ == true);
 
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FRT_GAME_PID);

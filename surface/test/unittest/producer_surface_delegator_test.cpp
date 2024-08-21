@@ -333,4 +333,57 @@ HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, Function | MediumTest | 
     data.WriteUint32(1);
     ASSERT_EQ(qwe->OnSetDataspace(data, reply), 0);
 }
+
+/*
+* Function: HasSlotInSet
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call HasSlotInSet
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, Function | MediumTest | Level2)
+{
+    sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
+    bool ret = delegator->HasSlotInSet(0);
+    ASSERT_EQ(ret, false);
+    delegator->InsertSlotIntoSet(0);
+    ret = delegator->HasSlotInSet(0);
+    ASSERT_EQ(ret, true);
+}
+
+/*
+* Function: InsertSlotIntoSet
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call InsertSlotIntoSet
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, Function | MediumTest | Level2)
+{
+    sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
+    delegator->InsertSlotIntoSet(0);
+    delegator->InsertSlotIntoSet(1);
+    ASSERT_EQ(delegator->HasSlotInSet(0), true);
+    ASSERT_EQ(delegator->HasSlotInSet(1), true);
+    ASSERT_EQ(delegator->HasSlotInSet(2), false);
+}
+
+/*
+* Function: EraseSlotFromSet
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call EraseSlotFromSet
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, Function | MediumTest | Level2)
+{
+    sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
+    delegator->InsertSlotIntoSet(0);
+    ASSERT_EQ(delegator->HasSlotInSet(0), true);
+    delegator->EraseSlotFromSet(0);
+    ASSERT_EQ(delegator->HasSlotInSet(0), false);
+}
 } // namespace OHOS::Rosen

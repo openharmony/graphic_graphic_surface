@@ -37,6 +37,7 @@ public:
     GSError ClearAllBuffers();
     GSError CancelBuffer(int32_t slot, int32_t fenceFd);
     GSError DetachBuffer(int32_t slot);
+    int OnSetBufferQueueSize(MessageParcel& data, MessageParcel& reply);
     int OnSetDataspace(MessageParcel& data, MessageParcel& reply);
     int OnDequeueBuffer(MessageParcel &data, MessageParcel &reply);
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;

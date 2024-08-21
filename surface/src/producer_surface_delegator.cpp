@@ -77,6 +77,11 @@ GSError ProducerSurfaceDelegator::DetachBuffer(int32_t slot)
     return GSERROR_OK;
 }
 
+int ProducerSurfaceDelegator::OnSetBufferQueueSize(MessageParcel &data, MessageParcel &reply)
+{
+    return ERR_NONE;
+}
+
 int ProducerSurfaceDelegator::OnDequeueBuffer(MessageParcel &data, MessageParcel &reply)
 {
     return ERR_NONE;

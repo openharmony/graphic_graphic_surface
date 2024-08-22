@@ -667,7 +667,7 @@ GSError ConsumerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
 GSError ConsumerSurface::SetGlobalAlpha(int32_t alpha)
 {
     (void)alpha;
-    return GSERROR_OK;
+    return GSERROR_NOT_SUPPORT;
 }
 
 GSError ConsumerSurface::GetGlobalAlpha(int32_t &alpha)

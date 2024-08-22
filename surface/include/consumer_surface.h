@@ -245,7 +245,7 @@ public:
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
     GSError SetGlobalAlpha(int32_t alpha) override;
-    int32_t GetGlobalAlpha() const override;
+    GSError GetGlobalAlpha(int32_t &alpha) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

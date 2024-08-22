@@ -670,11 +670,11 @@ GSError ConsumerSurface::SetGlobalAlpha(int32_t alpha)
     return GSERROR_OK;
 }
 
-int32_t ConsumerSurface::GetGlobalAlpha() const
+GSError ConsumerSurface::GetGlobalAlpha(int32_t &alpha)
 {
     if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return consumer_->GetGlobalAlpha();
+    return consumer_->GetGlobalAlpha(alpha);
 }
 } // namespace OHOS

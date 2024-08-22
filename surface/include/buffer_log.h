@@ -37,10 +37,9 @@ namespace {
 #define BPUBU64  "%{public}llu"
 #endif
 
-#define FILE_NAME(x) strrchr((x), '/') ? strrchr((x), '/') + 1 : (x)
 #define B_CPRINTF(func, fmt, ...) \
     func(LOG_CORE, "<%{public}s:%{public}d-%{public}s>: " fmt, \
-        FILE_NAME(__FILE__), __LINE__, __func__, ##__VA_ARGS__)
+        __FILE_NAME__, __LINE__, __func__, ##__VA_ARGS__)
 
 #define BLOGD(fmt, ...) B_CPRINTF(HILOG_DEBUG, fmt, ##__VA_ARGS__)
 #define BLOGI(fmt, ...) B_CPRINTF(HILOG_INFO, fmt, ##__VA_ARGS__)

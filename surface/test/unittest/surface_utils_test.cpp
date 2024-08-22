@@ -28,7 +28,7 @@ class SurfaceUtilsTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
-
+    static bool IsArrayEmpty(const float arr[16]);
     static inline sptr<IConsumerSurface> csurface1 = nullptr;
     static inline sptr<IBufferProducer> producer1 = nullptr;
     static inline sptr<Surface> psurface1 = nullptr;
@@ -38,6 +38,7 @@ public:
     static inline sptr<Surface> psurface2 = nullptr;
 
     static inline SurfaceUtils *utils = nullptr;
+    static constexpr const int32_t TRANSFORM_MATRIX_SIZE = 16;
 };
 
 void SurfaceUtilsTest::SetUpTestCase()
@@ -207,18 +208,29 @@ HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix001, Function | MediumTest | Le
     sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
     buffer->SetSurfaceBufferWidth(1920);
     buffer->SetSurfaceBufferHeight(1920);
-    float matrix[16];
+    float matrix[TRANSFORM_MATRIX_SIZE];
     Rect crop = {};
     crop.w = buffer->GetWidth();
     crop.h = buffer->GetHeight();
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
+    float emptyMatrix[TRANSFORM_MATRIX_SIZE];
+    //invalid parameter
+    sptr<SurfaceBuffer> tmpBuffer = nullptr;
+    utils->ComputeTransformMatrix(matrix, TRANSFORM_MATRIX_SIZE, tmpBuffer, transform, crop);
+    ASSERT_TRUE(IsArrayEmpty(matrix));
+    utils->ComputeTransformMatrixV2(matrix, TRANSFORM_MATRIX_SIZE, tmpBuffer, transform, crop);
+    ASSERT_TRUE(IsArrayEmpty(matrix));
 
     // Compute matrix with normal crop
-    float emptyMatrix[16];
     utils->ComputeTransformMatrix(matrix, 16, buffer, transform, crop);
     ASSERT_NE(matrix, emptyMatrix);
     utils->ComputeTransformMatrixV2(matrix, 16, buffer, transform, crop);
     ASSERT_NE(matrix, emptyMatrix);
+}
+
+bool SurfaceUtilsTest::IsArrayEmpty(const float arr[TRANSFORM_MATRIX_SIZE])
+{
+    return std::all_of(arr, arr + TRANSFORM_MATRIX_SIZE, [](float value) { return value == 0.0f; });
 }
 
 /*

@@ -44,7 +44,6 @@ ohos_static_library("rs_frame_report_ext_test_common") {
 
   public_deps = [
     "$graphic_surface_root/surface:surface",
-    "//third_party/googletest:gtest_main",
   ]
 
   subsystem_name = "graphic"

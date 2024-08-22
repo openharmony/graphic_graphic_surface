@@ -16,6 +16,7 @@ group("fuzztest") {
 
   deps = [
     "bufferqueue_fuzzer:fuzztest",
+    "bufferqueueproducer_fuzzer:fuzztest",
     "bufferutils_fuzzer:fuzztest",
     "nativebuffer_fuzzer:fuzztest",
     "nativewindow_fuzzer:fuzztest",

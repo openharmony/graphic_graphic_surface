@@ -159,6 +159,13 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
     }
     auto dret = g_displayBuffer->AllocMem(info, handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
+        if (handle_ != nullptr) {
+            dret = g_displayBuffer->RegisterBuffer(*handle_);
+            if (dret != GRAPHIC_DISPLAY_SUCCESS && dret != GRAPHIC_DISPLAY_NOT_SUPPORT) {
+                BLOGE("AllocMem RegisterBuffer Failed with %{public}d", dret);
+                return GenerateError(GSERROR_API_FAILED, dret);
+            }
+        }
         surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(config.colorGamut);
         transform_ = static_cast<GraphicTransformType>(config.transform);
         surfaceBufferWidth_ = config.width;
@@ -282,7 +289,9 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
             g_displayBuffer->Unmap(*handle_);
             handle_->virAddr = nullptr;
         }
-        FreeBufferHandle(handle_);
+        if (g_displayBuffer != nullptr) {
+            g_displayBuffer->FreeMem(*handle_);
+        }
         handle_ = nullptr;
     }
 }
@@ -476,6 +485,15 @@ void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
         FreeBufferHandleLocked();
     }
     handle_ = handle;
+    if (GetDisplayBufferLocked() == nullptr) {
+        BLOGE("GetDisplayBufferLocked failed");
+        return;
+    }
+    auto dret = g_displayBuffer->RegisterBuffer(*handle_);
+    if (dret != GRAPHIC_DISPLAY_SUCCESS && dret != GRAPHIC_DISPLAY_NOT_SUPPORT) {
+        BLOGE("SetBufferHandle RegisterBuffer Failed with %{public}d", dret);
+        return;
+    }
 }
 
 GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel &parcel)

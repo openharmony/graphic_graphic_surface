@@ -46,6 +46,7 @@ BufferHandle *AllocateBufferHandle(uint32_t reserveFds, uint32_t reserveInts)
         errno_t ret = memset_s(handle, handleSize, 0, handleSize);
         if (ret != 0) {
             UTILS_LOGE("memset_s error, ret is %{public}d", ret);
+            free(handle);
             return nullptr;
         }
         handle->fd = -1;

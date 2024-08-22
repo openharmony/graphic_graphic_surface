@@ -220,6 +220,7 @@ private:
     void CleanAllLocked();
     GSError AddCache(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
+    GSError SetMetadataValve(sptr<SurfaceBuffer>& buffer);
     void OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer);
 
     mutable std::mutex mutex_;

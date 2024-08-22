@@ -17,37 +17,16 @@
 
 #include <securec.h>
 
+#include "data_generate.h"
 #include "iconsumer_surface.h"
 #include "surface.h"
 #include "surface_utils.h"
 
+using namespace g_fuzzCommon;
 namespace OHOS {
     namespace {
-        const uint8_t* data_ = nullptr;
-        size_t size_ = 0;
-        size_t pos;
+        constexpr uint32_t MATRIX_SIZE = 16;
     }
-
-    /*
-    * describe: get data from outside untrusted data(data_) which size is according to sizeof(T)
-    * tips: only support basic type
-    */
-    template<class T>
-    T GetData()
-    {
-        T object {};
-        size_t objectSize = sizeof(object);
-        if (data_ == nullptr || objectSize > size_ - pos) {
-            return object;
-        }
-        errno_t ret = memcpy_s(&object, objectSize, data_ + pos, objectSize);
-        if (ret != EOK) {
-            return {};
-        }
-        pos += objectSize;
-        return object;
-    }
-
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         if (data == nullptr) {
@@ -55,9 +34,9 @@ namespace OHOS {
         }
 
         // initialize
-        data_ = data;
-        size_ = size;
-        pos = 0;
+        g_data = data;
+        g_size = size;
+        g_pos = 0;
 
         // get data
         uint64_t uniqueId1 = GetData<uint64_t>();
@@ -73,7 +52,16 @@ namespace OHOS {
         utils->Add(uniqueId1, surface);
         utils->Add(uniqueId2, pSurface);
         utils->Remove(uniqueId3);
-
+        GraphicTransformType transformType = GetData<GraphicTransformType>();
+        float matrix[MATRIX_SIZE];
+        for (int i = 0; i < MATRIX_SIZE; i++) {
+            matrix[i] = GetData<float>();
+        }
+        uint32_t matrixSize = GetData<uint32_t>();
+        Rect crop = GetData<Rect>();
+        sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+        utils->ComputeTransformMatrix(matrix, matrixSize, buffer, transformType, crop);
+        utils->GetNativeWindow(uniqueId1);
         return true;
     }
 } // namespace OHOS

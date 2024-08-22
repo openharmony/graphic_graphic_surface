@@ -384,7 +384,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     *size = mD.size();
     *metadata = new uint8_t[mD.size()];
     if (mD.empty()) {
-        delete *metadata;
+        delete[] *metadata;
         *metadata = nullptr;
         BLOGE("new metadata failed!");
         return OHOS::SURFACE_ERROR_UNKOWN;

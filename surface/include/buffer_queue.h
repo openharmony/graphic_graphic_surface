@@ -183,7 +183,7 @@ public:
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix);
     GSError ReleaseLastFlushedBuffer(uint32_t sequence);
     GSError SetGlobalAlpha(int32_t alpha);
-    int32_t GetGlobalAlpha() const;
+    GSError GetGlobalAlpha(int32_t &alpha);
 
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
@@ -214,7 +214,7 @@ private:
     void RequestBufferDebugInfo();
     bool GetStatusLocked() const;
     void CallConsumerListener();
-    void SetSurfaceBufferGlobalAlpha(sptr<SurfaceBuffer> buffer);
+    void SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
@@ -260,6 +260,7 @@ private:
     float sdrWhitePointBrightness_ = 0.0;
     uint32_t acquireLastFlushedBufSequence_;
     int32_t globalAlpha_ = -1;
+    std::mutex globalAlphaMutex_;
 };
 }; // namespace OHOS
 

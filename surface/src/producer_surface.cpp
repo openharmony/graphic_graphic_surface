@@ -874,7 +874,7 @@ GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
 GSError ProducerSurface::SetGlobalAlpha(int32_t alpha)
 {
     if (producer_ == nullptr || alpha < FORCE_GLOBAL_ALPHA_MIN || alpha > FORCE_GLOBAL_ALPHA_MAX) {
-        BLOGE("Invalid producer global alpha value: %{public}", alpha);
+        BLOGE("Invalid producer global alpha value: %{public}d, queueId: %{public}" PRIu64 ".", alpha, queueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetGlobalAlpha(alpha);

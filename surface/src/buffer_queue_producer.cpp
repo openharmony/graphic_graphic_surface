@@ -740,7 +740,7 @@ int32_t BufferQueueProducer::ReleaseLastFlushedBufferRemote(
     return 0;
 }
 
-int32_t BufferQueueProducer::SetGlobalAlpha(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+int32_t BufferQueueProducer::SetGlobalAlphaRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     int32_t alpha = arguments.ReadInt32();
     GSError sret = SetGlobalAlpha(alpha);
@@ -1259,7 +1259,7 @@ void BufferQueueProducer::SetStatus(bool status)
 GSError BufferQueueProducer::SetGlobalAlpha(int32_t alpha)
 {
     if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetGlobalAlpha(alpha);
 }

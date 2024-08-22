@@ -1731,28 +1731,37 @@ GSError BufferQueue::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimest
     }
 }
 
-void BufferQueue::SetSurfaceBufferGlobalAlpha(sptr<SurfaceBuffer> buffer)
+void BufferQueue::SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer)
 {
-    if (buffer == nullptr || globalAlpha_ < FORCE_GLOBAL_ALPHA_MIN || globalAlpha_ > FORCE_GLOBAL_ALPHA_MAX) {
-        BLOGE("Invalid global alpha value: %{public}d", globalAlpha_);
+    std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
+    if (globalAlpha_ < FORCE_GLOBAL_ALPHA_MIN || globalAlpha_ > FORCE_GLOBAL_ALPHA_MAX) {
+        BLOGE("Invalid global alpha value: %{public}d, uniqueId: %{public}" PRIu64 ".", globalAlpha_, uniqueId_);
         return;
     }
     using namespace HDI::Display::Graphic::Common;
     V2_0::BufferHandleAttrKey key = V2_0::BufferHandleAttrKey::ATTRKEY_FORCE_GLOBAL_ALPHA;
     std::vector<uint8_t> values;
-    values.push_back(static_cast<uint8_t>(globalAlpha_));
+    auto ret = MetadataHelper::ConvertMetadataToVec(globalAlpha_, values);
+    if (ret != GSERROR_OK) {
+        BLOGE("Convert global alpha value failed, ret: %{public}d, value: %{public}d, uniqueId: %{public}" PRIu64 ".",
+            ret, globalAlpha_, uniqueId_);
+        return;
+    }
     buffer->SetMetadata(key, values);
 }
 
 GSError BufferQueue::SetGlobalAlpha(int32_t alpha)
 {
+    std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
     globalAlpha_ = alpha;
     return GSERROR_OK;
 }
 
-int32_t BufferQueue::GetGlobalAlpha() const
+GSError BufferQueue::GetGlobalAlpha(int32_t &alpha)
 {
-    return globalAlpha_;
+    std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
+    alpha = globalAlpha_;
+    return GSERROR_OK;
 }
 
 void BufferQueue::DumpMetadata(std::string &result, BufferElement element)

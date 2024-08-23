@@ -253,5 +253,6 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->GetHdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->IsSurfaceBufferInCache(0, isInCache), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->SetGlobalAlpha(-1), OHOS::SURFACE_ERROR_UNKOWN);
 }
 }

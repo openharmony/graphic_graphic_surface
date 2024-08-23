@@ -120,58 +120,6 @@ HWTEST_F(BufferHandleTest, FreeBufferHandle001, Function | SmallTest | Level2)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: CloneBufferHandle
-*/
-HWTEST_F(BufferHandleTest, CloneBufferHandle, Function | SmallTest | Level2)
-{
-    uint32_t buffer_handle_reserve_max_size = 1024;
-    ASSERT_EQ(nullptr, CloneBufferHandle(nullptr));
-    BufferHandle *handle = AllocateBufferHandle(buffer_handle_reserve_max_size, buffer_handle_reserve_max_size);
-    ASSERT_NE(nullptr, handle);
-    EXPECT_EQ(NULL, CloneBufferHandle(handle));
-    ASSERT_EQ(0, FreeBufferHandle(handle));
-}
-
-/*
-* Function: BufferHandleTest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: CloneBufferHandle
-*/
-HWTEST_F(BufferHandleTest, CloneBufferHandle001, Function | SmallTest | Level2)
-{
-    uint32_t Fds = 100, Ints = 100;
-
-    auto test1 = CloneBufferHandle(nullptr);
-    ASSERT_EQ(nullptr, test1);
-
-    BufferHandle *handle002 = AllocateBufferHandle(Fds, Ints);
-    ASSERT_NE(nullptr, handle002);
-    handle002->fd = 0;
-    auto test3 = CloneBufferHandle(handle002);
-    ASSERT_EQ(nullptr, test3);
-    ASSERT_EQ(0, FreeBufferHandle(handle002));
-
-    BufferHandle *handle003 = AllocateBufferHandle(Fds, Ints);
-    ASSERT_NE(nullptr, handle003);
-    handle003->reserveInts = 0;
-    auto test4 = CloneBufferHandle(handle003);
-    ASSERT_EQ(nullptr, test4);
-    ASSERT_EQ(0, FreeBufferHandle(handle003));
-
-    BufferHandle *handle004 = AllocateBufferHandle(Fds, Ints);
-    ASSERT_NE(nullptr, handle004);
-    auto test5 = CloneBufferHandle(handle004);
-    ASSERT_EQ(NULL, test5);
-    ASSERT_EQ(0, FreeBufferHandle(handle004));
-}
-
-/*
-* Function: BufferHandleTest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
 * CaseDescription: OHOS::WriteBufferHandle
 */
 HWTEST_F(BufferHandleTest, WriteBufferHandle, Function | SmallTest | Level2)

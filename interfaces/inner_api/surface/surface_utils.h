@@ -32,9 +32,9 @@ public:
     // remove surface by uniqueId.
     SurfaceError Remove(uint64_t uniqueId);
     // Compute transform matrix
-    void ComputeTransformMatrix(float matrix[16],
+    void ComputeTransformMatrix(float matrix[16], uint32_t matrixSize,
         sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop);
-    void ComputeTransformMatrixV2(float matrix[16],
+    void ComputeTransformMatrixV2(float matrix[16], uint32_t matrixSize,
         sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop);
 
     void* GetNativeWindow(uint64_t uniqueId);

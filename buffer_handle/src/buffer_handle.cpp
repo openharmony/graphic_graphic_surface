@@ -77,59 +77,6 @@ int32_t FreeBufferHandle(BufferHandle *handle)
     return 0;
 }
 
-BufferHandle *CloneBufferHandle(const BufferHandle *handle)
-{
-    if (handle == nullptr) {
-        UTILS_LOGW("%{public}s handle is nullptr", __func__);
-        return nullptr;
-    }
-
-    BufferHandle *newHandle = AllocateBufferHandle(handle->reserveFds, handle->reserveInts);
-    if (newHandle == nullptr) {
-        UTILS_LOGW("%{public}s AllocateBufferHandle failed, newHandle is nullptr", __func__);
-        return nullptr;
-    }
-
-    if (handle->fd == -1) {
-        newHandle->fd = handle->fd;
-    } else {
-        newHandle->fd = dup(handle->fd);
-        if (newHandle->fd == -1) {
-            UTILS_LOGE("CloneBufferHandle dup failed");
-            FreeBufferHandle(newHandle);
-            return nullptr;
-        }
-    }
-    newHandle->width = handle->width;
-    newHandle->stride = handle->stride;
-    newHandle->height = handle->height;
-    newHandle->size = handle->size;
-    newHandle->format = handle->format;
-    newHandle->usage = handle->usage;
-    newHandle->phyAddr = handle->phyAddr;
-
-    for (uint32_t i = 0; i < newHandle->reserveFds; i++) {
-        newHandle->reserve[i] = dup(handle->reserve[i]);
-        if (newHandle->reserve[i] == -1) {
-            UTILS_LOGE("CloneBufferHandle dup reserveFds failed");
-            FreeBufferHandle(newHandle);
-            return nullptr;
-        }
-    }
-
-    if (handle->reserveInts == 0) {
-        UTILS_LOGD("There is no reserved integer value in old handle, no need to copy");
-        return newHandle;
-    }
-
-    if (memcpy_s(&newHandle->reserve[newHandle->reserveFds], sizeof(int32_t) * newHandle->reserveInts,
-        &handle->reserve[handle->reserveFds], sizeof(int32_t) * handle->reserveInts) != EOK) {
-        UTILS_LOGE("CloneBufferHandle memcpy_s failed");
-        FreeBufferHandle(newHandle);
-        return nullptr;
-    }
-    return newHandle;
-}
 namespace OHOS {
 bool WriteBufferHandle(MessageParcel &parcel, const BufferHandle &handle)
 {

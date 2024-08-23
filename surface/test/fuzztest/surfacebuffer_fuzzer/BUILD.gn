@@ -22,9 +22,7 @@ ohos_fuzztest("SurfaceBufferFuzzTest") {
   fuzz_config_file = "//foundation/graphic/graphic_surface/surface/test/fuzztest/surfacebuffer_fuzzer"
   module_out_path = module_output_path
 
-  include_dirs = [
-    "$graphic_surface_root/surface/include",
-  ]
+  include_dirs = [ "$graphic_surface_root/surface/include" ]
   cflags = [
     "-g",
     "-O0",

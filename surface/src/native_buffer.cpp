@@ -67,6 +67,9 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
 
 static OH_NativeBuffer* OH_NativeBufferFromSurfaceBuffer(SurfaceBuffer* buffer)
 {
+    if (buffer == nullptr) {
+        return nullptr;
+    }
     return buffer->SurfaceBufferToNativeBuffer();
 }
 
@@ -147,7 +150,7 @@ void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* 
 
 int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || virAddr == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -341,6 +344,7 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
             errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
             if (err != 0) {
                 delete[] *metadata;
+                *metadata = nullptr;
                 BLOGE("memcpy_s failed! , retVal:%d", err);
                 return OHOS::SURFACE_ERROR_UNKOWN;
             }
@@ -380,12 +384,15 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     *size = mD.size();
     *metadata = new uint8_t[mD.size()];
     if (mD.empty()) {
+        delete[] *metadata;
+        *metadata = nullptr;
         BLOGE("new metadata failed! ");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
     if (err != 0) {
         delete[] *metadata;
+        *metadata = nullptr;
         BLOGE("memcpy_s failed! , retVal:%d", err);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }

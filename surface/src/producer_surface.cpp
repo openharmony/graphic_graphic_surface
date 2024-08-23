@@ -32,11 +32,7 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
         return nullptr;
     }
 
-    sptr<ProducerSurface> surf = new(std::nothrow) ProducerSurface(producer);
-    if (surf == nullptr) {
-        BLOGE("Failure, Reason: producerSurface is nullptr");
-        return nullptr;
-    }
+    sptr<ProducerSurface> surf = new ProducerSurface(producer);
     GSError ret = surf->Init();
     if (ret != GSERROR_OK) {
         BLOGE("Failure, Reason: producer surf init failed");
@@ -201,6 +197,9 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
     }
 
     sptr<BufferExtraData> bedata = buffer->GetExtraData();
+    if (bedata == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     auto ret = producer_->FlushBuffer(buffer->GetSeqNum(), bedata, fence, config);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
@@ -212,11 +211,11 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
 GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& buffers,
     const std::vector<sptr<SyncFence>>& fences, const std::vector<BufferFlushConfigWithDamages>& configs)
 {
-    if (buffers.empty() || producer_ == nullptr) {
+    if (buffers.size() == 0 || buffers.size() != fences.size() || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     for (size_t i = 0; i < buffers.size(); ++i) {
-        if (buffers[i] == nullptr || fences[i] == 0) {
+        if (buffers[i] == nullptr || fences[i] == nullptr) {
             BLOGNE("FlushBuffers Producer report: one buffer or fence is nullptr");
             return GSERROR_INVALID_ARGUMENTS;
         }
@@ -266,6 +265,9 @@ GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
     }
 
     sptr<BufferExtraData> bedata = buffer->GetExtraData();
+    if (bedata == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
 }
 
@@ -536,7 +538,7 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
     if (func == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new(std::nothrow) BufferReleaseProducerListener(func);
+    listener_ = new BufferReleaseProducerListener(func);
     return producer_->RegisterReleaseListener(listener_);
 }
 
@@ -545,7 +547,7 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     if (funcWithFence == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new(std::nothrow) BufferReleaseProducerListener(nullptr, funcWithFence);
+    listener_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
     return producer_->RegisterReleaseListener(listener_);
 }
 
@@ -565,6 +567,9 @@ GSError ProducerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, b
 
 GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)
 {
+    if (func == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
         BLOGND("func already register");
@@ -595,7 +600,7 @@ GSError ProducerSurface::ClearUserDataChangeListener()
 
 bool ProducerSurface::IsRemote()
 {
-    if (producer_ == nullptr) {
+    if (producer_ == nullptr || producer_->AsObject() == nullptr) {
         return false;
     }
     return producer_->AsObject()->IsProxyObject();
@@ -857,10 +862,7 @@ GSError ProducerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, s
 
 GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
 {
-    if (producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    if (buffer == nullptr) {
+    if (buffer == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->ReleaseLastFlushedBuffer(buffer->GetSeqNum());

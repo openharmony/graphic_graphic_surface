@@ -24,8 +24,8 @@
 namespace OHOS {
 sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 {
-    sptr<ConsumerSurface> surf = new(std::nothrow) ConsumerSurface(name, isShared);
-    if (surf == nullptr || surf->Init() != GSERROR_OK) {
+    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
+    if (surf->Init() != GSERROR_OK) {
         BLOGE("Failure, Reason: consumer surf init failed");
         return nullptr;
     }
@@ -34,8 +34,8 @@ sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 
 sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
 {
-    sptr<ConsumerSurface> surf = new(std::nothrow) ConsumerSurface(name, isShared);
-    if (surf == nullptr || surf->Init() != GSERROR_OK) {
+    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
+    if (surf->Init() != GSERROR_OK) {
         BLOGE("Failure, Reason: consumer surf init failed");
         return nullptr;
     }
@@ -66,14 +66,9 @@ ConsumerSurface::~ConsumerSurface()
 
 GSError ConsumerSurface::Init()
 {
-    sptr<BufferQueue> queue_ = new(std::nothrow) BufferQueue(name_, isShared_);
-    if (queue_ == nullptr) {
-        BLOGN_FAILURE("Init failed for nullptr queue");
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    producer_ = new(std::nothrow) BufferQueueProducer(queue_);
-    consumer_ = new(std::nothrow) BufferQueueConsumer(queue_);
+    sptr<BufferQueue> queue_ = new BufferQueue(name_, isShared_);
+    producer_ = new BufferQueueProducer(queue_);
+    consumer_ = new BufferQueueConsumer(queue_);
     return GSERROR_OK;
 }
 
@@ -120,7 +115,7 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFen
 
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
-    if (consumer_ == nullptr) {
+    if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->ReleaseBuffer(buffer, fence);
@@ -141,11 +136,7 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t& fen
 
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
 {
-    sptr<SyncFence> syncFence = new(std::nothrow) SyncFence(fence);
-    if (syncFence == nullptr) {
-        BLOGFE("ReleaseBuffer failed for nullptr syncFence.");
-        return GSERROR_NOT_SUPPORT;
-    }
+    sptr<SyncFence> syncFence = new SyncFence(fence);
     return ReleaseBuffer(buffer, syncFence);
 }
 
@@ -169,7 +160,7 @@ GSError ConsumerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 
 GSError ConsumerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 {
-    if (consumer_ == nullptr) {
+    if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->AttachBuffer(buffer);
@@ -177,7 +168,7 @@ GSError ConsumerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)
 
 GSError ConsumerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
 {
-    if (consumer_ == nullptr) {
+    if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->AttachBuffer(buffer, timeOut);
@@ -185,7 +176,7 @@ GSError ConsumerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeO
 
 GSError ConsumerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 {
-    if (consumer_ == nullptr) {
+    if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->DetachBuffer(buffer);
@@ -193,7 +184,7 @@ GSError ConsumerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)
 
 GSError ConsumerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
 {
-    if (consumer_ == nullptr) {
+    if (client == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->RegisterSurfaceDelegator(client, this);
@@ -306,7 +297,7 @@ std::string ConsumerSurface::GetUserData(const std::string& key)
 
 GSError ConsumerSurface::RegisterConsumerListener(sptr<IBufferConsumerListener>& listener)
 {
-    if (consumer_ == nullptr) {
+    if (listener == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->RegisterConsumerListener(listener);
@@ -314,7 +305,7 @@ GSError ConsumerSurface::RegisterConsumerListener(sptr<IBufferConsumerListener>&
 
 GSError ConsumerSurface::RegisterConsumerListener(IBufferConsumerListenerClazz *listener)
 {
-    if (consumer_ == nullptr) {
+    if (listener == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->RegisterConsumerListener(listener);
@@ -322,7 +313,7 @@ GSError ConsumerSurface::RegisterConsumerListener(IBufferConsumerListenerClazz *
 
 GSError ConsumerSurface::RegisterReleaseListener(OnReleaseFunc func)
 {
-    if (consumer_ == nullptr) {
+    if (func == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->RegisterReleaseListener(func);
@@ -330,7 +321,7 @@ GSError ConsumerSurface::RegisterReleaseListener(OnReleaseFunc func)
 
 GSError ConsumerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw)
 {
-    if (consumer_ == nullptr) {
+    if (func == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->RegisterDeleteBufferListener(func, isForUniRedraw);
@@ -346,6 +337,9 @@ GSError ConsumerSurface::UnregisterConsumerListener()
 
 GSError ConsumerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)
 {
+    if (func == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
         BLOGND("func already register");

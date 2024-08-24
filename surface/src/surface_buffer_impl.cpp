@@ -29,28 +29,6 @@
 
 namespace OHOS {
 namespace {
-GSError GenerateError(GSError err, GraphicDispErrCode code)
-{
-    switch (code) {
-        case GRAPHIC_DISPLAY_SUCCESS: return static_cast<GSError>(err + 0);
-        case GRAPHIC_DISPLAY_FAILURE: return static_cast<GSError>(err + LOWERROR_FAILURE);
-        case GRAPHIC_DISPLAY_FD_ERR: return static_cast<GSError>(err + EBADF);
-        case GRAPHIC_DISPLAY_PARAM_ERR: return static_cast<GSError>(err + EINVAL);
-        case GRAPHIC_DISPLAY_NULL_PTR: return static_cast<GSError>(err + EINVAL);
-        case GRAPHIC_DISPLAY_NOT_SUPPORT: return static_cast<GSError>(err + EOPNOTSUPP);
-        case GRAPHIC_DISPLAY_NOMEM: return static_cast<GSError>(err + ENOMEM);
-        case GRAPHIC_DISPLAY_SYS_BUSY: return static_cast<GSError>(err + EBUSY);
-        case GRAPHIC_DISPLAY_NOT_PERM: return static_cast<GSError>(err + EPERM);
-        default: break;
-    }
-    return static_cast<GSError>(err + LOWERROR_INVALID);
-}
-
-inline GSError GenerateError(GSError err, int32_t code)
-{
-    return GenerateError(err, static_cast<GraphicDispErrCode>(code));
-}
-
 using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_2::IDisplayBuffer>;
 static IDisplayBufferSptr g_displayBuffer;
 static std::mutex g_displayBufferMutex;
@@ -163,7 +141,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
             dret = g_displayBuffer->RegisterBuffer(*handle_);
             if (dret != GRAPHIC_DISPLAY_SUCCESS && dret != GRAPHIC_DISPLAY_NOT_SUPPORT) {
                 BLOGE("AllocMem RegisterBuffer Failed with %{public}d", dret);
-                return GenerateError(GSERROR_API_FAILED, dret);
+                return GSERROR_HDI_ERROR;
             }
         }
         surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(config.colorGamut);
@@ -176,7 +154,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
         return GSERROR_OK;
     }
     BLOGW("Alloc Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
-    return GenerateError(GSERROR_API_FAILED, dret);
+    return GSERROR_HDI_ERROR;
 }
 GSError SurfaceBufferImpl::Map()
 {
@@ -222,7 +200,7 @@ GSError SurfaceBufferImpl::Unmap()
         return GSERROR_OK;
     }
     BLOGW("Unmap Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
-    return GenerateError(GSERROR_API_FAILED, dret);
+    return GSERROR_HDI_ERROR;
 }
 GSError SurfaceBufferImpl::FlushCache()
 {
@@ -239,7 +217,7 @@ GSError SurfaceBufferImpl::FlushCache()
         return GSERROR_OK;
     }
     BLOGW("FlushCache Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
-    return GenerateError(GSERROR_API_FAILED, dret);
+    return GSERROR_HDI_ERROR;
 }
 
 GSError SurfaceBufferImpl::GetImageLayout(void *layout)
@@ -260,7 +238,7 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
         return GSERROR_OK;
     }
     BLOGW("GetImageLayout Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
-    return GenerateError(GSERROR_API_FAILED, dret);
+    return GSERROR_HDI_ERROR;
 }
 
 GSError SurfaceBufferImpl::InvalidateCache()
@@ -279,7 +257,7 @@ GSError SurfaceBufferImpl::InvalidateCache()
         return GSERROR_OK;
     }
     BLOGW("InvalidateCache Failed with %{public}d, seq: %{public}u", dret, sequenceNumber_);
-    return GenerateError(GSERROR_API_FAILED, dret);
+    return GSERROR_HDI_ERROR;
 }
 
 void SurfaceBufferImpl::FreeBufferHandleLocked()
@@ -632,7 +610,8 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
         metaDataCache_[key] = value;
         return GSERROR_OK;
     }
-    return GenerateError(GSERROR_API_FAILED, dret);
+    BLOGE("SetMetadata Failed with %{public}d", dret);
+    return GSERROR_HDI_ERROR;
 }
 
 GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value)
@@ -653,7 +632,8 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    return GenerateError(GSERROR_API_FAILED, dret);
+    BLOGE("GetMetadata Failed with %{public}d", dret);
+    return GSERROR_HDI_ERROR;
 }
 
 GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
@@ -672,7 +652,8 @@ GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    return GenerateError(GSERROR_API_FAILED, dret);
+    BLOGE("ListMetadataKeys Failed with %{public}d", dret);
+    return GSERROR_HDI_ERROR;
 }
 
 GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
@@ -694,7 +675,8 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
         metaDataCache_.erase(key);
         return GSERROR_OK;
     }
-    return GenerateError(GSERROR_API_FAILED, dret);
+    BLOGE("EraseMetadataKey Failed with %{public}d", dret);
+    return GSERROR_HDI_ERROR;
 }
 
 BufferRequestConfig SurfaceBufferImpl::GetBufferRequestConfig() const

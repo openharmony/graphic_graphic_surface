@@ -872,6 +872,7 @@ GSError OH_NativeWindow_GetMatedataValueType(OHNativeWindow *window, int32_t *si
         errno_t err = memcpy_s(*metadata, *size, &(it->first), *size);
         if (err != 0) {
             delete[] *metadata;
+            *metadata = nullptr;
             BLOGE("memcpy_s failed! , ret: %d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
@@ -916,11 +917,13 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
         if (err != 0) {
             delete[] *metadata;
+            *metadata = nullptr;
             BLOGE("memcpy_s failed! , ret: %d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
     } else {
         delete[] *metadata;
+        *metadata = nullptr;
         BLOGE("new metadata failed!");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }

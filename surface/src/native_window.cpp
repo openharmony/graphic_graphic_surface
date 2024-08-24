@@ -804,6 +804,10 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     CM_ColorSpaceType colorSpaceType = CM_COLORSPACE_NONE;
     if (window->surface != nullptr) {
         std::string value = window->surface->GetUserData("ATTRKEY_COLORSPACE_INFO");
+        if (!value.empty()) {
+            BLOGE("no colorspace!");
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
         colorSpaceType = static_cast<CM_ColorSpaceType>(atoi(value.c_str()));
         auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
             [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType>& element) {

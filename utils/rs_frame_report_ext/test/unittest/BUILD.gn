@@ -42,9 +42,7 @@ ohos_static_library("rs_frame_report_ext_test_common") {
   testonly = true
   public_configs = [ ":rs_frame_report_ext_test_config" ]
 
-  public_deps = [
-    "$graphic_surface_root/surface:surface",
-  ]
+  public_deps = [ "$graphic_surface_root/surface:surface" ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"

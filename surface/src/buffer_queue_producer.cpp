@@ -195,8 +195,8 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
     GSError sret = RequestBuffers(config, bedataimpls, retvalues);
     num = static_cast<uint32_t>(retvalues.size());
     reply.WriteInt32(sret);
-    reply.WriteUint32(num);
-    if (sret == GSERROR_OK) {
+    if (sret == GSERROR_OK || sret == GSERROR_NO_BUFFER) {
+        reply.WriteUint32(num);
         for (uint32_t i = 0; i < num; ++i) {
             WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer);
             bedataimpls[i]->WriteToParcel(reply);

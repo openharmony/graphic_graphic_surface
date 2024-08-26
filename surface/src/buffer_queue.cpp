@@ -1325,7 +1325,7 @@ void BufferQueue::ClearLocked()
 
         if (name_  == "RosenWeb") {
             BLOGD("ClearLocked, bufferFd: %{public}d, refCount: %{public}d.",
-                    ele.buffer->GetBufferHandle()->fd, ele.buffer->GetSptrRefCount());
+                ele.buffer->GetBufferHandle()->fd, ele.buffer->GetSptrRefCount());
         }
     }
     bufferQueueCache_.clear();

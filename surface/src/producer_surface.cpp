@@ -852,12 +852,12 @@ GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
 }
 
 GSError ProducerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-    float matrix[16], bool isUseNewMatrix)
+    float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return producer_->AcquireLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
+    return producer_->AcquireLastFlushedBuffer(buffer, fence, matrix, matrixSize, isUseNewMatrix);
 }
 
 GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)

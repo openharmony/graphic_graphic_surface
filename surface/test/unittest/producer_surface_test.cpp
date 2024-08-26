@@ -1688,11 +1688,11 @@ HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer001, Function | MediumTest
     sptr<SyncFence> fence = nullptr;
     float matrix[16];
 
-    ret = pSurface->AcquireLastFlushedBuffer(buffer1, fence, matrix, false);
+    ret = pSurface->AcquireLastFlushedBuffer(buffer1, fence, matrix, 16, false);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
     EXPECT_EQ(buffer->GetSeqNum(), buffer1->GetSeqNum());
 
-    ret = pSurface->AcquireLastFlushedBuffer(buffer1, fence, matrix, false);
+    ret = pSurface->AcquireLastFlushedBuffer(buffer1, fence, matrix, 16, false);
     EXPECT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_STATE_INVALID);
 
     sptr<SurfaceBuffer> buffer2;
@@ -1741,7 +1741,7 @@ HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer002, Function | MediumTest
     sptr<SurfaceBuffer> buffer1 = nullptr;
     sptr<SyncFence> fence = nullptr;
     float matrix[16];
-    GSError ret = surface_->AcquireLastFlushedBuffer(buffer1, fence, matrix, false);
+    GSError ret = surface_->AcquireLastFlushedBuffer(buffer1, fence, matrix, 16, false);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ret = surface_->ReleaseLastFlushedBuffer(buffer1);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);

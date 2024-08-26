@@ -163,7 +163,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
 }
 
 GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& buffer,
-    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix, uint32_t command)
+    sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, uint32_t command)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     arguments.WriteBool(isUseNewMatrix);
@@ -185,7 +185,7 @@ GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& bu
     fence = SyncFence::ReadFromMessageParcel(reply);
     std::vector<float> readMatrixVector;
     reply.ReadFloatVector(&readMatrixVector);
-    if (memcpy_s(matrix, MATRIX4_SIZE * sizeof(float),
+    if (memcpy_s(matrix, matrixSize * sizeof(float),
         readMatrixVector.data(), readMatrixVector.size() * sizeof(float)) != EOK) {
         BLOGN_FAILURE("memcpy_s fail");
         return SURFACE_ERROR_UNKOWN;
@@ -197,7 +197,7 @@ GSError BufferClientProducer::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
     return GetLastFlushedBufferCommon(buffer, fence,
-        matrix, isUseNewMatrix, BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER);
+        matrix, MATRIX4_SIZE, isUseNewMatrix, BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER);
 }
 
 GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
@@ -705,10 +705,10 @@ GSError BufferClientProducer::SetSdrWhitePointBrightness(float brightness)
 }
 
 GSError BufferClientProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-    float matrix[16], bool isUseNewMatrix)
+    float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
 {
     return GetLastFlushedBufferCommon(buffer, fence,
-        matrix, isUseNewMatrix, BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER);
+        matrix, matrixSize, isUseNewMatrix, BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER);
 }
 
 GSError BufferClientProducer::ReleaseLastFlushedBuffer(uint32_t sequence)

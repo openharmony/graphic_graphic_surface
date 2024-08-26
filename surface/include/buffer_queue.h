@@ -82,7 +82,7 @@ public:
                           sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-        float matrix[16], bool isUseNewMatrix, bool needRecordSequence = false);
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, bool needRecordSequence = false);
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                           int64_t &timestamp, std::vector<Rect> &damages);
@@ -180,7 +180,7 @@ public:
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache);
 
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix);
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix);
     GSError ReleaseLastFlushedBuffer(uint32_t sequence);
 
 private:
@@ -210,6 +210,7 @@ private:
     GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
     bool WaitForCondition();
     void RequestBufferDebugInfo();
+    bool GetStatusLocked() const;
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

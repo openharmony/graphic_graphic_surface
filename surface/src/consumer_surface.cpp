@@ -649,4 +649,15 @@ GSError ConsumerSurface::IsSurfaceBufferInCache(uint32_t seqNum, bool& isInCache
     }
     return consumer_->IsSurfaceBufferInCache(seqNum, isInCache);
 }
+
+GSError ConsumerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
+    float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
+{
+    return GSERROR_NOT_SUPPORT;
+}
 } // namespace OHOS

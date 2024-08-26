@@ -118,7 +118,7 @@ public:
     GSError SetSdrWhitePointBrightness(float brightness) override;
 
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], bool isUseNewMatrix) override;
+        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
 
 private:

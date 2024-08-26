@@ -807,6 +807,11 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
         }
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
+    OnBufferDeleteCbForHardwareThreadLocked(buffer);
+}
+
+void BufferQueue::OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const
+{
     if (onBufferDeleteForRSHardwareThread_ != nullptr) {
         onBufferDeleteForRSHardwareThread_(buffer->GetSeqNum());
     }
@@ -825,6 +830,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
             SURFACE_TRACE_NAME_FMT("buffer not found in cache");
             BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+            OnBufferDeleteCbForHardwareThreadLocked(buffer);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
 

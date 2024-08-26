@@ -433,6 +433,9 @@ uint32_t SurfaceBufferImpl::GetSize() const
 
 GSError SurfaceBufferImpl::GetPlanesInfo(void **planesInfo)
 {
+    if (planesInfo == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     OHOS::HDI::Display::Buffer::V1_2::ImageLayout layout;
     GSError ret = GetImageLayout(&layout);
     if (ret != GSERROR_OK) {
@@ -470,8 +473,14 @@ sptr<BufferExtraData> SurfaceBufferImpl::GetExtraData() const
 
 void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
 {
+    if (handle == nullptr) {
+        return;
+    }
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     std::lock_guard<std::mutex> lock(mutex_);
+    if (handle_ == handle) {
+        return;
+    }
     if (handle_ != nullptr) {
         FreeBufferHandleLocked();
     }

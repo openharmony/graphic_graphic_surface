@@ -105,4 +105,22 @@ GSError ProducerSurfaceDelegator::RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, 
     return GSERROR_OK;
 }
 
+bool ProducerSurfaceDelegator::HasSlotInSet(int32_t slot)
+{
+    std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
+    return dequeueFailedSet_.find(slot) != dequeueFailedSet_.end();
+}
+
+void ProducerSurfaceDelegator::InsertSlotIntoSet(int32_t slot)
+{
+    std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
+    dequeueFailedSet_.insert(slot);
+}
+
+void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot)
+{
+    std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
+    dequeueFailedSet_.erase(slot);
+}
+
 } // namespace OHOS

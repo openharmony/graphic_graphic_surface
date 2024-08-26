@@ -2016,7 +2016,7 @@ HWTEST_F(ConsumerSurfaceTest, InvalidParameter001, Function | MediumTest | Level
 */
 HWTEST_F(ConsumerSurfaceTest, GetGlobalAlpha001, Function | MediumTest | Level2)
 {
-    int32_t alpha = -1
+    int32_t alpha = -1;
     ASSERT_EQ(cs->SetGlobalAlpha(alpha), GSERROR_NOT_SUPPORT);
     ASSERT_EQ(cs->GetGlobalAlpha(alpha), GSERROR_OK);
 }

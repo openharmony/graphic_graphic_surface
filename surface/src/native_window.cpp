@@ -245,11 +245,12 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         return ret;
     }
 
-    for (auto &[seqNum, buf] : window->bufferCache_) {
-        if (buf == buffer) {
-            window->lastBufferSeqNum = seqNum;
-            break;
-        }
+    auto it = std::find_if(window->bufferCache_.begin(), window->bufferCache_.end(),
+        [buffer](const std::pair<uint32_t, NativeWindowBuffer*>& element) {
+            return element.second == buffer;
+        });
+    if (it != window->bufferCache_.end()) {
+        window->lastBufferSeqNum = it->first;
     }
 
     return OHOS::SURFACE_ERROR_OK;
@@ -257,7 +258,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
 
 int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
-    if (window == nullptr || buffer == nullptr) {
+    if (window == nullptr || buffer == nullptr || fenceFd == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();

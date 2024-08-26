@@ -203,6 +203,7 @@ private:
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
+    void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
     GSError CheckBufferQueueCache(uint32_t sequence);
     GSError ReallocBuffer(const BufferRequestConfig &config, struct IBufferProducer::RequestBufferReturnValue &retval);
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);

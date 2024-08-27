@@ -24,7 +24,7 @@ static SurfaceUtils* instance = nullptr;
 static std::mutex mutextinstance_;
 constexpr uint32_t MATRIX_ARRAY_SIZE = 16;
 
-SurfaceUtils* SurfaceUtils::GetInstance()
+SurfaceUtils* __attribute__((optnone)) SurfaceUtils::GetInstance()
 {
     if (instance == nullptr) {
         std::lock_guard<std::mutex> lockGuard(mutextinstance_);

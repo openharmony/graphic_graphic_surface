@@ -21,17 +21,14 @@
 namespace OHOS {
 using namespace HiviewDFX;
 static SurfaceUtils* instance = nullptr;
-static std::mutex mutextinstance_;
+static std::once_flag createFlag_;
 constexpr uint32_t MATRIX_ARRAY_SIZE = 16;
 
-SurfaceUtils* __attribute__((optnone)) SurfaceUtils::GetInstance()
+SurfaceUtils* SurfaceUtils::GetInstance()
 {
-    if (instance == nullptr) {
-        std::lock_guard<std::mutex> lockGuard(mutextinstance_);
-        if (instance == nullptr) {
-            instance = new SurfaceUtils();
-        }
-    }
+    std::call_once(createFlag_, [&]() {
+        instance = new SurfaceUtils();
+    });
 
     return instance;
 }

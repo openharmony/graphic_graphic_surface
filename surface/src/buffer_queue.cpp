@@ -258,12 +258,12 @@ void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
         return;
     }
 
-    v2_0::BufferHandleAttrKey key = v2_0::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
+    V2_0::BufferHandleAttrKey key = V2_0::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
     std::vector<uint8_t> values;
     if (isCpuAccessable_) { // hebc is off
-        values.push_back(static_cast<uint8_t>(v2_0::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
+        values.push_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
     } else { // hebc is on
-        values.push_back(static_cast<uint8_t>(v2_0::HebcAccessType::HEBC_ACCESS_HW_ONLY));
+        values.push_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_HW_ONLY));
     }
 
     buffer->SetMetadata(key, values);

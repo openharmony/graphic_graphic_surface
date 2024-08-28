@@ -33,10 +33,12 @@
 #include "sync_fence_tracker.h"
 #include "surface_utils.h"
 #include "surface_trace.h"
-#include "v1_1/buffer_handle_meta_key_type.h"
+#include "v2_0/buffer_handle_meta_key_type.h"
 
 namespace OHOS {
 namespace {
+constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
+constexpr int32_t FORCE_GLOBAL_ALPHA_MAX = 255;
 constexpr uint32_t UNIQUE_ID_OFFSET = 32;
 constexpr uint32_t BUFFER_MEMSIZE_RATE = 1024;
 constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
@@ -256,12 +258,12 @@ void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
         return;
     }
 
-    V1_1::BufferHandleAttrKey key = V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
+    V2_0::BufferHandleAttrKey key = V2_0::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
     std::vector<uint8_t> values;
     if (isCpuAccessable_) { // hebc is off
-        values.push_back(static_cast<uint8_t>(V1_1::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
+        values.push_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
     } else { // hebc is on
-        values.push_back(static_cast<uint8_t>(V1_1::HebcAccessType::HEBC_ACCESS_HW_ONLY));
+        values.push_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_HW_ONLY));
     }
 
     buffer->SetMetadata(key, values);
@@ -363,6 +365,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     ret = AllocBuffer(buffer, config);
     if (ret == GSERROR_OK) {
         SetSurfaceBufferHebcMetaLocked(buffer);
+        SetSurfaceBufferGlobalAlphaUnlocked(buffer);
         SetReturnValue(buffer, bedata, retval);
         BLOGD("Success alloc Buffer[%{public}d %{public}d] seq: %{public}d, uniqueId: %{public}" PRIu64 ".",
             config.width, config.height, retval.sequence, uniqueId_);
@@ -448,6 +451,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     retval.fence = bufferQueueCache_[retval.sequence].fence;
     bedata = retval.buffer->GetExtraData();
     SetSurfaceBufferHebcMetaLocked(retval.buffer);
+    SetSurfaceBufferGlobalAlphaUnlocked(retval.buffer);
 
     auto &dbs = retval.deletingBuffers;
     dbs.reserve(dbs.size() + deletingList_.size());
@@ -1730,6 +1734,40 @@ GSError BufferQueue::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimest
         }
     }
 }
+
+void BufferQueue::SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer)
+{
+    std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
+    if (globalAlpha_ < FORCE_GLOBAL_ALPHA_MIN || globalAlpha_ > FORCE_GLOBAL_ALPHA_MAX) {
+        BLOGE("Invalid global alpha value: %{public}d, uniqueId: %{public}" PRIu64 ".", globalAlpha_, uniqueId_);
+        return;
+    }
+    using namespace HDI::Display::Graphic::Common;
+    V2_0::BufferHandleAttrKey key = V2_0::BufferHandleAttrKey::ATTRKEY_FORCE_GLOBAL_ALPHA;
+    std::vector<uint8_t> values;
+    auto ret = MetadataHelper::ConvertMetadataToVec(globalAlpha_, values);
+    if (ret != GSERROR_OK) {
+        BLOGE("Convert global alpha value failed, ret: %{public}d, value: %{public}d, uniqueId: %{public}" PRIu64 ".",
+            ret, globalAlpha_, uniqueId_);
+        return;
+    }
+    buffer->SetMetadata(key, values);
+}
+
+GSError BufferQueue::SetGlobalAlpha(int32_t alpha)
+{
+    std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
+    globalAlpha_ = alpha;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetGlobalAlpha(int32_t &alpha)
+{
+    std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
+    alpha = globalAlpha_;
+    return GSERROR_OK;
+}
+
 void BufferQueue::DumpMetadata(std::string &result, BufferElement element)
 {
     HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;

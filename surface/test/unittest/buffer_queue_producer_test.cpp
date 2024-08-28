@@ -655,6 +655,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     BufferRequestConfig config;
     EXPECT_EQ(bqpTmp->RequestBuffers(config, bedata, retvalues), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->FlushBuffers(sequences, bedata, fences, damages), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->SetGlobalAlpha(-1), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
 }

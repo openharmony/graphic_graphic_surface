@@ -1768,4 +1768,24 @@ HWTEST_F(ProducerSurfaceTest, ReleaseLastFlushedBuffer001, Function | MediumTest
     ret = surface_->ReleaseLastFlushedBuffer(buffer);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
+
+/*
+* Function: SetGlobalAlpha
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGlobalAlpha with abnormal parameters and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, SetGlobalAlpha001, Function | MediumTest | Level2)
+{
+    int32_t alpha = -255;
+    GSError ret = pSurface->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    alpha = 256;
+    ret = pSurface->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    alpha = 255;
+    ret = pSurface->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
 }

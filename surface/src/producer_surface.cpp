@@ -27,7 +27,8 @@
 
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
-
+constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
+constexpr int32_t FORCE_GLOBAL_ALPHA_MAX = 255;
 sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 {
     if (producer == nullptr) {
@@ -935,5 +936,14 @@ GSError ProducerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->ReleaseLastFlushedBuffer(buffer->GetSeqNum());
+}
+
+GSError ProducerSurface::SetGlobalAlpha(int32_t alpha)
+{
+    if (producer_ == nullptr || alpha < FORCE_GLOBAL_ALPHA_MIN || alpha > FORCE_GLOBAL_ALPHA_MAX) {
+        BLOGE("Invalid producer global alpha value: %{public}d, queueId: %{public}" PRIu64 ".", alpha, queueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetGlobalAlpha(alpha);
 }
 } // namespace OHOS

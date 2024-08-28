@@ -721,4 +721,12 @@ GSError BufferClientProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
     SEND_REQUEST(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
 }
+
+GSError BufferClientProducer::SetGlobalAlpha(int32_t alpha)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    arguments.WriteInt32(alpha);
+    SEND_REQUEST(BUFFER_PRODUCER_SET_GLOBALALPHA, arguments, reply, option);
+    return CheckRetval(reply);
+}
 }; // namespace OHOS

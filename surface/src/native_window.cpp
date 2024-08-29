@@ -804,7 +804,7 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     CM_ColorSpaceType colorSpaceType = CM_COLORSPACE_NONE;
     if (window->surface != nullptr) {
         std::string value = window->surface->GetUserData("ATTRKEY_COLORSPACE_INFO");
-        if (!value.empty()) {
+        if (value.empty()) {
             BLOGE("no colorspace!");
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
@@ -861,7 +861,7 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     return OHOS::SURFACE_ERROR_OK;
 }
 
-GSError OH_NativeWindow_GetMatedataValueType(OHNativeWindow *window, int32_t *size, uint8_t **metadata)
+static GSError OH_NativeWindow_GetMatedataValueType(OHNativeWindow *window, int32_t *size, uint8_t **metadata)
 {
     std::string value = window->surface->GetUserData("OH_HDR_METADATA_TYPE");
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;

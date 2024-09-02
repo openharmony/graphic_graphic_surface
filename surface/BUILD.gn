@@ -98,6 +98,7 @@ ohos_shared_library("surface") {
     "$graphic_surface_root/sandbox:sandbox_utils",
     "$graphic_surface_root/sync_fence:sync_fence",
     "$graphic_surface_root/utils/frame_report:frame_report",
+    "$graphic_surface_root/utils/hebc_white_list:hebc_white_list",
     "$graphic_surface_root/utils/rs_frame_report_ext:rs_frame_report_ext_surface",
   ]
 

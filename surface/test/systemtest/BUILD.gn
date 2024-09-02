@@ -16,18 +16,18 @@ import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 module_out_path = "graphic_surface/surface"
 
-group("systemtest") {
+group("unittest") {
   testonly = true
 
   deps = [
-    ":native_window_buffer_test",
-    ":native_window_test",
-    ":surface_ipc_test",
+    ":native_window_buffer_test_st",
+    ":native_window_test_st",
+    ":surface_ipc_test_st",
   ]
 }
 
 ## SystemTest native_window_buffer_test {{{
-ohos_systemtest("native_window_buffer_test") {
+ohos_unittest("native_window_buffer_test_st") {
   module_out_path = module_out_path
 
   sources = [ "native_window_buffer_test.cpp" ]
@@ -62,7 +62,7 @@ ohos_systemtest("native_window_buffer_test") {
 ## SystemTest native_window_buffer_test }}}
 
 ## SystemTest native_window_test {{{
-ohos_systemtest("native_window_test") {
+ohos_unittest("native_window_test_st") {
   module_out_path = module_out_path
 
   sources = [ "native_window_test.cpp" ]
@@ -93,7 +93,7 @@ ohos_systemtest("native_window_test") {
 ## SystemTest native_window_test }}}
 
 ## SystemTest surface_ipc_test {{{
-ohos_systemtest("surface_ipc_test") {
+ohos_unittest("surface_ipc_test_st") {
   module_out_path = module_out_path
 
   sources = [ "surface_ipc_test.cpp" ]

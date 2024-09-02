@@ -24,6 +24,10 @@ config("surface_config") {
 
   include_dirs = [ "include" ]
 
+  if (graphic_2d_ext_delegator && defined(vendor_root)) {
+    include_dirs += libsurface_ext_delegator_include_dirs
+  }
+
   cflags = [
     "-Wall",
     "-Werror",
@@ -43,10 +47,6 @@ config("surface_public_config") {
     "$graphic_surface_root/utils/rs_frame_report_ext/include",
     "$graphic_surface_root/utils/trace",
   ]
-
-  if (graphic_2d_ext_delegator && defined(vendor_root)) {
-    include_dirs += libsurface_ext_delegator_include_dirs
-  }
 
   cflags = [ "-Wno-error=deprecated-declarations" ]
 }

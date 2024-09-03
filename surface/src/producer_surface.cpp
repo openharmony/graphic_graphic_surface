@@ -176,8 +176,8 @@ void ProducerSurface::OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer)
     }
 
     static uint64_t fdRec[1024] = { 0 };
-    uint32_t fd = buffer->GetBufferHandle()->fd;
-    uint32_t fdTmp = fd < 1024 ? fd : fd % 1024;
+    int32_t fd = buffer->GetBufferHandle()->fd;
+    int32_t fdTmp = fd < 1024 ? fd : fd % 1024;
 
     if (fdRec[fdTmp] != queueId_) {
         BLOGD("RequestBuffer, surfaceId %{public}" PRIu64 ", bufferFd: %{public}d.", queueId_, fd);

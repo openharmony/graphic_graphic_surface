@@ -2006,4 +2006,18 @@ HWTEST_F(ConsumerSurfaceTest, InvalidParameter001, Function | MediumTest | Level
     ASSERT_EQ(surface_->AcquireLastFlushedBuffer(sBuffer, fence, nullptr, 0, false), GSERROR_NOT_SUPPORT);
     ASSERT_EQ(surface_->ReleaseLastFlushedBuffer(sBuffer), GSERROR_NOT_SUPPORT);
 }
+
+/*
+* Function: GetGlobalAlpha
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetGlobalAlpha and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetGlobalAlpha001, Function | MediumTest | Level2)
+{
+    int32_t alpha = -1;
+    ASSERT_EQ(cs->SetGlobalAlpha(alpha), GSERROR_NOT_SUPPORT);
+    ASSERT_EQ(cs->GetGlobalAlpha(alpha), GSERROR_OK);
+}
 }

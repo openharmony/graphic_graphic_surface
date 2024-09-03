@@ -21,17 +21,14 @@
 namespace OHOS {
 using namespace HiviewDFX;
 static SurfaceUtils* instance = nullptr;
-static std::mutex mutextinstance_;
+static std::once_flag createFlag_;
 constexpr uint32_t MATRIX_ARRAY_SIZE = 16;
 
 SurfaceUtils* SurfaceUtils::GetInstance()
 {
-    if (instance == nullptr) {
-        std::lock_guard<std::mutex> lockGuard(mutextinstance_);
-        if (instance == nullptr) {
-            instance = new SurfaceUtils();
-        }
-    }
+    std::call_once(createFlag_, [&]() {
+        instance = new SurfaceUtils();
+    });
 
     return instance;
 }
@@ -163,6 +160,9 @@ void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
 void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
 {
+    if (buffer == nullptr) {
+        return;
+    }
     float tx = 0.f;
     float ty = 0.f;
     float sx = 1.f;
@@ -248,6 +248,9 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
 void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
 {
+    if (buffer == nullptr) {
+        return;
+    }
     float tx = 0.f;
     float ty = 0.f;
     float sx = 1.f;

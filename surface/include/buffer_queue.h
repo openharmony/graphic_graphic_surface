@@ -182,6 +182,8 @@ public:
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix);
     GSError ReleaseLastFlushedBuffer(uint32_t sequence);
+    GSError SetGlobalAlpha(int32_t alpha);
+    GSError GetGlobalAlpha(int32_t &alpha);
 
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
@@ -203,6 +205,7 @@ private:
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
+    void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
     GSError CheckBufferQueueCache(uint32_t sequence);
     GSError ReallocBuffer(const BufferRequestConfig &config, struct IBufferProducer::RequestBufferReturnValue &retval);
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);
@@ -212,6 +215,7 @@ private:
     void RequestBufferDebugInfo();
     bool GetStatusLocked() const;
     void CallConsumerListener();
+    void SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
@@ -256,6 +260,8 @@ private:
     float hdrWhitePointBrightness_ = 0.0;
     float sdrWhitePointBrightness_ = 0.0;
     uint32_t acquireLastFlushedBufSequence_;
+    int32_t globalAlpha_ = -1;
+    std::mutex globalAlphaMutex_;
 };
 }; // namespace OHOS
 

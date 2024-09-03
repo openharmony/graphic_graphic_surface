@@ -92,6 +92,7 @@ public:
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;
+    GSError SetGlobalAlpha(int32_t alpha) override;
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) override;
 
@@ -173,6 +174,7 @@ private:
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ReleaseLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetGlobalAlphaRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;

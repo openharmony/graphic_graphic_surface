@@ -820,4 +820,24 @@ HWTEST_F(BufferQueueTest, GetSurfaceAppFrameworkType001, Function | MediumTest |
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(bq->GetSurfaceAppFrameworkType(), "test");
 }
+
+/*
+* Function: SetGlobalAlpha and GetGlobalAlpha
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGlobalAlpha and check value
+*                  2. call GetGlobalAlpha and check value
+*/
+HWTEST_F(BufferQueueTest, SetGlobalAlpha001, Function | MediumTest | Level2)
+{
+    int32_t alpha = 255;
+    GSError ret = bq->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t resultAlpha = -1;
+    ret = bq->GetGlobalAlpha(resultAlpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(resultAlpha, alpha);
+}
 }

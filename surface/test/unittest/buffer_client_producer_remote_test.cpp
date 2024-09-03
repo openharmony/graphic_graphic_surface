@@ -724,4 +724,18 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function |
     ret = bp->DetachBufferFromQueue(buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
+
+/*
+* Function: SetGlobalAlpha
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGlobalAlpha and check the ret
+*                  2. call DetachBufferFromQueue and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, Function | MediumTest | Level2)
+{
+    ASSERT_EQ(bp->SetGlobalAlpha(-1), OHOS::GSERROR_OK);
+    ASSERT_EQ(bp->SetGlobalAlpha(255), OHOS::GSERROR_OK);
+}
 }

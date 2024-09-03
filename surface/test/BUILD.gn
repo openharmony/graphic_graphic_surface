@@ -16,7 +16,7 @@ group("test") {
 
   deps = [
     "fuzztest:fuzztest",
-    "systemtest:systemtest",
+    "systemtest:unittest",
     "unittest:unittest",
   ]
 }

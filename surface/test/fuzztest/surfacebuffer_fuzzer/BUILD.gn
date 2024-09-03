@@ -22,10 +22,7 @@ ohos_fuzztest("SurfaceBufferFuzzTest") {
   fuzz_config_file = "//foundation/graphic/graphic_surface/surface/test/fuzztest/surfacebuffer_fuzzer"
   module_out_path = module_output_path
 
-  include_dirs = [
-    "$graphic_surface_root/surface/include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-  ]
+  include_dirs = [ "$graphic_surface_root/surface/include" ]
   cflags = [
     "-g",
     "-O0",
@@ -38,7 +35,7 @@ ohos_fuzztest("SurfaceBufferFuzzTest") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
   ]
 }
 

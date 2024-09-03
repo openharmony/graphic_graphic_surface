@@ -170,6 +170,7 @@ public:
         (void)buffer;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError SetGlobalAlpha(int32_t alpha) = 0;
 protected:
     Surface() = default;
 };

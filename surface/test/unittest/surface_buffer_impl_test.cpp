@@ -107,7 +107,11 @@ HWTEST_F(SurfaceBufferImplTest, State001, Function | MediumTest | Level2)
 HWTEST_F(SurfaceBufferImplTest, State002, Function | MediumTest | Level2)
 {
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
-
+    ASSERT_EQ(buffer->GetPhyAddr(), 0);
+    ASSERT_EQ(buffer->GetStride(), -1);
+    vector<uint32_t> keys;
+    ASSERT_EQ(buffer->ListMetadataKeys(keys), GSERROR_NOT_INIT);
+    ASSERT_EQ(buffer->EraseMetadataKey(1), GSERROR_NOT_INIT);
     GSError ret = buffer->Alloc(requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -119,11 +123,6 @@ HWTEST_F(SurfaceBufferImplTest, State002, Function | MediumTest | Level2)
     ASSERT_EQ(buffer->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DCI_P3);
 
     buffer->SetBufferHandle(nullptr);
-    ASSERT_EQ(buffer->GetPhyAddr(), 0);
-    ASSERT_EQ(buffer->GetStride(), -1);
-    vector<uint32_t> keys;
-    ASSERT_EQ(buffer->ListMetadataKeys(keys), GSERROR_NOT_INIT);
-    ASSERT_EQ(buffer->EraseMetadataKey(1), GSERROR_NOT_INIT);
 }
 
 /*

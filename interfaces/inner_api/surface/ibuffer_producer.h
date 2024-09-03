@@ -136,6 +136,7 @@ public:
         (void)sequence;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError SetGlobalAlpha(int32_t alpha) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -186,6 +187,7 @@ protected:
         BUFFER_PRODUCER_CONNECT,
         BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER,
+        BUFFER_PRODUCER_SET_GLOBALALPHA,
     };
 };
 } // namespace OHOS

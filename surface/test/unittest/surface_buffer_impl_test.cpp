@@ -196,13 +196,13 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
     ASSERT_EQ(sbi->SetMetadata(0, setData), GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(sbi->SetMetadata(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END, setData), GSERROR_INVALID_ARGUMENTS);
     sret = sbi->SetMetadata(metadataKey, setData);
-    ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
 
     std::vector<uint8_t> getData;
     ASSERT_EQ(sbi->GetMetadata(0, getData), GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(sbi->GetMetadata(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END, getData), GSERROR_INVALID_ARGUMENTS);
     sret = sbi->GetMetadata(metadataKey, getData);
-    ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
 
     if (sret == OHOS::GSERROR_OK) {
         uint32_t getMetadata;
@@ -213,7 +213,7 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
     std::vector<uint32_t> keys;
 
     sret = sbi->ListMetadataKeys(keys);
-    ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
     if (sret == OHOS::GSERROR_OK) {
         ASSERT_EQ(sret, OHOS::GSERROR_OK);
         ASSERT_EQ(keys.size(), 1);
@@ -223,10 +223,10 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
     ASSERT_EQ(sbi->EraseMetadataKey(0), GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(sbi->EraseMetadataKey(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END), GSERROR_INVALID_ARGUMENTS);
     sret = sbi->EraseMetadataKey(metadataKey);
-    ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
 
     sret = sbi->ListMetadataKeys(keys);
-    ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
     if (sret == OHOS::GSERROR_OK) {
         ASSERT_EQ(keys.size(), 0);
     }

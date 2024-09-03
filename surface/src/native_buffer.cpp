@@ -225,7 +225,7 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     GSError ret = MetadataHelper::SetColorSpaceType(sbuffer, NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
-    if (ret == OHOS::GSERROR_API_FAILED) {
+    if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         return OHOS::SURFACE_ERROR_UNKOWN;
@@ -282,7 +282,7 @@ int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
     GSError ret = MetadataHelper::GetColorSpaceType(sbuffer, colorSpaceType);
-    if (ret == OHOS::GSERROR_API_FAILED) {
+    if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
@@ -318,7 +318,7 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    if (ret == OHOS::GSERROR_API_FAILED) {
+    if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
@@ -331,7 +331,7 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
 {
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
     GSError ret = MetadataHelper::GetHDRMetadataType(sbuffer, hdrMetadataType);
-    if (ret == OHOS::GSERROR_API_FAILED) {
+    if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("GetHDRMetadataType failed!, ret: %d", ret);
@@ -375,7 +375,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    if (ret == OHOS::GSERROR_API_FAILED) {
+    if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetHDRSMetadata failed!, ret: %d", ret);

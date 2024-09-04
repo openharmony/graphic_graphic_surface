@@ -26,6 +26,7 @@
 #include "sync_fence.h"
 #include "ipc_inner_object.h"
 #include "external_window.h"
+#include "hebc_white_list.h"
 #include "metadata_helper.h"
 
 #ifndef WEAK_ALIAS
@@ -110,6 +111,11 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     windowConfig->colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     windowConfig->transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
 
+    // if the application is in the hebc list, remove BUFFER_USAGE_CPU_READ flag
+    if (HebcWhiteList::GetInstance().Check()) {
+        windowConfig->usage &= ~BUFFER_USAGE_CPU_READ;
+    }
+
     NativeObjectReference(nativeWindow);
     auto utils = SurfaceUtils::GetInstance();
     utils->AddNativeWindow(nativeWindow->surface->GetUniqueId(), nativeWindow);
@@ -171,6 +177,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     int32_t requestWidth = window->surface->GetRequestWidth();
     int32_t requestHeight = window->surface->GetRequestHeight();
     OHOS::BufferRequestConfig *windowConfig = window->surface->GetWindowConfig();
+
     if (requestWidth != 0 && requestHeight != 0) {
         OHOS::BufferRequestConfig config;
         if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), windowConfig,
@@ -511,6 +518,7 @@ BufferHandle *GetBufferHandleFromNative(OHNativeWindowBuffer *buffer)
     if (buffer == nullptr || buffer->sfbuffer == nullptr) {
         return nullptr;
     }
+
     return buffer->sfbuffer->GetBufferHandle();
 }
 

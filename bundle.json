@@ -19,6 +19,7 @@
         "components": [
           "bounds_checking_function",
           "c_utils",
+          "config_policy",
           "drivers_interface_display",
           "eventhandler",
           "hicollie",
@@ -26,7 +27,8 @@
           "hitrace",
           "hisysevent",
           "init",
-          "ipc"
+          "ipc",
+          "jsoncpp"
         ]
       },
       "build": {
@@ -34,7 +36,8 @@
           "//foundation/graphic/graphic_surface/surface:surface",
           "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
           "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle",
-          "//foundation/graphic/graphic_surface/utils/frame_report:frame_report"
+          "//foundation/graphic/graphic_surface/utils/frame_report:frame_report",
+          "//foundation/graphic/graphic_surface/utils/hebc_white_list:hebc_white_list"
         ],
         "inner_kits": [
           {

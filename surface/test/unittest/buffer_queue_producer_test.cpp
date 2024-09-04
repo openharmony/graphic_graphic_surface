@@ -199,6 +199,7 @@ HWTEST_F(BufferQueueProducerTest, ReqCan003, Function | MediumTest | Level2)
  */
 HWTEST_F(BufferQueueProducerTest, ReqFlu001, Function | MediumTest | Level2)
 {
+    Rosen::FrameReport::GetInstance().SetGameScene(1, 1);
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);

@@ -152,6 +152,10 @@ namespace OHOS {
         bool isIncache = GetData<bool>();
         cSurface->IsSurfaceBufferInCache(sequence, isIncache);
         pSurface->UnRegisterReleaseListener();
+        pSurface->SetWindowConfig(config);
+        (void)pSurface->GetWindowConfig();
+        cSurface->SetWindowConfig(config);
+        (void)cSurface->GetWindowConfig();
     }
 
     void SurfaceFuzzTest1(sptr<OHOS::Surface> pSurface, sptr<OHOS::IConsumerSurface> cSurface)

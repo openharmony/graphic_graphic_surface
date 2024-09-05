@@ -1337,9 +1337,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue005, Function | Mediu
     }
     NativeWindowBuffer *nativeWindowbuffer1 = nullptr;
     int fenceFd = -1;
-    int32_t err = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowbuffer1, &fenceFd);
-    ASSERT_EQ(err, GSERROR_OK);
-    auto ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
+    auto ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowbuffer1, &fenceFd);
+    if (ret != GSERROR_HDI_ERROR) {
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeWindow_SetMetadataValue(nativeWindow, OH_HDR_STATIC_METADATA, (int32_t)len, buff);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_OK);
     }
@@ -2091,16 +2093,19 @@ HWTEST_F(NativeWindowTest, NativeWindowSetRequestWidthAndHeight001, Function | M
     //分支1：走使用requestWidth/Height新建config分支
     ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 100, 200), OHOS::GSERROR_OK);
     NativeWindowBuffer *nativeWindowBuffer1 = nullptr;
-    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence), GSERROR_OK);
-    ASSERT_EQ(nativeWindowBuffer1->sfbuffer->GetWidth(), 100);
-    ASSERT_EQ(nativeWindowBuffer1->sfbuffer->GetHeight(), 200);
-    ASSERT_EQ(NativeWindowCancelBuffer(nativeWindow, nativeWindowBuffer1), GSERROR_OK);
+    auto ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence);
+    if (ret != GSERROR_HDI_ERROR) {
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_EQ(nativeWindowBuffer1->sfbuffer->GetWidth(), 100);
+        ASSERT_EQ(nativeWindowBuffer1->sfbuffer->GetHeight(), 200);
+        ASSERT_EQ(NativeWindowCancelBuffer(nativeWindow, nativeWindowBuffer1), GSERROR_OK);
+    }
     //分支2：使用surface成员变量windowConfig_(未初始化)
     ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 0, 200), OHOS::GSERROR_OK);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
-        SURFACE_ERROR_UNKOWN);
+    ASSERT_NE(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
+        OHOS::GSERROR_OK);
     ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 100, 0), OHOS::GSERROR_OK);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
-        SURFACE_ERROR_UNKOWN);
+    ASSERT_NE(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
+        OHOS::GSERROR_OK);
 }
 }

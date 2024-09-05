@@ -25,28 +25,28 @@
 
 namespace OHOS {
 void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd);
-void WriteFileDescriptor(MessageParcel &parcel, int32_t fd);
+GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd);
 
 void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config);
-void WriteRequestConfig(MessageParcel &parcel, const BufferRequestConfig  &config);
+GSError WriteRequestConfig(MessageParcel &parcel, const BufferRequestConfig  &config);
 
 void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config);
-void WriteFlushConfig(MessageParcel &parcel, const BufferFlushConfigWithDamages &config);
+GSError WriteFlushConfig(MessageParcel &parcel, const BufferFlushConfigWithDamages &config);
 
 GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer);
-void WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer);
+GSError WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer);
 
 void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInfo> &infos);
-void WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos);
+GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos);
 
 void ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData);
-void WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData);
+GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData);
 
 void ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData);
-void WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &metaData);
+GSError WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &metaData);
 
 void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle);
-void WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle);
+GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle);
 
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer);
 } // namespace OHOS

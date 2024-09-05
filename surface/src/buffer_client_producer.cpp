@@ -97,10 +97,13 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    WriteRequestConfig(arguments, config);
+    GSError ret = WriteRequestConfig(arguments, config);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFER, arguments, reply, option);
-    GSError ret = CheckRetval(reply);
+    ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
         return ret;
     }
@@ -118,7 +121,9 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
         return SURFACE_ERROR_UNKOWN;
     }
     retval.fence = SyncFence::ReadFromMessageParcel(reply);
-    reply.ReadUInt32Vector(&retval.deletingBuffers);
+    if (!reply.ReadUInt32Vector(&retval.deletingBuffers)) {
+        return GSERROR_BINDER;
+    }
 
     return GSERROR_OK;
 }
@@ -129,10 +134,15 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
     uint32_t num = static_cast<uint32_t>(bedata.size());
-    arguments.WriteUint32(num);
-    WriteRequestConfig(arguments, config);
+    if (!arguments.WriteUint32(num)) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = WriteRequestConfig(arguments, config);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
-    GSError ret = CheckRetval(reply);
+    ret = CheckRetval(reply);
     if (ret != GSERROR_OK && ret != GSERROR_NO_BUFFER) {
         return ret;
     }
@@ -159,7 +169,9 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
             return SURFACE_ERROR_UNKOWN;
         }
         retval.fence = SyncFence::ReadFromMessageParcel(reply);
-        reply.ReadUInt32Vector(&retval.deletingBuffers);
+        if (!reply.ReadUInt32Vector(&retval.deletingBuffers)) {
+            return GSERROR_BINDER;
+        }
     }
     return ret;
 }
@@ -168,7 +180,9 @@ GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& bu
     sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, uint32_t command)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteBool(isUseNewMatrix);
+    if (!arguments.WriteBool(isUseNewMatrix)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(command, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
@@ -179,6 +193,9 @@ GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& bu
     if (ret != GSERROR_OK) {
         return SURFACE_ERROR_UNKOWN;
     }
+    if (buffer == nullptr) {
+        return SURFACE_ERROR_NULLPTR;
+    }
     ret = buffer->ReadBufferRequestConfig(reply);
     if (ret != GSERROR_OK) {
         return SURFACE_ERROR_UNKOWN;
@@ -186,7 +203,12 @@ GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& bu
 
     fence = SyncFence::ReadFromMessageParcel(reply);
     std::vector<float> readMatrixVector;
-    reply.ReadFloatVector(&readMatrixVector);
+    if (!reply.ReadFloatVector(&readMatrixVector)) {
+        return GSERROR_BINDER;
+    }
+    if (readMatrixVector.size() != MATRIX4_SIZE) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     if (memcpy_s(matrix, matrixSize * sizeof(float),
         readMatrixVector.data(), readMatrixVector.size() * sizeof(float)) != EOK) {
         BLOGE("memcpy_s fail, uniqueId: %{public}" PRIu64 ".", uniqueId_);
@@ -206,13 +228,18 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     token_ = new IRemoteStub<IBufferProducerToken>();
-    arguments.WriteRemoteObject(token_->AsObject());
+    if (!arguments.WriteRemoteObject(token_->AsObject())) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
-    reply.ReadInt32(info.width);
-    reply.ReadInt32(info.height);
-    reply.ReadUint64(info.uniqueId);
+    if (!reply.ReadInt32(info.width) || !reply.ReadInt32(info.height) ||
+        !reply.ReadUint64(info.uniqueId)) {
+        return GSERROR_BINDER;
+    }
     uniqueId_ = info.uniqueId;
-    reply.ReadString(info.name);
+    if (!reply.ReadString(info.name)) {
+        return GSERROR_BINDER;
+    }
     return CheckRetval(reply);
 }
 
@@ -220,8 +247,13 @@ GSError BufferClientProducer::CancelBuffer(uint32_t sequence, sptr<BufferExtraDa
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteUint32(sequence);
-    bedata->WriteToParcel(arguments);
+    if (!arguments.WriteUint32(sequence)) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = bedata->WriteToParcel(arguments);
+    if (ret != GSERROR_OK) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_CANCEL_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
@@ -232,13 +264,23 @@ GSError BufferClientProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraDat
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteUint32(sequence);
-    bedata->WriteToParcel(arguments);
-    fence->WriteToMessageParcel(arguments);
-    WriteFlushConfig(arguments, config);
+    if (!arguments.WriteUint32(sequence)) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = bedata->WriteToParcel(arguments);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    if (!fence->WriteToMessageParcel(arguments)) {
+        return GSERROR_BINDER;
+    }
+    ret = WriteFlushConfig(arguments, config);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_FLUSH_BUFFER, arguments, reply, option);
-    GSError ret = CheckRetval(reply);
+    ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
         return ret;
     }
@@ -259,11 +301,22 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
     if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
         return SURFACE_ERROR_UNKOWN;
     }
-    arguments.WriteUInt32Vector(sequences);
+    if (!arguments.WriteUInt32Vector(sequences)) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = GSERROR_OK;
     for (uint32_t i = 0; i < sequences.size(); ++i) {
-        bedata[i]->WriteToParcel(arguments);
-        fences[i]->WriteToMessageParcel(arguments);
-        WriteFlushConfig(arguments, configs[i]);
+        ret = bedata[i]->WriteToParcel(arguments);
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
+        if (!fences[i]->WriteToMessageParcel(arguments)) {
+            return GSERROR_BINDER;
+        }
+        ret = WriteFlushConfig(arguments, configs[i]);
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
     }
     SEND_REQUEST(BUFFER_PRODUCER_FLUSH_BUFFERS, arguments, reply, option);
     return CheckRetval(reply);
@@ -273,8 +326,11 @@ GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     uint32_t sequence = buffer->GetSeqNum();
-    WriteSurfaceBufferImpl(arguments, sequence, buffer);
-    GSError ret = buffer->WriteBufferRequestConfig(arguments);
+    GSError ret = WriteSurfaceBufferImpl(arguments, sequence, buffer);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    ret = buffer->WriteBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
         BLOGE("WriteBufferRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return ret;
@@ -287,7 +343,10 @@ GSError BufferClientProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     uint32_t sequence = buffer->GetSeqNum();
-    WriteSurfaceBufferImpl(arguments, sequence, buffer);
+    GSError ret = WriteSurfaceBufferImpl(arguments, sequence, buffer);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_DETACH_BUFFER_FROM_QUEUE, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -301,8 +360,13 @@ GSError BufferClientProducer::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t 
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     uint32_t sequence = buffer->GetSeqNum();
-    WriteSurfaceBufferImpl(arguments, sequence, buffer);
-    arguments.WriteInt32(timeOut);
+    GSError ret = WriteSurfaceBufferImpl(arguments, sequence, buffer);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    if (!arguments.WriteInt32(timeOut)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_ATTACH_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -316,7 +380,9 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteRemoteObject(listener->AsObject());
+    if (!arguments.WriteRemoteObject(listener->AsObject())) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, arguments, reply, option);
     return CheckRetval(reply);
@@ -342,7 +408,9 @@ GSError BufferClientProducer::SetQueueSize(uint32_t queueSize)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteUint32(queueSize);
+    if (!arguments.WriteUint32(queueSize)) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_QUEUE_SIZE, arguments, reply, option);
     return CheckRetval(reply);
@@ -445,7 +513,9 @@ GSError BufferClientProducer::SetDefaultUsage(uint64_t usage)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteUint64(usage);
+    if (!arguments.WriteUint64(usage)) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_DEFAULT_USAGE, arguments, reply, option);
 
@@ -465,7 +535,9 @@ GSError BufferClientProducer::CleanCache(bool cleanAll)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteBool(cleanAll);
+    if (!arguments.WriteBool(cleanAll)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_CLEAN_CACHE, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -490,7 +562,9 @@ GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
 
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteUint32(static_cast<uint32_t>(transform));
+    if (!arguments.WriteUint32(static_cast<uint32_t>(transform))) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_TRANSFORM, arguments, reply, option);
     GSError ret = CheckRetval(reply);
@@ -510,10 +584,13 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    WriteVerifyAllocInfo(arguments, infos);
+    GSError ret = WriteVerifyAllocInfo(arguments, infos);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_IS_SUPPORTED_ALLOC, arguments, reply, option);
-    GSError ret = CheckRetval(reply);
+    ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
         return ret;
     }
@@ -545,8 +622,9 @@ GSError BufferClientProducer::Disconnect()
 GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteUint32(sequence);
-    arguments.WriteInt32(static_cast<int32_t>(scalingMode));
+    if (!arguments.WriteUint32(sequence) || !arguments.WriteInt32(static_cast<int32_t>(scalingMode))) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_SCALING_MODE, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -554,7 +632,9 @@ GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scal
 GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteInt32(static_cast<int32_t>(scalingMode));
+    if (!arguments.WriteInt32(static_cast<int32_t>(scalingMode))) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_SCALING_MODEV2, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -562,7 +642,9 @@ GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
 GSError BufferClientProducer::SetBufferHold(bool hold)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteBool(hold);
+    if (!arguments.WriteBool(hold)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_BUFFER_HOLD, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -570,8 +652,13 @@ GSError BufferClientProducer::SetBufferHold(bool hold)
 GSError BufferClientProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteUint32(sequence);
-    WriteHDRMetaData(arguments, metaData);
+    if (!arguments.WriteUint32(sequence)) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = WriteHDRMetaData(arguments, metaData);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_METADATA, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -580,9 +667,13 @@ GSError BufferClientProducer::SetMetaDataSet(uint32_t sequence, GraphicHDRMetada
                                              const std::vector<uint8_t> &metaData)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteUint32(sequence);
-    arguments.WriteUint32(static_cast<uint32_t>(key));
-    WriteHDRMetaDataSet(arguments, metaData);
+    if (!arguments.WriteUint32(sequence) || !arguments.WriteUint32(static_cast<uint32_t>(key))) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = WriteHDRMetaDataSet(arguments, metaData);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_METADATASET, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -591,10 +682,17 @@ GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     if (handle == nullptr) {
-        arguments.WriteBool(false);
+        if (!arguments.WriteBool(false)) {
+            return GSERROR_BINDER;
+        }
     } else {
-        arguments.WriteBool(true);
-        WriteExtDataHandle(arguments, handle);
+        if (!arguments.WriteBool(true)) {
+            return GSERROR_BINDER;
+        }
+        GSError ret = WriteExtDataHandle(arguments, handle);
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
     }
     SEND_REQUEST(BUFFER_PRODUCER_SET_TUNNEL_HANDLE, arguments, reply, option);
     return CheckRetval(reply);
@@ -603,8 +701,9 @@ GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle
 GSError BufferClientProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteUint32(sequence);
-    arguments.WriteUint32(static_cast<uint32_t>(type));
+    if (!arguments.WriteUint32(sequence) || !arguments.WriteUint32(static_cast<uint32_t>(type))) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
@@ -641,7 +740,9 @@ GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHin
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteUint32(static_cast<uint32_t>(transformHint));
+    if (!arguments.WriteUint32(static_cast<uint32_t>(transformHint))) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_TRANSFORMHINT, arguments, reply, option);
     return CheckRetval(reply);
@@ -650,7 +751,9 @@ GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHin
 GSError BufferClientProducer::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteUint32(static_cast<uint32_t>(sourceType));
+    if (!arguments.WriteUint32(static_cast<uint32_t>(sourceType))) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_SOURCE_TYPE, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -670,7 +773,9 @@ GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
 GSError BufferClientProducer::SetSurfaceAppFrameworkType(std::string appFrameworkType)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteString(appFrameworkType);
+    if (!arguments.WriteString(appFrameworkType)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -691,7 +796,9 @@ GSError BufferClientProducer::SetHdrWhitePointBrightness(float brightness)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteFloat(brightness);
+    if (!arguments.WriteFloat(brightness)) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
     return CheckRetval(reply);
@@ -701,7 +808,9 @@ GSError BufferClientProducer::SetSdrWhitePointBrightness(float brightness)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    arguments.WriteFloat(brightness);
+    if (!arguments.WriteFloat(brightness)) {
+        return GSERROR_BINDER;
+    }
 
     SEND_REQUEST(BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS, arguments, reply, option);
     return CheckRetval(reply);
@@ -717,7 +826,9 @@ GSError BufferClientProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buff
 GSError BufferClientProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteUint32(sequence);
+    if (!arguments.WriteUint32(sequence)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
 }
@@ -725,7 +836,9 @@ GSError BufferClientProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
 GSError BufferClientProducer::SetGlobalAlpha(int32_t alpha)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    arguments.WriteInt32(alpha);
+    if (!arguments.WriteInt32(alpha)) {
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_SET_GLOBALALPHA, arguments, reply, option);
     return CheckRetval(reply);
 }

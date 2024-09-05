@@ -602,9 +602,15 @@ int32_t ConsumerSurface::GetRequestHeight()
     return 0;
 }
 
-BufferRequestConfig* ConsumerSurface::GetWindowConfig()
+void ConsumerSurface::SetWindowConfig(const BufferRequestConfig& config)
 {
-    return nullptr;
+    (void)config;
+}
+
+BufferRequestConfig& ConsumerSurface::GetWindowConfig()
+{
+    BufferRequestConfig config;
+    return config;
 }
 
 GSError ConsumerSurface::SetHdrWhitePointBrightness(float brightness)

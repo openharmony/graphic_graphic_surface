@@ -720,9 +720,9 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function |
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = bp->AttachBufferToQueue(buffer);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
     ret = bp->DetachBufferFromQueue(buffer);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
 
 /*

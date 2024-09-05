@@ -1400,6 +1400,36 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface001, Function | Mediu
 }
 
 /*
+* Function: SetWptrNativeWindowToPSurface
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. SetWptrNativeWindowToPSurface with nullptr param and check ret
+* @tc.require: issueIANSVH
+ */
+HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | MediumTest | Level1)
+{
+    GSError ret = surface_->SetWptrNativeWindowToPSurface(nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: SetWindowConfig and GetWindowConfig
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. Call SetWindowConfig
+*                  2. Call GetWindowConfig and check ret
+* @tc.require: issueIANSVH
+ */
+HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
+{
+    surface_->SetWindowConfig(requestConfig);
+    auto& configGet = surface_->GetWindowConfig();
+    ASSERT_EQ(requestConfig, configGet);
+}
+
+/*
 * Function: AttachBuffer
 * Type: Function
 * Rank: Important(1)

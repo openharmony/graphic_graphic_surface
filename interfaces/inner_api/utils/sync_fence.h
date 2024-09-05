@@ -66,7 +66,7 @@ public:
     /* this is dangerous, when you use it, do not operator the fd */
     int32_t Get() const;
 
-    void WriteToMessageParcel(MessageParcel &parcel);
+    bool WriteToMessageParcel(MessageParcel &parcel);
     static sptr<SyncFence> ReadFromMessageParcel(MessageParcel &parcel);
     FenceStatus GetStatus();
 

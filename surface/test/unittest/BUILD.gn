@@ -281,7 +281,10 @@ ohos_unittest("buffer_utils_test") {
 
 ## Build surface_test_common.a {{{
 config("surface_test_common_public_config") {
-  include_dirs = [ "../../include" ]
+  include_dirs = [
+    ".",
+    "../../include",
+  ]
 
   cflags = [
     "-Wall",

@@ -301,8 +301,7 @@ int32_t NativeWindowCancelBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
-    window->surface->CancelBuffer(buffer->sfbuffer);
-    return OHOS::GSERROR_OK;
+    return window->surface->CancelBuffer(buffer->sfbuffer);
 }
 
 static void HandleNativeWindowSetUsage(OHNativeWindow *window, va_list args)

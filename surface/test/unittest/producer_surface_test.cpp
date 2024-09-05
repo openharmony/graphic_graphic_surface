@@ -290,7 +290,7 @@ HWTEST_F(ProducerSurfaceTest, CancelBuffer001, Function | MediumTest | Level2)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->CancelBuffer(buffer);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*

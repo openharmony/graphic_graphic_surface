@@ -22,7 +22,6 @@
           "c_utils",
           "drivers_interface_display",
           "eventhandler",
-          "hicollie",
           "hilog",
           "hitrace",
           "hisysevent",

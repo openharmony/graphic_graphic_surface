@@ -84,7 +84,7 @@ GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
 {
     int32_t ret = reply.ReadInt32();
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
+        BLOGE("Remote return %{public}d", ret);
         return static_cast<GSError>(ret);
     }
     return GSERROR_OK;

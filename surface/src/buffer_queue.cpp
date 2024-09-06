@@ -452,7 +452,6 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     SetSurfaceBufferHebcMetaLocked(retval.buffer);
 
     auto &dbs = retval.deletingBuffers;
-    dbs.reserve(dbs.size() + deletingList_.size());
     dbs.insert(dbs.end(), deletingList_.begin(), deletingList_.end());
     deletingList_.clear();
 
@@ -1071,6 +1070,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
             .format = buffer->GetFormat(), .usage = buffer->GetUsage(), .timeout = timeOut,
         },
         .damages = { { .w = buffer->GetWidth(), .h = buffer->GetHeight(), } },
+        .scalingMode = scalingMode_
     };
     AttachBufferUpdateBufferInfo(buffer);
     int32_t usedSize = static_cast<int32_t>(GetUsedSize());

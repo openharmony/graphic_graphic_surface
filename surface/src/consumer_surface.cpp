@@ -87,6 +87,43 @@ GSError ConsumerSurface::GetProducerInitInfo(ProducerInitInfo& info)
     return GSERROR_NOT_SUPPORT;
 }
 
+GSError ConsumerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
+                                       sptr<SyncFence>& fence, BufferRequestConfig &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
+    std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
+                                     const sptr<SyncFence>& fence, BufferFlushConfig &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
+                                     BufferFlushConfigWithDamages &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
+    const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+
+GSError ConsumerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
+    sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                        int64_t& timestamp, Rect& damage)
 {
@@ -119,6 +156,23 @@ GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<S
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->ReleaseBuffer(buffer, fence);
+}
+
+GSError ConsumerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
+    int32_t &fence, BufferRequestConfig &config)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
+                                     int32_t fence, BufferFlushConfig &config)
+{
+    return GSERROR_NOT_SUPPORT;
 }
 
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t& fence,
@@ -319,6 +373,16 @@ GSError ConsumerSurface::RegisterReleaseListener(OnReleaseFunc func)
     return consumer_->RegisterReleaseListener(func);
 }
 
+GSError ConsumerSurface::RegisterReleaseListener(OnReleaseFuncWithFence func)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::UnRegisterReleaseListener()
+{
+    return GSERROR_OK;
+}
+
 GSError ConsumerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw)
 {
     if (func == nullptr || consumer_ == nullptr) {
@@ -368,6 +432,12 @@ GSError ConsumerSurface::ClearUserDataChangeListener()
     return GSERROR_OK;
 }
 
+GSError ConsumerSurface::CleanCache(bool cleanAll)
+{
+    (void)cleanAll;
+    return GSERROR_NOT_SUPPORT;
+}
+
 GSError ConsumerSurface::GoBackground()
 {
     if (consumer_ == nullptr) {
@@ -409,6 +479,22 @@ GraphicTransformType ConsumerSurface::GetTransform() const
         return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     }
     return consumer_->GetTransform();
+}
+
+GSError ConsumerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
+                                          std::vector<bool> &supporteds)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::Connect()
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ConsumerSurface::Disconnect()
+{
+    return GSERROR_NOT_SUPPORT;
 }
 
 GSError ConsumerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
@@ -510,6 +596,42 @@ GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPre
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->SetPresentTimestamp(sequence, timestamp);
+}
+
+GSError ConsumerSurface::GetPresentTimestamp(uint32_t sequence,
+    GraphicPresentTimestampType type, int64_t &time) const
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+int32_t ConsumerSurface::GetDefaultFormat()
+{
+    return 0;
+}
+
+GSError ConsumerSurface::SetDefaultFormat(int32_t format)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+int32_t ConsumerSurface::GetDefaultColorGamut()
+{
+    return 0;
+}
+
+GSError ConsumerSurface::SetDefaultColorGamut(int32_t colorGamut)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+sptr<NativeSurface> ConsumerSurface::GetNativeSurface()
+{
+    return nullptr;
+}
+
+GSError ConsumerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
+{
+    return GSERROR_NOT_SUPPORT;
 }
 
 void ConsumerSurface::ConsumerRequestCpuAccess(bool on)

@@ -534,15 +534,9 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel)
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    std::lock_guard<std::mutex> lock(mutex_);
-    FreeBufferHandleLocked();
-    g_displayBufferMutex.unlock();
-    handle_ = ReadBufferHandle(parcel);
-    if (handle_ == nullptr) {
-        return GSERROR_API_FAILED;
-    }
-    return GSERROR_OK;
+    auto handle = ReadBufferHandle(parcel);
+    SetBufferHandle(handle);
+    return handle ? GSERROR_OK : GSERROR_API_FAILED;
 }
 
 // return OH_NativeBuffer* is dangerous, need to refactor

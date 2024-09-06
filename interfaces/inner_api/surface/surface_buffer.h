@@ -107,7 +107,10 @@ public:
         (void)parcel;
         return GSERROR_OK;
     };
-    virtual BufferRequestConfig GetBufferRequestConfig() const = 0;
+    virtual BufferRequestConfig GetBufferRequestConfig() const
+    {
+        return {};
+    }
     virtual void SetBufferRequestConfig(const BufferRequestConfig &config)
     {
         (void)config;

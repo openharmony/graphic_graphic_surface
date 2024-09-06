@@ -88,7 +88,7 @@ GSError ConsumerSurface::GetProducerInitInfo(ProducerInitInfo& info)
 }
 
 GSError ConsumerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
-                                     sptr<SyncFence>& fence, BufferRequestConfig &config)
+                                       sptr<SyncFence>& fence, BufferRequestConfig &config)
 {
     return GSERROR_NOT_SUPPORT;
 }
@@ -100,7 +100,7 @@ GSError ConsumerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffer
 }
 
 GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
-                                   const sptr<SyncFence>& fence, BufferFlushConfig &config)
+                                     const sptr<SyncFence>& fence, BufferFlushConfig &config)
 {
     return GSERROR_NOT_SUPPORT;
 }
@@ -170,7 +170,7 @@ GSError ConsumerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
 }
 
 GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
-                                    int32_t fence, BufferFlushConfig &config)
+                                     int32_t fence, BufferFlushConfig &config)
 {
     return GSERROR_NOT_SUPPORT;
 }

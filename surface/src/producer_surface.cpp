@@ -246,7 +246,7 @@ GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 }
 
 GSError ProducerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                      int64_t &timestamp, Rect &damage)
+                                       int64_t &timestamp, Rect &damage)
 {
     return GSERROR_NOT_SUPPORT;
 }

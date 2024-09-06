@@ -38,14 +38,15 @@ public:
     GSError GetProducerInitInfo(ProducerInitInfo &info) override;
 
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
-        int32_t &fence, BufferRequestConfig &config) override;
+                          int32_t &fence, BufferRequestConfig &config) override;
 
     GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
         std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config) override;
 
     GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) override;
 
-    GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence, BufferFlushConfig &config) override;
+    GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
+                        int32_t fence, BufferFlushConfig &config) override;
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
                           int64_t &timestamp, Rect &damage) override;
@@ -53,11 +54,12 @@ public:
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence) override;
 
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
-        sptr<SyncFence>& fence, BufferRequestConfig &config) override;
+                          sptr<SyncFence>& fence, BufferRequestConfig &config) override;
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
-        const sptr<SyncFence>& fence, BufferFlushConfig &config) override;
+                        const sptr<SyncFence>& fence, BufferFlushConfig &config) override;
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-        BufferFlushConfigWithDamages &config) override;
+                        BufferFlushConfigWithDamages &config) override;
+
     GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
         const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config) override;
 
@@ -101,15 +103,12 @@ public:
     void Dump(std::string &result) const override;
 
     GSError CleanCache(bool cleanAll = false) override;
-
     GSError GoBackground() override;
 
     GSError SetTransform(GraphicTransformType transform) override;
     GraphicTransformType GetTransform() const override;
 
-    GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-        std::vector<bool> &supporteds) override;
-
+    GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
     GSError Connect() override;
     GSError Disconnect() override;
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
@@ -124,7 +123,8 @@ public:
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const override;
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) override;
     GSError GetPresentTimestamp(uint32_t sequence,
-        GraphicPresentTimestampType type, int64_t &time) const override;
+                                GraphicPresentTimestampType type, int64_t &time) const override;
+
     int32_t GetDefaultFormat() override;
     GSError SetDefaultFormat(int32_t format) override;
     int32_t GetDefaultColorGamut() override;

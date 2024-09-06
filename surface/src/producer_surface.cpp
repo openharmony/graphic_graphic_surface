@@ -268,17 +268,6 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     return GSERROR_OK;
 }
 
-GSError ProducerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
-    int64_t &timestamp, Rect &damage)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
-GSError ProducerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
 GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
 {
     if (buffer == nullptr || producer_ == nullptr) {
@@ -298,6 +287,17 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
     // fence need close?
     sptr<SyncFence> syncFence = new SyncFence(fence);
     return FlushBuffer(buffer, syncFence, config);
+}
+
+GSError ProducerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
+    int64_t &timestamp, Rect &damage)
+{
+    return GSERROR_NOT_SUPPORT;
+}
+
+GSError ProducerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
+{
+    return GSERROR_NOT_SUPPORT;
 }
 
 GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
@@ -800,7 +800,7 @@ void ProducerSurface::SetBufferHold(bool hold)
     producer_->SetBufferHold(hold);
 }
 
-GSError ProducerSurface::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
+GSError ProducerSurface::GetScalingMode(uint32_t sequence, ScalingMode& scalingMode)
 {
     return GSERROR_NOT_SUPPORT;
 }
@@ -834,7 +834,7 @@ GSError ProducerSurface::GetMetaData(uint32_t sequence, std::vector<GraphicHDRMe
 }
 
 GSError ProducerSurface::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
-    std::vector<uint8_t> &metaData) const
+                                        std::vector<uint8_t> &metaData) const
 {
     return GSERROR_NOT_SUPPORT;
 }

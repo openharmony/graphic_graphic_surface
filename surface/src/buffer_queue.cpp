@@ -1070,7 +1070,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
             .format = buffer->GetFormat(), .usage = buffer->GetUsage(), .timeout = timeOut,
         },
         .damages = { { .w = buffer->GetWidth(), .h = buffer->GetHeight(), } },
-        .scalingMode = scalingMode_
+        .scalingMode = scalingMode_,
     };
     AttachBufferUpdateBufferInfo(buffer);
     int32_t usedSize = static_cast<int32_t>(GetUsedSize());

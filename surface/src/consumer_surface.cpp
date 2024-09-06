@@ -117,7 +117,6 @@ GSError ConsumerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &bu
     return GSERROR_NOT_SUPPORT;
 }
 
-
 GSError ConsumerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
@@ -157,9 +156,8 @@ GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<S
     }
     return consumer_->ReleaseBuffer(buffer, fence);
 }
-
 GSError ConsumerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
-    int32_t &fence, BufferRequestConfig &config)
+                                       int32_t &fence, BufferRequestConfig &config)
 {
     return GSERROR_NOT_SUPPORT;
 }

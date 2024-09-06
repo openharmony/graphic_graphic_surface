@@ -165,7 +165,6 @@ private:
     int32_t SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-
     int32_t SetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 

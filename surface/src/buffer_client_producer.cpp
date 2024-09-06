@@ -69,7 +69,7 @@ GSError BufferClientProducer::SendRequest(uint32_t command, MessageParcel &arg,
 {
     sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
-        BLOGN_FAILURE("Remote is nullptr!");
+        BLOGE("Remote is nullptr!");
         return GSERROR_SERVER_ERROR;
     }
     int32_t ret = remote->SendRequest(command, arg, reply, opt);
@@ -84,7 +84,7 @@ GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
 {
     int32_t ret = reply.ReadInt32();
     if (ret != GSERROR_OK) {
-        BLOGE("Remote return %{public}d", ret);
+        BLOGN_FAILURE("Remote return %{public}d", ret);
         return static_cast<GSError>(ret);
     }
     return GSERROR_OK;

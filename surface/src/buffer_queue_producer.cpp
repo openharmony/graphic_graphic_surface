@@ -785,16 +785,10 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        auto callingPid = GetCallingPid();
-        if (connectedPid_ != 0 && connectedPid_ != callingPid) {
-            BLOGW("connected by: %{public}d, uniqueId: %{public}" PRIu64 ".", connectedPid_, uniqueId_);
-            return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
-        }
-        connectedPid_ = callingPid;
+    auto ret = Connect();
+    if (ret != SURFACE_ERROR_OK) {
+        return ret;
     }
-    GSError ret;
     bufferQueue_->SetBatchHandle(true);
     for (size_t i = 0; i < retvalues.size(); ++i) {
         ret = bufferQueue_->RequestBuffer(config, bedata[i], retvalues[i]);

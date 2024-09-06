@@ -107,15 +107,19 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     IBufferProducer::RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
-    GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
-    if (ret != GSERROR_OK) {
-        if (ret == GSERROR_NO_CONSUMER) {
-            CleanCache();
+    GSError ret;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        ret = producer_->RequestBuffer(config, bedataimpl, retval);
+        if (ret != GSERROR_OK) {
+            if (ret == GSERROR_NO_CONSUMER) {
+                CleanCacheLocked(false);
+            }
+            BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+            return ret;
         }
-        BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
-        return ret;
+        AddCacheLocked(bedataimpl, retval, config);
     }
-    AddCache(bedataimpl, retval, config);
     buffer = retval.buffer;
     fence = retval.fence;
 
@@ -186,12 +190,11 @@ void ProducerSurface::OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer)
     }
 }
 
-GSError ProducerSurface::AddCache(sptr<BufferExtraData>& bedataimpl,
+GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (isDisconnected) {
-        isDisconnected = false;
+    if (isDisconnected_) {
+        isDisconnected_ = false;
     }
     // add cache
     if (retval.buffer != nullptr) {
@@ -235,13 +238,14 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffer
         sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
         bedataimpls.emplace_back(bedataimpl);
     }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
     if (ret != GSERROR_NO_BUFFER && ret != GSERROR_OK) {
         BLOGD("RequestBuffers ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
         return ret;
     }
     for (size_t i = 0; i < retvalues.size(); ++i) {
-        AddCache(bedataimpls[i], retvalues[i], config);
+        AddCacheLocked(bedataimpls[i], retvalues[i], config);
         buffers.emplace_back(retvalues[i].buffer);
         fences.emplace_back(retvalues[i].fence);
     }
@@ -699,6 +703,13 @@ void ProducerSurface::CleanAllLocked()
     }
 }
 
+GSError ProducerSurface::CleanCacheLocked(bool cleanAll)
+{
+    BLOGD("CleanCacheLocked, uniqueId: %{public}" PRIu64 ".", queueId_);
+    CleanAllLocked();
+    return producer_->CleanCache(cleanAll);
+}
+
 GSError ProducerSurface::CleanCache(bool cleanAll)
 {
     if (producer_ == nullptr) {
@@ -768,20 +779,15 @@ GSError ProducerSurface::Connect()
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (!isDisconnected) {
-            BLOGE("Surface has been connect, uniqueId: %{public}" PRIu64 ".", queueId_);
-            return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
-        }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (!isDisconnected_) {
+        BLOGE("Surface has been connect, uniqueId: %{public}" PRIu64 ".", queueId_);
+        return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
     BLOGD("Connect, uniqueId: %{public}" PRIu64 ".", queueId_);
     GSError ret = producer_->Connect();
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (ret == GSERROR_OK) {
-            isDisconnected = false;
-        }
+    if (ret == GSERROR_OK) {
+        isDisconnected_ = false;
     }
     return ret;
 }
@@ -791,24 +797,16 @@ GSError ProducerSurface::Disconnect()
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (isDisconnected) {
-            BLOGD("Surface is disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
-            return SURFACE_ERROR_CONSUMER_DISCONNECTED;
-        }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (isDisconnected_) {
+        BLOGD("Surface is disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
+        return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
     BLOGD("Disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        CleanAllLocked();
-    }
+    CleanAllLocked();
     GSError ret = producer_->Disconnect();
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (ret == GSERROR_OK) {
-            isDisconnected = true;
-        }
+    if (ret == GSERROR_OK) {
+        isDisconnected_ = true;
     }
     return ret;
 }

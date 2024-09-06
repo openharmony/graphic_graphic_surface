@@ -38,20 +38,25 @@ void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
     fd = parcel.ReadFileDescriptor();
 }
 
-void WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
+GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
 {
     if (fd >= 0 && fcntl(fd, F_GETFL) == -1 && errno == EBADF) {
         fd = -1;
     }
 
-    parcel.WriteInt32(fd);
-
-    if (fd < 0) {
-        return;
+    if (!parcel.WriteInt32(fd)) {
+        return GSERROR_BINDER;
     }
 
-    parcel.WriteFileDescriptor(fd);
+    if (fd < 0) {
+        return GSERROR_OK;
+    }
+
+    if (!parcel.WriteFileDescriptor(fd)) {
+        return GSERROR_BINDER;
+    }
     close(fd);
+    return GSERROR_OK;
 }
 
 void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
@@ -66,16 +71,16 @@ void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
     config.transform = static_cast<GraphicTransformType>(parcel.ReadInt32());
 }
 
-void WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const & config)
+GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const & config)
 {
-    parcel.WriteInt32(config.width);
-    parcel.WriteInt32(config.height);
-    parcel.WriteInt32(config.strideAlignment);
-    parcel.WriteInt32(config.format);
-    parcel.WriteUint64(config.usage);
-    parcel.WriteInt32(config.timeout);
-    parcel.WriteInt32(static_cast<int32_t>(config.colorGamut));
-    parcel.WriteInt32(static_cast<int32_t>(config.transform));
+    if (!parcel.WriteInt32(config.width) || !parcel.WriteInt32(config.height) ||
+        !parcel.WriteInt32(config.strideAlignment) || !parcel.WriteInt32(config.format) ||
+        !parcel.WriteUint64(config.usage) || !parcel.WriteInt32(config.timeout) ||
+        !parcel.WriteInt32(static_cast<int32_t>(config.colorGamut)) ||
+        !parcel.WriteInt32(static_cast<int32_t>(config.transform))) {
+        return GSERROR_BINDER;
+    }
+    return GSERROR_OK;
 }
 
 void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config)
@@ -103,21 +108,26 @@ void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config
     config.timestamp = parcel.ReadInt64();
 }
 
-void WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const & config)
+GSError WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const & config)
 {
     uint32_t size = config.damages.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("WriteFlushConfig size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_INVALID_ARGUMENTS;
     }
-    parcel.WriteUint32(size);
+    if (!parcel.WriteUint32(size)) {
+        return GSERROR_BINDER;
+    }
     for (const auto& rect : config.damages) {
-        parcel.WriteInt32(rect.x);
-        parcel.WriteInt32(rect.y);
-        parcel.WriteInt32(rect.w);
-        parcel.WriteInt32(rect.h);
+        if (!parcel.WriteInt32(rect.x) || !parcel.WriteInt32(rect.y) ||
+            !parcel.WriteInt32(rect.w) || !parcel.WriteInt32(rect.h)) {
+            return GSERROR_BINDER;
+        }
     }
-    parcel.WriteInt64(config.timestamp);
+    if (!parcel.WriteInt64(config.timestamp)) {
+        return GSERROR_BINDER;
+    }
+    return GSERROR_OK;
 }
 
 GSError ReadSurfaceBufferImpl(MessageParcel &parcel,
@@ -132,15 +142,19 @@ GSError ReadSurfaceBufferImpl(MessageParcel &parcel,
     return ret;
 }
 
-void WriteSurfaceBufferImpl(MessageParcel &parcel,
+GSError WriteSurfaceBufferImpl(MessageParcel &parcel,
     uint32_t sequence, const sptr<SurfaceBuffer> &buffer)
 {
-    parcel.WriteUint32(sequence);
-    parcel.WriteBool(buffer != nullptr);
-    if (buffer == nullptr) {
-        return;
+    if (!parcel.WriteUint32(sequence)) {
+        return GSERROR_BINDER;
     }
-    buffer->WriteToMessageParcel(parcel);
+    if (!parcel.WriteBool(buffer != nullptr)) {
+        return GSERROR_BINDER;
+    }
+    if (buffer != nullptr) {
+        return buffer->WriteToMessageParcel(parcel);
+    }
+    return GSERROR_OK;
 }
 
 void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInfo> &infos)
@@ -161,20 +175,23 @@ void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInf
     }
 }
 
-void WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos)
+GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos)
 {
     uint32_t size = infos.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("WriteVerifyAllocInfo size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_INVALID_ARGUMENTS;
     }
-    parcel.WriteUint32(size);
+    if (!parcel.WriteUint32(size)) {
+        return GSERROR_BINDER;
+    }
     for (const auto &info : infos) {
-        parcel.WriteUint32(info.width);
-        parcel.WriteUint32(info.height);
-        parcel.WriteUint64(info.usage);
-        parcel.WriteInt32(info.format);
+        if (!parcel.WriteUint32(info.width) || !parcel.WriteUint32(info.height) ||
+            !parcel.WriteUint64(info.usage) || !parcel.WriteInt32(info.format)) {
+            return GSERROR_BINDER;
+        }
     }
+    return GSERROR_OK;
 }
 
 void ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData)
@@ -193,18 +210,22 @@ void ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &met
     }
 }
 
-void WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData)
+GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData)
 {
     uint32_t size = metaData.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("WriteHDRMetaData size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_INVALID_ARGUMENTS;
     }
-    parcel.WriteUint32(size);
+    if (!parcel.WriteUint32(size)) {
+        return GSERROR_BINDER;
+    }
     for (const auto &data : metaData) {
-        parcel.WriteUint32(static_cast<uint32_t>(data.key));
-        parcel.WriteFloat(data.value);
+        if (!parcel.WriteUint32(static_cast<uint32_t>(data.key)) || !parcel.WriteFloat(data.value)) {
+            return GSERROR_BINDER;
+        }
     }
+    return GSERROR_OK;
 }
 
 void ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData)
@@ -221,17 +242,22 @@ void ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData)
     }
 }
 
-void WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &metaData)
+GSError WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &metaData)
 {
     uint32_t size = metaData.size();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("WriteHDRMetaDataSet size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_INVALID_ARGUMENTS;
     }
-    parcel.WriteUint32(size);
+    if (!parcel.WriteUint32(size)) {
+        return GSERROR_BINDER;
+    }
     for (const auto &data : metaData) {
-        parcel.WriteUint8(data);
+        if (!parcel.WriteUint8(data)) {
+            return GSERROR_BINDER;
+        }
     }
+    return GSERROR_OK;
 }
 
 void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
@@ -262,22 +288,30 @@ void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
     FreeExtDataHandle(tunnelHandle);
 }
 
-void WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle)
+GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle)
 {
     if (handle == nullptr) {
         BLOGE("handle is null");
-        return;
+        return GSERROR_INVALID_ARGUMENTS;
     }
     uint32_t reserveInts = handle->reserveInts;
     if (reserveInts > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("WriteExtDataHandle size more than limit, size: %{public}u", reserveInts);
-        return;
+        return GSERROR_INVALID_ARGUMENTS;
     }
-    parcel.WriteUint32(reserveInts);
-    WriteFileDescriptor(parcel, handle->fd);
+    if (!parcel.WriteUint32(reserveInts)) {
+        return GSERROR_BINDER;
+    }
+    GSError ret = WriteFileDescriptor(parcel, handle->fd);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
     for (uint32_t index = 0; index < handle->reserveInts; index++) {
-        parcel.WriteInt32(handle->reserve[index]);
+        if (!parcel.WriteInt32(handle->reserve[index])) {
+            return GSERROR_BINDER;
+        }
     }
+    return GSERROR_OK;
 }
 
 void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)

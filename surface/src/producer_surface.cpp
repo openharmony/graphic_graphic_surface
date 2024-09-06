@@ -204,10 +204,10 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
         return SURFACE_ERROR_UNKOWN;
     } else {
         retval.buffer = bufferProducerCache_[retval.sequence];
-        retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
-        retval.buffer->SetSurfaceBufferTransform(config.transform);
     }
     if (retval.buffer != nullptr) {
+        retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
+        retval.buffer->SetSurfaceBufferTransform(config.transform);
         retval.buffer->SetExtraData(bedataimpl);
     }
     for (auto it = retval.deletingBuffers.begin(); it != retval.deletingBuffers.end(); it++) {
@@ -346,7 +346,6 @@ GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
     int32_t fence, BufferFlushConfig& config)
 {
-    // fence need close?
     sptr<SyncFence> syncFence = new SyncFence(fence);
     return FlushBuffer(buffer, syncFence, config);
 }
@@ -875,6 +874,9 @@ GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTi
 
 GSError ProducerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
 {
+    if (nativeWindow == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     NativeWindow *nw = reinterpret_cast<NativeWindow *>(nativeWindow);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     wpNativeWindow_ = nw;
@@ -900,9 +902,16 @@ int32_t ProducerSurface::GetRequestHeight()
     return requestHeight_;
 }
 
-BufferRequestConfig* ProducerSurface::GetWindowConfig()
+void ProducerSurface::SetWindowConfig(const BufferRequestConfig& config)
 {
-    return &windowConfig_;
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_ = config;
+}
+
+BufferRequestConfig& ProducerSurface::GetWindowConfig()
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return windowConfig_;
 }
 
 GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)

@@ -264,21 +264,26 @@ sptr<SyncFence> SyncFence::ReadFromMessageParcel(MessageParcel &parcel)
     return sptr<SyncFence>(new SyncFence(fence));
 }
 
-void SyncFence::WriteToMessageParcel(MessageParcel &parcel)
+bool SyncFence::WriteToMessageParcel(MessageParcel &parcel)
 {
     int32_t fence = fenceFd_;
     if (fence >= 0 && fcntl(fence, F_GETFL) == -1 && errno == EBADF) {
         fence = -1;
     }
 
-    parcel.WriteInt32(fence);
+    if (!parcel.WriteInt32(fence)) {
+        return false;
+    }
 
     if (fence < 0) {
         UTILS_LOGD("WriteToMessageParcel fence is invalid : %{public}d", fence);
-        return;
+        return true;
     }
 
-    parcel.WriteFileDescriptor(fence);
+    if (!parcel.WriteFileDescriptor(fence)) {
+        return false;
+    }
+    return true;
 }
 
 } // namespace OHOS

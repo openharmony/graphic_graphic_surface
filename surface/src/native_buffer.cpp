@@ -249,7 +249,7 @@ int32_t OH_NativeBuffer_MapPlanes(OH_NativeBuffer *buffer, void **virAddr, OH_Na
     OH_NativeBuffer_Planes *planes = nullptr;
     GSError retVal = sbuffer->GetPlanesInfo(reinterpret_cast<void**>(&planes));
     if (retVal != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetPlanesInfo failed, retVal:%d", retVal);
+        BLOGE("GetPlanesInfo failed, retVal:%{public}d", retVal);
         return retVal;
     }
     outPlanes->planeCount = planes->planeCount;
@@ -285,7 +285,7 @@ int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
+        BLOGE("GetColorSpaceType failed!, retVal:%{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
@@ -323,7 +323,7 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
+        BLOGE("SetHDRMetadata failed!, retVal:%{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;
@@ -336,7 +336,7 @@ static GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer,
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetHDRMetadataType failed!, ret: %d", ret);
+        BLOGE("GetHDRMetadataType failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     auto it = std::find_if(NATIVE_METADATATYPE_TO_HDI_MAP.begin(), NATIVE_METADATATYPE_TO_HDI_MAP.end(),
@@ -350,7 +350,7 @@ static GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer,
         if (err != 0) {
             delete[] *metadata;
             *metadata = nullptr;
-            BLOGE("memcpy_s failed!, ret: %d", err);
+            BLOGE("memcpy_s failed!, ret: %{public}d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
         return OHOS::SURFACE_ERROR_OK;
@@ -382,22 +382,20 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRSMetadata failed!, ret: %d", ret);
+        BLOGE("SetHDRSMetadata failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();
-    *metadata = new uint8_t[mD.size()];
     if (mD.empty()) {
-        delete[] *metadata;
-        *metadata = nullptr;
-        BLOGE("new metadata failed!");
+        BLOGE("Metadata is empty!");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
+    *metadata = new uint8_t[mD.size()];
     errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
     if (err != 0) {
         delete[] *metadata;
         *metadata = nullptr;
-        BLOGE("memcpy_s failed!, ret: %d", err);
+        BLOGE("memcpy_s failed!, ret: %{public}d", err);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

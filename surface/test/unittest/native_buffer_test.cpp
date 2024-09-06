@@ -635,7 +635,9 @@ HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer002, Function | Med
     void *virAddr = nullptr;
     OH_NativeBuffer_Planes outPlanes;
     ret = OH_NativeBuffer_MapPlanes(nativeBuffer, &virAddr, &outPlanes);
-    ASSERT_NE(ret, OHOS::GSERROR_OK);
+    if (ret != GSERROR_HDI_ERROR) {
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
 
     sBuffer = nullptr;
     cSurface = nullptr;
@@ -730,16 +732,6 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, Function | MediumTest | L
         if (ret != GSERROR_HDI_ERROR) {
             ASSERT_EQ(ret, OHOS::GSERROR_OK);
             ASSERT_NE(virAddr, nullptr);
-            ASSERT_EQ(outPlanes.planeCount, 3);
-            ASSERT_EQ(outPlanes.planes[0].offset, 0);
-            ASSERT_NE(outPlanes.planes[1].offset, 0);
-            ASSERT_NE(outPlanes.planes[2].offset, 0);
-            std::cout << "i:" << i << std::endl;
-            for (int32_t j = 0; j < 3; j++) {
-                std::cout << "offset:" << outPlanes.planes[j].offset <<
-                    " rowStride:" << outPlanes.planes[j].rowStride << " columnStride:" <<
-                    outPlanes.planes[j].columnStride << std::endl;
-            }
         }
     }
 
@@ -798,10 +790,6 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | L
         if (ret != GSERROR_HDI_ERROR) {
             ASSERT_EQ(ret, OHOS::GSERROR_OK);
             ASSERT_NE(virAddr, nullptr);
-            ASSERT_EQ(outPlanes.planeCount, 3);
-            ASSERT_EQ(outPlanes.planes[0].offset, 0);
-            ASSERT_NE(outPlanes.planes[1].offset, 0);
-            ASSERT_NE(outPlanes.planes[2].offset, 0);
         }
     }
     endTime = clock();

@@ -177,7 +177,7 @@ GSError SurfaceBufferImpl::Map()
 
     void *virAddr = g_displayBuffer->Mmap(*handle_);
     if (virAddr == nullptr || virAddr == MAP_FAILED) {
-        return GSERROR_API_FAILED;
+        return GSERROR_HDI_ERROR;
     }
     return GSERROR_OK;
 }

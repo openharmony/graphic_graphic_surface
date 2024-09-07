@@ -56,7 +56,7 @@ public:
         const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config) override;
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
-        int64_t &timestamp, Rect &damage) override;
+                          int64_t &timestamp, Rect &damage) override;
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence) override;
 
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
@@ -121,7 +121,7 @@ public:
     GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const override;
     GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const override;
     GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
-        std::vector<uint8_t> &metaData) const override;
+                           std::vector<uint8_t> &metaData) const override;
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const override;
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) override;
@@ -131,6 +131,7 @@ public:
     GSError SetDefaultFormat(int32_t format) override;
     int32_t GetDefaultColorGamut() override;
     GSError SetDefaultColorGamut(int32_t colorGamut) override;
+
     sptr<NativeSurface> GetNativeSurface() override;
     GSError SetWptrNativeWindowToPSurface(void* nativeWindow) override;
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) override;

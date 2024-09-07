@@ -30,7 +30,7 @@ GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd);
 void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config);
 GSError WriteRequestConfig(MessageParcel &parcel, const BufferRequestConfig  &config);
 
-void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config);
+GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config);
 GSError WriteFlushConfig(MessageParcel &parcel, const BufferFlushConfigWithDamages &config);
 
 GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer);

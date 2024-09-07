@@ -56,7 +56,7 @@ BufferHandle *AllocateBufferHandle(uint32_t reserveFds, uint32_t reserveInts)
         handle->reserveFds = reserveFds;
         handle->reserveInts = reserveInts;
     } else {
-        UTILS_LOGE("InitBufferHandle malloc %zu failed", handleSize);
+        UTILS_LOGE("AllocateBufferHandle malloc %{public}zu failed", handleSize);
     }
     return handle;
 }

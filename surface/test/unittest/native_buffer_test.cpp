@@ -442,6 +442,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue001, Function | Mediu
     int32_t ret = OH_NativeBuffer_GetMetadataValue(nullptr, OH_HDR_STATIC_METADATA, &size, &buff);
     if (buff != nullptr) {
         delete[] buff;
+        buff = nullptr;
     }
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_NE(ret, GSERROR_OK);
@@ -478,6 +479,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | Mediu
         if (buff != nullptr) {
             ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
             delete[] buff;
+            buff = nullptr;
         }
         ASSERT_EQ(ret, GSERROR_OK);
     }
@@ -490,6 +492,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | Mediu
         if (buff != nullptr) {
             ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
             delete[] buff;
+            buff = nullptr;
         }
         ASSERT_EQ(ret, GSERROR_OK);
     }

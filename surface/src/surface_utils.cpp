@@ -43,11 +43,12 @@ SurfaceUtils::~SurfaceUtils()
 sptr<Surface> SurfaceUtils::GetSurface(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (surfaceCache_.count(uniqueId) == 0) {
+    auto iter = surfaceCache_.find(uniqueId);
+    if (iter == surfaceCache_.end()) {
         BLOGE("Cannot find surface, uniqueId: %{public}" PRIu64 ".", uniqueId);
         return nullptr;
     }
-    sptr<Surface> surface = surfaceCache_[uniqueId].promote();
+    sptr<Surface> surface = iter->second.promote();
     if (surface == nullptr) {
         BLOGE("surface is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId);
         return nullptr;
@@ -57,10 +58,10 @@ sptr<Surface> SurfaceUtils::GetSurface(uint64_t uniqueId)
 
 SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const wptr<Surface> &surface)
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surface == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surfaceCache_.count(uniqueId) == 0) {
         surfaceCache_[uniqueId] = surface;
         return GSERROR_OK;
@@ -72,11 +73,12 @@ SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const wptr<Surface> &surface)
 SurfaceError SurfaceUtils::Remove(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (surfaceCache_.count(uniqueId) == 0) {
-        BLOGD("Delete failed without surface, uniqueId %{public}" PRIu64, uniqueId);
+    auto iter = surfaceCache_.find(uniqueId);
+    if (iter == surfaceCache_.end()) {
+        BLOGD("Cannot find surface, uniqueId: %{public}" PRIu64 ".", uniqueId);
         return GSERROR_INVALID_OPERATING;
     }
-    surfaceCache_.erase(uniqueId);
+    surfaceCache_.erase(iter);
     return GSERROR_OK;
 }
 
@@ -299,11 +301,12 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
 void* SurfaceUtils::GetNativeWindow(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (nativeWindowCache_.count(uniqueId) == 0) {
-        BLOGE("Cannot find nativeWindow, uniqueId %" PRIu64 ".", uniqueId);
+    auto iter = nativeWindowCache_.find(uniqueId);
+    if (iter == nativeWindowCache_.end()) {
+        BLOGE("Cannot find nativeWindow, uniqueId %{public}" PRIu64 ".", uniqueId);
         return nullptr;
     }
-    return nativeWindowCache_[uniqueId];
+    return iter->second;
 }
 
 SurfaceError SurfaceUtils::AddNativeWindow(uint64_t uniqueId, void *nativeWidow)

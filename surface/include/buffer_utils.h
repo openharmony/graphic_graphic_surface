@@ -39,13 +39,13 @@ GSError WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const s
 void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInfo> &infos);
 GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos);
 
-void ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData);
+GSError ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData);
 GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData);
 
-void ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData);
+GSError ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData);
 GSError WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &metaData);
 
-void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle);
+GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle);
 GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle);
 
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer);

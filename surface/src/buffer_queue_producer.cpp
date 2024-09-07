@@ -558,7 +558,9 @@ int32_t BufferQueueProducer::SetMetaDataRemote(MessageParcel &arguments, Message
 {
     uint32_t sequence = arguments.ReadUint32();
     std::vector<GraphicHDRMetaData> metaData;
-    ReadHDRMetaData(arguments, metaData);
+    if (ReadHDRMetaData(arguments, metaData) != GSERROR_OK) {
+        return GSERROR_BINDER;
+    }
     GSError sret = SetMetaData(sequence, metaData);
     reply.WriteInt32(sret);
     return 0;
@@ -569,7 +571,9 @@ int32_t BufferQueueProducer::SetMetaDataSetRemote(MessageParcel &arguments, Mess
     uint32_t sequence = arguments.ReadUint32();
     GraphicHDRMetadataKey key = static_cast<GraphicHDRMetadataKey>(arguments.ReadUint32());
     std::vector<uint8_t> metaData;
-    ReadHDRMetaDataSet(arguments, metaData);
+    if (ReadHDRMetaDataSet(arguments, metaData) != GSERROR_OK) {
+        return GSERROR_BINDER;
+    }
     GSError sret = SetMetaDataSet(sequence, key, metaData);
     reply.WriteInt32(sret);
     return 0;
@@ -581,7 +585,9 @@ int32_t BufferQueueProducer::SetTunnelHandleRemote(MessageParcel &arguments, Mes
     sptr<SurfaceTunnelHandle> handle = nullptr;
     if (arguments.ReadBool()) {
         handle = new SurfaceTunnelHandle();
-        ReadExtDataHandle(arguments, handle);
+        if (ReadExtDataHandle(arguments, handle) != GSERROR_OK) {
+            return GSERROR_BINDER;
+        }
     }
     GSError sret = SetTunnelHandle(handle);
     reply.WriteInt32(sret);

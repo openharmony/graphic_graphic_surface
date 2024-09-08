@@ -1427,7 +1427,7 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | Mediu
 HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
 {
     surface_->SetWindowConfig(requestConfig);
-    auto& configGet = surface_->GetWindowConfig();
+    auto configGet = surface_->GetWindowConfig();
     ASSERT_EQ(requestConfig, configGet);
 }
 

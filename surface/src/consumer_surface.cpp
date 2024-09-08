@@ -607,7 +607,7 @@ void ConsumerSurface::SetWindowConfig(const BufferRequestConfig& config)
     (void)config;
 }
 
-BufferRequestConfig& ConsumerSurface::GetWindowConfig()
+BufferRequestConfig ConsumerSurface::GetWindowConfig()
 {
     BufferRequestConfig config;
     return config;

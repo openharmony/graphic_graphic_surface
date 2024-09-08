@@ -209,7 +209,7 @@ public:
     std::string GetSurfaceAppFrameworkType() const override;
 
     void SetWindowConfig(const BufferRequestConfig& config) override;
-    BufferRequestConfig& GetWindowConfig() override;
+    BufferRequestConfig GetWindowConfig() override;
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;
     GSError GetProducerInitInfo(ProducerInitInfo &info) override;

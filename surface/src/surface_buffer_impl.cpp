@@ -120,9 +120,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
-    if (handle_ != nullptr) {
-        FreeBufferHandleLocked();
-    }
+    FreeBufferHandleLocked();
 
     GSError ret = CheckBufferConfig(config.width, config.height, config.format, config.usage);
     if (ret != GSERROR_OK) {
@@ -262,6 +260,7 @@ GSError SurfaceBufferImpl::InvalidateCache()
 
 void SurfaceBufferImpl::FreeBufferHandleLocked()
 {
+    metaDataCache_.clear();
     if (handle_) {
         if (handle_->virAddr != nullptr && g_displayBuffer != nullptr) {
             g_displayBuffer->Unmap(*handle_);
@@ -468,9 +467,8 @@ void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
     if (handle_ == handle) {
         return;
     }
-    if (handle_ != nullptr) {
-        FreeBufferHandleLocked();
-    }
+    FreeBufferHandleLocked();
+
     handle_ = handle;
     if (GetDisplayBufferLocked() == nullptr) {
         BLOGE("GetDisplayBufferLocked failed");

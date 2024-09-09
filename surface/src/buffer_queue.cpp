@@ -81,7 +81,7 @@ BufferQueue::BufferQueue(const std::string &name, bool isShared)
 {
     BLOGD("BufferQueue ctor, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     if (isShared_ == true) {
-        queueSize_ = 1;
+        bufferQueueSize_ = 1;
     }
     acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
 }
@@ -106,6 +106,7 @@ uint32_t BufferQueue::GetUsedSize()
 
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     info.name = name_;
     info.width = defaultWidth_;
     info.height = defaultHeight_;
@@ -113,7 +114,7 @@ GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
     return GSERROR_OK;
 }
 
-GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
+GSError BufferQueue::PopFromFreeListLocked(sptr<SurfaceBuffer> &buffer,
     const BufferRequestConfig &config)
 {
     if (isShared_ == true && GetUsedSize() > 0) {
@@ -133,7 +134,7 @@ GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
         }
     }
 
-    if (freeList_.empty() || GetUsedSize() < GetQueueSize() ||
+    if (freeList_.empty() || GetUsedSize() < bufferQueueSize_ ||
         (freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) {
         buffer = nullptr;
         return GSERROR_NO_BUFFER;
@@ -151,7 +152,7 @@ GSError BufferQueue::PopFromFreeList(sptr<SurfaceBuffer> &buffer,
     return GSERROR_OK;
 }
 
-GSError BufferQueue::PopFromDirtyList(sptr<SurfaceBuffer> &buffer)
+GSError BufferQueue::PopFromDirtyListLocked(sptr<SurfaceBuffer> &buffer)
 {
     if (isShared_ == true && GetUsedSize() > 0) {
         buffer = bufferQueueCache_.begin()->second.buffer;
@@ -211,7 +212,7 @@ GSError BufferQueue::CheckFlushConfig(const BufferFlushConfigWithDamages &config
 bool BufferQueue::QueryIfBufferAvailable()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    bool ret = !freeList_.empty() || (GetUsedSize() < GetQueueSize());
+    bool ret = !freeList_.empty() || (GetUsedSize() < bufferQueueSize_);
     return ret;
 }
 
@@ -261,9 +262,9 @@ void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
     V2_0::BufferHandleAttrKey key = V2_0::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE;
     std::vector<uint8_t> values;
     if (isCpuAccessable_) { // hebc is off
-        values.push_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
+        values.emplace_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_CPU_ACCESS));
     } else { // hebc is on
-        values.push_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_HW_ONLY));
+        values.emplace_back(static_cast<uint8_t>(V2_0::HebcAccessType::HEBC_ACCESS_HW_ONLY));
     }
 
     buffer->SetMetadata(key, values);
@@ -301,10 +302,10 @@ GSError BufferQueue::RequestBufferCheckStatus()
 bool BufferQueue::WaitForCondition()
 {
     return (!freeList_.empty() && !(freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) ||
-        (GetUsedSize() < GetQueueSize()) || !GetStatusLocked();
+        (GetUsedSize() < bufferQueueSize_) || !GetStatusLocked();
 }
 
-void BufferQueue::RequestBufferDebugInfo()
+void BufferQueue::RequestBufferDebugInfoLocked()
 {
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
     for (auto &[id, ele] : bufferQueueCache_) {
@@ -327,8 +328,6 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         return ret;
     }
 
-    SURFACE_TRACE_NAME_FMT("RequestBuffer name: %s queueId: %" PRIu64 " queueSize: %u",
-        name_.c_str(), uniqueId_, GetQueueSize());
     // check param
     ret = CheckRequestConfig(config);
     if (ret != GSERROR_OK) {
@@ -337,15 +336,17 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     }
 
     std::unique_lock<std::mutex> lock(mutex_);
+    SURFACE_TRACE_NAME_FMT("RequestBuffer name: %s queueId: %" PRIu64 " queueSize: %u",
+        name_.c_str(), uniqueId_, bufferQueueSize_);
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
-    ret = PopFromFreeList(buffer, config);
+    ret = PopFromFreeListLocked(buffer, config);
     if (ret == GSERROR_OK) {
         return ReuseBuffer(config, bedata, retval);
     }
 
     // check queue size
-    if (GetUsedSize() >= GetQueueSize()) {
+    if (GetUsedSize() >= bufferQueueSize_) {
         waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
             [this]() { return WaitForCondition(); });
         if (!GetStatusLocked() && !isBatch_) {
@@ -353,11 +354,11 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
         // try dequeue from free list again
-        ret = PopFromFreeList(buffer, config);
+        ret = PopFromFreeListLocked(buffer, config);
         if (ret == GSERROR_OK) {
             return ReuseBuffer(config, bedata, retval);
-        } else if (GetUsedSize() >= GetQueueSize()) {
-            RequestBufferDebugInfo();
+        } else if (GetUsedSize() >= bufferQueueSize_) {
+            RequestBufferDebugInfoLocked();
             return GSERROR_NO_BUFFER;
         }
     }
@@ -390,7 +391,7 @@ GSError BufferQueue::SetProducerCacheCleanFlagLocked(bool flag)
     return GSERROR_OK;
 }
 
-bool BufferQueue::CheckProducerCacheList()
+bool BufferQueue::CheckProducerCacheListLocked()
 {
     for (auto &[id, _] : bufferQueueCache_) {
         if (std::find(producerCacheList_.begin(), producerCacheList_.end(), id) == producerCacheList_.end()) {
@@ -400,7 +401,7 @@ bool BufferQueue::CheckProducerCacheList()
     return true;
 }
 
-GSError BufferQueue::ReallocBuffer(const BufferRequestConfig &config,
+GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
     if (isShared_) {
@@ -441,7 +442,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     bool needRealloc = (config != bufferQueueCache_[retval.sequence].config);
     // config, realloc
     if (needRealloc) {
-        auto sret = ReallocBuffer(config, retval);
+        auto sret = ReallocBufferLocked(config, retval);
         if (sret != GSERROR_OK) {
             return sret;
         }
@@ -464,7 +465,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
             config.width, config.height, retval.sequence, retval.buffer->GetConsumerAttachBufferFlag(), uniqueId_);
         if (producerCacheClean_) {
             producerCacheList_.push_back(retval.sequence);
-            if (CheckProducerCacheList()) {
+            if (CheckProducerCacheListLocked()) {
                 SetProducerCacheCleanFlagLocked(false);
             }
         }
@@ -586,7 +587,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (!GetStatusLocked()) {
-            SURFACE_TRACE_NAME_FMT("status: %d",GetStatusLocked());
+            SURFACE_TRACE_NAME_FMT("status: %d", GetStatusLocked());
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
     }
@@ -616,9 +617,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     if (sret != GSERROR_OK) {
         return sret;
     }
-    if (sret == GSERROR_OK) {
-        CallConsumerListener();
-    }
+    CallConsumerListener();
     BLOGD("Success Buffer seq id: %{public}d AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
         sequence, fence->Get(), uniqueId_);
 
@@ -647,19 +646,19 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
             lastFlusedSequence_, state, uniqueId_);
         return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
-    auto usage = bufferQueueCache_[lastFlusedSequence_].buffer->GetUsage();
+    buffer = bufferQueueCache_[lastFlusedSequence_].buffer;
+    auto usage = buffer->GetUsage();
     if (usage & BUFFER_USAGE_PROTECTED) {
         BLOGE("lastFlusedSeq: %{public}u, usage: %{public}" PRIu64 ", uniqueId: %{public}" PRIu64 ".",
             lastFlusedSequence_, usage, uniqueId_);
         return SURFACE_ERROR_NOT_SUPPORT;
     }
-    buffer = bufferQueueCache_[lastFlusedSequence_].buffer;
+
     fence = lastFlusedFence_;
     Rect damage = {};
-    if (buffer != nullptr) {
-        damage.w = buffer->GetWidth();
-        damage.h = buffer->GetHeight();
-    }
+    damage.w = buffer->GetWidth();
+    damage.h = buffer->GetHeight();
+
     auto utils = SurfaceUtils::GetInstance();
     if (isUseNewMatrix) {
         utils->ComputeTransformMatrixV2(matrix, matrixSize, buffer, lastFlushedTransform_, damage);
@@ -758,7 +757,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     SURFACE_TRACE_NAME_FMT("AcquireBuffer name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
     // dequeue from dirty list
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    GSError ret = PopFromDirtyList(buffer);
+    GSError ret = PopFromDirtyListLocked(buffer);
     if (ret == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
         bufferQueueCache_[sequence].state = BUFFER_STATE_ACQUIRED;
@@ -931,7 +930,8 @@ void BufferQueue::DeleteBufferInCache(uint32_t sequence)
 
 uint32_t BufferQueue::GetQueueSize()
 {
-    return queueSize_;
+    std::unique_lock<std::mutex> lock(mutex_);
+    return bufferQueueSize_;
 }
 
 void BufferQueue::DeleteBuffersLocked(int32_t count)
@@ -1007,9 +1007,9 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         uint32_t sequence = buffer->GetSeqNum();
-        if (GetUsedSize() >= GetQueueSize()) {
+        if (GetUsedSize() >= bufferQueueSize_) {
             BLOGE("seq: %{public}u, buffer queue size:%{public}u, used size:%{public}u,"
-                "uniqueId: %{public}" PRIu64 ".", sequence, GetQueueSize(), GetUsedSize(), uniqueId_);
+                "uniqueId: %{public}" PRIu64 ".", sequence, bufferQueueSize_, GetUsedSize(), uniqueId_);
             return SURFACE_ERROR_BUFFER_QUEUE_FULL;
         }
         if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
@@ -1103,7 +1103,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
     };
     AttachBufferUpdateBufferInfo(buffer);
     int32_t usedSize = static_cast<int32_t>(GetUsedSize());
-    int32_t queueSize = static_cast<int32_t>(GetQueueSize());
+    int32_t queueSize = static_cast<int32_t>(bufferQueueSize_);
     if (usedSize >= queueSize) {
         int32_t freeSize = static_cast<int32_t>(dirtyList_.size() + freeList_.size());
         if (freeSize >= usedSize - queueSize + 1) {
@@ -1197,18 +1197,18 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
     }
 
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (queueSize_ > queueSize) {
-        DeleteBuffersLocked(queueSize_ - queueSize);
+    if (bufferQueueSize_ > queueSize) {
+        DeleteBuffersLocked(bufferQueueSize_ - queueSize);
     }
     // if increase the queue size, try to wakeup the blocked thread
-    if (queueSize > queueSize_) {
-        queueSize_ = queueSize;
+    if (queueSize > bufferQueueSize_) {
+        bufferQueueSize_ = queueSize;
         waitReqCon_.notify_all();
     } else {
-        queueSize_ = queueSize;
+        bufferQueueSize_ = queueSize;
     }
 
-    BLOGD("queue size: %{public}d, uniqueId: %{public}" PRIu64 ".", queueSize_, uniqueId_);
+    BLOGD("queue size: %{public}d, uniqueId: %{public}" PRIu64 ".", bufferQueueSize_, uniqueId_);
     return GSERROR_OK;
 }
 
@@ -1878,7 +1878,7 @@ void BufferQueue::Dump(std::string &result)
     std::string str = ss.str();
     result.append("\nBufferQueue:\n");
     result += "      default-size = [" + std::to_string(defaultWidth_) + "x" + std::to_string(defaultHeight_) + "]" +
-        ", FIFO = " + std::to_string(queueSize_) +
+        ", FIFO = " + std::to_string(bufferQueueSize_) +
         ", name = " + name_ +
         ", uniqueId = " + std::to_string(uniqueId_) +
         ", usedBufferListLen = " + std::to_string(GetUsedSize()) +

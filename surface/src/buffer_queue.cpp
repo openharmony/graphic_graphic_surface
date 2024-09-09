@@ -1259,6 +1259,8 @@ GSError BufferQueue::SetDefaultWidthAndHeight(int32_t width, int32_t height)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
+    BLOGD("SetDefaultWidthAndHeight(width: %{public}d, height: %{public}d), uniqueId: %{public}" PRIu64 ".",
+        width, height, uniqueId_);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     defaultWidth_ = width;
     defaultHeight_ = height;
@@ -1279,6 +1281,7 @@ int32_t BufferQueue::GetDefaultHeight()
 
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
+    BLOGD("SetDefaultUsage(usage: %{public}" PRIu64 ") , uniqueId: %{public}" PRIu64 ".", usage, uniqueId_);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     defaultUsage_ = usage;
     return GSERROR_OK;

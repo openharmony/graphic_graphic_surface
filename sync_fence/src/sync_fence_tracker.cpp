@@ -132,7 +132,7 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
 
 void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
 {
-    if (!fence) {
+    if (fence == nullptr) {
         HILOG_DEBUG(LOG_CORE, "Trace fence failed, fence is null");
         return;
     }

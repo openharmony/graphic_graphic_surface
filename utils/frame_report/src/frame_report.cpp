@@ -25,10 +25,10 @@ namespace OHOS {
 namespace Rosen {
 
 #undef LOG_DOMAIN
-#define LOG_DOMAIN 0xD005830  // 设置domainID
+#define LOG_DOMAIN 0xD005830
 
 #undef LOG_TAG
-#define LOG_TAG "FrameReport"  // 设置tag
+#define LOG_TAG "FrameReport"
 
 #define LOGF(format, ...) HILOG_FATAL(LOG_CORE, format, ##__VA_ARGS__)
 #define LOGE(format, ...) HILOG_ERROR(LOG_CORE, format, ##__VA_ARGS__)
@@ -160,7 +160,8 @@ void FrameReport::LoadLibrary()
             return;
         }
         LOGI("FrameReport::LoadLibrary dlopen libgame_acc_sched_client.z.so success!");
-        notifyFrameInfoFunc_ = (NotifyFrameInfoFunc)LoadSymbol(GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO);
+        notifyFrameInfoFunc_ = reinterpret_cast<NotifyFrameInfoFunc>(
+            LoadSymbol(GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO));
         if (notifyFrameInfoFunc_ == nullptr) {
             if (dlclose(gameSoHandle_) != 0) {
                 LOGE("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close failed!");

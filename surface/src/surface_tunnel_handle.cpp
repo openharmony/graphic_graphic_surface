@@ -20,14 +20,14 @@
 namespace OHOS {
 GraphicExtDataHandle *AllocExtDataHandle(uint32_t reserveInts)
 {
-    if ((size_t)reserveInts > (SIZE_MAX - sizeof(GraphicExtDataHandle)) / sizeof(int32_t)) {
-        BLOGE("reserveInts: %u is too large", reserveInts);
+    if (static_cast<size_t>(reserveInts) > (SIZE_MAX - sizeof(GraphicExtDataHandle)) / sizeof(int32_t)) {
+        BLOGE("reserveInts: %{public}u is too large", reserveInts);
         return nullptr;
     }
     size_t handleSize = sizeof(GraphicExtDataHandle) + (sizeof(int32_t) * reserveInts);
     GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(malloc(handleSize));
     if (handle == nullptr) {
-        BLOGE("malloc %zu failed", handleSize);
+        BLOGE("malloc %{public}zu failed", handleSize);
         return nullptr;
     }
     auto ret = memset_s(handle, handleSize, 0, handleSize);

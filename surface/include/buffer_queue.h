@@ -192,27 +192,28 @@ private:
     uint32_t GetUsedSize();
     void DeleteBuffersLocked(int32_t count);
 
-    GSError PopFromFreeList(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
-    GSError PopFromDirtyList(sptr<SurfaceBuffer>& buffer);
+    GSError PopFromFreeListLocked(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
+    GSError PopFromDirtyListLocked(sptr<SurfaceBuffer>& buffer);
 
     GSError CheckRequestConfig(const BufferRequestConfig &config);
     GSError CheckFlushConfig(const BufferFlushConfigWithDamages &config);
     void DumpCache(std::string &result);
     void DumpMetadata(std::string &result, BufferElement element);
     void ClearLocked();
-    bool CheckProducerCacheList();
+    bool CheckProducerCacheListLocked();
     GSError SetProducerCacheCleanFlagLocked(bool flag);
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
     void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
     GSError CheckBufferQueueCache(uint32_t sequence);
-    GSError ReallocBuffer(const BufferRequestConfig &config, struct IBufferProducer::RequestBufferReturnValue &retval);
+    GSError ReallocBufferLocked(const BufferRequestConfig &config,
+        struct IBufferProducer::RequestBufferReturnValue &retval);
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);
     GSError RequestBufferCheckStatus();
     GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
     bool WaitForCondition();
-    void RequestBufferDebugInfo();
+    void RequestBufferDebugInfoLocked();
     bool GetStatusLocked() const;
     void CallConsumerListener();
     void SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer);
@@ -220,7 +221,7 @@ private:
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
-    uint32_t queueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
+    uint32_t bufferQueueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     GraphicTransformType lastFlushedTransform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;

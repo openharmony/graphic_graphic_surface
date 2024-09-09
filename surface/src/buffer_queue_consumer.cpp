@@ -221,11 +221,17 @@ GSError BufferQueueConsumer::SetPresentTimestamp(uint32_t sequence, const Graphi
 
 bool BufferQueueConsumer::GetStatus() const
 {
+    if (bufferQueue_ == nullptr) {
+        return false;
+    }
     return bufferQueue_->GetStatus();
 }
 
 void BufferQueueConsumer::SetStatus(bool status)
 {
+    if (bufferQueue_ == nullptr) {
+        return;
+    }
     bufferQueue_->SetStatus(status);
 }
 

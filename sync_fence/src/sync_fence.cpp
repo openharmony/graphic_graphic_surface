@@ -97,7 +97,6 @@ int32_t SyncFence::SyncMerge(const char *name, int32_t fd1, int32_t fd2, int32_t
         UTILS_LOGE("SyncMerge ctrcpy fence name failed.");
         return -1;
     }
-
     int32_t retCode = ioctl(fd1, SYNC_IOC_MERGE, &syncMergeData);
     if (retCode < 0) {
         errno = EINVAL;
@@ -168,7 +167,7 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     struct sync_file_info *infoPtr = nullptr;
 
     errno_t retCode = memset_s(&arg, sizeof(struct sync_file_info), 0, sizeof(struct sync_file_info));
-    if (retCode != 0) {
+    if (retCode != EOK) {
         UTILS_LOGE("memset_s error, retCode = %{public}d", retCode);
         return {};
     }
@@ -180,6 +179,10 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
 
     if (arg.num_fences <= 0) {
         UTILS_LOGD("GetFenceInfo arg.num_fences failed, num_fences: %{public}d", arg.num_fences);
+        return {};
+    }
+    if ((SIZE_MAX - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
+        UTILS_LOGE("GetFenceInfo overflow, num_fences: %{public}d", arg.num_fences);
         return {};
     }
     // to malloc sync_file_info and the number of 'sync_fence_info' memory

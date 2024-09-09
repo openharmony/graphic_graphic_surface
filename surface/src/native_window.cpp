@@ -91,11 +91,6 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     OHNativeWindow* nativeWindow = new OHNativeWindow();
     nativeWindow->surface =
                 *reinterpret_cast<OHOS::sptr<OHOS::Surface> *>(pSurface);
-    if (nativeWindow->surface == nullptr) {
-        BLOGE("window surface is null");
-        delete nativeWindow;
-        return nullptr;
-    }
     OHOS::BufferRequestConfig windowConfig = nativeWindow->surface->GetWindowConfig();
     windowConfig.width = nativeWindow->surface->GetDefaultWidth();
     windowConfig.height = nativeWindow->surface->GetDefaultHeight();
@@ -187,7 +182,8 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         return ret;
     }
     uint32_t seqNum = sfbuffer->GetSeqNum();
-    if (window->bufferCache_.find(seqNum) == window->bufferCache_.end()) {
+    auto iter = window->bufferCache_.find(seqNum);
+    if (iter == window->bufferCache_.end()) {
         OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
         nwBuffer->sfbuffer = sfbuffer;
         nwBuffer->uiTimestamp = window->uiTimestamp;
@@ -196,7 +192,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         NativeObjectReference(nwBuffer);
         window->bufferCache_[seqNum] = nwBuffer;
     } else {
-        *buffer = window->bufferCache_[seqNum];
+        *buffer = iter->second;
         (*buffer)->uiTimestamp = window->uiTimestamp;
     }
     *fenceFd = releaseFence->Dup();
@@ -385,70 +381,90 @@ static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window,
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t *value = va_arg(args, uint64_t*);
-    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
-    *value = static_cast<uint64_t>(windowConfig.usage);
+    if (value != nullptr) {
+        OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+        *value = static_cast<uint64_t>(windowConfig.usage);
+    }
 }
 
 static void HandleNativeWindowGetBufferGeometry(OHNativeWindow *window, va_list args)
 {
     int32_t *height = va_arg(args, int32_t*);
     int32_t *width = va_arg(args, int32_t*);
-    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
-    *height = windowConfig.height;
-    *width = windowConfig.width;
+    if (height != nullptr && width != nullptr) {
+        OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+        *height = windowConfig.height;
+        *width = windowConfig.width;
+    }
 }
 
 static void HandleNativeWindowGetFormat(OHNativeWindow *window, va_list args)
 {
     int32_t *format = va_arg(args, int32_t*);
-    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
-    *format = windowConfig.format;
+    if (format != nullptr) {
+        OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+        *format = windowConfig.format;
+    }
 }
 
 static void HandleNativeWindowGetStride(OHNativeWindow *window, va_list args)
 {
     int32_t *stride = va_arg(args, int32_t*);
-    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
-    *stride = windowConfig.strideAlignment;
+    if (stride != nullptr) {
+        OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+        *stride = windowConfig.strideAlignment;
+    }
 }
 
 static void HandleNativeWindowGetTimeout(OHNativeWindow *window, va_list args)
 {
     int32_t *timeout = va_arg(args, int32_t*);
-    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
-    *timeout = windowConfig.timeout;
+    if (timeout != nullptr) {
+        OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+        *timeout = windowConfig.timeout;
+    }
 }
 
 static void HandleNativeWindowGetColorGamut(OHNativeWindow *window, va_list args)
 {
     int32_t *colorGamut = va_arg(args, int32_t*);
-    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
-    *colorGamut = static_cast<int32_t>(windowConfig.colorGamut);
+    if (colorGamut != nullptr) {
+        OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+        *colorGamut = static_cast<int32_t>(windowConfig.colorGamut);
+    }
 }
 
 static void HandleNativeWindowGetTransform(OHNativeWindow *window, va_list args)
 {
     int32_t *transform = va_arg(args, int32_t*);
-    *transform = static_cast<int32_t>(window->surface->GetTransform());
+    if (transform != nullptr) {
+        *transform = static_cast<int32_t>(window->surface->GetTransform());
+    }
 }
 
 static void HandleNativeWindowGetBufferQueueSize(OHNativeWindow *window, va_list args)
 {
     int32_t *bufferQueueSize = va_arg(args, int32_t*);
-    *bufferQueueSize = static_cast<int32_t>(window->surface->GetQueueSize());
+    if (bufferQueueSize != nullptr) {
+        *bufferQueueSize = static_cast<int32_t>(window->surface->GetQueueSize());
+    }
 }
 
 static void HandleNativeWindowGetSurfaceSourceType(OHNativeWindow *window, va_list args)
 {
     OHSurfaceSource *sourceType = va_arg(args, OHSurfaceSource*);
-    *sourceType = window->surface->GetSurfaceSourceType();
+    if (sourceType != nullptr) {
+        *sourceType = window->surface->GetSurfaceSourceType();
+    }
 }
 
 static void HandleNativeWindowGetSurfaceAppFrameworkType(OHNativeWindow *window, va_list args)
 {
     const char **appFrameworkType = va_arg(args, const char**);
-    std::string typeStr = window->surface->GetSurfaceAppFrameworkType();
-    *appFrameworkType = typeStr.c_str();
+    if (appFrameworkType != nullptr) {
+        std::string typeStr = window->surface->GetSurfaceAppFrameworkType();
+        *appFrameworkType = typeStr.c_str();
+    }
 }
 
 static void HandleNativeWindowSetHdrWhitePointBrightness(OHNativeWindow *window, va_list args)
@@ -586,7 +602,8 @@ int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 sca
 int32_t NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32_t size,
                                 const OHHDRMetaData *metaData)
 {
-    if (window == nullptr || window->surface == nullptr || size <= 0 || metaData == nullptr) {
+    if (window == nullptr || window->surface == nullptr ||
+        size <= 0 ||size > META_DATA_MAX_SIZE || metaData == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 
@@ -600,7 +617,7 @@ int32_t NativeWindowSetMetaDataSet(OHNativeWindow *window, uint32_t sequence, OH
 {
     if (window == nullptr || window->surface == nullptr ||
         key < OHHDRMetadataKey::OH_METAKEY_RED_PRIMARY_X || key > OHHDRMetadataKey::OH_METAKEY_HDR_VIVID ||
-        size <= 0 || metaData == nullptr) {
+        size <= 0 || size > META_DATA_MAX_SIZE || metaData == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     std::vector<uint8_t> data(metaData, metaData + size);
@@ -617,7 +634,7 @@ int32_t NativeWindowSetTunnelHandle(OHNativeWindow *window, const OHExtDataHandl
 
 int32_t GetSurfaceId(OHNativeWindow *window, uint64_t *surfaceId)
 {
-    if (window == nullptr || surfaceId == nullptr) {
+    if (window == nullptr || window->surface == nullptr || surfaceId == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 
@@ -639,10 +656,7 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
         return OHOS::GSERROR_OK;
     }
 
-    OHNativeWindow *nativeWindow = new(std::nothrow) OHNativeWindow();
-    if (nativeWindow == nullptr) {
-        return OHOS::SURFACE_ERROR_NOMEM;
-    }
+    OHNativeWindow *nativeWindow = new OHNativeWindow();
     nativeWindow->surface = utils->GetSurface(surfaceId);
     if (nativeWindow->surface == nullptr) {
         BLOGE("window surface is null, surfaceId: %{public}" PRIu64 ".", surfaceId);
@@ -721,7 +735,12 @@ int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel)
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     auto producer = windowSurface->GetProducer();
-    (parcel->msgParcel)->WriteRemoteObject(producer->AsObject());
+    if (producer == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    if (!(parcel->msgParcel)->WriteRemoteObject(producer->AsObject())) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
     return OHOS::GSERROR_OK;
 }
 
@@ -772,29 +791,25 @@ int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **bu
 
 int32_t NativeWindowDisconnect(OHNativeWindow *window)
 {
-    if (window == nullptr) {
+    if (window == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    sptr<OHOS::Surface> windowSurface = window->surface;
-    if (windowSurface == nullptr) {
-        BLOGE("windowSurface is nullptr");
-        return OHOS::SURFACE_ERROR_INVALID_PARAM;
-    }
-    return windowSurface->Disconnect();
+    return window->surface->Disconnect();
 }
 
 int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_ColorSpace colorSpace)
 {
-    if (window == nullptr || NATIVE_COLORSPACE_TO_HDI_MAP.find(colorSpace) == NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
+    auto iter = NATIVE_COLORSPACE_TO_HDI_MAP.find(colorSpace);
+    if (window == nullptr || iter == NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    std::string param = std::to_string(NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
+    std::string param = std::to_string(iter->second);
     GSError ret = GSERROR_OK;
     if (window->surface != nullptr && param != window->surface->GetUserData("ATTRKEY_COLORSPACE_INFO")) {
         ret = window->surface->SetUserData("ATTRKEY_COLORSPACE_INFO", param);
     }
     if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetColorSpaceType failed!, ret: %d", ret);
+        BLOGE("SetColorSpaceType failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;
@@ -859,7 +874,7 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRMetadata failed!, ret: %d", ret);
+        BLOGE("SetHDRMetadata failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;
@@ -881,7 +896,7 @@ static GSError OH_NativeWindow_GetMatedataValueType(OHNativeWindow *window, int3
         if (err != 0) {
             delete[] *metadata;
             *metadata = nullptr;
-            BLOGE("memcpy_s failed! , ret: %d", err);
+            BLOGE("memcpy_s failed! , ret: %{public}d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
         return OHOS::SURFACE_ERROR_OK;
@@ -916,7 +931,7 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRSMetadata failed! , ret: %d", ret);
+        BLOGE("SetHDRSMetadata failed! , ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();
@@ -926,7 +941,7 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         if (err != 0) {
             delete[] *metadata;
             *metadata = nullptr;
-            BLOGE("memcpy_s failed! , ret: %d", err);
+            BLOGE("memcpy_s failed! , ret: %{public}d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
     } else {

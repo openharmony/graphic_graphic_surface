@@ -71,11 +71,14 @@ GSError BufferExtraDataImpl::ReadFromParcel(MessageParcel &parcel)
 GSError BufferExtraDataImpl::WriteToParcel(MessageParcel &parcel)
 {
     std::lock_guard<std::mutex> lockGuard(mtx_);
-    parcel.WriteInt32(BUFFER_EXTRA_DATA_MAGIC);
-    parcel.WriteInt32(datas_.size());
+    if (!parcel.WriteInt32(BUFFER_EXTRA_DATA_MAGIC) || !parcel.WriteInt32(datas_.size())) {
+        return GSERROR_BINDER;
+    }
+    bool ipcRet = true;
     for (const auto &[key, data] : datas_) {
-        parcel.WriteString(key);
-        parcel.WriteInt32(static_cast<int32_t>(data.type));
+        if (!parcel.WriteString(key) || !parcel.WriteInt32(static_cast<int32_t>(data.type))) {
+            return GSERROR_BINDER;
+        }
         switch (data.type) {
             case ExtraDataType::i32: {
                 int32_t i32 = -1;
@@ -83,7 +86,7 @@ GSError BufferExtraDataImpl::WriteToParcel(MessageParcel &parcel)
                 if (pVal != nullptr) {
                     i32 = *pVal;
                 }
-                parcel.WriteInt32(i32);
+                ipcRet = parcel.WriteInt32(i32);
                 break;
             }
             case ExtraDataType::i64: {
@@ -92,7 +95,7 @@ GSError BufferExtraDataImpl::WriteToParcel(MessageParcel &parcel)
                 if (pVal != nullptr) {
                     i64 = *pVal;
                 }
-                parcel.WriteInt64(i64);
+                ipcRet = parcel.WriteInt64(i64);
                 break;
             }
             case ExtraDataType::f64: {
@@ -101,7 +104,7 @@ GSError BufferExtraDataImpl::WriteToParcel(MessageParcel &parcel)
                 if (pVal != nullptr) {
                     f64 = *pVal;
                 }
-                parcel.WriteDouble(f64);
+                ipcRet = parcel.WriteDouble(f64);
                 break;
             }
             case ExtraDataType::string: {
@@ -110,14 +113,14 @@ GSError BufferExtraDataImpl::WriteToParcel(MessageParcel &parcel)
                 if (pVal != nullptr) {
                     string = *pVal;
                 }
-                parcel.WriteString(string);
+                ipcRet = parcel.WriteString(string);
                 break;
             }
             default:
                 break;
         }
     }
-    return GSERROR_OK;
+    return ipcRet ? GSERROR_OK : GSERROR_BINDER;
 }
 
 GSError BufferExtraDataImpl::ExtraGet(const std::string &key, int32_t &value) const

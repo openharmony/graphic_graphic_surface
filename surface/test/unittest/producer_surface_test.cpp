@@ -1194,6 +1194,7 @@ HWTEST_F(ProducerSurfaceTest, tunnelHandle001, Function | MediumTest | Level2)
 {
     GraphicExtDataHandle *handle = nullptr;
     handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
+    ASSERT_NE(handle, nullptr);
     handle->fd = -1;
     handle->reserveInts = 1;
     handle->reserve[0] = 0;
@@ -1216,6 +1217,7 @@ HWTEST_F(ProducerSurfaceTest, tunnelHandle002, Function | MediumTest | Level2)
 {
     GraphicExtDataHandle *handle = nullptr;
     handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
+    ASSERT_NE(handle, nullptr);
     handle->fd = -1;
     handle->reserveInts = 1;
     handle->reserve[0] = 0;
@@ -1425,7 +1427,7 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | Mediu
 HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
 {
     surface_->SetWindowConfig(requestConfig);
-    auto& configGet = surface_->GetWindowConfig();
+    auto configGet = surface_->GetWindowConfig();
     ASSERT_EQ(requestConfig, configGet);
 }
 

@@ -908,7 +908,7 @@ void ProducerSurface::SetWindowConfig(const BufferRequestConfig& config)
     windowConfig_ = config;
 }
 
-BufferRequestConfig& ProducerSurface::GetWindowConfig()
+BufferRequestConfig ProducerSurface::GetWindowConfig()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return windowConfig_;

@@ -56,10 +56,8 @@ GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
     }
 
     if (!parcel.WriteFileDescriptor(fd)) {
-        close(fd);
         return GSERROR_BINDER;
     }
-    close(fd);
     return GSERROR_OK;
 }
 
@@ -93,16 +91,16 @@ GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const & co
     return GSERROR_OK;
 }
 
-void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config)
+GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config)
 {
     uint32_t size = parcel.ReadUint32();
     if (size == 0) {
         BLOGE("ReadFlushConfig size is 0");
-        return;
+        return GSERROR_BINDER;
     }
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadFlushConfig size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_BINDER;
     }
     config.damages.clear();
     config.damages.reserve(size);
@@ -116,6 +114,7 @@ void ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config
         config.damages.emplace_back(rect);
     }
     config.timestamp = parcel.ReadInt64();
+    return GSERROR_OK;
 }
 
 GSError WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const & config)

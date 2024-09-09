@@ -148,7 +148,7 @@ public:
 
     virtual void SetBufferHold(bool hold) = 0;
     virtual void SetWindowConfig(const BufferRequestConfig& config) = 0;
-    virtual BufferRequestConfig& GetWindowConfig() = 0;
+    virtual BufferRequestConfig GetWindowConfig() = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
     virtual OHSurfaceSource GetSurfaceSourceType() const = 0;

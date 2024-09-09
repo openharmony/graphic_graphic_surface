@@ -48,6 +48,7 @@ static OHExtDataHandle *AllocOHExtDataHandle(uint32_t reserveInts)
     auto ret = memset_s(handle, handleSize, 0, handleSize);
     if (ret != EOK) {
         BLOGE("AllocOHExtDataHandle memset_s failed");
+        free(handle);
         return nullptr;
     }
     handle->fd = -1;
@@ -1417,6 +1418,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue003, Function | Mediu
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
         ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
         delete[] checkMetaData;
+        checkMetaData = nullptr;
         ASSERT_EQ(ret, GSERROR_OK);
     }
     for (int i = 0; i < 60; i++) {
@@ -1430,6 +1432,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue003, Function | Mediu
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
         ASSERT_EQ(memcmp(checkMetaData, buff, 60), 0);
         delete[] checkMetaData;
+        checkMetaData = nullptr;
         ASSERT_EQ(ret, GSERROR_OK);
     }
     OH_NativeBuffer_MetadataType type = OH_VIDEO_HDR_HDR10;
@@ -1443,6 +1446,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue003, Function | Mediu
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadataValue
         ASSERT_EQ(static_cast<uint8_t>(type), checkMetaData[0]);
         delete[] checkMetaData;
+        checkMetaData = nullptr;
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }
@@ -1917,9 +1921,9 @@ HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest |
     region->rects = rect;
     ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
               OHOS::SURFACE_ERROR_INVALID_PARAM);
+    cSurface->SetBufferHold(false);
     delete rect;
     delete region;
-    cSurface->SetBufferHold(false);
 }
 
 /*

@@ -62,6 +62,7 @@ int32_t NativeWindowBufferTest::SetData(NativeWindowBuffer *nativeWindowBuffer, 
     }
     int32_t ret = memset_s(handle, handleSize, 0, handleSize);
     if (ret != EOK) {
+        free(handle);
         return -1;
     }
     handle->fd = -1;

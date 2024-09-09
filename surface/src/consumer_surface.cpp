@@ -602,57 +602,6 @@ int32_t ConsumerSurface::GetRequestHeight()
     return 0;
 }
 
-void ConsumerSurface::SetWindowConfig(const BufferRequestConfig& config)
-{
-    (void)config;
-}
-
-void ConsumerSurface::SetWindowConfigWidth(int32_t width)
-{
-    (void)width;
-}
-
-void ConsumerSurface::SetWindowConfigHeight(int32_t height)
-{
-    (void)height;
-}
-
-void ConsumerSurface::SetWindowConfigStride(int32_t stride)
-{
-    (void)stride;
-}
-
-void ConsumerSurface::SetWindowConfigFormat(int32_t format)
-{
-    (void)format;
-}
-
-void ConsumerSurface::SetWindowConfigUsage(uint64_t usage)
-{
-    (void)usage;
-}
-
-void ConsumerSurface::SetWindowConfigTimeout(int32_t timeout)
-{
-    (void)timeout;
-}
-
-void ConsumerSurface::SetWindowConfigColorGamut(GraphicColorGamut colorGamut)
-{
-    (void)colorGamut;
-}
-
-void ConsumerSurface::SetWindowConfigTransform(GraphicTransformType transform)
-{
-    (void)transform;
-}
-
-BufferRequestConfig ConsumerSurface::GetWindowConfig()
-{
-    BufferRequestConfig config;
-    return config;
-}
-
 GSError ConsumerSurface::SetHdrWhitePointBrightness(float brightness)
 {
     (void)brightness;

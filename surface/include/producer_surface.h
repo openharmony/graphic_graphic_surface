@@ -209,8 +209,7 @@ public:
     std::string GetSurfaceAppFrameworkType() const override;
 
     void SetWindowConfig(const BufferRequestConfig& config) override;
-    void SetWindowConfigWidth(int32_t width) override;
-    void SetWindowConfigHeight(int32_t height) override;
+    void SetWindowConfigWidthAndHeight(int32_t width, int32_t height) override;
     void SetWindowConfigStride(int32_t stride) override;
     void SetWindowConfigFormat(int32_t format) override;
     void SetWindowConfigUsage(uint64_t usage) override;

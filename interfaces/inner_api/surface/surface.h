@@ -151,12 +151,9 @@ public:
     {
         (void)config;
     }
-    virtual void SetWindowConfigWidth(int32_t width)
+    virtual void SetWindowConfigWidthAndHeight(int32_t width, int32_t height)
     {
         (void)width;
-    }
-    virtual void SetWindowConfigHeight(int32_t height)
-    {
         (void)height;
     }
     virtual void SetWindowConfigStride(int32_t stride)

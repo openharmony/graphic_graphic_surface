@@ -1442,8 +1442,7 @@ HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
  */
 HWTEST_F(ProducerSurfaceTest, WindowConfig002, Function | MediumTest | Level1)
 {
-    surface_->SetWindowConfigWidth(requestConfig.width);
-    surface_->SetWindowConfigHeight(requestConfig.height);
+    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
     surface_->SetWindowConfigStride(requestConfig.strideAlignment);
     surface_->SetWindowConfigFormat(requestConfig.format);
     surface_->SetWindowConfigUsage(requestConfig.usage);

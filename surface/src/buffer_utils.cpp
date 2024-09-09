@@ -28,6 +28,9 @@
 #include <sys/time.h>
 
 namespace OHOS {
+namespace {
+constexpr size_t BLOCK_SIZE = 1024 * 1024; // 1 MB block size
+}
 void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
 {
     fd = parcel.ReadInt32();
@@ -55,7 +58,6 @@ GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
     if (!parcel.WriteFileDescriptor(fd)) {
         return GSERROR_BINDER;
     }
-    close(fd);
     return GSERROR_OK;
 }
 
@@ -68,7 +70,13 @@ void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
     config.usage = parcel.ReadUint64();
     config.timeout = parcel.ReadInt32();
     config.colorGamut = static_cast<GraphicColorGamut>(parcel.ReadInt32());
+    if (config.colorGamut < GRAPHIC_COLOR_GAMUT_INVALID || config.colorGamut > GRAPHIC_COLOR_GAMUT_DISPLAY_BT2020) {
+        config.colorGamut = GRAPHIC_COLOR_GAMUT_INVALID;
+    }
     config.transform = static_cast<GraphicTransformType>(parcel.ReadInt32());
+    if (config.transform < GRAPHIC_ROTATE_NONE || config.transform > GRAPHIC_ROTATE_BUTT) {
+        config.transform = GRAPHIC_ROTATE_BUTT;
+    }
 }
 
 GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const & config)
@@ -172,7 +180,7 @@ void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInf
         info.height = parcel.ReadUint32();
         info.usage = parcel.ReadUint64();
         info.format = static_cast<GraphicPixelFormat>(parcel.ReadInt32());
-        infos.push_back(info);
+        infos.emplace_back(info);
     }
 }
 
@@ -195,20 +203,21 @@ GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVeri
     return GSERROR_OK;
 }
 
-void ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData)
+GSError ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData)
 {
     uint32_t size = parcel.ReadUint32();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadHDRMetaData size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_BINDER;
     }
     metaData.clear();
     GraphicHDRMetaData data;
     for (uint32_t index = 0; index < size; index++) {
         data.key = static_cast<GraphicHDRMetadataKey>(parcel.ReadUint32());
         data.value = parcel.ReadFloat();
-        metaData.push_back(data);
+        metaData.emplace_back(data);
     }
+    return GSERROR_OK;
 }
 
 GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData)
@@ -229,18 +238,19 @@ GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMeta
     return GSERROR_OK;
 }
 
-void ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData)
+GSError ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData)
 {
     uint32_t size = parcel.ReadUint32();
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadHDRMetaDataSet size more than limit, size: %{public}u", size);
-        return;
+        return GSERROR_BINDER;
     }
     metaData.clear();
     for (uint32_t index = 0; index < size; index++) {
         uint8_t data = parcel.ReadUint8();
-        metaData.push_back(data);
+        metaData.emplace_back(data);
     }
+    return GSERROR_OK;
 }
 
 GSError WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &metaData)
@@ -261,21 +271,21 @@ GSError WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &m
     return GSERROR_OK;
 }
 
-void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
+GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
 {
     if (handle == nullptr) {
         BLOGE("handle is null");
-        return;
+        return GSERROR_BINDER;
     }
     uint32_t reserveInts = parcel.ReadUint32();
     if (reserveInts > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadExtDataHandle size more than limit, size: %{public}u", reserveInts);
-        return;
+        return GSERROR_BINDER;
     }
     GraphicExtDataHandle *tunnelHandle = AllocExtDataHandle(reserveInts);
     if (tunnelHandle == nullptr) {
         BLOGE("AllocExtDataHandle failed");
-        return;
+        return GSERROR_BINDER;
     }
     ReadFileDescriptor(parcel, tunnelHandle->fd);
     for (uint32_t index = 0; index < reserveInts; index++) {
@@ -284,9 +294,10 @@ void ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle)
     if (handle->SetHandle(tunnelHandle) != GSERROR_OK) {
         BLOGE("SetHandle failed");
         FreeExtDataHandle(tunnelHandle);
-        return;
+        return GSERROR_BINDER;
     }
     FreeExtDataHandle(tunnelHandle);
+    return GSERROR_OK;
 }
 
 GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle)
@@ -317,9 +328,11 @@ GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *ha
 
 void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
 {
-    size_t block_size = 1024 * 1024; // 1 MB block size
-    size_t num_blocks = totalSize / block_size;
-    size_t last_block_size = totalSize % block_size;
+    if (dest == nullptr || src == nullptr) {
+        return;
+    }
+    size_t num_blocks = totalSize / BLOCK_SIZE;
+    size_t last_block_size = totalSize % BLOCK_SIZE;
 
     // Obtain the number of parallelizable threads.
     size_t num_threads = std::thread::hardware_concurrency();
@@ -331,7 +344,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     // Lambda function to copy a block of memory
     auto copy_block = [&](uint8_t* current_dest, const uint8_t* current_src, size_t size) {
         auto ret = memcpy_s(current_dest, size, current_src, size);
-        if (ret != 0) {
+        if (ret != EOK) {
             BLOGE("memcpy_s ret:%{public}d", static_cast<int>(ret));
         }
     };
@@ -344,7 +357,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     // Create threads and copy blocks of memory
     for (size_t i = 0; i < num_threads; ++i) {
         size_t blocks_to_copy = blocks_per_thread + (i < remaining_blocks ? 1 : 0);
-        size_t length_to_copy = blocks_to_copy * block_size;
+        size_t length_to_copy = blocks_to_copy * BLOCK_SIZE;
 
         threads.emplace_back(copy_block, current_dest, current_src, length_to_copy);
 
@@ -367,6 +380,10 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
 void WriteToFile(std::string prefixPath, std::string pid, void* dest, size_t size, int32_t format, int32_t width,
     int32_t height, const std::string name)
 {
+    if (dest == nullptr) {
+        BLOGE("dest is nulltr");
+        return;
+    }
     struct timeval now;
     gettimeofday(&now, nullptr);
     constexpr int secToUsec = 1000 * 1000;

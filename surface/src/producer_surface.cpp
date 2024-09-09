@@ -908,15 +908,10 @@ void ProducerSurface::SetWindowConfig(const BufferRequestConfig& config)
     windowConfig_ = config;
 }
 
-void ProducerSurface::SetWindowConfigWidth(int32_t width)
+void ProducerSurface::SetWindowConfigWidthAndHeight(int32_t width, int32_t height)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     windowConfig_.width = width;
-}
-
-void ProducerSurface::SetWindowConfigHeight(int32_t height)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
     windowConfig_.height = height;
 }
 

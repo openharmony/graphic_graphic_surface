@@ -234,6 +234,14 @@ public:
     std::string GetSurfaceAppFrameworkType() const override;
 
     void SetWindowConfig(const BufferRequestConfig& config) override;
+    void SetWindowConfigWidth(int32_t width) override;
+    void SetWindowConfigHeight(int32_t height) override;
+    void SetWindowConfigStride(int32_t stride) override;
+    void SetWindowConfigFormat(int32_t format) override;
+    void SetWindowConfigUsage(uint64_t usage) override;
+    void SetWindowConfigTimeout(int32_t timeout) override;
+    void SetWindowConfigColorGamut(GraphicColorGamut colorGamut) override;
+    void SetWindowConfigTransform(GraphicTransformType transform) override;
     BufferRequestConfig GetWindowConfig() override;
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;

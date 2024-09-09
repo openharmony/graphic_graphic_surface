@@ -1402,12 +1402,12 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface001, Function | Mediu
 }
 
 /*
-* Function: SetWptrNativeWindowToPSurface
-* Type: Function
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. SetWptrNativeWindowToPSurface with nullptr param and check ret
-* @tc.require: issueIANSVH
+ * Function: SetWptrNativeWindowToPSurface
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. SetWptrNativeWindowToPSurface with nullptr param and check ret
+ * @tc.require: issueIANSVH
  */
 HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | MediumTest | Level1)
 {
@@ -1416,19 +1416,49 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | Mediu
 }
 
 /*
-* Function: SetWindowConfig and GetWindowConfig
-* Type: Function
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. Call SetWindowConfig
-*                  2. Call GetWindowConfig and check ret
-* @tc.require: issueIANSVH
+ * Function: SetWindowConfig and GetWindowConfig
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Call SetWindowConfig
+ *                  2. Call GetWindowConfig and check ret
+ * @tc.require: issueIANSVH
  */
 HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
 {
     surface_->SetWindowConfig(requestConfig);
     auto configGet = surface_->GetWindowConfig();
     ASSERT_EQ(requestConfig, configGet);
+}
+
+/*
+ * Function: SetWindowConfigOpt
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Call SetWindowConfig with params
+ *                  2. Call GetWindowConfig and check ret
+ * @tc.require: issueIANSVH
+ */
+HWTEST_F(ProducerSurfaceTest, WindowConfig002, Function | MediumTest | Level1)
+{
+    surface_->SetWindowConfigWidth(requestConfig.width);
+    surface_->SetWindowConfigHeight(requestConfig.height);
+    surface_->SetWindowConfigStride(requestConfig.strideAlignment);
+    surface_->SetWindowConfigFormat(requestConfig.format);
+    surface_->SetWindowConfigUsage(requestConfig.usage);
+    surface_->SetWindowConfigTimeout(requestConfig.timeout);
+    surface_->SetWindowConfigColorGamut(requestConfig.colorGamut);
+    surface_->SetWindowConfigTransform(requestConfig.transform);
+    auto configGet = surface_->GetWindowConfig();
+    ASSERT_EQ(requestConfig.width, configGet.width);
+    ASSERT_EQ(requestConfig.height, configGet.height);
+    ASSERT_EQ(requestConfig.strideAlignment, configGet.strideAlignment);
+    ASSERT_EQ(requestConfig.format, configGet.format);
+    ASSERT_EQ(requestConfig.usage, configGet.usage);
+    ASSERT_EQ(requestConfig.timeout, configGet.timeout);
+    ASSERT_EQ(requestConfig.colorGamut, configGet.colorGamut);
+    ASSERT_EQ(requestConfig.transform, configGet.transform);
 }
 
 /*

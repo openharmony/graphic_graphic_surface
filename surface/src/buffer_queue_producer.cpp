@@ -242,16 +242,17 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     ProducerInitInfo info;
-    (void)GetProducerInitInfo(info);
-    if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
-        !reply.WriteString(info.name)) {
-        return GSERROR_BINDER;
-    }
     sptr<IRemoteObject> token = arguments.ReadRemoteObject();
-    if (token == nullptr) {
+    if (token == nullptr || !arguments.ReadString(info.appName)) {
         reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
         return GSERROR_BINDER;
     }
+    (void)GetProducerInitInfo(info);
+    if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
+        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList)) {
+        return GSERROR_BINDER;
+    }
+
     bool result = HandleDeathRecipient(token);
     if (!reply.WriteInt32(result ? GSERROR_OK : SURFACE_ERROR_UNKOWN)) {
         return GSERROR_BINDER;

@@ -224,6 +224,10 @@ public:
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
     GSError SetGlobalAlpha(int32_t alpha) override;
+    virtual bool IsInHebcList() override
+    {
+        return initInfo_.isInHebcList;
+    }
 private:
     bool IsRemote();
     void CleanAllLocked();

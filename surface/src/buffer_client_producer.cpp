@@ -20,6 +20,7 @@
 #include <iremote_stub.h>
 #include "buffer_log.h"
 #include "buffer_utils.h"
+#include "hebc_white_list.h"
 #include "sync_fence.h"
 #include "message_option.h"
 #include "securec.h"
@@ -228,7 +229,8 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     token_ = new IRemoteStub<IBufferProducerToken>();
-    if (!arguments.WriteRemoteObject(token_->AsObject())) {
+    HebcWhiteList::GetInstance().GetApplicationName(info.appName);
+    if (!arguments.WriteRemoteObject(token_->AsObject()) || !arguments.WriteString(info.appName)) {
         return GSERROR_BINDER;
     }
     SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
@@ -237,7 +239,7 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
         return GSERROR_BINDER;
     }
     uniqueId_ = info.uniqueId;
-    if (!reply.ReadString(info.name)) {
+    if (!reply.ReadString(info.name) || !reply.ReadBool(info.isInHebcList)) {
         return GSERROR_BINDER;
     }
     return CheckRetval(reply);

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_CONFIG_H
-#define OHOS_CONFIG_H
+#ifndef UTILS_HEBC_WHITE_LIST_H
+#define UTILS_HEBC_WHITE_LIST_H
 
 #include <atomic>
 #include <memory>
@@ -33,21 +33,21 @@ public:
 
     HebcWhiteList(const HebcWhiteList&) = delete;
     HebcWhiteList& operator=(const HebcWhiteList&) = delete;
-    [[nodiscard]] bool Check() noexcept;
+    [[nodiscard]] bool Check(const std::string& appName) noexcept;
+    void GetApplicationName(std::string& name) noexcept;
+    void Init() noexcept;
 
 private:
     HebcWhiteList() = default;
-    void Init() noexcept;
-    void GetApplicationName(std::string& name) noexcept;
-    [[nodiscard]] bool ParseJson(std::string const &json) noexcept;
+    void ParseJson(std::string const &json) noexcept;
     [[nodiscard]] std::string AcquireConfig(const std::string& filePath) noexcept;
     std::string GetConfigAbsolutePath() noexcept;
     std::unique_ptr<char[]> ReadFile(std::string const &file, size_t &size, size_t maxSize) noexcept;
-    std::atomic_bool checkResult_ = false;
     std::atomic_bool inited_ = false;
+    std::vector<std::string> hebcList_;
 };
 
 } // namespace OHOS
 
 
-#endif // OHOS_CONFIG_H
+#endif // UTILS_HEBC_WHITE_LIST_H

@@ -25,6 +25,7 @@
 #include "acquire_fence_manager.h"
 #include "buffer_utils.h"
 #include "buffer_log.h"
+#include "hebc_white_list.h"
 #include "hitrace_meter.h"
 #include "metadata_helper.h"
 #include "sandbox_utils.h"
@@ -83,6 +84,10 @@ BufferQueue::BufferQueue(const std::string &name, bool isShared)
     if (isShared_ == true) {
         bufferQueueSize_ = 1;
     }
+
+    if (isLocalRender_) {
+        HebcWhiteList::GetInstance().Init();
+    }
     acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
 }
 
@@ -111,6 +116,7 @@ GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
     info.width = defaultWidth_;
     info.height = defaultHeight_;
     info.uniqueId = uniqueId_;
+    info.isInHebcList = HebcWhiteList::GetInstance().Check(info.appName);
     return GSERROR_OK;
 }
 

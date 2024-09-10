@@ -181,7 +181,7 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
         UTILS_LOGD("GetFenceInfo arg.num_fences failed, num_fences: %{public}d", arg.num_fences);
         return {};
     }
-    if ((SIZE_MAX - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
+    if ((((size_t) - 1) - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
         UTILS_LOGE("GetFenceInfo overflow, num_fences: %{public}d", arg.num_fences);
         return {};
     }

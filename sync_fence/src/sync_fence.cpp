@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <errno.h>
+#include <limits>
 #include <securec.h>
 #include <fcntl.h>
 #include <sys/poll.h>
@@ -46,6 +47,7 @@ namespace {
 #define UTILS_LOGE(fmt, ...) B_CPRINTF(HILOG_ERROR, fmt, ##__VA_ARGS__)
 
 constexpr int32_t INVALID_FD = -1;
+constexpr uint32_t MAX_FENCE_NUM = 65535;
 }  // namespace
 
 const sptr<SyncFence> SyncFence::INVALID_FENCE = sptr<SyncFence>(new SyncFence(INVALID_FD));
@@ -176,16 +178,15 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
         UTILS_LOGD("GetFenceInfo SYNC_IOC_FILE_INFO ioctl failed, ret: %{public}d", ret);
         return {};
     }
-
-    if (arg.num_fences <= 0) {
+    if (arg.num_fences <= 0 || arg.num_fences > MAX_FENCE_NUM) {
         UTILS_LOGD("GetFenceInfo arg.num_fences failed, num_fences: %{public}d", arg.num_fences);
         return {};
     }
-    if ((SIZE_MAX - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
+    auto sizeMax = std::numeric_limits<size_t>::max();
+    if ((sizeMax - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
         UTILS_LOGE("GetFenceInfo overflow, num_fences: %{public}d", arg.num_fences);
         return {};
     }
-    // to malloc sync_file_info and the number of 'sync_fence_info' memory
     size_t syncFileInfoMemSize = sizeof(struct sync_file_info) + sizeof(struct sync_fence_info) * arg.num_fences;
     infoPtr = (struct sync_file_info *)malloc(syncFileInfoMemSize);
     if (infoPtr == nullptr) {
@@ -200,7 +201,6 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     }
     infoPtr->num_fences = arg.num_fences;
     infoPtr->sync_fence_info = static_cast<uint64_t>(uintptr_t(infoPtr + 1));
-
     ret = ioctl(fenceFd_, SYNC_IOC_FILE_INFO, infoPtr);
     if (ret < 0) {
         UTILS_LOGE("GetTotalFenceInfo SYNC_IOC_FILE_INFO ioctl failed, ret: %{public}d", ret);
@@ -210,10 +210,8 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
     std::vector<SyncPointInfo> infos;
     const auto fenceInfos = (struct sync_fence_info *)(uintptr_t)(infoPtr->sync_fence_info);
     for (uint32_t i = 0; i < infoPtr->num_fences; i++) {
-        infos.push_back(SyncPointInfo { fenceInfos[i].timestamp_ns,
-            static_cast<FenceStatus>(fenceInfos[i].status) } );
+        infos.push_back(SyncPointInfo { fenceInfos[i].timestamp_ns, static_cast<FenceStatus>(fenceInfos[i].status) });
     }
-
     free(infoPtr);
     return infos;
 }

@@ -495,18 +495,18 @@ GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedat
     std::lock_guard<std::mutex> lockGuard(mutex_);
 
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
-        return GSERROR_NO_ENTRY;
+        return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
 
     if (bufferQueueCache_[sequence].state != BUFFER_STATE_REQUESTED &&
         bufferQueueCache_[sequence].state != BUFFER_STATE_ATTACHED) {
-        return GSERROR_INVALID_OPERATING;
+        return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
     bufferQueueCache_[sequence].state = BUFFER_STATE_RELEASED;
     freeList_.push_back(sequence);
     if (bufferQueueCache_[sequence].buffer == nullptr) {
         BLOGE("cache buffer is nullptr, sequence:%{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
-        return GSERROR_INVALID_OPERATING;
+        return SURFACE_ERROR_UNKOWN;
     }
     bufferQueueCache_[sequence].buffer->SetExtraData(bedata);
 

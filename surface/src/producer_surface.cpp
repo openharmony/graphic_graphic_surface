@@ -333,12 +333,12 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
 GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
 {
     if (buffer == nullptr || producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        return SURFACE_ERROR_UNKOWN;
     }
 
     sptr<BufferExtraData> bedata = buffer->GetExtraData();
     if (bedata == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
+        return SURFACE_ERROR_UNKOWN;
     }
     return producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
 }

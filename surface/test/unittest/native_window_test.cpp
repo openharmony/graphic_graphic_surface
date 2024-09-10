@@ -1486,7 +1486,26 @@ HWTEST_F(NativeWindowTest, CancelBuffer002, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, CancelBuffer003, Function | MediumTest | Level2)
 {
-    ASSERT_EQ(OH_NativeWindow_NativeWindowAbortBuffer(nativeWindow, nativeWindowBuffer), OHOS::GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowAbortBuffer(nativeWindow, nativeWindowBuffer),
+        OHOS::SURFACE_ERROR_BUFFER_STATE_INVALID);
+
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+
+    NativeWindowBuffer *nativeWindowBuffer1 = nullptr;
+    int fenceFd = -1;
+    int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindowTmp, &nativeWindowBuffer1, &fenceFd);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowAbortBuffer(nativeWindow, nativeWindowBuffer1),
+        OHOS::SURFACE_ERROR_BUFFER_NOT_INCACHE);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
 }
 
 /*

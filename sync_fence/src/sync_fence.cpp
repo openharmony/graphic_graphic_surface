@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <errno.h>
+#include <limits>
 #include <securec.h>
 #include <fcntl.h>
 #include <sys/poll.h>
@@ -181,7 +182,8 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
         UTILS_LOGD("GetFenceInfo arg.num_fences failed, num_fences: %{public}d", arg.num_fences);
         return {};
     }
-    if ((((size_t) - 1) - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
+    auto sizeMax = std::numeric_limits<size_t>::max();
+    if ((sizeMax - sizeof(struct sync_file_info)) / sizeof(struct sync_fence_info) < arg.num_fences) {
         UTILS_LOGE("GetFenceInfo overflow, num_fences: %{public}d", arg.num_fences);
         return {};
     }

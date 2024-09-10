@@ -164,8 +164,9 @@ public:
 private:
     bool IsRemote();
     void CleanAllLocked();
-    GSError AddCache(sptr<BufferExtraData> &bedataimpl,
+    GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
+    GSError CleanCacheLocked(bool cleanAll);
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;
@@ -174,7 +175,7 @@ private:
     sptr<IBufferProducer> producer_ = nullptr;
     std::string name_ = "not init";
     uint64_t queueId_ = 0;
-    bool isDisconnected = true;
+    bool isDisconnected_ = true;
     sptr<IProducerListener> listener_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;
     wptr<ProducerSurfaceDelegator> wpPSurfaceDelegator_ = nullptr;

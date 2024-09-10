@@ -908,6 +908,49 @@ void ProducerSurface::SetWindowConfig(const BufferRequestConfig& config)
     windowConfig_ = config;
 }
 
+void ProducerSurface::SetWindowConfigWidthAndHeight(int32_t width, int32_t height)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.width = width;
+    windowConfig_.height = height;
+}
+
+void ProducerSurface::SetWindowConfigStride(int32_t stride)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.strideAlignment = stride;
+}
+
+void ProducerSurface::SetWindowConfigFormat(int32_t format)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.format = format;
+}
+
+void ProducerSurface::SetWindowConfigUsage(uint64_t usage)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.usage = usage;
+}
+
+void ProducerSurface::SetWindowConfigTimeout(int32_t timeout)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.timeout = timeout;
+}
+
+void ProducerSurface::SetWindowConfigColorGamut(GraphicColorGamut colorGamut)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.colorGamut = colorGamut;
+}
+
+void ProducerSurface::SetWindowConfigTransform(GraphicTransformType transform)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    windowConfig_.transform = transform;
+}
+
 BufferRequestConfig ProducerSurface::GetWindowConfig()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);

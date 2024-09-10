@@ -147,8 +147,44 @@ public:
     virtual int32_t GetRequestHeight() = 0;
 
     virtual void SetBufferHold(bool hold) = 0;
-    virtual void SetWindowConfig(const BufferRequestConfig& config) = 0;
-    virtual BufferRequestConfig GetWindowConfig() = 0;
+    virtual void SetWindowConfig(const BufferRequestConfig& config)
+    {
+        (void)config;
+    }
+    virtual void SetWindowConfigWidthAndHeight(int32_t width, int32_t height)
+    {
+        (void)width;
+        (void)height;
+    }
+    virtual void SetWindowConfigStride(int32_t stride)
+    {
+        (void)stride;
+    }
+    virtual void SetWindowConfigFormat(int32_t format)
+    {
+        (void)format;
+    }
+    virtual void SetWindowConfigUsage(uint64_t usage)
+    {
+        (void)usage;
+    }
+    virtual void SetWindowConfigTimeout(int32_t timeout)
+    {
+        (void)timeout;
+    }
+    virtual void SetWindowConfigColorGamut(GraphicColorGamut colorGamut)
+    {
+        (void)colorGamut;
+    }
+    virtual void SetWindowConfigTransform(GraphicTransformType transform)
+    {
+        (void)transform;
+    }
+    virtual BufferRequestConfig GetWindowConfig()
+    {
+        BufferRequestConfig config;
+        return config;
+    }
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
     virtual OHSurfaceSource GetSurfaceSourceType() const = 0;

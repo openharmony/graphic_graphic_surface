@@ -233,8 +233,6 @@ public:
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     std::string GetSurfaceAppFrameworkType() const override;
 
-    void SetWindowConfig(const BufferRequestConfig& config) override;
-    BufferRequestConfig GetWindowConfig() override;
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;
     float GetHdrWhitePointBrightness() const override;

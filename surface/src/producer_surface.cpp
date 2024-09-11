@@ -110,7 +110,7 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         ret = producer_->RequestBuffer(config, bedataimpl, retval);
         if (ret != GSERROR_OK) {
             if (ret == GSERROR_NO_CONSUMER) {
-                CleanCache();
+                CleanCacheLocked(false);
             }
             BLOGND("RequestBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
             return ret;

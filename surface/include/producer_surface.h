@@ -151,11 +151,11 @@ public:
 
     BufferRequestConfig* GetWindowConfig() override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
+
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     OHSurfaceSource GetSurfaceSourceType() const override;
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     std::string GetSurfaceAppFrameworkType() const override;
-
     GSError SetHdrWhitePointBrightness(float brightness) override;
     GSError SetSdrWhitePointBrightness(float brightness) override;
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,

@@ -596,8 +596,8 @@ GSError ConsumerSurface::SetPresentTimestamp(uint32_t sequence, const GraphicPre
     return consumer_->SetPresentTimestamp(sequence, timestamp);
 }
 
-GSError ConsumerSurface::GetPresentTimestamp(uint32_t sequence,
-    GraphicPresentTimestampType type, int64_t &time) const
+GSError ConsumerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
+                                             int64_t &time) const
 {
     return GSERROR_NOT_SUPPORT;
 }

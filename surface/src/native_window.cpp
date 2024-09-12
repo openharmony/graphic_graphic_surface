@@ -102,7 +102,7 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     windowConfig.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
 
     // if the application is in the hebc list, remove BUFFER_USAGE_CPU_READ flag
-    if (HebcWhiteList::GetInstance().Check()) {
+    if (nativeWindow->surface->IsInHebcList()) {
         windowConfig.usage &= ~BUFFER_USAGE_CPU_READ;
     }
     nativeWindow->surface->SetWindowConfig(windowConfig);

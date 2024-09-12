@@ -26,10 +26,10 @@ const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
 } // end of anonymous namespace
 
-bool HebcWhiteList::Check() noexcept
+bool HebcWhiteList::Check(const std::string& name) noexcept
 {
     Init();
-    return checkResult_.load();
+    return (std::find(hebcList_.begin(), hebcList_.end(), name) != hebcList_.end());
 }
 
 void HebcWhiteList::Init() noexcept
@@ -38,7 +38,7 @@ void HebcWhiteList::Init() noexcept
         return;
     }
 
-    checkResult_.store(ParseJson(AcquireConfig(GetConfigAbsolutePath())));
+    ParseJson(AcquireConfig(GetConfigAbsolutePath()));
     inited_.store(true);
 }
 
@@ -53,25 +53,20 @@ void HebcWhiteList::GetApplicationName(std::string& name) noexcept
     name = name.substr(0, name.find('\0'));
 }
 
-bool HebcWhiteList::ParseJson(std::string const &json) noexcept
+void HebcWhiteList::ParseJson(std::string const &json) noexcept
 {
     Json::Value root{};
     Json::Reader reader(Json::Features::all());
     if (!reader.parse(json, root)) {
-        return false;
+        return;
     }
 
     Json::Value const hebc = root.get("HEBC", Json::Value{});
     Json::Value const appNameJson = hebc.get("AppName", Json::Value{});
-    std::string appName = "";
-    GetApplicationName(appName);
     for (unsigned int i = 0; i < appNameJson.size(); i++) {
         std::string name = appNameJson[i].asString();
-        if (appName == name) {
-            return true;
-        }
+        hebcList_.emplace_back(name);
     }
-    return false;
 }
 
 std::string HebcWhiteList::AcquireConfig(const std::string& filePath) noexcept
@@ -123,4 +118,4 @@ std::unique_ptr<char[]> HebcWhiteList::ReadFile(std::string const &file, size_t 
 
     return buffer;
 }
-} // namespace FF
+} // namespace OHOS

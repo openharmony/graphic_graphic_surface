@@ -208,6 +208,10 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     };
     virtual GSError SetGlobalAlpha(int32_t alpha) = 0;
+    virtual bool IsInHebcList()
+    {
+        return false;
+    }
 protected:
     Surface() = default;
 };

@@ -150,6 +150,8 @@ using ProducerInitInfo = struct {
     int32_t width;
     int32_t height;
     std::string name;
+    std::string appName;
+    bool isInHebcList;
 };
 
 using GraphicLayerInfo = struct {

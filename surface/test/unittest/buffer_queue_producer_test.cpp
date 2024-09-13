@@ -305,7 +305,7 @@ HWTEST_F(BufferQueueProducerTest, AttachAndDetachBufferRemote, Function | Medium
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->AttachBufferRemote(arguments, reply, option);
-    ASSERT_EQ(ret, 0);
+    ASSERT_EQ(ret, 5);
     ret = bqp_->DetachBufferRemote(arguments, reply, option);
     ASSERT_EQ(ret, 0);
 }

@@ -244,18 +244,20 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     ProducerInitInfo info;
     sptr<IRemoteObject> token = arguments.ReadRemoteObject();
     if (token == nullptr || !arguments.ReadString(info.appName)) {
-        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
-        return GSERROR_BINDER;
+        if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_DATA;
     }
     (void)GetProducerInitInfo(info);
     if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
         !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList)) {
-        return GSERROR_BINDER;
+        return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
     bool result = HandleDeathRecipient(token);
     if (!reply.WriteInt32(result ? GSERROR_OK : SURFACE_ERROR_UNKOWN)) {
-        return GSERROR_BINDER;
+        return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
 }

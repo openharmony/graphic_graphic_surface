@@ -35,11 +35,11 @@ public:
     HebcWhiteList& operator=(const HebcWhiteList&) = delete;
     [[nodiscard]] bool Check(const std::string& appName) noexcept;
     void GetApplicationName(std::string& name) noexcept;
-    void Init() noexcept;
+    bool Init() noexcept;
 
 private:
     HebcWhiteList() = default;
-    void ParseJson(std::string const &json) noexcept;
+    [[nodiscard]] bool ParseJson(std::string const &json) noexcept;
     [[nodiscard]] std::string AcquireConfig(const std::string& filePath) noexcept;
     std::string GetConfigAbsolutePath() noexcept;
     std::unique_ptr<char[]> ReadFile(std::string const &file, size_t &size, size_t maxSize) noexcept;

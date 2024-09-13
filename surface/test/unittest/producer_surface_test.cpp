@@ -1849,4 +1849,17 @@ HWTEST_F(ProducerSurfaceTest, SetGlobalAlpha001, Function | MediumTest | Level2)
     ret = pSurface->SetGlobalAlpha(alpha);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+* Function: IsInHebcWhiletList
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call IsInHebcWhiletList and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, Function | MediumTest | Level2)
+{
+    bool isInHebcList = pSurface->IsInHebcList();
+    ASSERT_EQ(isInHebcList, false);
+}
 }

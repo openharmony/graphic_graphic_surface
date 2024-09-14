@@ -15,31 +15,35 @@
 
 #include "config_policy_utils.h"
 #include "hebc_white_list.h"
+#include "buffer_log.h"
 #include <unistd.h>
 #include <fstream>
 #include <json/json.h>
 
 namespace OHOS {
 namespace {
-const std::string CONFIG_FILE_RELATIVE_PATH = "etc/graphics_game/config/ff_config.json";
+const std::string CONFIG_FILE_RELATIVE_PATH = "etc/graphics_game/config/graphics_game.json";
 const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
 } // end of anonymous namespace
 
 bool HebcWhiteList::Check(const std::string& name) noexcept
 {
-    Init();
+    if (!Init()) {
+        BLOGE("Init failed");
+        return false;
+    }
     return (std::find(hebcList_.begin(), hebcList_.end(), name) != hebcList_.end());
 }
 
-void HebcWhiteList::Init() noexcept
+bool HebcWhiteList::Init() noexcept
 {
     if (inited_.load()) {
-        return;
+        return true;
     }
 
-    ParseJson(AcquireConfig(GetConfigAbsolutePath()));
-    inited_.store(true);
+    inited_.store(ParseJson(AcquireConfig(GetConfigAbsolutePath())));
+    return inited_.load();
 }
 
 void HebcWhiteList::GetApplicationName(std::string& name) noexcept
@@ -53,12 +57,13 @@ void HebcWhiteList::GetApplicationName(std::string& name) noexcept
     name = name.substr(0, name.find('\0'));
 }
 
-void HebcWhiteList::ParseJson(std::string const &json) noexcept
+bool HebcWhiteList::ParseJson(std::string const &json) noexcept
 {
     Json::Value root{};
     Json::Reader reader(Json::Features::all());
     if (!reader.parse(json, root)) {
-        return;
+        BLOGE("parse json failed");
+        return false;
     }
 
     Json::Value const hebc = root.get("HEBC", Json::Value{});
@@ -67,6 +72,7 @@ void HebcWhiteList::ParseJson(std::string const &json) noexcept
         std::string name = appNameJson[i].asString();
         hebcList_.emplace_back(name);
     }
+    return true;
 }
 
 std::string HebcWhiteList::AcquireConfig(const std::string& filePath) noexcept
@@ -87,6 +93,7 @@ std::string HebcWhiteList::GetConfigAbsolutePath() noexcept
     char buf[MAX_PATH_LEN] = { 0 };
     char const *path = GetOneCfgFile(std::string(CONFIG_FILE_RELATIVE_PATH).c_str(), buf, MAX_PATH_LEN);
     if (path == nullptr) {
+        BLOGE("failed");
         return std::string("{}");
     }
     return std::string(path);
@@ -97,10 +104,12 @@ std::unique_ptr<char[]> HebcWhiteList::ReadFile(std::string const &file, size_t 
     std::ifstream ifs;
     ifs.open(file, std::ifstream::binary);
     if (!ifs.good()) {
+        BLOGE("file is bad");
         return nullptr;
     }
 
     if (!ifs.is_open()) {
+        BLOGE("open file failed");
         return nullptr;
     }
 
@@ -108,6 +117,7 @@ std::unique_ptr<char[]> HebcWhiteList::ReadFile(std::string const &file, size_t 
     auto const tellg = static_cast<size_t>(ifs.tellg());
     if (tellg <= 0 || tellg > maxSize) {
         ifs.close();
+        BLOGE("read file failed");
         return nullptr;
     }
     size = tellg;

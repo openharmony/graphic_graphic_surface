@@ -11,51 +11,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/ohos.gni")
+import("//build/test.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
-## hebc_white_list.so {{{
+module_output_path = "graphic_surface/utils"
 
-config("hebc_white_list_config") {
-  visibility = [ ":hebc_white_list" ]
+group("unittest") {
+  testonly = true
+  deps = [ ":hebc_white_list_test" ]
+}
 
+ohos_unittest("hebc_white_list_test") {
+  module_out_path = module_output_path
+  sources = [ "hebc_white_list_test.cpp" ]
+  deps = [ ":hebc_white_list_test_common" ]
+}
+
+config("hebc_white_list_test_config") {
   cflags = [
     "-Wall",
     "-Werror",
     "-g3",
-    "-Wno-error=missing-braces",
-    "-Wno-error=#warnings",
+    "-Dprivate=public",
+    "-Dprotected=public",
   ]
 }
 
-config("hebc_white_list_public_config") {
-  include_dirs = [
-    ".",
-    "$graphic_surface_root/surface/include",
-  ]
-}
+ohos_static_library("hebc_white_list_test_common") {
+  visibility = [ ":*" ]
+  testonly = true
+  public_configs = [ ":hebc_white_list_test_config" ]
 
-ohos_static_library("hebc_white_list") {
-  sanitize = {
-    boundary_sanitize = true
-    integer_overflow = true
-    ubsan = true
-  }
-  sources = [ "hebc_white_list.cpp" ]
-
-  configs = [ ":hebc_white_list_config" ]
-  public_configs = [ ":hebc_white_list_public_config" ]
-
-  external_deps = [
-    "c_utils:utils",
-    "config_policy:configpolicy_util",
-    "hilog:libhilog",
-    "jsoncpp:jsoncpp",
+  public_deps = [
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/utils/hebc_white_list:hebc_white_list",
   ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"
 }
-
-## hebc_white_list.so }}}
-

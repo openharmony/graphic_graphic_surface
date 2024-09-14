@@ -86,7 +86,9 @@ BufferQueue::BufferQueue(const std::string &name, bool isShared)
     }
 
     if (isLocalRender_) {
-        HebcWhiteList::GetInstance().Init();
+        if (!HebcWhiteList::GetInstance().Init()) {
+            BLOGW("HebcWhiteList init failed");
+        }
     }
     acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
 }

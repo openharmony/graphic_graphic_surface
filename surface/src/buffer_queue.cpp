@@ -444,8 +444,8 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         return SURFACE_ERROR_UNKOWN;
     }
     auto &cacheConfig = bufferQueueCache_[retval.sequence].config;
-    SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d strideAlignment: %d format: %d id: %u",
-        cacheConfig.width, cacheConfig.height, cacheConfig.strideAlignment, cacheConfig.format, retval.sequence);
+    SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
+        cacheConfig.width, cacheConfig.height, cacheConfig.usage, cacheConfig.format, retval.sequence);
 
     bool needRealloc = (config != bufferQueueCache_[retval.sequence].config);
     // config, realloc
@@ -878,8 +878,8 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 {
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     uint32_t sequence = bufferImpl->GetSeqNum();
-    SURFACE_TRACE_NAME_FMT("AllocBuffer config width: %d height: %d strideAlignment: %d format: %d id: %u",
-        config.width, config.height, config.strideAlignment, config.format, sequence);
+    SURFACE_TRACE_NAME_FMT("AllocBuffer config width: %d height: %d usage: %llu format: %d id: %u",
+        config.width, config.height, config.usage, config.format, sequence);
 
     BufferRequestConfig updateConfig = config;
     updateConfig.usage |= defaultUsage_;

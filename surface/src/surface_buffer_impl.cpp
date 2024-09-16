@@ -98,19 +98,7 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    metaDataCache_.clear();
-    if (handle_) {
-        if (handle_->virAddr != nullptr && g_displayBuffer != nullptr) {
-            g_displayBuffer->Unmap(*handle_);
-            handle_->virAddr = nullptr;
-            return;
-        }
-        if (g_displayBuffer != nullptr) {
-            g_displayBuffer->FreeMem(*handle_);
-        }
-        handle_ = nullptr;
-    }
+    FreeBufferHandleLocked();
 }
 
 bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value)
@@ -275,7 +263,13 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
 {
     metaDataCache_.clear();
     if (handle_) {
-        IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+        IDisplayBufferSptr displayBuffer = nullptr;
+        {
+            std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
+            if (g_displayBuffer != nullptr) {
+                displayBuffer = g_displayBuffer;
+            }
+        }
         if (displayBuffer == nullptr) {
             handle_ = nullptr;
             return;

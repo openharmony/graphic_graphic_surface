@@ -271,6 +271,7 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
             }
         }
         if (displayBuffer == nullptr) {
+            FreeBufferHandle(handle_);
             handle_ = nullptr;
             return;
         }

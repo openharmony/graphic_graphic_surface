@@ -300,14 +300,14 @@ HWTEST_F(BufferQueueProducerTest, AttachAndDetachBuffer001, Function | MediumTes
 HWTEST_F(BufferQueueProducerTest, AttachAndDetachBufferRemote, Function | MediumTest | Level2)
 {
     MessageParcel arguments;
-    arguments.WriteInt32(5);
+    arguments.WriteInt32(5); // write sequence
     MessageParcel reply;
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->AttachBufferRemote(arguments, reply, option);
-    ASSERT_EQ(ret, 5);
+    ASSERT_EQ(ret, ERR_INVALID_DATA);
     ret = bqp_->DetachBufferRemote(arguments, reply, option);
-    ASSERT_EQ(ret, 0);
+    ASSERT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -347,7 +347,7 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote, Function | MediumTest |
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->SetTunnelHandleRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -366,7 +366,7 @@ HWTEST_F(BufferQueueProducerTest, GetPresentTimestampRemote, Function | MediumTe
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->GetPresentTimestampRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -426,7 +426,7 @@ HWTEST_F(BufferQueueProducerTest, SetSurfaceSourceTypeRemote001, Function | Medi
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->SetSurfaceSourceTypeRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -445,7 +445,7 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceSourceTypeRemote001, Function | Medi
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->GetSurfaceSourceTypeRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -464,7 +464,7 @@ HWTEST_F(BufferQueueProducerTest, SetSurfaceAppFrameworkTypeRemote001, Function 
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->SetSurfaceAppFrameworkTypeRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -483,7 +483,7 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, Function 
     reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->GetSurfaceAppFrameworkTypeRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -501,9 +501,9 @@ HWTEST_F(BufferQueueProducerTest, SetWhitePointBrightness001, Function | MediumT
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->SetHdrWhitePointBrightnessRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
     ret = bqp_->SetSdrWhitePointBrightnessRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -521,7 +521,7 @@ HWTEST_F(BufferQueueProducerTest, SetDefaultUsage001, Function | MediumTest | Le
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->SetDefaultUsageRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -539,7 +539,7 @@ HWTEST_F(BufferQueueProducerTest, SetBufferHold001, Function | MediumTest | Leve
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->SetBufferHoldRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*
@@ -559,12 +559,12 @@ HWTEST_F(BufferQueueProducerTest, TransformHint001, Function | MediumTest | Leve
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->SetBufferHoldRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
     int32_t err = reply.ReadInt32();
     EXPECT_EQ(err, OHOS::GSERROR_OK);
 
     ret = bqp_->GetTransformHintRemote(arguments, reply, option);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, ERR_NONE);
     err = reply.ReadInt32();
     EXPECT_EQ(err, OHOS::GSERROR_OK);
 }

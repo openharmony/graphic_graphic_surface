@@ -288,11 +288,13 @@ int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
         BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    for (auto type : NATIVE_COLORSPACE_TO_HDI_MAP) {
-        if (type.second == colorSpaceType) {
-            *colorSpace = type.first;
-            return OHOS::SURFACE_ERROR_OK;
-        }
+    auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
+        [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType>& element) {
+            return element.second == colorSpaceType;
+        });
+    if (it != NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
+        *colorSpace = it->first;
+        return OHOS::SURFACE_ERROR_OK;
     }
     BLOGE("the colorSpace does not support it.");
     return OHOS::SURFACE_ERROR_UNKOWN;
@@ -327,7 +329,7 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     return OHOS::SURFACE_ERROR_OK;
 }
 
-GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_t *size, uint8_t **metadata)
+static GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_t *size, uint8_t **metadata)
 {
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
     GSError ret = MetadataHelper::GetHDRMetadataType(sbuffer, hdrMetadataType);
@@ -337,19 +339,21 @@ GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer, int32_
         BLOGE("GetHDRMetadataType failed!, retVal:%d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
-    for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
-        if (type.second == hdrMetadataType) {
-            *size = sizeof(OH_NativeBuffer_MetadataType);
-            *metadata = new uint8_t[*size];
-            errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
-            if (err != 0) {
-                delete[] *metadata;
-                *metadata = nullptr;
-                BLOGE("memcpy_s failed! , retVal:%d", err);
-                return OHOS::SURFACE_ERROR_UNKOWN;
-            }
-            return OHOS::SURFACE_ERROR_OK;
+    auto it = std::find_if(NATIVE_METADATATYPE_TO_HDI_MAP.begin(), NATIVE_METADATATYPE_TO_HDI_MAP.end(),
+    [hdrMetadataType](const std::pair<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type>& element) {
+        return element.second == hdrMetadataType;
+    });
+    if (it != NATIVE_METADATATYPE_TO_HDI_MAP.end()) {
+        *size = sizeof(OH_NativeBuffer_MetadataType);
+        *metadata = new uint8_t[*size];
+        errno_t err = memcpy_s(*metadata, *size, &(it->first), *size);
+        if (err != 0) {
+            delete[] *metadata;
+            *metadata = nullptr;
+            BLOGE("memcpy_s failed!, ret: %d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
         }
+        return OHOS::SURFACE_ERROR_OK;
     }
     BLOGE("the hdrMetadataType does not support it.");
     return OHOS::SURFACE_ERROR_NOT_SUPPORT;

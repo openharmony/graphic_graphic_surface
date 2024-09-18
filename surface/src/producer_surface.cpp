@@ -23,7 +23,9 @@
 #include "sync_fence.h"
 #include "native_window.h"
 #include "surface_utils.h"
+#include "metadata_helper.h"
 
+using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
 
 sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
@@ -119,7 +121,53 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     buffer = retval.buffer;
     fence = retval.fence;
-    return GSERROR_OK;
+    ret = SetMetadataValve(buffer);
+    if (ret != GSERROR_OK) {
+        BLOGD("SetMetadataValve ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+    }
+    return ret;
+}
+
+GSError ProducerSurface::SetMetadataValve(sptr<SurfaceBuffer>& buffer)
+{
+    GSError ret = GSERROR_OK;
+    std::vector<uint8_t> metaData;
+    std::string value = GetUserData("ATTRKEY_COLORSPACE_INFO");
+    if (!value.empty()) {
+        ret = MetadataHelper::SetColorSpaceType(buffer, static_cast<CM_ColorSpaceType>(atoi(value.c_str())));
+        if (ret != GSERROR_OK) {
+            BLOGD("SetColorSpaceType ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+            return ret;
+        }
+    }
+    value = GetUserData("OH_HDR_DYNAMIC_METADATA");
+    if (!value.empty()) {
+        metaData.resize(value.size());
+        metaData.assign(value.begin(), value.end());
+        ret = MetadataHelper::SetHDRStaticMetadata(buffer, metaData);
+        if (ret != GSERROR_OK) {
+            BLOGD("SetHDRStaticMetadata ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+            return ret;
+        }
+    }
+    value = GetUserData("OH_HDR_STATIC_METADATA");
+    if (!value.empty()) {
+        metaData.resize(value.size());
+        metaData.assign(value.begin(), value.end());
+        ret = MetadataHelper::SetHDRStaticMetadata(buffer, metaData);
+        if (ret != GSERROR_OK) {
+            BLOGD("SetHDRStaticMetadata ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+            return ret;
+        }
+    }
+    value = GetUserData("OH_HDR_METADATA_TYPE");
+    if (!value.empty()) {
+        ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str())));
+        if (ret != GSERROR_OK) {
+            BLOGD("SetHDRMetadataType ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+        }
+    }
+    return ret;
 }
 
 GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
@@ -620,7 +668,7 @@ GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcN
         BLOGND("func already register");
         return GSERROR_INVALID_ARGUMENTS;
     }
-
+    
     onUserDataChange_[funcName] = func;
     return GSERROR_OK;
 }

@@ -77,8 +77,8 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
 };
 
 namespace {
-    constexpr int32_t INVALID_PARAM = -1;
     constexpr int32_t META_DATA_MAX_SIZE = 3000;
+    constexpr int32_t INVALID_PARAM = -1;
 }
 
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
@@ -916,13 +916,13 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         if (err != 0) {
             delete[] *metadata;
             *metadata = nullptr;
-            BLOGE("memcpy_s failed! , retVal:%d", err);
+            BLOGE("memcpy_s failed! , ret: %d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
     } else {
         delete[] *metadata;
         *metadata = nullptr;
-        BLOGE("new metadata failed! ");
+        BLOGE("new metadata failed!");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

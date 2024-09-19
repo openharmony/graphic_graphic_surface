@@ -113,6 +113,15 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFen
     return consumer_->AcquireBuffer(buffer, fence, timestamp, damages);
 }
 
+GSError ConsumerSurface::AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
+                                       bool isUsingAutoTimestamp)
+{
+    if (consumer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return consumer_->AcquireBuffer(returnValue, expectPresentTimestamp, isUsingAutoTimestamp);
+}
+
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     if (buffer == nullptr || consumer_ == nullptr) {
@@ -671,5 +680,13 @@ GSError ConsumerSurface::GetGlobalAlpha(int32_t &alpha)
         return SURFACE_ERROR_UNKOWN;
     }
     return consumer_->GetGlobalAlpha(alpha);
+}
+
+uint32_t ConsumerSurface::GetAvailableBufferCount() const
+{
+    if (consumer_ == nullptr) {
+        return 0;
+    }
+    return consumer_->GetAvailableBufferCount();
 }
 } // namespace OHOS

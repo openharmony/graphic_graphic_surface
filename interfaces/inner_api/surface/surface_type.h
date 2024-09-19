@@ -489,11 +489,13 @@ using BufferRequestConfig = struct BufferRequestConfig {
 using BufferFlushConfig = struct {
     Rect damage;
     int64_t timestamp;
+    int64_t desiredPresentTimestamp;
 };
 
 using BufferFlushConfigWithDamages = struct BufferFlushConfigWithDamages {
     std::vector<Rect> damages = {};
     int64_t timestamp;
+    int64_t desiredPresentTimestamp;
 };
 
 using SceneType = enum {

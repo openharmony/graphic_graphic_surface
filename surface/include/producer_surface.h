@@ -168,6 +168,7 @@ private:
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
     GSError SetMetadataValve(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
+
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;
     std::map<int32_t, sptr<SurfaceBuffer>> bufferProducerCache_;

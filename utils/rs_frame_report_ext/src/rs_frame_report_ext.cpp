@@ -48,7 +48,7 @@ void RsFrameReportExt::Init()
         return;
     }
     HILOG_INFO(LOG_CORE, "RsFrameReportExt:[Init] dlopen libframe_ui_intf.so success!");
-    initFunc_ = (InitFunc)LoadSymbol("Init");
+    initFunc_ = reinterpret_cast<InitFunc>(LoadSymbol("Init"));
     if (initFunc_ != nullptr) {
         initFunc_();
     }
@@ -91,7 +91,7 @@ int RsFrameReportExt::GetEnable()
         return 0;
     }
     if (frameGetEnableFunc_ == nullptr) {
-        frameGetEnableFunc_ = (FrameGetEnableFunc)LoadSymbol("GetSenseSchedEnable");
+        frameGetEnableFunc_ = reinterpret_cast<FrameGetEnableFunc>(LoadSymbol("GetSenseSchedEnable"));
     }
     if (frameGetEnableFunc_ != nullptr) {
         return frameGetEnableFunc_();
@@ -104,7 +104,7 @@ int RsFrameReportExt::GetEnable()
 void RsFrameReportExt::HandleSwapBuffer()
 {
     if (handleSwapBufferFunc_ == nullptr) {
-        handleSwapBufferFunc_ = (HandleSwapBufferFunc)LoadSymbol("HandleSwapBuffer");
+        handleSwapBufferFunc_ = reinterpret_cast<HandleSwapBufferFunc>(LoadSymbol("HandleSwapBuffer"));
     }
     if (handleSwapBufferFunc_ != nullptr) {
         handleSwapBufferFunc_();

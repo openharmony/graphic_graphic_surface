@@ -862,7 +862,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
     //drop buffers
     for (const auto& dropBufferElement : dropBufferElements) {
         if (dropBufferElement == nullptr) {
-           continue;
+            continue;
         }
         auto ret = ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
         if (ret != GSERROR_OK) {

@@ -105,8 +105,8 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         return GSERROR_INVALID_ARGUMENTS;
     }
     IBufferProducer::RequestBufferReturnValue retval;
-    GSError ret;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    GSError ret;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         ret = producer_->RequestBuffer(config, bedataimpl, retval);
@@ -114,7 +114,7 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
             if (ret == GSERROR_NO_CONSUMER) {
                 CleanCacheLocked(false);
             }
-            BLOGND("RequestBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
+            BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
         AddCacheLocked(bedataimpl, retval, config);
@@ -668,7 +668,7 @@ GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcN
         BLOGND("func already register");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    
+
     onUserDataChange_[funcName] = func;
     return GSERROR_OK;
 }
@@ -790,7 +790,7 @@ GSError ProducerSurface::Connect()
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (!isDisconnected_) {
-        BLOGNE("Surface has been connect.");
+        BLOGE("Surface has been connect, uniqueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
     BLOGND("Connect Queue Id:%{public}" PRIu64 "", queueId_);
@@ -806,12 +806,13 @@ GSError ProducerSurface::Disconnect()
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (isDisconnected_) {
-        BLOGND("Surface has been disconnect.");
+        BLOGD("Surface is disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
-    BLOGND("Queue Id:%{public}" PRIu64 "", queueId_);
+    BLOGD("Disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
     CleanAllLocked();
     GSError ret = producer_->Disconnect();
     if (ret == GSERROR_OK) {

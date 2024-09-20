@@ -273,13 +273,8 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
 {
     metaDataCache_.clear();
     if (handle_) {
-        IDisplayBufferSptr displayBuffer = nullptr;
-        {
-            std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-            if (g_displayBuffer != nullptr) {
-                displayBuffer = g_displayBuffer;
-            }
-        }
+        IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+
         if (displayBuffer == nullptr) {
             FreeBufferHandle(handle_);
             handle_ = nullptr;

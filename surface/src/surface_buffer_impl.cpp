@@ -274,7 +274,6 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
     metaDataCache_.clear();
     if (handle_) {
         IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
-
         if (displayBuffer == nullptr) {
             FreeBufferHandle(handle_);
             handle_ = nullptr;

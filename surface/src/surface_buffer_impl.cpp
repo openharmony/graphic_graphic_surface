@@ -43,7 +43,17 @@ public:
         BLOGD("IDisplayBuffer died and g_displayBuffer is nullptr");
     };
 };
+
 IDisplayBufferSptr GetDisplayBuffer()
+{
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
+    if (g_displayBuffer != nullptr) {
+        return g_displayBuffer;
+    }
+    return nullptr;
+}
+
+IDisplayBufferSptr GetOrResetDisplayBuffer()
 {
     std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (g_displayBuffer != nullptr) {
@@ -112,7 +122,7 @@ bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vect
 
 GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -154,7 +164,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 
 GSError SurfaceBufferImpl::Map()
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -179,7 +189,7 @@ GSError SurfaceBufferImpl::Map()
 
 GSError SurfaceBufferImpl::Unmap()
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -201,7 +211,7 @@ GSError SurfaceBufferImpl::Unmap()
 
 GSError SurfaceBufferImpl::FlushCache()
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -220,7 +230,7 @@ GSError SurfaceBufferImpl::FlushCache()
 
 GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -242,7 +252,7 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 
 GSError SurfaceBufferImpl::InvalidateCache()
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -538,13 +548,9 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel &parcel)
 
 GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    FreeBufferHandleLocked();
-    handle_ = ReadBufferHandle(parcel);
-    if (handle_ == nullptr) {
-        return GSERROR_API_FAILED;
-    }
-    return GSERROR_OK;
+    auto handle = ReadBufferHandle(parcel);
+    SetBufferHandle(handle);
+    return handle ? GSERROR_OK : GSERROR_API_FAILED;
 }
 
 // return OH_NativeBuffer* is dangerous, need to refactor
@@ -596,7 +602,7 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -625,7 +631,7 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -644,7 +650,7 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
 
 GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
 {
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
@@ -666,7 +672,7 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }

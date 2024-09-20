@@ -28,6 +28,7 @@
 #include "surface_buffer_impl.h"
 
 namespace OHOS {
+const std::string DEFAULT_NAME = "not init";
 class BufferClientProducer : public IRemoteProxy<IBufferProducer> {
 public:
     BufferClientProducer(const sptr<IRemoteObject>& impl);
@@ -117,7 +118,7 @@ private:
     GSError GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, uint32_t command);
     static inline BrokerDelegator<BufferClientProducer> delegator_;
-    std::string name_ = "not init";
+    std::string name_ = DEFAULT_NAME;
     uint64_t uniqueId_ = 0;
     std::mutex mutex_;
     sptr<IBufferProducerToken> token_;

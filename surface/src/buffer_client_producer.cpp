@@ -300,7 +300,7 @@ GSError BufferClientProducer::FlushBuffers(const std::vector<uint32_t> &sequence
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    if (sequences.size() <= 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
+    if (sequences.empty() || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
         return SURFACE_ERROR_UNKOWN;
     }
     if (!arguments.WriteUInt32Vector(sequences)) {
@@ -422,7 +422,7 @@ GSError BufferClientProducer::GetName(std::string &name)
 {
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (name_ != "not init") {
+        if (name_ != DEFAULT_NAME) {
             name = name_;
             return GSERROR_OK;
         }
@@ -434,7 +434,7 @@ GSError BufferClientProducer::GetName(std::string &name)
     if (ret != GSERROR_OK) {
         return ret;
     }
-    if (reply.ReadString(name) == false) {
+    if (!reply.ReadString(name)) {
         BLOGE("reply.ReadString return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }
@@ -466,7 +466,7 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
 {
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (uniqueId_ != 0 && name_ != "not init") {
+        if (uniqueId_ != 0 && name_ != DEFAULT_NAME) {
             uniqueId = uniqueId_;
             name = name_;
             return GSERROR_OK;
@@ -479,7 +479,7 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
     if (ret != GSERROR_OK) {
         return ret;
     }
-    if (reply.ReadString(name) == false) {
+    if (!reply.ReadString(name)) {
         BLOGE("reply.ReadString return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }
@@ -597,7 +597,7 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
         return ret;
     }
 
-    if (reply.ReadBoolVector(&supporteds) == false) {
+    if (!reply.ReadBoolVector(&supporteds)) {
         BLOGE("reply.ReadBoolVector return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }

@@ -164,6 +164,8 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
     int fenceFd = -1;
     for (int i = 0; i < bufferNum; i++) {
         buffer = nullptr;
+        auto code = SET_UI_TIMESTAMP;
+        OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, static_cast<uint64_t>(desiredPresentTimestamp));
         sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
         if (sRet != OHOS::GSERROR_OK) {
             data = sRet;
@@ -171,6 +173,8 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
             exit(0);
         }
         if (i == 1) {
+            code = SET_DESIRED_PRESENT_TIMESTAMP;
+            OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, desiredPresentTimestamp);
             sRet = SetData(nativeWindowBuffer->sfbuffer, pSurface);
             if (sRet != OHOS::GSERROR_OK) {
                 data = sRet;
@@ -178,8 +182,6 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
                 exit(0);
             }
         }
-        auto code = SET_DESIRED_PRESENT_TIMESTAMP;
-        OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, desiredPresentTimestamp);
         struct Region *region = new Region();
         struct Region::Rect *rect = new Region::Rect();
         rect->w = 0x100;

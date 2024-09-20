@@ -62,9 +62,6 @@ public:
 
     uint32_t GetSeqNum() const override;
 
-    sptr<EglData> GetEglData() const override;
-    void SetEglData(const sptr<EglData>& data) override;
-
     void SetExtraData(sptr<BufferExtraData> bedata) override;
     sptr<BufferExtraData> GetExtraData() const override;
 

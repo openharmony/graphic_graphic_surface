@@ -743,14 +743,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
             return sret;
         }
     }
-    if (config.desiredPresentTimestamp == 0) {
-        bufferQueueCache_[sequence].desiredPresentTimestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        bufferQueueCache_[sequence].isAutoTimestamp = true;
-    } else {
-        bufferQueueCache_[sequence].desiredPresentTimestamp = config.desiredPresentTimestamp;
-    }
-    bufferQueueCache_[sequence].timestamp = config.timestamp;
+    SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
     if (isLocalRender_) {
         AcquireFenceTracker::TrackFence(fence, traceTag);
@@ -766,6 +759,23 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
+}
+
+void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
+                                                           uint64_t uiTimestamp)
+{
+    if (desiredPresentTimestamp == 0) {
+        if (uiTimestamp != 0 && uiTimestamp <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+            bufferQueueCache_[sequence].desiredPresentTimestamp = static_cast<int64_t>(uiTimestamp);
+        } else {
+            bufferQueueCache_[sequence].desiredPresentTimestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+            bufferQueueCache_[sequence].isAutoTimestamp = true;
+        }
+    } else {
+        bufferQueueCache_[sequence].desiredPresentTimestamp = desiredPresentTimestamp;
+    }
+    bufferQueueCache_[sequence].timestamp = uiTimestamp;
 }
 
 void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()

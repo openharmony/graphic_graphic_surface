@@ -234,7 +234,8 @@ private:
     bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
 >>>>>>> f4db4f1 (add surface PTS feature)
     void LogAndTraceAllBufferInBufferQueueCache();
-
+    void SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
+                                                 uint64_t uiTimestamp);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;

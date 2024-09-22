@@ -69,7 +69,7 @@ public:
     bool WriteToMessageParcel(MessageParcel &parcel);
     static sptr<SyncFence> ReadFromMessageParcel(MessageParcel &parcel);
     FenceStatus GetStatus();
-
+    static sptr<SyncFence> InvalidFence();
 private:
     std::vector<SyncPointInfo> GetFenceInfo();
 

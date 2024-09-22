@@ -265,6 +265,11 @@ sptr<SyncFence> SyncFence::ReadFromMessageParcel(MessageParcel &parcel)
     return sptr<SyncFence>(new SyncFence(fence));
 }
 
+sptr<SyncFence> SyncFence::InvalidFence()
+{
+    return sptr<SyncFence>(new SyncFence(-1));
+}
+
 bool SyncFence::WriteToMessageParcel(MessageParcel &parcel)
 {
     int32_t fence = fenceFd_;

@@ -199,11 +199,14 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     // add cache
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
-    } else if (bufferProducerCache_.find(retval.sequence) == bufferProducerCache_.end()) {
-        BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
-        return SURFACE_ERROR_UNKOWN;
     } else {
-        retval.buffer = bufferProducerCache_[retval.sequence];
+        auto it = bufferProducerCache_.find(retval.sequence);
+        if (it == bufferProducerCache_.end()) {
+            BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
+            return SURFACE_ERROR_UNKOWN;
+        } else {
+            retval.buffer = it->second;
+        }
     }
     if (retval.buffer != nullptr) {
         retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
@@ -216,9 +219,10 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
         auto spNativeWindow = wpNativeWindow_.promote();
         if (spNativeWindow != nullptr) {
             auto& bufferCache = spNativeWindow->bufferCache_;
-            if (bufferCache.find(seqNum) != bufferCache.end()) {
-                NativeObjectUnreference(bufferCache[seqNum]);
-                bufferCache.erase(seqNum);
+            auto iter = bufferCache.find(seqNum);
+            if (iter != bufferCache.end()) {
+                NativeObjectUnreference(iter->second);
+                bufferCache.erase(iter);
             }
         }
     }
@@ -376,11 +380,12 @@ GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
     auto ret = producer_->DetachBufferFromQueue(buffer);
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (bufferProducerCache_.find(buffer->GetSeqNum()) == bufferProducerCache_.end()) {
+        auto it = bufferProducerCache_.find(buffer->GetSeqNum());
+        if (it == bufferProducerCache_.end()) {
             BLOGE("Detach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
-        bufferProducerCache_.erase(buffer->GetSeqNum());
+        bufferProducerCache_.erase(it);
     }
     return ret;
 }

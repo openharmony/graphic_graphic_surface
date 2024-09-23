@@ -254,23 +254,6 @@ HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | 
 }
 
 /*
-* Function: EglData
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. new SurfaceBufferImpl
-*                  2. call SetEglData
-*                  3. call GetEglData and check ret
- */
-HWTEST_F(SurfaceBufferImplTest, EglData001, Function | MediumTest | Level2)
-{
-    buffer = new SurfaceBufferImpl();
-    sptr<EglData> data = nullptr;
-    buffer->SetEglData(data);
-    ASSERT_EQ(buffer->GetEglData(), nullptr);
-}
-
-/*
 * Function: BufferWrapper
 * Type: Function
 * Rank: Important(2)

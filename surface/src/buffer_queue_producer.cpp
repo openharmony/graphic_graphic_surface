@@ -161,11 +161,11 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
 
     ReadRequestConfig(arguments, config);
 
-    GSError sret = RequestBuffer(config, bedataimpl, retval);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = RequestBuffer(config, bedataimpl, retval);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK &&
+    if (sRet == GSERROR_OK &&
         (WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer) != GSERROR_OK ||
             bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
             !reply.WriteUInt32Vector(retval.deletingBuffers))) {
@@ -200,12 +200,12 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
         sptr<BufferExtraData> data = new BufferExtraDataImpl;
         bedataimpls.emplace_back(data);
     }
-    GSError sret = RequestBuffers(config, bedataimpls, retvalues);
+    GSError sRet = RequestBuffers(config, bedataimpls, retvalues);
     num = static_cast<uint32_t>(retvalues.size());
-    if (!reply.WriteInt32(sret)) {
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK || sret == GSERROR_NO_BUFFER) {
+    if (sRet == GSERROR_OK || sRet == GSERROR_NO_BUFFER) {
         if (!reply.WriteUint32(num)) {
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
@@ -255,8 +255,8 @@ int32_t BufferQueueProducer::CancelBufferRemote(MessageParcel &arguments, Messag
         return ERR_INVALID_REPLY;
     }
 
-    GSError sret = CancelBuffer(sequence, bedataimpl);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = CancelBuffer(sequence, bedataimpl);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -289,8 +289,8 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
         return ERR_INVALID_REPLY;
     }
 
-    GSError sret = FlushBuffer(sequence, bedataimpl, fence, config);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = FlushBuffer(sequence, bedataimpl, fence, config);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
@@ -330,8 +330,8 @@ int32_t BufferQueueProducer::FlushBuffersRemote(MessageParcel &arguments, Messag
         configs.emplace_back(config);
     }
 
-    GSError sret = FlushBuffers(sequences, bedataimpls, fences, configs);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = FlushBuffers(sequences, bedataimpls, fences, configs);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -344,11 +344,11 @@ int32_t BufferQueueProducer::GetLastFlushedBufferRemote(MessageParcel &arguments
     sptr<SyncFence> fence;
     float matrix[BUFFER_MATRIX_SIZE];
     bool isUseNewMatrix = arguments.ReadBool();
-    GSError sret = GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK) {
+    if (sRet == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
         if (WriteSurfaceBufferImpl(reply, sequence, buffer) != GSERROR_OK ||
             buffer->WriteBufferRequestConfig(reply) != GSERROR_OK) {
@@ -444,8 +444,8 @@ int32_t BufferQueueProducer::GetQueueSizeRemote(MessageParcel &arguments, Messag
 int32_t BufferQueueProducer::SetQueueSizeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     uint32_t queueSize = arguments.ReadUint32();
-    GSError sret = SetQueueSize(queueSize);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetQueueSize(queueSize);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -454,11 +454,11 @@ int32_t BufferQueueProducer::SetQueueSizeRemote(MessageParcel &arguments, Messag
 int32_t BufferQueueProducer::GetNameRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     std::string name;
-    auto sret = bufferQueue_->GetName(name);
-    if (!reply.WriteInt32(sret)) {
+    auto sRet = bufferQueue_->GetName(name);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK && !reply.WriteString(name)) {
+    if (sRet == GSERROR_OK && !reply.WriteString(name)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -501,8 +501,8 @@ int32_t BufferQueueProducer::SetDefaultUsageRemote(MessageParcel &arguments, Mes
                                                    MessageOption &option)
 {
     uint64_t usage = arguments.ReadUint64();
-    GSError sret = SetDefaultUsage(usage);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetDefaultUsage(usage);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -553,8 +553,8 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    GSError sret = RegisterReleaseListener(listener);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = RegisterReleaseListener(listener);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -563,8 +563,8 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
 int32_t BufferQueueProducer::UnRegisterReleaseListenerRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    GSError sret = UnRegisterReleaseListener();
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = UnRegisterReleaseListener();
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -573,8 +573,8 @@ int32_t BufferQueueProducer::UnRegisterReleaseListenerRemote(MessageParcel &argu
 int32_t BufferQueueProducer::SetTransformRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     GraphicTransformType transform = static_cast<GraphicTransformType>(arguments.ReadUint32());
-    GSError sret = SetTransform(transform);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetTransform(transform);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -587,11 +587,11 @@ int32_t BufferQueueProducer::IsSupportedAllocRemote(MessageParcel &arguments, Me
     ReadVerifyAllocInfo(arguments, infos);
 
     std::vector<bool> supporteds;
-    GSError sret = IsSupportedAlloc(infos, supporteds);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = IsSupportedAlloc(infos, supporteds);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK && !reply.WriteBoolVector(supporteds)) {
+    if (sRet == GSERROR_OK && !reply.WriteBoolVector(supporteds)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
@@ -600,8 +600,8 @@ int32_t BufferQueueProducer::IsSupportedAllocRemote(MessageParcel &arguments, Me
 
 int32_t BufferQueueProducer::ConnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    GSError sret = Connect();
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = Connect();
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -609,8 +609,8 @@ int32_t BufferQueueProducer::ConnectRemote(MessageParcel &arguments, MessageParc
 
 int32_t BufferQueueProducer::DisconnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    GSError sret = Disconnect();
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = Disconnect();
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -620,8 +620,8 @@ int32_t BufferQueueProducer::SetScalingModeRemote(MessageParcel &arguments, Mess
 {
     uint32_t sequence = arguments.ReadUint32();
     ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
-    GSError sret = SetScalingMode(sequence, scalingMode);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetScalingMode(sequence, scalingMode);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -631,8 +631,8 @@ int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, Me
                                                     MessageOption &option)
 {
     ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
-    GSError sret = SetScalingMode(scalingMode);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetScalingMode(scalingMode);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -641,8 +641,8 @@ int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, Me
 int32_t BufferQueueProducer::SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     bool hold = arguments.ReadBool();
-    GSError sret = SetBufferHold(hold);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetBufferHold(hold);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -655,8 +655,8 @@ int32_t BufferQueueProducer::SetMetaDataRemote(MessageParcel &arguments, Message
     if (ReadHDRMetaData(arguments, metaData) != GSERROR_OK) {
         return GSERROR_BINDER;
     }
-    GSError sret = SetMetaData(sequence, metaData);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetMetaData(sequence, metaData);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -670,8 +670,8 @@ int32_t BufferQueueProducer::SetMetaDataSetRemote(MessageParcel &arguments, Mess
     if (ReadHDRMetaDataSet(arguments, metaData) != GSERROR_OK) {
         return GSERROR_BINDER;
     }
-    GSError sret = SetMetaDataSet(sequence, key, metaData);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetMetaDataSet(sequence, key, metaData);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -687,8 +687,8 @@ int32_t BufferQueueProducer::SetTunnelHandleRemote(MessageParcel &arguments, Mes
             return GSERROR_BINDER;
         }
     }
-    GSError sret = SetTunnelHandle(handle);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetTunnelHandle(handle);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -700,11 +700,11 @@ int32_t BufferQueueProducer::GetPresentTimestampRemote(MessageParcel &arguments,
     uint32_t sequence = arguments.ReadUint32();
     GraphicPresentTimestampType type = static_cast<GraphicPresentTimestampType>(arguments.ReadUint32());
     int64_t time = 0;
-    GSError sret = GetPresentTimestamp(sequence, type, time);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = GetPresentTimestamp(sequence, type, time);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK && !reply.WriteInt64(time)) {
+    if (sRet == GSERROR_OK && !reply.WriteInt64(time)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -733,8 +733,8 @@ int32_t BufferQueueProducer::SetTransformHintRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     GraphicTransformType transformHint = static_cast<GraphicTransformType>(arguments.ReadUint32());
-    GSError sret = SetTransformHint(transformHint);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetTransformHint(transformHint);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -763,8 +763,8 @@ int32_t BufferQueueProducer::SetSurfaceSourceTypeRemote(MessageParcel &arguments
     MessageParcel &reply, MessageOption &option)
 {
     OHSurfaceSource sourceType = static_cast<OHSurfaceSource>(arguments.ReadUint32());
-    GSError sret = SetSurfaceSourceType(sourceType);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetSurfaceSourceType(sourceType);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -793,8 +793,8 @@ int32_t BufferQueueProducer::SetSurfaceAppFrameworkTypeRemote(
     MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     std::string appFrameworkType = arguments.ReadString();
-    GSError sret = SetSurfaceAppFrameworkType(appFrameworkType);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetSurfaceAppFrameworkType(appFrameworkType);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -823,8 +823,8 @@ int32_t BufferQueueProducer::SetHdrWhitePointBrightnessRemote(
     MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     float brightness = arguments.ReadFloat();
-    GSError sret = SetHdrWhitePointBrightness(brightness);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetHdrWhitePointBrightness(brightness);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -834,8 +834,8 @@ int32_t BufferQueueProducer::SetSdrWhitePointBrightnessRemote(
     MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     float brightness = arguments.ReadFloat();
-    GSError sret = SetSdrWhitePointBrightness(brightness);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetSdrWhitePointBrightness(brightness);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -848,11 +848,11 @@ int32_t BufferQueueProducer::AcquireLastFlushedBufferRemote(
     sptr<SyncFence> fence;
     float matrix[BUFFER_MATRIX_SIZE];
     bool isUseNewMatrix = arguments.ReadBool();
-    GSError sret = AcquireLastFlushedBuffer(buffer, fence, matrix, BUFFER_MATRIX_SIZE, isUseNewMatrix);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = AcquireLastFlushedBuffer(buffer, fence, matrix, BUFFER_MATRIX_SIZE, isUseNewMatrix);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sret == GSERROR_OK) {
+    if (sRet == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
         if (WriteSurfaceBufferImpl(reply, sequence, buffer) != GSERROR_OK ||
             buffer->WriteBufferRequestConfig(reply) != GSERROR_OK) {
@@ -870,8 +870,8 @@ int32_t BufferQueueProducer::ReleaseLastFlushedBufferRemote(
     MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     uint32_t sequence = arguments.ReadUint32();
-    GSError sret = ReleaseLastFlushedBuffer(sequence);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = ReleaseLastFlushedBuffer(sequence);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -880,8 +880,8 @@ int32_t BufferQueueProducer::ReleaseLastFlushedBufferRemote(
 int32_t BufferQueueProducer::SetGlobalAlphaRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     int32_t alpha = arguments.ReadInt32();
-    GSError sret = SetGlobalAlpha(alpha);
-    if (!reply.WriteInt32(sret)) {
+    GSError sRet = SetGlobalAlpha(alpha);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;

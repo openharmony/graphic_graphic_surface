@@ -57,10 +57,6 @@ public:
 
     virtual uint32_t GetSeqNum() const = 0;
 
-    // opt EglData
-    virtual sptr<EglData> GetEglData() const = 0;
-    virtual void SetEglData(const sptr<EglData>& data) = 0;
-
     virtual void SetExtraData(sptr<BufferExtraData> bedata) = 0;
     virtual sptr<BufferExtraData> GetExtraData() const = 0;
     virtual GSError WriteToMessageParcel(MessageParcel &parcel) = 0;

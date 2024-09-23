@@ -111,7 +111,7 @@ private:
     GSError OnBufferReleasedWithFenceRemote(MessageParcel& arguments)
     {
         sptr<SurfaceBuffer> buffer;
-        sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+        sptr<SyncFence> fence = SyncFence::InvalidFence();
         uint32_t sequence = 0;
         GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
         if (ret != GSERROR_OK) {

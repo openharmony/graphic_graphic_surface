@@ -260,7 +260,7 @@ static void SetReturnValue(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& b
 {
     retval.sequence = buffer->GetSeqNum();
     bedata = buffer->GetExtraData();
-    retval.fence = SyncFence::INVALID_FENCE;
+    retval.fence = SyncFence::InvalidFence();
 }
 
 void BufferQueue::SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer)
@@ -568,7 +568,7 @@ GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fen
     if (ret != GSERROR_OK) {
         BLOGE("Consumer surface delegator failed to queuebuffer");
     }
-    ret = ReleaseBuffer(buffer, SyncFence::INVALID_FENCE);
+    ret = ReleaseBuffer(buffer, SyncFence::InvalidFence());
     if (ret != GSERROR_OK) {
         BLOGE("Consumer surface delegator failed to releasebuffer");
     }
@@ -1002,7 +1002,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
         .state = BUFFER_STATE_REQUESTED,
         .isDeleting = false,
         .config = config,
-        .fence = SyncFence::INVALID_FENCE,
+        .fence = SyncFence::InvalidFence(),
         .scalingMode = scalingMode_,
     };
 
@@ -1136,7 +1136,7 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
             .buffer = buffer,
             .isDeleting = false,
             .config = buffer->GetBufferRequestConfig(),
-            .fence = SyncFence::INVALID_FENCE,
+            .fence = SyncFence::InvalidFence(),
             .scalingMode = scalingMode_,
         };
         if (invokerType == InvokerType::PRODUCER_INVOKER) {

@@ -325,7 +325,7 @@ GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
 GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     int32_t& fence, BufferRequestConfig& config)
 {
-    sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
+    sptr<SyncFence> syncFence = SyncFence::InvalidFence();
     auto ret = RequestBuffer(buffer, syncFence, config);
     if (ret != GSERROR_OK) {
         fence = -1;

@@ -105,12 +105,14 @@ namespace OHOS {
         cSurface->GetSurfaceSourceType();
         GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(
             malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t)));
-        handle->fd = -1;
-        handle->reserveInts = 1;
-        handle->reserve[0] = GetData<int32_t>();
-        cSurface->SetTunnelHandle(handle);
-        free(handle);
-        handle = nullptr;
+        if (handle != nullptr) {
+            handle->fd = -1;
+            handle->reserveInts = 1;
+            handle->reserve[0] = GetData<int32_t>();
+            cSurface->SetTunnelHandle(handle);
+            free(handle);
+            handle = nullptr;
+        }
         cSurface->GetSurfaceAppFrameworkType();
     }
 

@@ -166,6 +166,12 @@ void FrameReport::LoadLibrary()
         LOGI("FrameReport::LoadLibrary dlopen libgame_acc_sched_client.z.so success!");
         notifyFrameInfoFunc_ = (NotifyFrameInfoFunc)LoadSymbol(GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO);
         if (notifyFrameInfoFunc_ == nullptr) {
+            if (dlclose(gameSoHandle_) != 0) {
+                LOGE("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close failed!");
+            } else {
+                gameSoHandle_ = nullptr;
+                LOGI("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close success!");
+            }
             return;
         }
         LOGI("FrameReport::LoadLibrary dlsym GAS_NotifyFrameInfo success!");

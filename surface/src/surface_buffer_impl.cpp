@@ -65,8 +65,9 @@ public:
         BLOGD("IDisplayBuffer died and g_displayBuffer is nullptr");
     };
 };
-IDisplayBufferSptr GetDisplayBufferLocked()
+IDisplayBufferSptr GetDisplayBuffer()
 {
+    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     if (g_displayBuffer != nullptr) {
         return g_displayBuffer;
     }
@@ -119,10 +120,7 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("~SurfaceBufferImpl dtor ~[%{public}u]", sequenceNumber_);
-    {
-        std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-        FreeBufferHandleLocked();
-    }
+    FreeBufferHandleLocked();
 }
 
 bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value)
@@ -136,8 +134,8 @@ bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vect
 
 GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
 
@@ -157,7 +155,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
     if (debugHebcDisabled) {
         info.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
     }
-    auto dret = g_displayBuffer->AllocMem(info, handle_);
+    auto dret = displayBuffer->AllocMem(info, handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(config.colorGamut);
         transform_ = static_cast<GraphicTransformType>(config.transform);
@@ -173,8 +171,8 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig &config)
 }
 GSError SurfaceBufferImpl::Map()
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
 
@@ -190,7 +188,7 @@ GSError SurfaceBufferImpl::Map()
         return GSERROR_OK;
     }
 
-    void *virAddr = g_displayBuffer->Mmap(*handle_);
+    void *virAddr = displayBuffer->Mmap(*handle_);
     if (virAddr == nullptr || virAddr == MAP_FAILED) {
         return GSERROR_API_FAILED;
     }
@@ -198,8 +196,8 @@ GSError SurfaceBufferImpl::Map()
 }
 GSError SurfaceBufferImpl::Unmap()
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -209,7 +207,7 @@ GSError SurfaceBufferImpl::Unmap()
         BLOGW("handle has been unmaped");
         return GSERROR_OK;
     }
-    auto dret = g_displayBuffer->Unmap(*handle_);
+    auto dret = displayBuffer->Unmap(*handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         handle_->virAddr = nullptr;
         return GSERROR_OK;
@@ -219,15 +217,15 @@ GSError SurfaceBufferImpl::Unmap()
 }
 GSError SurfaceBufferImpl::FlushCache()
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
+        return GSERROR_INTERNAL;
     }
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == nullptr) {
         return GSERROR_INVALID_OPERATING;
     }
-    auto dret = g_displayBuffer->FlushCache(*handle_);
+    auto dret = displayBuffer->FlushCache(*handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
@@ -237,8 +235,8 @@ GSError SurfaceBufferImpl::FlushCache()
 
 GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -247,7 +245,8 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
     } else if (planesInfo_.planeCount != 0) {
         return GSERROR_OK;
     }
-    auto dret = g_displayBuffer->GetImageLayout(*handle_,
+
+    auto dret = displayBuffer->GetImageLayout(*handle_,
         *(static_cast<OHOS::HDI::Display::Buffer::V1_2::ImageLayout*>(layout)));
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
@@ -258,8 +257,8 @@ GSError SurfaceBufferImpl::GetImageLayout(void *layout)
 
 GSError SurfaceBufferImpl::InvalidateCache()
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -267,7 +266,7 @@ GSError SurfaceBufferImpl::InvalidateCache()
         return GSERROR_INVALID_OPERATING;
     }
 
-    auto dret = g_displayBuffer->InvalidateCache(*handle_);
+    auto dret = displayBuffer->InvalidateCache(*handle_);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
@@ -278,8 +277,20 @@ GSError SurfaceBufferImpl::InvalidateCache()
 void SurfaceBufferImpl::FreeBufferHandleLocked()
 {
     if (handle_) {
-        if (handle_->virAddr != nullptr && g_displayBuffer != nullptr) {
-            g_displayBuffer->Unmap(*handle_);
+        IDisplayBufferSptr displayBuffer = nullptr;
+        {
+            std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
+            if (g_displayBuffer != nullptr) {
+                displayBuffer = g_displayBuffer;
+            }
+        }
+        if (displayBuffer == nullptr) {
+            FreeBufferHandle(handle_);
+            handle_ = nullptr;
+            return;
+        }
+        if (handle_->virAddr != nullptr) {
+            displayBuffer->Unmap(*handle_);
             handle_->virAddr = nullptr;
         }
         FreeBufferHandle(handle_);
@@ -476,7 +487,6 @@ void SurfaceBufferImpl::SetBufferHandle(BufferHandle *handle)
     if (handle == nullptr) {
         return;
     }
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
     std::lock_guard<std::mutex> lock(mutex_);
     if (handle_ == handle) {
         return;
@@ -588,8 +598,8 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
 
@@ -602,7 +612,7 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
         return GSERROR_OK;
     }
 
-    auto dret = g_displayBuffer->SetMetadata(*handle_, key, value);
+    auto dret = displayBuffer->SetMetadata(*handle_, key, value);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         // cache metaData
         metaDataCache_[key] = value;
@@ -616,8 +626,8 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
 
@@ -625,7 +635,7 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (handle_ == nullptr) {
         return GSERROR_NOT_INIT;
     }
-    auto dret = g_displayBuffer->GetMetadata(*handle_, key, value);
+    auto dret = displayBuffer->GetMetadata(*handle_, key, value);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
@@ -634,8 +644,8 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
 
 GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
 {
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
 
@@ -644,7 +654,7 @@ GSError SurfaceBufferImpl::ListMetadataKeys(std::vector<uint32_t>& keys)
     if (handle_ == nullptr) {
         return GSERROR_NOT_INIT;
     }
-    auto dret = g_displayBuffer->ListMetadataKeys(*handle_, keys);
+    auto dret = displayBuffer->ListMetadataKeys(*handle_, keys);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
@@ -656,8 +666,8 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
-    if (GetDisplayBufferLocked() == nullptr) {
+    IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
+    if (displayBuffer == nullptr) {
         return GSERROR_INTERNAL;
     }
 
@@ -665,7 +675,7 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     if (handle_ == nullptr) {
         return GSERROR_NOT_INIT;
     }
-    auto dret = g_displayBuffer->EraseMetadataKey(*handle_, key);
+    auto dret = displayBuffer->EraseMetadataKey(*handle_, key);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         metaDataCache_.erase(key);
         return GSERROR_OK;

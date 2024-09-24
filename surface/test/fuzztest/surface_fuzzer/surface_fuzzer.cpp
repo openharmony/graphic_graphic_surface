@@ -103,8 +103,16 @@ namespace OHOS {
         cSurface->GetUserData(key);
         cSurface->GetQueueSize();
         cSurface->GetSurfaceSourceType();
-        GraphicExtDataHandle handle = GetData<GraphicExtDataHandle>();
-        cSurface->SetTunnelHandle(&handle);
+        GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(
+            malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t)));
+        if (handle != nullptr) {
+            handle->fd = -1;
+            handle->reserveInts = 1;
+            handle->reserve[0] = GetData<int32_t>();
+            cSurface->SetTunnelHandle(handle);
+            free(handle);
+            handle = nullptr;
+        }
         cSurface->GetSurfaceAppFrameworkType();
     }
 
@@ -114,7 +122,10 @@ namespace OHOS {
         std::vector<sptr<SyncFence>> fences;
         BufferRequestConfig config = GetData<BufferRequestConfig>();
         pSurface->RequestBuffers(buffers, fences, config);
-        BufferFlushConfigWithDamages flushConfig = GetData<BufferFlushConfigWithDamages>();
+        BufferFlushConfigWithDamages flushConfig;
+        std::vector<Rect> rects{GetData<Rect>()};
+        flushConfig.damages = rects;
+        flushConfig.timestamp = GetData<int64_t>();
         std::vector<BufferFlushConfigWithDamages> flushConfigs;
         for (size_t i = 0; i < buffers.size(); i++) {
             flushConfigs.emplace_back(flushConfig);

@@ -160,7 +160,6 @@ namespace OHOS {
         int64_t timestamp = GetData<int64_t>();
         BufferFlushConfigWithDamages flushConfig = {.damages =  { rect }, .timestamp = timestamp};
         uint32_t sequence = GetData<uint32_t>();
-        std::vector<Rect> damages;
 
         // test
         std::string name = GetStringFromData(STR_LEN);
@@ -180,7 +179,6 @@ namespace OHOS {
         sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
         bqp->FlushBuffer(sequence, bedata, syncFence, flushConfig);
         std::vector<uint32_t> sequences;
-        std::vector<BufferFlushConfigWithDamages> configs;
         std::vector<sptr<BufferExtraData>> bedataimpls;
         std::vector<sptr<SyncFence>> fences;
         std::vector<BufferFlushConfigWithDamages> flushConfigs;

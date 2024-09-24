@@ -31,7 +31,7 @@ config("buffer_handle_public_config") {
   include_dirs = [ "$graphic_surface_root/interfaces/inner_api/utils" ]
 }
 
-ohos_static_library("buffer_handle") {
+ohos_shared_library("buffer_handle") {
   sanitize = {
     boundary_sanitize = true
     integer_overflow = true
@@ -49,6 +49,10 @@ ohos_static_library("buffer_handle") {
     "ipc:ipc_single",
   ]
 
+  innerapi_tags = [
+    "chipsetsdk",
+    "platformsdk",
+  ]
   subsystem_name = "graphic"
   part_name = "graphic_surface"
 }

@@ -79,7 +79,7 @@
               "header_files": [
                 "sync_fence.h"
               ],
-              "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
+              "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/sync_fence"
             }
           },
           {
@@ -100,7 +100,7 @@
                 "buffer_handle_parcel.h",
                 "buffer_handle_utils.h"
               ],
-              "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/utils"
+              "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/buffer_handle"
             }
           }
         ],

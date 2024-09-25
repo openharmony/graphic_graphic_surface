@@ -150,10 +150,12 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
     int64_t startTimeNs = 0;
     int64_t endTimeNs = 0;
     bool isActiveGame = false;
+    int32_t connectedPid = 0;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid_);
+        connectedPid = connectedPid_;
     }
+    isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
     if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
@@ -270,10 +272,12 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
     int64_t startTimeNs = 0;
     int64_t endTimeNs = 0;
     bool isActiveGame = false;
+    int32_t connectedPid = 0;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid_);
+        connectedPid = connectedPid_;
     }
+    isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
     if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();

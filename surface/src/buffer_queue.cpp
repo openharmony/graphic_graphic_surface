@@ -198,9 +198,6 @@ GSError BufferQueue::CheckRequestConfig(const BufferRequestConfig &config)
 
 GSError BufferQueue::CheckFlushConfig(const BufferFlushConfigWithDamages &config)
 {
-    if (config.desiredPresentTimestamp < 0) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
     for (decltype(config.damages.size()) i = 0; i < config.damages.size(); i++) {
         if (config.damages[i].w < 0 || config.damages[i].h < 0) {
             BLOGW("damages[%{public}zu].w is %{public}d, .h is %{public}d, uniqueId: %{public}" PRIu64 ".",
@@ -846,7 +843,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER_READY;
         }
-        while (frontSequence != dirtyList_.end() && !(frontIsAutoTimestamp && !isUsingAutoTimestamp)
+        while (!(frontIsAutoTimestamp && !isUsingAutoTimestamp)
             && frontDesiredPresentTimestamp <= expectPresentTimestamp) {
             BufferElement& frontBufferElement = bufferQueueCache_[*frontSequence];
             if (++frontSequence == dirtyList_.end()) {

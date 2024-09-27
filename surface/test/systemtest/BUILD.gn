@@ -23,6 +23,7 @@ group("unittest") {
     ":native_window_buffer_test_st",
     ":native_window_test_st",
     ":surface_ipc_test_st",
+    ":surface_ipc_with_invaild_pts_test_st",
     ":surface_ipc_with_pts_test_st",
   ]
 }
@@ -127,7 +128,40 @@ ohos_unittest("surface_ipc_test_st") {
 ohos_unittest("surface_ipc_with_pts_test_st") {
   module_out_path = module_out_path
 
-  sources = [ "surface_ipc_with_pts_test.cpp" ]
+  sources = [ "surface_ipc_with_invaild_pts_test.cpp" ]
+
+  include_dirs = [ "$graphic_surface_root/surface/include" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-g3",
+  ]
+
+  deps = [
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/sync_fence:sync_fence",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+  ]
+}
+
+## SystemTest surface_ipc_with_pts_test_st }}}
+
+## SystemTest surface_ipc_with_pts_test_st {{{
+ohos_unittest("surface_ipc_with_invaild_pts_test_st") {
+  module_out_path = module_out_path
+
+  sources = [ "surface_ipc_with_invaild_pts_test.cpp" ]
 
   include_dirs = [ "$graphic_surface_root/surface/include" ]
 

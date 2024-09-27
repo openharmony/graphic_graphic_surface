@@ -761,8 +761,9 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                            uint64_t uiTimestamp)
 {
-    if (desiredPresentTimestamp == 0) {
-        if (uiTimestamp != 0 && uiTimestamp <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+    if (desiredPresentTimestamp <= 0) {
+        if (desiredPresentTimestamp == 0 && uiTimestamp != 0
+            && uiTimestamp <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
             bufferQueueCache_[sequence].desiredPresentTimestamp = static_cast<int64_t>(uiTimestamp);
         } else {
             bufferQueueCache_[sequence].desiredPresentTimestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(

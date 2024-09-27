@@ -1550,7 +1550,9 @@ HWTEST_F(NativeWindowTest, Unreference001, Function | MediumTest | Level2)
  */
 HWTEST_F(NativeWindowTest, DestroyNativeWindow001, Function | MediumTest | Level2)
 {
-    OH_NativeWindow_DestroyNativeWindow(nullptr);
+    OHNativeWindow* window = nullptr;
+    ASSERT_EQ(window, nullptr);
+    OH_NativeWindow_DestroyNativeWindow(window);
 }
 
 /*
@@ -1563,7 +1565,9 @@ HWTEST_F(NativeWindowTest, DestroyNativeWindow001, Function | MediumTest | Level
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer001, Function | MediumTest | Level2)
 {
-    OH_NativeWindow_DestroyNativeWindowBuffer(nullptr);
+    OHNativeWindowBuffer* buffer = nullptr;
+    ASSERT_EQ(buffer, nullptr);
+    OH_NativeWindow_DestroyNativeWindowBuffer(buffer);
 }
 
 /*
@@ -1576,6 +1580,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer001, Functio
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, Function | MediumTest | Level2)
 {
+    ASSERT_NE(nativeWindowBuffer, nullptr);
     OH_NativeWindow_DestroyNativeWindowBuffer(nativeWindowBuffer);
 }
 

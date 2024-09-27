@@ -229,6 +229,9 @@ HWTEST_F(FrameReportTest, ReportCommitTime001, Function | MediumTest | Level2)
 HWTEST_F(FrameReportTest, CloseLibrary001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().CloseLibrary();
+    EXPECT_EQ(Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_, nullptr);
+    EXPECT_EQ(Rosen::FrameReport::GetInstance().gameSoHandle_, nullptr);
+    EXPECT_EQ(Rosen::FrameReport::GetInstance().isGameSoLoaded_, false);
 }
 
 /*

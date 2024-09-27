@@ -191,24 +191,24 @@ HWTEST_F(BufferUtilsTest, SizeLimitTest001, Function | MediumTest | Level2)
     BufferFlushConfigWithDamages flushConfig = {
         .damages = std::vector<Rect>(size),
     };
-    WriteFlushConfig(parcel, flushConfig);
-    parcel.WriteUint32(size);
-    ReadFlushConfig(parcel, flushConfig);
+    EXPECT_EQ(WriteFlushConfig(parcel, flushConfig), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_TRUE(parcel.WriteUint32(size));
+    EXPECT_EQ(ReadFlushConfig(parcel, flushConfig), GSERROR_BINDER);
 
     auto infos = std::vector<BufferVerifyAllocInfo>(size);
-    WriteVerifyAllocInfo(parcel, infos);
-    parcel.WriteUint32(size);
+    EXPECT_EQ(WriteVerifyAllocInfo(parcel, infos), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_TRUE(parcel.WriteUint32(size));
     ReadVerifyAllocInfo(parcel, infos);
 
     auto metaData = std::vector<GraphicHDRMetaData>(size);
-    WriteHDRMetaData(parcel, metaData);
-    parcel.WriteUint32(size);
-    ReadHDRMetaData(parcel, metaData);
+    EXPECT_EQ(WriteHDRMetaData(parcel, metaData), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_TRUE(parcel.WriteUint32(size));
+    EXPECT_EQ(ReadHDRMetaData(parcel, metaData), GSERROR_BINDER);
 
     auto metaDataSet = std::vector<uint8_t>(size);
-    WriteHDRMetaDataSet(parcel, metaDataSet);
-    parcel.WriteUint32(size);
-    ReadHDRMetaDataSet(parcel, metaDataSet);
+    EXPECT_EQ(WriteHDRMetaDataSet(parcel, metaDataSet), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_TRUE(parcel.WriteUint32(size));
+    EXPECT_EQ(ReadHDRMetaDataSet(parcel, metaDataSet), GSERROR_BINDER);
 
     GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(
         malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t)));
@@ -216,8 +216,8 @@ HWTEST_F(BufferUtilsTest, SizeLimitTest001, Function | MediumTest | Level2)
     handle->reserveInts = size;
     handle->reserve[0] = 0;
     sptr<SurfaceTunnelHandle> tunnelHandle = new SurfaceTunnelHandle();
-    WriteExtDataHandle(parcel, handle);
-    parcel.WriteUint32(size);
-    ReadExtDataHandle(parcel, tunnelHandle);
+    EXPECT_EQ(WriteExtDataHandle(parcel, handle), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_TRUE(parcel.WriteUint32(size));
+    EXPECT_EQ(ReadExtDataHandle(parcel, tunnelHandle), GSERROR_BINDER);
 }
 }

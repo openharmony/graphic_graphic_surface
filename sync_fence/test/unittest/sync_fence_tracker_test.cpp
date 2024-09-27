@@ -92,13 +92,19 @@ HWTEST_F(SyncFenceTrackerTest, CheckGpuSubhealthEventLimit001, Function | Medium
 HWTEST_F(SyncFenceTrackerTest, GetFrameRate001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("GetFrameRate001");
-    tracker->GetFrameRate();
+    int32_t frameRate = tracker->GetFrameRate();
+    EXPECT_EQ(frameRate, 0);
+
     for (int32_t i = 0; i < 2; i++) {
         tracker->frameStartTimes_->push(1);
     }
-    tracker->GetFrameRate();
+    frameRate = tracker->GetFrameRate();
+    EXPECT_EQ(frameRate, 0);
+
     tracker->frameStartTimes_->push(2);
-    tracker->GetFrameRate();
+    frameRate = tracker->GetFrameRate();
+    EXPECT_EQ(frameRate, 2000);
+
     delete tracker;
 }
 
@@ -130,18 +136,27 @@ HWTEST_F(SyncFenceTrackerTest, WaitFence001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("WaitFence001");
     sptr<SyncFence> fence = new SyncFence(0);
+
     tracker->isGpuFence_ = true;
     tracker->isGpuEnable_ = true;
-    tracker->WaitFence(fence);
+    int32_t retCode = tracker->WaitFence(fence);
+    EXPECT_EQ(retCode, -22); // 22 is EINVAL
+
     tracker->isGpuFence_ = true;
     tracker->isGpuEnable_ = false;
     tracker->WaitFence(fence);
+    EXPECT_EQ(retCode, -22);
+
     tracker->isGpuFence_ = false;
     tracker->isGpuEnable_ = true;
     tracker->WaitFence(fence);
+    EXPECT_EQ(retCode, -22);
+
     tracker->isGpuFence_ = false;
     tracker->isGpuEnable_ = false;
     tracker->WaitFence(fence);
+    EXPECT_EQ(retCode, -22);
+
     delete tracker;
 }
 
@@ -157,6 +172,7 @@ HWTEST_F(SyncFenceTrackerTest, SetBlurSize001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("SetBlurSize001");
     tracker->handler_ = nullptr;
+    ASSERT_EQ(tracker->handler_, nullptr);
     tracker->SetBlurSize(0);
     delete tracker;
 }

@@ -47,6 +47,7 @@ void FrameSchedTest::TearDownTestCase()
 HWTEST_F(FrameSchedTest, SetFrameParam001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
+    EXPECT_EQ(frameSched_.setFrameParamFunc_, nullptr);
     frameSched_.SetFrameParam(0, 0, 0, 0);
 }
 
@@ -61,6 +62,7 @@ HWTEST_F(FrameSchedTest, SetFrameParam001, Function | MediumTest | Level2)
 HWTEST_F(FrameSchedTest, MonitorGpuStart001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
+    EXPECT_EQ(frameSched_.monitorGpuStartFunc_, nullptr);
     frameSched_.MonitorGpuStart();
 }
 
@@ -75,6 +77,7 @@ HWTEST_F(FrameSchedTest, MonitorGpuStart001, Function | MediumTest | Level2)
 HWTEST_F(FrameSchedTest, MonitorGpuEnd001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
+    EXPECT_EQ(frameSched_.monitorGpuEndFunc_, nullptr);
     frameSched_.MonitorGpuEnd();
 }
 
@@ -111,9 +114,13 @@ HWTEST_F(FrameSchedTest, LoadLibrary001, Function | MediumTest | Level2)
 {
     auto frameSched = new Rosen::FrameSched();
     frameSched->schedSoLoaded_ = false;
-    frameSched->LoadLibrary();
+    bool res = frameSched->LoadLibrary();
+    EXPECT_TRUE(res);
+
     frameSched->schedSoLoaded_ = true;
-    frameSched->LoadLibrary();
+    res = frameSched->LoadLibrary();
+    EXPECT_TRUE(res);
+
     delete frameSched;
 }
 
@@ -129,7 +136,9 @@ HWTEST_F(FrameSchedTest, CloseLibrary001, Function | MediumTest | Level2)
 {
     auto frameSched = new Rosen::FrameSched();
     frameSched->schedHandle_ = nullptr;
+    frameSched->schedSoLoaded_ = true;
     frameSched->CloseLibrary();
+    EXPECT_FALSE(frameSched->schedSoLoaded_);
     delete frameSched;
 }
 
@@ -145,7 +154,8 @@ HWTEST_F(FrameSchedTest, LoadSymbol001, Function | MediumTest | Level2)
 {
     auto frameSched = new Rosen::FrameSched();
     frameSched->schedSoLoaded_ = false;
-    frameSched->LoadSymbol("LoadSymbol001");
+    auto res = frameSched->LoadSymbol("LoadSymbol001");
+    EXPECT_EQ(res, nullptr);
     delete frameSched;
 }
 

@@ -77,7 +77,11 @@ HWTEST_F(AcquireFenceTrackerTest, blurSize001, Function | MediumTest | Level2)
 HWTEST_F(AcquireFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest | Level2)
 {
     int containerNodeNum = 1000;
+    EXPECT_NE(AcquireFenceTracker::tracker_, nullptr);
+    AcquireFenceTracker::tracker_->processedNodeNum_ = 0;
+    AcquireFenceTracker::tracker_->isGpuEnable_ = true;
     AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
+    EXPECT_EQ(AcquireFenceTracker::tracker_->processedNodeNum_, containerNodeNum);
 }
 
 /*

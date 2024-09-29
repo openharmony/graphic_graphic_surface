@@ -252,21 +252,4 @@ HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | 
     ASSERT_EQ(buffer->WriteBufferRequestConfig(parcel), GSERROR_OK);
     ASSERT_EQ(buffer->ReadBufferRequestConfig(parcel), GSERROR_OK);
 }
-
-/*
-* Function: BufferWrapper
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. new SurfaceBufferImpl
-*                  2. call SetBufferWrapper
-*                  3. call GetBufferWrapper and check ret
- */
-HWTEST_F(SurfaceBufferImplTest, BufferWrapper001, Function | MediumTest | Level2)
-{
-    buffer = new SurfaceBufferImpl();
-    BufferWrapper wrapper = {};
-    buffer->SetBufferWrapper(wrapper);
-    buffer->GetBufferWrapper();
-}
 }

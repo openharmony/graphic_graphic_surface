@@ -53,7 +53,7 @@ HWTEST_F(RsFrameReportExtTest, Init001, Function | MediumTest | Level2)
  */
 HWTEST_F(RsFrameReportExtTest, GetEnable001, Function | MediumTest | Level2)
 {
-    RsFrameReportExt::GetInstance().GetEnable();
+    EXPECT_EQ(RsFrameReportExt::GetInstance().GetEnable(), 1);
 }
 
 /**
@@ -64,6 +64,7 @@ HWTEST_F(RsFrameReportExtTest, GetEnable001, Function | MediumTest | Level2)
  */
 HWTEST_F(RsFrameReportExtTest, HandleSwapBuffer001, Function | MediumTest | Level2)
 {
+    EXPECT_EQ(RsFrameReportExt::GetInstance().handleSwapBufferFunc_, nullptr);
     RsFrameReportExt::GetInstance().HandleSwapBuffer();
 }
 } // namespace OHOS

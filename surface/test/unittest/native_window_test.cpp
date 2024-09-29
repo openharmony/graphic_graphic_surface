@@ -178,8 +178,8 @@ HWTEST_F(NativeWindowTest, CreateNativeWindow003, Function | MediumTest | Level2
  */
 HWTEST_F(NativeWindowTest, CreateNativeWindow004, Function | MediumTest | Level2)
 {
-    void **surfaceTmp = nullptr;
-    nativeWindow = OH_NativeWindow_CreateNativeWindow(*pSurface);
+    sptr<OHOS::Surface> surfaceTmp = nullptr;
+    nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
     ASSERT_EQ(nativeWindow, nullptr);
 }
 

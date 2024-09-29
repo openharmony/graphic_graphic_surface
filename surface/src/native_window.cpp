@@ -91,6 +91,11 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     OHNativeWindow* nativeWindow = new OHNativeWindow();
     nativeWindow->surface =
                 *reinterpret_cast<OHOS::sptr<OHOS::Surface> *>(pSurface);
+    if (nativeWindow->surface == nullptr) {
+        BLOGE("window surface is null");
+        delete nativeWindow;
+        return nullptr;
+    }
     OHOS::BufferRequestConfig windowConfig;
     windowConfig.width = nativeWindow->surface->GetDefaultWidth();
     windowConfig.height = nativeWindow->surface->GetDefaultHeight();

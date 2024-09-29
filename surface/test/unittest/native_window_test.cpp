@@ -169,6 +169,21 @@ HWTEST_F(NativeWindowTest, CreateNativeWindow003, Function | MediumTest | Level2
 }
 
 /*
+* Function: OH_NativeWindow_CreateNativeWindow
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_CreateNativeWindow
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, CreateNativeWindow004, Function | MediumTest | Level2)
+{
+    void **surfaceTmp = nullptr;
+    nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
+    ASSERT_EQ(nativeWindow, nullptr);
+}
+
+/*
 * Function: OH_NativeWindow_CreateNativeWindowFromSurfaceId
 * Type: Function
 * Rank: Important(2)

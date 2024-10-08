@@ -318,7 +318,6 @@ void BufferQueue::RequestBufferDebugInfoLocked()
 {
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
     std::map<BufferState, int32_t> bufferState;
-    bufferState.clear();
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %d state: %u", id, ele.state);
         BLOGD("request no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
@@ -791,7 +790,6 @@ void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, in
 void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
 {
     std::map<BufferState, int32_t> bufferState;
-    bufferState.clear();
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
         BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",

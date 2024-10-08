@@ -317,12 +317,22 @@ bool BufferQueue::WaitForCondition()
 void BufferQueue::RequestBufferDebugInfoLocked()
 {
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
+    std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %d state: %u", id, ele.state);
         BLOGD("request no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
             id, ele.state, uniqueId_);
+        bufferState[ele.state] += 1;
     }
-    BLOGD("all buffer are using, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+    std::string str = std::to_string(uniqueId_) +
+        ", Released: " + std::to_string(bufferState[BUFFER_STATE_RELEASED]) +
+        " Requested: " + std::to_string(bufferState[BUFFER_STATE_REQUESTED]) +
+        " Flushed: " + std::to_string(bufferState[BUFFER_STATE_FLUSHED]) +
+        " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
+    if (str.compare(requestBufferStateStr_) != 0) {
+        requestBufferStateStr_ = str;
+        BLOGE("all buffer are using, uniqueId: %{public}s", str.c_str());
+    }
 }
 
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
@@ -779,12 +789,22 @@ void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, in
 
 void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
 {
+    std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
         BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
             id, ele.state, uniqueId_);
+        bufferState[ele.state] += 1;
     }
-    BLOGD("there is no dirty buffer, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+    std::string str = std::to_string(uniqueId_) +
+        ", Released: " + std::to_string(bufferState[BUFFER_STATE_RELEASED]) +
+        " Requested: " + std::to_string(bufferState[BUFFER_STATE_REQUESTED]) +
+        " Flushed: " + std::to_string(bufferState[BUFFER_STATE_FLUSHED]) +
+        " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
+    if (str.compare(acquireBufferStateStr_) != 0) {
+        acquireBufferStateStr_ = str;
+        BLOGE("there is no dirty buffer, uniqueId: %{public}s", str.c_str());
+    }
 }
 
 GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,

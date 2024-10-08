@@ -281,6 +281,8 @@ private:
     uint32_t acquireLastFlushedBufSequence_;
     int32_t globalAlpha_ = -1;
     std::mutex globalAlphaMutex_;
+    std::string requestBufferStateStr_;
+    std::string acquireBufferStateStr_;
 };
 }; // namespace OHOS
 

@@ -324,14 +324,14 @@ void BufferQueue::RequestBufferDebugInfoLocked()
             id, ele.state, uniqueId_);
         bufferState_[ele.state] += 1;
     }
-    std::string str = "all buffer are using, uniqueId: " + std::to_string(uniqueId_) +
+    std::string str = std::to_string(uniqueId_) +
         ", Released: " + std::to_string(bufferState_[BUFFER_STATE_RELEASED]) +
         " Requested: " + std::to_string(bufferState_[BUFFER_STATE_REQUESTED]) +
         " Flushed: " + std::to_string(bufferState_[BUFFER_STATE_FLUSHED]) +
         " Acquired: " + std::to_string(bufferState_[BUFFER_STATE_ACQUIRED]);
     if (str.compare(bufferStateStr_) != 0) {
         bufferStateStr_ = str;
-        BLOGE("%{public}s", str.c_str());
+        BLOGE("all buffer are using, uniqueId: %{public}s", str.c_str());
     }
 }
 

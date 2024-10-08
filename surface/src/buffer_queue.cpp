@@ -317,12 +317,22 @@ bool BufferQueue::WaitForCondition()
 void BufferQueue::RequestBufferDebugInfoLocked()
 {
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
+    bufferState_.clear();
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %d state: %u", id, ele.state);
         BLOGD("request no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
             id, ele.state, uniqueId_);
+        bufferState_[ele.state] += 1;
     }
-    BLOGD("all buffer are using, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+    std::string str = "all buffer are using, uniqueId: " + std::to_string(uniqueId_) +
+        ", Released: " + std::to_string(bufferState_[BUFFER_STATE_RELEASED]) +
+        " Requested: " + std::to_string(bufferState_[BUFFER_STATE_REQUESTED]) +
+        " Flushed: " + std::to_string(bufferState_[BUFFER_STATE_FLUSHED]) +
+        " Acquired: " + std::to_string(bufferState_[BUFFER_STATE_ACQUIRED]);
+    if (str.compare(bufferStateStr_) != 0) {
+        bufferStateStr_ = str;
+        BLOGE("%{public}s", str.c_str());
+    }
 }
 
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,

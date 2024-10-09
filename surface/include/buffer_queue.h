@@ -228,11 +228,7 @@ private:
     void RequestBufferDebugInfo();
     bool GetStatusLocked() const;
     void CallConsumerListener();
-<<<<<<< HEAD
-=======
-    void SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer);
     bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
->>>>>>> f4db4f1 (add surface PTS feature)
     void LogAndTraceAllBufferInBufferQueueCache();
     void SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                  uint64_t uiTimestamp);

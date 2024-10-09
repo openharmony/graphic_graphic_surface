@@ -143,8 +143,8 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
     }
     if (fence->SyncFileReadTimestamp() != SyncFence::FENCE_PENDING_TIMESTAMP) {
         RS_TRACE_NAME_FMT("%s %d has signaled", threadName_.c_str(), fencesQueued_.load());
-        fencesQueued_++;
-        fencesSignaled_++;
+        fencesQueued_.fetch_add(1);
+        fencesSignaled_.fetch_add(1);
         return;
     }
 
@@ -157,7 +157,7 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
             }
             Loop(fence, traceTag);
         });
-        fencesQueued_++;
+        fencesQueued_.fetch_add(1);
     }
 }
 
@@ -248,7 +248,7 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
             HILOG_DEBUG(LOG_CORE, "Error waiting for SyncFence: %s", strerror(result));
         }
     }
-    fencesSignaled_++;
+    fencesSignaled_.fetch_add(1);
 }
 
 int32_t SyncFenceTracker::WaitFence(const sptr<SyncFence>& fence)

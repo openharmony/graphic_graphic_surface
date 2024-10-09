@@ -60,7 +60,7 @@ static uint64_t GetUniqueIdImpl()
 {
     static std::atomic<uint32_t> counter { 0 };
     static uint64_t id = static_cast<uint64_t>(GetRealPid()) << UNIQUE_ID_OFFSET;
-    return id | counter++;
+    return id | counter.fetch_add(1, std::memory_order_relaxed);;
 }
 
 static bool IsLocalRender()

@@ -165,7 +165,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHOS::sptr<OHOS::SurfaceBuffer> sfbuffer;
-    OHOS::sptr<OHOS::SyncFence> releaseFence = OHOS::SyncFence::INVALID_FENCE;
+    OHOS::sptr<OHOS::SyncFence> releaseFence = OHOS::SyncFence::InvalidFence();
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
     int32_t ret;
     int32_t requestWidth = window->surface->GetRequestWidth();
@@ -263,7 +263,7 @@ int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buff
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
-    OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::INVALID_FENCE;
+    OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::InvalidFence();
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, false);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
         BLOGE("GetLastFlushedBuffer fail");
@@ -746,7 +746,7 @@ int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **bu
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
-    OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::INVALID_FENCE;
+    OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::InvalidFence();
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, true);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
         BLOGE("GetLastFlushedBufferV2 fail");

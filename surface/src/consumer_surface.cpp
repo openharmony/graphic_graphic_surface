@@ -176,7 +176,7 @@ GSError ConsumerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t& fence,
                                        int64_t& timestamp, Rect& damage)
 {
-    sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
+    sptr<SyncFence> syncFence = SyncFence::InvalidFence();
     auto ret = AcquireBuffer(buffer, syncFence, timestamp, damage);
     if (ret != GSERROR_OK) {
         fence = -1;

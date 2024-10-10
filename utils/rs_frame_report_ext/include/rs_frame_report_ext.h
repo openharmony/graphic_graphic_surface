@@ -32,7 +32,7 @@ public:
 
 private:
     RsFrameReportExt();
-    ~RsFrameReportExt();
+    ~RsFrameReportExt() = default;
     bool LoadLibrary();
     void CloseLibrary();
     void *LoadSymbol(const char *symName);

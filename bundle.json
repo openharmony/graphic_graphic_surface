@@ -105,7 +105,8 @@
           "//foundation/graphic/graphic_surface/surface/test:test",
           "//foundation/graphic/graphic_surface/buffer_handle/test:test",
           "//foundation/graphic/graphic_surface/sync_fence/test:test",
-          "//foundation/graphic/graphic_surface/utils/frame_report/test:test"
+          "//foundation/graphic/graphic_surface/utils/frame_report/test:test",
+	  "//foundation/graphic/graphic_surface/utils/frame_report_ext/test:test"
         ]
       }
     }

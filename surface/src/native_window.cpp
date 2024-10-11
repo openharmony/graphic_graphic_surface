@@ -97,7 +97,7 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     }
     OHOS::BufferRequestConfig *windowConfig = nativeWindow->surface->GetWindowConfig();
     if (windowConfig == nullptr) {
-        BLOGE("windowConfig is null");
+        BLOGE("windowConfig is null, uniqueId: %{public}" PRIu64 ".", nativeWindow->surface->GetUniqueId());
         delete nativeWindow;
         return nullptr;
     }
@@ -175,7 +175,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         OHOS::BufferRequestConfig config;
         if (memcpy_s(&config, sizeof(OHOS::BufferRequestConfig), windowConfig,
             sizeof(OHOS::BufferRequestConfig)) != EOK) {
-            BLOGE("memcpy_s failed");
+            BLOGE("memcpy_s failed, uniqueId: %{public}" PRIu64 ".", window->surface->GetUniqueId());
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
         config.width = requestWidth;
@@ -185,7 +185,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         ret = window->surface->RequestBuffer(sfbuffer, releaseFence, *windowConfig);
     }
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || sfbuffer == nullptr) {
-        BLOGE("API failed, please check RequestBuffer function ret:%{public}d, Queue Id:%{public}" PRIu64,
+        BLOGE("RequestBuffer ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
                 ret, window->surface->GetUniqueId());
         return ret;
     }
@@ -241,7 +241,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
     OHOS::sptr<OHOS::SyncFence> acquireFence = new OHOS::SyncFence(fenceFd);
     int32_t ret = window->surface->FlushBuffer(buffer->sfbuffer, acquireFence, config);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK) {
-        BLOGE("FlushBuffer buffer failed, ret:%{public}d, Queue Id:%{public}" PRIu64,
+        BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
             ret, window->surface->GetUniqueId());
         return ret;
     }
@@ -259,14 +259,14 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
 
 int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
-    if (window == nullptr || buffer == nullptr || fenceFd == nullptr) {
+    if (window == nullptr || buffer == nullptr || fenceFd == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
     OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::InvalidFence();
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, false);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
-        BLOGE("GetLastFlushedBuffer fail");
+        BLOGE("GetLastFlushedBuffer fail, uniqueId: %{public}" PRIu64 ".", window->surface->GetUniqueId());
         delete nwBuffer;
         nwBuffer = nullptr;
         return ret;
@@ -531,7 +531,7 @@ int32_t NativeObjectReference(void *obj)
         case NATIVE_OBJECT_MAGIC_WINDOW_BUFFER:
             break;
         default:
-            BLOGE("parameter error, magic illegal");
+            BLOGE("magic illegal: %{public}d", GetNativeObjectMagic(obj));
             return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(obj);
@@ -549,7 +549,7 @@ int32_t NativeObjectUnreference(void *obj)
         case NATIVE_OBJECT_MAGIC_WINDOW_BUFFER:
             break;
         default:
-            BLOGE("parameter error, magic illegal");
+            BLOGE("magic illegal: %{public}d", GetNativeObjectMagic(obj));
             return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHOS::RefBase *ref = reinterpret_cast<OHOS::RefBase *>(obj);
@@ -629,14 +629,14 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
     *window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(surfaceId));
     if (*window != nullptr) {
         NativeObjectReference(*window);
-        BLOGD("get nativeWindow from cache.");
+        BLOGD("get nativeWindow from cache, uniqueId: %{public}" PRIu64 ".", surfaceId);
         return OHOS::GSERROR_OK;
     }
 
     OHNativeWindow *nativeWindow = new OHNativeWindow();
     nativeWindow->surface = utils->GetSurface(surfaceId);
     if (nativeWindow->surface == nullptr) {
-        BLOGE("window surface is null");
+        BLOGE("window surface is null, surfaceId: %{public}" PRIu64 ".", surfaceId);
         delete nativeWindow;
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
@@ -708,7 +708,7 @@ int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel)
     }
     sptr<OHOS::Surface> windowSurface = window->surface;
     if (windowSurface == nullptr) {
-        BLOGE("parameter error, please check input window");
+        BLOGE("windowSurface is nullptr");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     auto producer = windowSurface->GetProducer();
@@ -723,13 +723,13 @@ int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window)
     }
     sptr<OHOS::IRemoteObject> surfaceObject = (parcel->msgParcel)->ReadRemoteObject();
     if (surfaceObject == nullptr) {
-        BLOGE("read object error, please check input parcel");
+        BLOGE("surfaceObject is nullptr");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<OHOS::IBufferProducer> bp = iface_cast<IBufferProducer>(surfaceObject);
     sptr <OHOS::Surface> windowSurface = OHOS::Surface::CreateSurfaceAsProducer(bp);
     if (windowSurface == nullptr) {
-        BLOGE("create surface error, please check input parcel");
+        BLOGE("windowSurface is nullptr");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     auto utils = SurfaceUtils::GetInstance();
@@ -742,14 +742,15 @@ int32_t NativeWindowReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **window)
 
 int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
-    if (window == nullptr || buffer == nullptr || fenceFd == nullptr) {
+    if (window == nullptr || buffer == nullptr || fenceFd == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
     OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::InvalidFence();
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, true);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK || nwBuffer->sfbuffer == nullptr) {
-        BLOGE("GetLastFlushedBufferV2 fail");
+        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d, uniqueId: %{public}" PRIu64 ".",
+            ret, window->surface->GetUniqueId());
         delete nwBuffer;
         nwBuffer = nullptr;
         return ret;
@@ -767,7 +768,7 @@ int32_t NativeWindowDisconnect(OHNativeWindow *window)
     }
     sptr<OHOS::Surface> windowSurface = window->surface;
     if (windowSurface == nullptr) {
-        BLOGE("parameter error, please check input window");
+        BLOGE("windowSurface is nullptr");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return windowSurface->Disconnect();
@@ -783,13 +784,13 @@ int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail");
+        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
         return status;
     }
     GSError ret = MetadataHelper::SetColorSpaceType(lastFlushedBuffer->sfbuffer,
         NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
     if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetColorSpaceType failed!, retVal:%d", ret);
+        BLOGE("SetColorSpaceType failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;
@@ -806,14 +807,14 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail");
+        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
         return status;
     }
     GSError ret = MetadataHelper::GetColorSpaceType(lastFlushedBuffer->sfbuffer, colorSpaceType);
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetColorSpaceType failed!, retVal:%d", ret);
+        BLOGE("GetColorSpaceType failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     for (auto type : NATIVE_COLORSPACE_TO_HDI_MAP) {
@@ -837,7 +838,7 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail");
+        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
         return status;
     }
     GSError ret = GSERROR_OK;
@@ -857,7 +858,7 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRMetadata failed!, retVal:%d", ret);
+        BLOGE("SetHDRMetadata failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;
@@ -870,7 +871,7 @@ GSError OH_NativeWindow_GetMatedataValueType(sptr<SurfaceBuffer> sfbuffer, int32
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetHDRMetadataType failed!, retVal:%d", ret);
+        BLOGE("GetHDRMetadataType failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
@@ -880,7 +881,7 @@ GSError OH_NativeWindow_GetMatedataValueType(sptr<SurfaceBuffer> sfbuffer, int32
             errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
             if (err != 0) {
                 delete[] *metadata;
-                BLOGE("memcpy_s failed! , retVal:%d", err);
+                BLOGE("memcpy_s failed! , ret: %d", err);
                 return OHOS::SURFACE_ERROR_UNKOWN;
             }
             return OHOS::SURFACE_ERROR_OK;
@@ -901,7 +902,7 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     float matrix[16] = {0};
     int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
     if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail");
+        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
         return status;
     }
     GSError ret = GSERROR_OK;
@@ -920,7 +921,7 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRSMetadata failed! , retVal:%d", ret);
+        BLOGE("SetHDRSMetadata failed! , ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();
@@ -929,12 +930,12 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
         if (err != 0) {
             delete[] *metadata;
-            BLOGE("memcpy_s failed! , retVal:%d", err);
+            BLOGE("memcpy_s failed! , ret: %d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
     } else {
         delete[] *metadata;
-        BLOGE("new metadata failed! ");
+        BLOGE("new metadata failed!");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

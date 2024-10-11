@@ -44,12 +44,12 @@ sptr<Surface> SurfaceUtils::GetSurface(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surfaceCache_.count(uniqueId) == 0) {
-        BLOGE("Cannot find surface by uniqueId %{public}" PRIu64, uniqueId);
+        BLOGE("Cannot find surface, uniqueId: %{public}" PRIu64 ".", uniqueId);
         return nullptr;
     }
     sptr<Surface> surface = surfaceCache_[uniqueId].promote();
     if (surface == nullptr) {
-        BLOGE("surface is nullptr");
+        BLOGE("surface is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId);
         return nullptr;
     }
     return surface;
@@ -65,7 +65,7 @@ SurfaceError SurfaceUtils::Add(uint64_t uniqueId, const wptr<Surface> &surface)
         surfaceCache_[uniqueId] = surface;
         return GSERROR_OK;
     }
-    BLOGD("the surface by uniqueId %{public}" PRIu64 " already existed", uniqueId);
+    BLOGD("the surface already existed, uniqueId: %{public}" PRIu64, uniqueId);
     return GSERROR_OK;
 }
 
@@ -73,7 +73,7 @@ SurfaceError SurfaceUtils::Remove(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (surfaceCache_.count(uniqueId) == 0) {
-        BLOGD("Delete failed without surface by uniqueId %{public}" PRIu64, uniqueId);
+        BLOGD("Delete failed without surface, uniqueId %{public}" PRIu64, uniqueId);
         return GSERROR_INVALID_OPERATING;
     }
     surfaceCache_.erase(uniqueId);
@@ -218,7 +218,7 @@ void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE], uint3
     auto ret = memcpy_s(matrix, matrixSize * sizeof(float),
                         transformMatrix.data(), sizeof(transformMatrix));
     if (ret != EOK) {
-        BLOGE("ComputeTransformMatrix: transformMatrix memcpy_s failed");
+        BLOGE("memcpy_s failed, ret: %{public}d", ret);
     }
 }
 
@@ -309,7 +309,7 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
     auto ret = memcpy_s(matrix, matrixSize * sizeof(float),
                         transformMatrix.data(), sizeof(transformMatrix));
     if (ret != EOK) {
-        BLOGE("ComputeTransformMatrixV2: transformMatrix memcpy_s failed");
+        BLOGE("memcpy_s failed, ret: %{public}d", ret);
     }
 }
 
@@ -317,7 +317,7 @@ void* SurfaceUtils::GetNativeWindow(uint64_t uniqueId)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (nativeWindowCache_.count(uniqueId) == 0) {
-        BLOGE("Cannot find nativeWindow by uniqueId %" PRIu64 ".", uniqueId);
+        BLOGE("Cannot find nativeWindow, uniqueId %" PRIu64 ".", uniqueId);
         return nullptr;
     }
     return nativeWindowCache_[uniqueId];
@@ -333,7 +333,7 @@ SurfaceError SurfaceUtils::AddNativeWindow(uint64_t uniqueId, void *nativeWidow)
         nativeWindowCache_[uniqueId] = nativeWidow;
         return GSERROR_OK;
     }
-    BLOGD("the nativeWidow by uniqueId %" PRIu64 " already existed", uniqueId);
+    BLOGD("the nativeWidow already existed, uniqueId %" PRIu64, uniqueId);
     return GSERROR_OK;
 }
 

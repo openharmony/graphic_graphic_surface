@@ -66,7 +66,7 @@ public:
         option.SetFlags(MessageOption::TF_ASYNC);
         int32_t ret = Remote()->SendRequest(IProducerListener::ON_BUFFER_RELEASED_WITH_FENCE, arguments, reply, option);
         if (ret != ERR_NONE) {
-            BLOGE("Send to request buffer release callback failed, ret = %{public}d", ret);
+            BLOGE("Remote SendRequest fail, ret = %{public}d", ret);
             return GSERROR_BINDER;
         }
         return GSERROR_OK;
@@ -115,7 +115,7 @@ private:
         uint32_t sequence = 0;
         GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
         if (ret != GSERROR_OK) {
-            BLOGE("Read surface buffer impl failed, return %{public}d", ret);
+            BLOGE("ReadSurfaceBufferImpl failed, return %{public}d", ret);
             return OnBufferReleasedWithFence(buffer, fence);
         }
         if (arguments.ReadBool()) {

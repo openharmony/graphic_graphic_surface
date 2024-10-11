@@ -35,7 +35,7 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
     sptr<ProducerSurface> surf = new ProducerSurface(producer);
     GSError ret = surf->Init();
     if (ret != GSERROR_OK) {
-        BLOGE("Failure, Reason: producer surf init failed");
+        BLOGE("producerSurface is nullptr");
         return nullptr;
     }
     auto utils = SurfaceUtils::GetInstance();
@@ -55,12 +55,12 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.timeout = 3000;          // default timeout is 3000 ms
     windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    BLOGND("ProducerSurface ctor");
+    BLOGD("ProducerSurface ctor");
 }
 
 ProducerSurface::~ProducerSurface()
 {
-    BLOGND("~ProducerSurface dtor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
+    BLOGD("~ProducerSurface dtor, name: %{public}s, uniqueId: %{public}" PRIu64 ".", name_.c_str(), queueId_);
     Disconnect();
     auto utils = SurfaceUtils::GetInstance();
     utils->Remove(GetUniqueId());
@@ -82,7 +82,7 @@ GSError ProducerSurface::Init()
     name_ = initInfo_.name;
     queueId_ = initInfo_.uniqueId;
     inited_.store(true);
-    BLOGND("ctor, name:%{public}s, Queue Id:%{public}" PRIu64, name_.c_str(), queueId_);
+    BLOGD("Init name: %{public}s, uniqueId: %{public}" PRIu64 ".", name_.c_str(), queueId_);
     return GSERROR_OK;
 }
 
@@ -112,7 +112,7 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
             if (ret == GSERROR_NO_CONSUMER) {
                 CleanCacheLocked(false);
             }
-            BLOGND("RequestBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
+            BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
         AddCacheLocked(bedataimpl, retval, config);
@@ -132,7 +132,7 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
     } else if (bufferProducerCache_.find(retval.sequence) == bufferProducerCache_.end()) {
-        BLOGNE("buffer producer cache not find buffer(%{public}u)", retval.sequence);
+        BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
         return SURFACE_ERROR_UNKOWN;
     } else {
         retval.buffer = bufferProducerCache_[retval.sequence];
@@ -173,7 +173,7 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffer
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
     if (ret != GSERROR_NO_BUFFER && ret != GSERROR_OK) {
-        BLOGND("RequestBuffers Producer report %{public}s", GSErrorStr(ret).c_str());
+        BLOGD("RequestBuffers ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
         return ret;
     }
     for (size_t i = 0; i < retvalues.size(); ++i) {
@@ -207,7 +207,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
     auto ret = producer_->FlushBuffer(buffer->GetSeqNum(), bedata, fence, config);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
-        BLOGND("FlushBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
+        BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
     }
     return ret;
 }
@@ -220,7 +220,7 @@ GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& bu
     }
     for (size_t i = 0; i < buffers.size(); ++i) {
         if (buffers[i] == nullptr || fences[i] == nullptr) {
-            BLOGNE("FlushBuffers Producer report: one buffer or fence is nullptr");
+            BLOGE("buffer or fence is nullptr, i: %{public}zu, uniqueId: %{public}" PRIu64 ".", i, queueId_);
             return GSERROR_INVALID_ARGUMENTS;
         }
     }
@@ -235,7 +235,7 @@ GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& bu
     auto ret = producer_->FlushBuffers(sequences, bedata, fences, configs);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
-        BLOGND("FlushBuffer Producer report %{public}s", GSErrorStr(ret).c_str());
+        BLOGD("FlushBuffers ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
     }
     return ret;
 }
@@ -313,7 +313,7 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
-            BLOGNE("Attach already exist buffer %{public}d", buffer->GetSeqNum());
+            BLOGE("Attach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
@@ -330,7 +330,7 @@ GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) == bufferProducerCache_.end()) {
-            BLOGNE("Detach not exist buffer %{public}d", buffer->GetSeqNum());
+            BLOGE("Detach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
         bufferProducerCache_.erase(buffer->GetSeqNum());
@@ -371,11 +371,11 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     }
     sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
     if (surfaceDelegator == nullptr) {
-        BLOGE("RegisterSurfaceDelegator failed for the surface delegator is nullptr");
+        BLOGE("surfaceDelegator is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (!surfaceDelegator->SetClient(client)) {
-        BLOGE("Set the surface delegator client failed");
+        BLOGE("SetClient failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -386,7 +386,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         const sptr<SyncFence>& fence) -> GSError {
         auto pSurface = weakThis.promote();
         if (pSurface == nullptr) {
-            BLOGE("releaseBuffer failed, pSurface already destory");
+            BLOGE("pSurface is nullptr");
             return GSERROR_INVALID_ARGUMENTS;
         }
         auto surfaceDelegator = pSurface->wpPSurfaceDelegator_.promote();
@@ -424,7 +424,7 @@ GSError ProducerSurface::SetQueueSize(uint32_t queueSize)
 const std::string& ProducerSurface::GetName()
 {
     if (!inited_.load()) {
-        BLOGNW("Warning ProducerSurface is not initialized, the name you get is uninitialized.");
+        BLOGW("ProducerSurface is not initialized.");
     }
     return name_;
 }
@@ -500,7 +500,7 @@ OHSurfaceSource ProducerSurface::GetSurfaceSourceType() const
     }
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     if (producer_->GetSurfaceSourceType(sourceType) != GSERROR_OK) {
-        BLOGNE("Warning ProducerSurface GetSurfaceSourceType failed.");
+        BLOGE("GetSurfaceSourceType failed, uniqueId: %{public}" PRIu64 ".", queueId_);
         return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     }
     return sourceType;
@@ -521,7 +521,7 @@ std::string ProducerSurface::GetSurfaceAppFrameworkType() const
     }
     std::string appFrameworkType = "";
     if (producer_->GetSurfaceAppFrameworkType(appFrameworkType) != GSERROR_OK) {
-        BLOGNE("Warning ProducerSurface GetSurfaceAppFrameworkType failed.");
+        BLOGE("GetSurfaceAppFrameworkType failed, uniqueId: %{public}" PRIu64 ".", queueId_);
         return "";
     }
     return appFrameworkType;
@@ -531,13 +531,14 @@ GSError ProducerSurface::SetUserData(const std::string& key, const std::string& 
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.size() >= SURFACE_MAX_USER_DATA_COUNT) {
-        BLOGE("SetUserData failed: userData_ size out");
+        BLOGE("userData_ size out: %{public}zu, uniqueId: %{public}" PRIu64 ".", userData_.size(), queueId_);
         return GSERROR_OUT_OF_RANGE;
     }
 
     auto iterUserData = userData_.find(key);
     if (iterUserData != userData_.end() && iterUserData->second == val) {
-        BLOGE("SetUserData failed: key:%{public}s, val:%{public}s exist", key.c_str(), val.c_str());
+        BLOGE("SetUserData failed: key:%{public}s, val:%{public}s exist, uniqueId: %{public}" PRIu64 ".",
+            key.c_str(), val.c_str(), queueId_);
         return GSERROR_API_FAILED;
     }
 
@@ -617,7 +618,8 @@ GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcN
     }
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
-        BLOGND("func already register");
+        BLOGD("already register func: %{public}s, uniqueId: %{public}" PRIu64 ".",
+            funcName.c_str(), queueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -629,7 +631,7 @@ GSError ProducerSurface::UnRegisterUserDataChangeListener(const std::string& fun
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.erase(funcName) == 0) {
-        BLOGND("func doesn't register");
+        BLOGD("no register funcName: %{public}s, uniqueId: %{public}" PRIu64 ".", funcName.c_str(), queueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -676,7 +678,7 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    BLOGND("Queue Id:%{public}" PRIu64, queueId_);
+    BLOGD("CleanCache, uniqueId: %{public}" PRIu64 ".", queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         CleanAllLocked();
@@ -689,7 +691,7 @@ GSError ProducerSurface::GoBackground()
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    BLOGND("Queue Id:%{public}" PRIu64 "", queueId_);
+    BLOGD("GoBackground, uniqueId: %{public}" PRIu64 ".", queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         CleanAllLocked();
@@ -700,7 +702,7 @@ GSError ProducerSurface::GoBackground()
 uint64_t ProducerSurface::GetUniqueId() const
 {
     if (!inited_.load()) {
-        BLOGNW("Warning ProducerSurface is not initialized, the uniquedId you get is uninitialized.");
+        BLOGW("ProducerSurface is not initialized.");
     }
     return queueId_;
 }
@@ -720,7 +722,7 @@ GraphicTransformType ProducerSurface::GetTransform() const
     }
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     if (producer_->GetTransform(transform) != GSERROR_OK) {
-        BLOGNE("Warning ProducerSurface GetTransform failed.");
+        BLOGE("GetTransform failed, uniqueId: %{public}" PRIu64 ".", queueId_);
         return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     }
     return transform;
@@ -742,10 +744,10 @@ GSError ProducerSurface::Connect()
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (!isDisconnected_) {
-        BLOGNE("Surface has been connect.");
+        BLOGE("Surface has been connect, uniqueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
-    BLOGND("Connect Queue Id:%{public}" PRIu64 "", queueId_);
+    BLOGD("Connect, uniqueId: %{public}" PRIu64 ".", queueId_);
     GSError ret = producer_->Connect();
     if (ret == GSERROR_OK) {
         isDisconnected_ = false;
@@ -760,10 +762,10 @@ GSError ProducerSurface::Disconnect()
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (isDisconnected_) {
-        BLOGND("Surface has been disconnect.");
+        BLOGD("Surface is disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
-    BLOGND("Queue Id:%{public}" PRIu64 "", queueId_);
+    BLOGD("Disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
     CleanAllLocked();
     GSError ret = producer_->Disconnect();
     if (ret == GSERROR_OK) {
@@ -929,7 +931,7 @@ GSError ProducerSurface::SetHdrWhitePointBrightness(float brightness)
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (brightness < 0.0 || brightness > 1.0) {
-        BLOGNE("input brightness over range[0.0-1.0], brightness:%{public}f", brightness);
+        BLOGE("brightness:%{public}f, uniqueId: %{public}" PRIu64 ".", brightness, queueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetHdrWhitePointBrightness(brightness);
@@ -941,7 +943,7 @@ GSError ProducerSurface::SetSdrWhitePointBrightness(float brightness)
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (brightness < 0.0 || brightness > 1.0) {
-        BLOGNE("input brightness over range[0.0-1.0], brightness:%{public}f", brightness);
+        BLOGE("brightness:%{public}f, uniqueId: %{public}" PRIu64 ".", brightness, queueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetSdrWhitePointBrightness(brightness);

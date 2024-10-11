@@ -26,7 +26,7 @@ sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
 {
     sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
     if (surf->Init() != GSERROR_OK) {
-        BLOGE("Failure, Reason: consumer surf init failed");
+        BLOGE("consumer surf init failed");
         return nullptr;
     }
     return surf;
@@ -36,7 +36,7 @@ sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
 {
     sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
     if (surf->Init() != GSERROR_OK) {
-        BLOGE("Failure, Reason: consumer surf init failed");
+        BLOGE("consumer surf init failed");
         return nullptr;
     }
     return surf;
@@ -45,7 +45,6 @@ sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
 ConsumerSurface::ConsumerSurface(const std::string& name, bool isShared)
     : name_(name), isShared_(isShared)
 {
-    BLOGND("ConsumerSurface ctor, name: %{public}s", name.c_str());
     consumer_ = nullptr;
     producer_ = nullptr;
 }
@@ -57,8 +56,8 @@ ConsumerSurface::~ConsumerSurface()
         consumer_->SetStatus(false);
     }
     if (producer_ != nullptr) {
-        BLOGNI("~ConsumerSurface queueId: %{public}" PRIu64 "producer_: %{public}d",
-            producer_->GetUniqueId(), producer_->GetSptrRefCount());
+        BLOGI("~ConsumerSurface, producer_ sptrCnt: %{public}d, uniqueId: %{public}" PRIu64 ".",
+            producer_->GetSptrRefCount(), uniqueId_);
     }
     consumer_ = nullptr;
     producer_ = nullptr;
@@ -69,6 +68,8 @@ GSError ConsumerSurface::Init()
     sptr<BufferQueue> queue_ = new BufferQueue(name_, isShared_);
     producer_ = new BufferQueueProducer(queue_);
     consumer_ = new BufferQueueConsumer(queue_);
+    uniqueId_ = GetUniqueId();
+    BLOGD("ConsumerSurface Init, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     return GSERROR_OK;
 }
 
@@ -135,8 +136,7 @@ GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFen
         damage = damages[0];
         return GSERROR_OK;
     }
-    BLOGN_FAILURE("AcquireBuffer Success but the size of damages is %{public}zu is not 1, should Acquire damages.",
-        damages.size());
+    BLOGE("damages is %{public}zu, uniqueId: %{public}" PRIu64 ".", damages.size(), uniqueId_);
     return GSERROR_INVALID_ARGUMENTS;
 }
 
@@ -315,13 +315,14 @@ GSError ConsumerSurface::SetUserData(const std::string& key, const std::string& 
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (userData_.size() >= SURFACE_MAX_USER_DATA_COUNT) {
-        BLOGE("SetUserData failed: userData_ size out");
+        BLOGE("userData_ size(%{public}zu) out, uniqueId: %{public}" PRIu64 ".", userData_.size(), uniqueId_);
         return GSERROR_OUT_OF_RANGE;
     }
 
     auto iterUserData = userData_.find(key);
     if (iterUserData != userData_.end() && iterUserData->second == val) {
-        BLOGE("SetUserData failed: key:%{public}s, val:%{public}s exist", key.c_str(), val.c_str());
+        BLOGE("not find key:%{public}s, val:%{public}s exist, uniqueId: %{public}" PRIu64 ".",
+            key.c_str(), val.c_str(), uniqueId_);
         return GSERROR_API_FAILED;
     }
 
@@ -404,7 +405,8 @@ GSError ConsumerSurface::RegisterUserDataChangeListener(const std::string& funcN
     }
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.find(funcName) != onUserDataChange_.end()) {
-        BLOGND("func already register");
+        BLOGD("already register func: %{public}s, uniqueId: %{public}" PRIu64 ".",
+            funcName.c_str(), uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
     
@@ -416,7 +418,8 @@ GSError ConsumerSurface::UnRegisterUserDataChangeListener(const std::string& fun
 {
     std::lock_guard<std::mutex> lockGuard(lockMutex_);
     if (onUserDataChange_.erase(funcName) == 0) {
-        BLOGND("func doesn't register");
+        BLOGD("no register funcName: %{public}s, uniqueId: %{public}" PRIu64 ".",
+            funcName.c_str(), uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
 
@@ -442,7 +445,7 @@ GSError ConsumerSurface::GoBackground()
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (producer_ != nullptr) {
-        BLOGND("Queue Id:%{public}" PRIu64 "", producer_->GetUniqueId());
+        BLOGD("GoBackground, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     }
     return consumer_->GoBackground();
 }
@@ -647,7 +650,7 @@ GraphicTransformType ConsumerSurface::GetTransformHint() const
     }
     GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     if (producer_->GetTransformHint(transformHint) != GSERROR_OK) {
-        BLOGNE("Warning ProducerSurface GetTransformHint failed.");
+        BLOGE("GetTransformHint failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     }
     return transformHint;
@@ -676,7 +679,7 @@ OHSurfaceSource ConsumerSurface::GetSurfaceSourceType() const
     }
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     if (producer_->GetSurfaceSourceType(sourceType) != GSERROR_OK) {
-        BLOGNE("Warning GetSurfaceSourceType failed.");
+        BLOGE("GetSurfaceSourceType failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     }
     return sourceType;
@@ -697,7 +700,7 @@ std::string ConsumerSurface::GetSurfaceAppFrameworkType() const
     }
     std::string appFrameworkType = "";
     if (producer_->GetSurfaceAppFrameworkType(appFrameworkType) != GSERROR_OK) {
-        BLOGNE("Warning GetSurfaceAppFrameworkType failed.");
+        BLOGE("GetSurfaceAppFrameworkType failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return "";
     }
     return appFrameworkType;

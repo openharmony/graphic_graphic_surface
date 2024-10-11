@@ -80,4 +80,23 @@ HWTEST_F(AcquireFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest 
     int containerNodeNum = 1000;
     AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
 }
+
+/*
+* Function: AcquireFenceTracker
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AcquireFenceTracker
+*                  2. check ret
+*/
+HWTEST_F(AcquireFenceTrackerTest, AcquireFenceTracker001, Function | MediumTest | Level2)
+{
+    sptr<SyncFence> syncFence = new SyncFence(0);
+    AcquireFenceTracker::tracker_ = nullptr;
+    AcquireFenceTracker::TrackFence(syncFence, true);
+    int32_t blurSize = 10;
+    AcquireFenceTracker::SetBlurSize(blurSize);
+    int containerNodeNum = 1000;
+    AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
+}
 }

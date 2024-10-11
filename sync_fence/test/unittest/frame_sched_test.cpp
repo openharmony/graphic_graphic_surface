@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 #include "frame_sched.h"
+#include "sync_fence.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -75,5 +76,92 @@ HWTEST_F(FrameSchedTest, MonitorGpuEnd001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
     frameSched_.MonitorGpuEnd();
+}
+
+/*
+* Function: SyncMerge
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SyncMerge
+*                  2. check ret
+*/
+HWTEST_F(FrameSchedTest, SyncMergeTest001, Function | MediumTest | Level2)
+{
+    int32_t newFenceFd = -1;
+    ASSERT_EQ(SyncFence::SyncMerge("SyncMergeTest001", 1, -1, newFenceFd), -1);
+    ASSERT_EQ(newFenceFd, -1);
+
+    sptr<SyncFence> fence = new SyncFence(0);
+    ASSERT_EQ(fence->GetStatus(), FenceStatus::ERROR);
+
+    sptr<SyncFence> fence1 = new SyncFence(-1);
+    EXPECT_EQ(fence1->GetStatus(), ERROR);
+}
+
+/*
+* Function: LoadLibrary
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call LoadLibrary
+*                  2. check ret
+*/
+HWTEST_F(FrameSchedTest, LoadLibrary001, Function | MediumTest | Level2)
+{
+    auto frameSched = new Rosen::FrameSched();
+    frameSched->schedSoLoaded_ = false;
+    frameSched->LoadLibrary();
+    frameSched->schedSoLoaded_ = true;
+    frameSched->LoadLibrary();
+    delete frameSched;
+}
+
+/*
+* Function: CloseLibrary
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call CloseLibrary
+*                  2. check ret
+*/
+HWTEST_F(FrameSchedTest, CloseLibrary001, Function | MediumTest | Level2)
+{
+    auto frameSched = new Rosen::FrameSched();
+    frameSched->schedHandle_ = nullptr;
+    frameSched->CloseLibrary();
+    delete frameSched;
+}
+
+/*
+* Function: LoadSymbol
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call LoadSymbol
+*                  2. check ret
+*/
+HWTEST_F(FrameSchedTest, LoadSymbol001, Function | MediumTest | Level2)
+{
+    auto frameSched = new Rosen::FrameSched();
+    frameSched->schedSoLoaded_ = false;
+    frameSched->LoadSymbol("LoadSymbol001");
+    delete frameSched;
+}
+
+/*
+* Function: Init
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call Init
+*                  2. check ret
+*/
+HWTEST_F(FrameSchedTest, Init001, Function | MediumTest | Level2)
+{
+    auto frameSched = new Rosen::FrameSched();
+    frameSched->initFunc_ = nullptr;
+    frameSched->Init();
+    delete frameSched;
 }
 }

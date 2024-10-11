@@ -166,37 +166,37 @@ bool SyncFenceTracker::CheckGpuSubhealthEventLimit()
     auto now = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
     std::tm *tm = std::localtime(&t);
-    if (tm != nullptr && (gpuSubhealthEventNum == 0 || tm->tm_yday > gpuSubhealthEventDay)) {
-        gpuSubhealthEventDay = tm->tm_yday;
-        gpuSubhealthEventNum = 0;
-        HILOG_DEBUG(LOG_CORE, "first event of %{public}" PRId32, gpuSubhealthEventDay);
-        gpuSubhealthEventNum++;
+    if (tm != nullptr && (gpuSubhealthEventNum_ == 0 || tm->tm_yday > gpuSubhealthEventDay_)) {
+        gpuSubhealthEventDay_ = tm->tm_yday;
+        gpuSubhealthEventNum_ = 0;
+        HILOG_DEBUG(LOG_CORE, "first event of %{public}" PRId32, gpuSubhealthEventDay_);
+        gpuSubhealthEventNum_++;
         return true;
-    } else if (gpuSubhealthEventNum < GPU_SUBHEALTH_EVENT_LIMIT) {
-        gpuSubhealthEventNum++;
+    } else if (gpuSubhealthEventNum_ < GPU_SUBHEALTH_EVENT_LIMIT) {
+        gpuSubhealthEventNum_++;
         HILOG_DEBUG(LOG_CORE, "%{public}" PRId32 "event of %{public}" PRId32 "day",
-            gpuSubhealthEventNum, gpuSubhealthEventDay);
+            gpuSubhealthEventNum_, gpuSubhealthEventDay_);
         return true;
     }
     HILOG_DEBUG(LOG_CORE, "%{public}" PRId32 "event exceed %{public}" PRId32 "day",
-        gpuSubhealthEventNum, gpuSubhealthEventDay);
+        gpuSubhealthEventNum_, gpuSubhealthEventDay_);
     return false;
 }
 
 inline void SyncFenceTracker::UpdateFrameQueue(int32_t startTime)
 {
-    if (frameStartTimes->size() >= FRAME_QUEUE_SIZE_LIMIT) {
-        frameStartTimes->pop();
+    if (frameStartTimes_->size() >= FRAME_QUEUE_SIZE_LIMIT) {
+        frameStartTimes_->pop();
     }
-    frameStartTimes->push(startTime);
+    frameStartTimes_->push(startTime);
 }
 
 int32_t SyncFenceTracker::GetFrameRate()
 {
     int32_t frameRate = 0;
-    int32_t frameNum = static_cast<int32_t>(frameStartTimes->size());
+    int32_t frameNum = static_cast<int32_t>(frameStartTimes_->size());
     if (frameNum > 1) {
-        int32_t interval = frameStartTimes->back() - frameStartTimes->front();
+        int32_t interval = frameStartTimes_->back() - frameStartTimes_->front();
         if (interval > 0) {
             frameRate = FRAME_PERIOD * (frameNum - 1) / interval;
         }

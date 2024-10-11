@@ -46,9 +46,9 @@ private:
     std::shared_ptr<OHOS::AppExecFwk::EventHandler> handler_ = nullptr;
     std::atomic<uint32_t> fencesQueued_;
     std::atomic<uint32_t> fencesSignaled_;
-    int32_t gpuSubhealthEventNum = 0;
-    int32_t gpuSubhealthEventDay = 0;
-    std::queue<int32_t> *frameStartTimes = new std::queue<int32_t>;
+    int32_t gpuSubhealthEventNum_ = 0;
+    int32_t gpuSubhealthEventDay_ = 0;
+    std::queue<int32_t> *frameStartTimes_ = new std::queue<int32_t>;
     int processedNodeNum_ = 0;
     void Loop(const sptr<SyncFence>& fence, bool traceTag);
     int32_t WaitFence(const sptr<SyncFence>& fence);

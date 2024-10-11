@@ -558,6 +558,22 @@ GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fen
     return ret;
 }
 
+void BufferQueue::CallConsumerListener()
+{
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (listener != nullptr) {
+        listener->OnBufferAvailable();
+    } else if (listenerClazz != nullptr) {
+        listenerClazz->OnBufferAvailable();
+    }
+}
+
 GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
@@ -597,12 +613,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
         return sret;
     }
     if (sret == GSERROR_OK) {
-        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (listener_ != nullptr) {
-            listener_->OnBufferAvailable();
-        } else if (listenerClazz_ != nullptr) {
-            listenerClazz_->OnBufferAvailable();
-        }
+        CallConsumerListener();
     }
     BLOGD("Success Buffer seq id: %{public}d AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
         sequence, fence->Get(), uniqueId_);
@@ -1328,15 +1339,19 @@ void BufferQueue::ClearLocked()
 GSError BufferQueue::GoBackground()
 {
     BLOGD("GoBackground, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (listener_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ + " queueId: " + std::to_string(uniqueId_));
-            listener_->OnGoBackground();
-        } else if (listenerClazz_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ + " queueId: " + std::to_string(uniqueId_));
-            listenerClazz_->OnGoBackground();
-        }
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (listener != nullptr) {
+        ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ + " queueId: " + std::to_string(uniqueId_));
+        listener->OnGoBackground();
+    } else if (listenerClazz != nullptr) {
+        ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ + " queueId: " + std::to_string(uniqueId_));
+        listenerClazz->OnGoBackground();
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     ClearLocked();
@@ -1347,26 +1362,30 @@ GSError BufferQueue::GoBackground()
 
 GSError BufferQueue::CleanCache(bool cleanAll)
 {
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (cleanAll) {
-            if (listener_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ +
-                    " queueId: " + std::to_string(uniqueId_));
-                listener_->OnGoBackground();
-            } else if (listenerClazz_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ +
-                    " queueId: " + std::to_string(uniqueId_));
-                listenerClazz_->OnGoBackground();
-            }
-        } else {
-            if (listener_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnCleanCache name: " + name_ + " queueId: " + std::to_string(uniqueId_));
-                listener_->OnCleanCache();
-            } else if (listenerClazz_ != nullptr) {
-                ScopedBytrace bufferIPCSend("OnCleanCache name: " + name_ + " queueId: " + std::to_string(uniqueId_));
-                listenerClazz_->OnCleanCache();
-            }
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (cleanAll) {
+        if (listener != nullptr) {
+            ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ +
+                " queueId: " + std::to_string(uniqueId_));
+            listener->OnGoBackground();
+        } else if (listenerClazz != nullptr) {
+            ScopedBytrace bufferIPCSend("OnGoBackground name: " + name_ +
+                " queueId: " + std::to_string(uniqueId_));
+            listenerClazz->OnGoBackground();
+        }
+    } else {
+        if (listener != nullptr) {
+            ScopedBytrace bufferIPCSend("OnCleanCache name: " + name_ + " queueId: " + std::to_string(uniqueId_));
+            listener->OnCleanCache();
+        } else if (listenerClazz != nullptr) {
+            ScopedBytrace bufferIPCSend("OnCleanCache name: " + name_ + " queueId: " + std::to_string(uniqueId_));
+            listenerClazz->OnCleanCache();
         }
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -1410,15 +1429,19 @@ GSError BufferQueue::SetTransform(GraphicTransformType transform)
 
         transform_ = transform;
     }
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (listener_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnTransformChange transform: " + std::to_string(transform));
-            listener_->OnTransformChange();
-        } else if (listenerClazz_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnTransformChange transform: " + std::to_string(transform));
-            listenerClazz_->OnTransformChange();
-        }
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (listener != nullptr) {
+        ScopedBytrace bufferIPCSend("OnTransformChange transform: " + std::to_string(transform));
+        listener->OnTransformChange();
+    } else if (listenerClazz != nullptr) {
+        ScopedBytrace bufferIPCSend("OnTransformChange transform: " + std::to_string(transform));
+        listenerClazz->OnTransformChange();
     }
     return GSERROR_OK;
 }
@@ -1643,17 +1666,21 @@ GSError BufferQueue::SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle)
         return GSERROR_NO_ENTRY;
     }
     tunnelHandle_ = handle;
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (listener_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnTunnelHandleChange");
-            listener_->OnTunnelHandleChange();
-        } else if (listenerClazz_ != nullptr) {
-            ScopedBytrace bufferIPCSend("OnTunnelHandleChange");
-            listenerClazz_->OnTunnelHandleChange();
-        } else {
-            return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
-        }
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (listener != nullptr) {
+        ScopedBytrace bufferIPCSend("OnTunnelHandleChange");
+        listener->OnTunnelHandleChange();
+    } else if (listenerClazz != nullptr) {
+        ScopedBytrace bufferIPCSend("OnTunnelHandleChange");
+        listenerClazz->OnTunnelHandleChange();
+    } else {
+        return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
     }
     return GSERROR_OK;
 }

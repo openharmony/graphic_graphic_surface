@@ -743,6 +743,32 @@ HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, Function | MediumTest
 }
 
 /*
+* Function: QueueAndDequeueDelegator
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterSurfaceDelegator and check ret
+*                  2. call RequestBuffer and check ret (this will call DelegatorDequeueBuffer)
+*                  3. call FlushBuffer and check ret (this will call DelegatorQueueBuffer)
+ */
+HWTEST_F(BufferQueueTest, QueueAndDequeueDelegator001, Function | MediumTest | Level2)
+{
+    surfaceDelegator = ProducerSurfaceDelegator::Create();
+    GSError ret = bq->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), csurface1);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    IBufferProducer::RequestBufferReturnValue retval;
+    ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+    ASSERT_GE(retval.sequence, 0);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: SetSurfaceSourceType and GetSurfaceSourceType
 * Type: Function
 * Rank: Important(2)

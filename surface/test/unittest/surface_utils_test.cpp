@@ -18,6 +18,7 @@
 #include <consumer_surface.h>
 #include <surface_utils.h>
 #include "buffer_consumer_listener.h"
+#include "surface_buffer_impl.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -190,5 +191,61 @@ HWTEST_F(SurfaceUtilsTest, Remove002, Function | MediumTest | Level2)
 
     ret = utils->Remove(psurface1->GetUniqueId());
     ASSERT_EQ(ret, SURFACE_ERROR_INVALID_OPERATING);
+}
+
+/*
+* Function: ComputeTransformMatrix
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ComputeTransformMatrix
+*                  2. call ComputeTransformMatrixV2
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix001, Function | MediumTest | Level2)
+{
+    // Prepare params
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1920);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = buffer->GetWidth();
+    crop.h = buffer->GetHeight();
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
+
+    // Compute matrix with normal crop
+    float emptyMatrix[16];
+    utils->ComputeTransformMatrix(matrix, 16, buffer, transform, crop);
+    ASSERT_NE(matrix, emptyMatrix);
+    utils->ComputeTransformMatrixV2(matrix, 16, buffer, transform, crop);
+    ASSERT_NE(matrix, emptyMatrix);
+}
+
+/*
+* Function: ComputeTransformMatrix
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ComputeTransformMatrix with small crop
+*                  2. call ComputeTransformMatrixV2 with small crop
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix002, Function | MediumTest | Level2)
+{
+    // Prepare params
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1920);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = 100;
+    crop.h = 100;
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
+
+    // Compute matrix with normal crop
+    float emptyMatrix[16];
+    utils->ComputeTransformMatrix(matrix, 16, buffer, transform, crop);
+    ASSERT_NE(matrix, emptyMatrix);
+    utils->ComputeTransformMatrixV2(matrix, 16, buffer, transform, crop);
+    ASSERT_NE(matrix, emptyMatrix);
 }
 }

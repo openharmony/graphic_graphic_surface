@@ -189,9 +189,14 @@ HWTEST_F(SyncFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest | L
 {
     auto tracker = new SyncFenceTracker("SetContainerNodeNum001");
     tracker->isGpuEnable_ = true;
-    tracker->SetContainerNodeNum(0);
+    tracker->processedNodeNum_ = 0;
+    tracker->SetContainerNodeNum(1);
+    EXPECT_EQ(tracker->processedNodeNum_, 1);
+
     tracker->isGpuEnable_ = false;
-    tracker->SetContainerNodeNum(0);
+    tracker->SetContainerNodeNum(1);
+    EXPECT_EQ(tracker->processedNodeNum_, 1);
+    
     delete tracker;
 }
 }

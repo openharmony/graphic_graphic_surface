@@ -43,6 +43,7 @@ void RsFrameReportExtTest::TearDown() {}
 HWTEST_F(RsFrameReportExtTest, Init001, Function | MediumTest | Level2)
 {
     RsFrameReportExt::GetInstance();
+    EXPECT_NE(RsFrameReportExt::GetInstance().initFunc_, nullptr);
 }
 
 /**

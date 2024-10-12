@@ -74,7 +74,7 @@ private:
     std::vector<SyncPointInfo> GetFenceInfo();
 
     UniqueFd fenceFd_;
-    static int SyncMerge(const char *name, int fd1, int fd2);
+    static int32_t SyncMerge(const char *name, int32_t fd1, int32_t fd2, int32_t &newFenceFd);
 };
 
 }

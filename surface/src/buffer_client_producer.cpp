@@ -15,6 +15,8 @@
 
 #include "buffer_client_producer.h"
 
+#include <cinttypes>
+
 #include <iremote_stub.h>
 #include "buffer_log.h"
 #include "buffer_utils.h"
@@ -58,7 +60,7 @@ BufferClientProducer::~BufferClientProducer()
 GSError BufferClientProducer::MessageVariables(MessageParcel &arg)
 {
     if (!(arg).WriteInterfaceToken(GetDescriptor())) {
-        BLOGE("write interface token failed");
+        BLOGE("WriteInterfaceToken failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }
     return GSERROR_OK;
@@ -69,12 +71,12 @@ GSError BufferClientProducer::SendRequest(uint32_t command, MessageParcel &arg,
 {
     sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
-        BLOGE("Remote is nullptr!");
+        BLOGE("Remote is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_SERVER_ERROR;
     }
     int32_t ret = remote->SendRequest(command, arg, reply, opt);
     if (ret != ERR_NONE) {
-        BLOGN_FAILURE("SendRequest return %{public}d", ret);
+        BLOGE("SendRequest ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return GSERROR_BINDER;
     }
     return GSERROR_OK;
@@ -84,7 +86,7 @@ GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
 {
     int32_t ret = reply.ReadInt32();
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("Remote return %{public}d", ret);
+        BLOGE("Remote ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return static_cast<GSError>(ret);
     }
     return GSERROR_OK;
@@ -137,7 +139,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
 
     num = reply.ReadUint32();
     if (num > SURFACE_MAX_QUEUE_SIZE || num == 0) {
-        BLOGNE("num is invalid, %{public}u", num);
+        BLOGE("num is invalid, %{public}u, uniqueId: %{public}" PRIu64 ".", num, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
     
@@ -187,7 +189,7 @@ GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& bu
     reply.ReadFloatVector(&readMatrixVector);
     if (memcpy_s(matrix, matrixSize * sizeof(float),
         readMatrixVector.data(), readMatrixVector.size() * sizeof(float)) != EOK) {
-        BLOGN_FAILURE("memcpy_s fail");
+        BLOGE("memcpy_s fail, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
     return GSERROR_OK;
@@ -209,6 +211,7 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
     reply.ReadInt32(info.width);
     reply.ReadInt32(info.height);
     reply.ReadUint64(info.uniqueId);
+    uniqueId_ = info.uniqueId;
     reply.ReadString(info.name);
     return CheckRetval(reply);
 }
@@ -273,7 +276,7 @@ GSError BufferClientProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     WriteSurfaceBufferImpl(arguments, sequence, buffer);
     GSError ret = buffer->WriteBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
-        BLOGN_FAILURE("WriteBufferRequestConfig failed, return %{public}d", ret);
+        BLOGE("WriteBufferRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return ret;
     }
     SEND_REQUEST(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, arguments, reply, option);
@@ -362,7 +365,7 @@ GSError BufferClientProducer::GetName(std::string &name)
         return ret;
     }
     if (reply.ReadString(name) == false) {
-        BLOGN_FAILURE("reply.ReadString return false");
+        BLOGE("reply.ReadString return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }
     {
@@ -407,7 +410,7 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
         return ret;
     }
     if (reply.ReadString(name) == false) {
-        BLOGN_FAILURE("reply.ReadString return false");
+        BLOGE("reply.ReadString return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }
 
@@ -516,7 +519,7 @@ GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAll
     }
 
     if (reply.ReadBoolVector(&supporteds) == false) {
-        BLOGN_FAILURE("reply.ReadBoolVector return false");
+        BLOGE("reply.ReadBoolVector return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_BINDER;
     }
 

@@ -319,7 +319,7 @@ void BufferQueue::RequestBufferDebugInfoLocked()
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
-        SURFACE_TRACE_NAME_FMT("request buffer id: %d state: %u", id, ele.state);
+        SURFACE_TRACE_NAME_FMT("request buffer id: %u state: %u", id, ele.state);
         BLOGD("request no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
             id, ele.state, uniqueId_);
         bufferState[ele.state] += 1;
@@ -480,7 +480,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
 
     if (needRealloc || isShared_ || producerCacheClean_ || retval.buffer->GetConsumerAttachBufferFlag()) {
         BLOGD("requestBuffer Succ realloc Buffer[%{public}d %{public}d] with new config "\
-            "seq: %{public}d attachFlag: %{public}d, uniqueId: %{public}" PRIu64 ".",
+            "seq: %{public}u attachFlag: %{public}d, uniqueId: %{public}" PRIu64 ".",
             config.width, config.height, retval.sequence, retval.buffer->GetConsumerAttachBufferFlag(), uniqueId_);
         if (producerCacheClean_) {
             producerCacheList_.push_back(retval.sequence);
@@ -490,9 +490,9 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         }
         retval.buffer->SetConsumerAttachBufferFlag(false);
     } else {
-        BLOGD("RequestBuffer Succ Buffer[%{public}d %{public}d] in seq id: %{public}d "\
-            "seq: %{public}" PRIu64 " releaseFence: %{public}d, uniqueId: %{public}" PRIu64 ".",
-            config.width, config.height, retval.sequence, uniqueId_, retval.fence->Get(), uniqueId_);
+        BLOGD("RequestBuffer Succ Buffer[%{public}d %{public}d] in seq id: %{public}u "\
+            "releaseFence: %{public}d, uniqueId: %{public}" PRIu64 ".",
+            config.width, config.height, retval.sequence, retval.fence->Get(), uniqueId_);
         retval.buffer = nullptr;
     }
 
@@ -822,7 +822,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         timestamp = bufferQueueCache_[sequence].timestamp;
         damages = bufferQueueCache_[sequence].damages;
         SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u", sequence);
-        BLOGD("Success Buffer seq id: %{public}d AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
+        BLOGD("Success Buffer seq id: %{public}u AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
             sequence, fence->Get(), uniqueId_);
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCache();
@@ -983,10 +983,10 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 
         if (bufferQueueCache_[sequence].isDeleting) {
             DeleteBufferInCache(sequence);
-            BLOGD("Succ delete Buffer seq id: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+            BLOGD("Succ delete Buffer seq id: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         } else {
             freeList_.push_back(sequence);
-            BLOGD("Succ push Buffer seq id: %{public}d to free list, releaseFence: %{public}d,"
+            BLOGD("Succ push Buffer seq id: %{public}u to free list, releaseFence: %{public}d,"
                 "uniqueId: %{public}" PRIu64 ".", sequence, fence->Get(), uniqueId_);
         }
         waitReqCon_.notify_all();
@@ -1033,7 +1033,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 
     ret = bufferImpl->Map();
     if (ret == GSERROR_OK) {
-        BLOGD("Map Success, seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+        BLOGD("Map Success, seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         bufferQueueCache_[sequence] = ele;
         buffer = bufferImpl;
     } else {
@@ -1134,7 +1134,7 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer)
 
 GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
 {
-    SURFACE_TRACE_NAME_FMT("AttachBufferToQueue name: %s queueId: %" PRIu64 " sequence: %u invokerType%u",
+    SURFACE_TRACE_NAME_FMT("AttachBufferToQueue name: %s queueId: %" PRIu64 " sequence: %u invokerType: %u",
         name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -1241,7 +1241,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
         if (freeSize >= usedSize - queueSize + 1) {
             DeleteBuffersLocked(usedSize - queueSize + 1);
             bufferQueueCache_[sequence] = ele;
-            BLOGD("AttachBuffer release seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+            BLOGD("AttachBuffer release seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
             return GSERROR_OK;
         } else {
             BLOGN_FAILURE_RET(GSERROR_OUT_OF_RANGE);
@@ -1271,9 +1271,9 @@ GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)
     }
 
     if (bufferQueueCache_[sequence].state == BUFFER_STATE_REQUESTED) {
-        BLOGD("DetachBuffer requested seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+        BLOGD("DetachBuffer requested seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
     } else if (bufferQueueCache_[sequence].state == BUFFER_STATE_ACQUIRED) {
-        BLOGD("DetachBuffer acquired seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+        BLOGD("DetachBuffer acquired seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
     } else {
         BLOGE("DetachBuffer invalid state: %{public}d, seq: %{public}u, uniqueId: %{public}" PRIu64 ".",
             bufferQueueCache_[sequence].state, sequence, uniqueId_);
@@ -1979,7 +1979,7 @@ void BufferQueue::Dump(std::string &result)
     ss.precision(BUFFER_MEMSIZE_FORMAT);
     ss.setf(std::ios::fixed);
     static double allSurfacesMemSize = 0;
-    uint32_t totalBufferListSize = 0;
+    uint64_t totalBufferListSize = 0;
     double memSizeInKB = 0;
 
     for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {

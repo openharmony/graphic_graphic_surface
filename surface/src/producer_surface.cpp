@@ -591,8 +591,6 @@ GSError ProducerSurface::SetUserData(const std::string& key, const std::string& 
 
     auto iterUserData = userData_.find(key);
     if (iterUserData != userData_.end() && iterUserData->second == val) {
-        BLOGE("SetUserData failed: key:%{public}s, val:%{public}s exist, uniqueId: %{public}" PRIu64 ".",
-        key.c_str(), val.c_str(), queueId_);
         return GSERROR_API_FAILED;
     }
 

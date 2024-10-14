@@ -104,6 +104,7 @@ uint32_t BufferQueue::GetUsedSize()
 
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     info.name = name_;
     info.width = defaultWidth_;
     info.height = defaultHeight_;

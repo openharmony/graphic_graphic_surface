@@ -41,13 +41,11 @@ public:
     void SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime);
     void SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum);
     void Report(const std::string& layerName);
-    void ReportCommitTime(int64_t commitTime);
 
 private:
     FrameReport();
     ~FrameReport();
 
-    bool IsReportBySurfaceName(const std::string& layerName);
     void LoadLibrary();
     void CloseLibrary();
     void* LoadSymbol(const std::string& symName);
@@ -68,7 +66,6 @@ private:
 
     mutable std::shared_mutex mutex_;
 };
-
 } // namespace Rosen
 } // namespace OHOS
 

@@ -36,11 +36,7 @@ namespace Rosen {
 #define LOGI(format, ...) HILOG_INFO(LOG_CORE, format, ##__VA_ARGS__)
 #define LOGD(format, ...) HILOG_DEBUG(LOG_CORE, format, ##__VA_ARGS__)
 
-#if (defined(__aarch64__) || defined(__x86_64__))
-    const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "libgame_acc_sched_client.z.so";
-#else
-    const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "libgame_acc_sched_client.z.so";
-#endif
+const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "libgame_acc_sched_client.z.so";
 const std::string GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO = "GAS_NotifyFrameInfo";
 
 const std::string GAME_SF_KEY = "Surface";

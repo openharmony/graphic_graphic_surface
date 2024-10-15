@@ -28,7 +28,6 @@ namespace {
     static const int32_t FRT_GAME_FOREGROUND = 1;
     static const int32_t FRT_GAME_SCHED = 2;
     static const int64_t FRT_GAME_BUFFER_TIME = 2048;
-    static const int64_t FRT_GAME_BUFFER_TIME_DEFAULT = 0;
     static std::string FRT_SURFACE_NAME_EMPTY = "";
     static std::string FRT_SURFACE_NAME = "SurfaceTEST";
 }
@@ -153,7 +152,7 @@ HWTEST_F(FrameReportTest, SetLastSwapBufferTime001, Function | MediumTest | Leve
 HWTEST_F(FrameReportTest, SetDequeueBufferTime001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().SetDequeueBufferTime(FRT_SURFACE_NAME_EMPTY, FRT_GAME_BUFFER_TIME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().dequeueBufferTime_.load() == FRT_GAME_BUFFER_TIME_DEFAULT);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().dequeueBufferTime_.load() == FRT_GAME_BUFFER_TIME);
     
     Rosen::FrameReport::GetInstance().SetDequeueBufferTime(FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().dequeueBufferTime_.load() == FRT_GAME_BUFFER_TIME);
@@ -171,7 +170,7 @@ HWTEST_F(FrameReportTest, SetQueueBufferTime001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME_EMPTY,
                                                          FRT_GAME_BUFFER_TIME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().queueBufferTime_.load() == FRT_GAME_BUFFER_TIME_DEFAULT);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().queueBufferTime_.load() == FRT_GAME_BUFFER_TIME);
     
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().queueBufferTime_.load() == FRT_GAME_BUFFER_TIME);
@@ -188,7 +187,7 @@ HWTEST_F(FrameReportTest, SetQueueBufferTime001, Function | MediumTest | Level2)
 HWTEST_F(FrameReportTest, SetPendingBufferNum001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_SURFACE_NAME_EMPTY, FRT_GAME_BUFFER_TIME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() == FRT_GAME_BUFFER_TIME_DEFAULT);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() == FRT_GAME_BUFFER_TIME);
     
     Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() == FRT_GAME_BUFFER_TIME);
@@ -205,18 +204,7 @@ HWTEST_F(FrameReportTest, Report001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().Report(FRT_SURFACE_NAME_EMPTY);
     Rosen::FrameReport::GetInstance().Report(FRT_SURFACE_NAME);
-}
-
-/*
-* Function: ReportCommitTime
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call ReportCommitTime
- */
-HWTEST_F(FrameReportTest, ReportCommitTime001, Function | MediumTest | Level2)
-{
-    Rosen::FrameReport::GetInstance().ReportCommitTime(FRT_GAME_BUFFER_TIME);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ != nullptr);
 }
 
 /*

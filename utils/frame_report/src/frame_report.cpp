@@ -38,18 +38,12 @@ namespace Rosen {
 
 const std::string GAME_ACCELERATE_SCHEDULE_SO_PATH = "libgame_acc_sched_client.z.so";
 const std::string GAME_ACCELERATE_SCHEDULE_NOTIFYFRAMEINFO = "GAS_NotifyFrameInfo";
-
-const std::string GAME_SF_KEY = "Surface";
-const std::string TYPE_COMMIT = "commit_time";
-const std::string BUFFER_MSG = "";
 constexpr int32_t REPORT_BUFFER_SIZE = 256;
 constexpr int32_t THOUSAND_COUNT = 1000;
 constexpr int32_t SKIP_HINT_STATUS = 0;
-
 constexpr int32_t FR_GAME_BACKGROUND = 0;
 constexpr int32_t FR_GAME_FOREGROUND = 1;
 constexpr int32_t FR_GAME_SCHED = 2;
-constexpr int32_t COMMIT_PID = -1;
 
 FrameReport& FrameReport::GetInstance()
 {
@@ -121,32 +115,18 @@ void FrameReport::SetLastSwapBufferTime(int64_t lastSwapBufferTime)
 
 void FrameReport::SetDequeueBufferTime(const std::string& layerName, int64_t dequeueBufferTime)
 {
-    if (!IsReportBySurfaceName(layerName)) {
-        return;
-    }
     dequeueBufferTime_.store(dequeueBufferTime);
 }
 
 void FrameReport::SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime)
 {
-    if (!IsReportBySurfaceName(layerName)) {
-        return;
-    }
     queueBufferTime_.store(queueBufferTime);
     activelyUniqueId_.store(uniqueId);
 }
 
 void FrameReport::SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum)
 {
-    if (!IsReportBySurfaceName(layerName)) {
-        return;
-    }
     pendingBufferNum_.store(pendingBufferNum);
-}
-
-bool FrameReport::IsReportBySurfaceName(const std::string& layerName)
-{
-    return layerName.find(GAME_SF_KEY) != std::string::npos;
 }
 
 void FrameReport::LoadLibrary()
@@ -210,9 +190,6 @@ void FrameReport::DeletePidInfo()
 
 void FrameReport::Report(const std::string& layerName)
 {
-    if (!IsReportBySurfaceName(layerName)) {
-        return;
-    }
     int64_t timeStamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     std::string bufferMsg = "";
@@ -230,11 +207,6 @@ void FrameReport::Report(const std::string& layerName)
     }
     bufferMsg = msg;
     NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg);
-}
-
-void FrameReport::ReportCommitTime(int64_t commitTime)
-{
-    NotifyFrameInfo(COMMIT_PID, TYPE_COMMIT, commitTime, BUFFER_MSG);
 }
 
 void FrameReport::NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp,

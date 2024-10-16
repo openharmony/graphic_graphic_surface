@@ -42,25 +42,6 @@ struct SyncPointInfo {
     FenceStatus status;
 };
 
-class SyncTimeline : public RefBase {
-public:
-    SyncTimeline() noexcept;
-    ~SyncTimeline() noexcept;
-
-    SyncTimeline(const SyncTimeline& rhs) = delete;
-    SyncTimeline& operator=(const SyncTimeline& rhs) = delete;
-    SyncTimeline(SyncTimeline&& rhs) = delete;
-    SyncTimeline& operator=(SyncTimeline&& rhs) = delete;
-
-    bool IsValid();
-    int32_t IncreaseSyncPoint(uint32_t step = 1);
-    int32_t GenerateFence(std::string name, uint32_t point);
-
-private:
-    int32_t timeLineFd_ = -1;
-    bool isValid_ = false;
-};
-
 class SyncFence : public RefBase {
 public:
     explicit SyncFence(int32_t fenceFd);

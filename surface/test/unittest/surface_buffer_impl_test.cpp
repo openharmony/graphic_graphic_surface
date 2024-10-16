@@ -18,6 +18,7 @@
 #include <surface_buffer_impl.h>
 #include <buffer_utils.h>
 #include <metadata_helper.h>
+#include "v1_1/buffer_handle_meta_key_type.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -106,7 +107,11 @@ HWTEST_F(SurfaceBufferImplTest, State001, Function | MediumTest | Level2)
 HWTEST_F(SurfaceBufferImplTest, State002, Function | MediumTest | Level2)
 {
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
-
+    ASSERT_EQ(buffer->GetPhyAddr(), 0);
+    ASSERT_EQ(buffer->GetStride(), -1);
+    vector<uint32_t> keys;
+    ASSERT_EQ(buffer->ListMetadataKeys(keys), GSERROR_NOT_INIT);
+    ASSERT_EQ(buffer->EraseMetadataKey(1), GSERROR_NOT_INIT);
     GSError ret = buffer->Alloc(requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
@@ -116,6 +121,8 @@ HWTEST_F(SurfaceBufferImplTest, State002, Function | MediumTest | Level2)
     ASSERT_EQ(buffer->GetFormat(), GRAPHIC_PIXEL_FMT_RGBA_8888);
     ASSERT_EQ(buffer->GetUsage(), BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
     ASSERT_EQ(buffer->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DCI_P3);
+
+    buffer->SetBufferHandle(nullptr);
 }
 
 /*
@@ -186,10 +193,14 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
     uint32_t setMetadata = 4260097;
     std::vector<uint8_t> setData;
     ASSERT_EQ(MetadataHelper::ConvertMetadataToVec(setMetadata, setData), OHOS::GSERROR_OK);
+    ASSERT_EQ(sbi->SetMetadata(0, setData), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(sbi->SetMetadata(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END, setData), GSERROR_INVALID_ARGUMENTS);
     sret = sbi->SetMetadata(metadataKey, setData);
     ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
 
     std::vector<uint8_t> getData;
+    ASSERT_EQ(sbi->GetMetadata(0, getData), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(sbi->GetMetadata(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END, getData), GSERROR_INVALID_ARGUMENTS);
     sret = sbi->GetMetadata(metadataKey, getData);
     ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
 
@@ -209,6 +220,8 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
         ASSERT_EQ(keys[0], metadataKey);
     }
 
+    ASSERT_EQ(sbi->EraseMetadataKey(0), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(sbi->EraseMetadataKey(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END), GSERROR_INVALID_ARGUMENTS);
     sret = sbi->EraseMetadataKey(metadataKey);
     ASSERT_TRUE(sret == OHOS::GSERROR_OK || GSErrorStr(sret) == "<500 api call failed>with low error <Not supported>");
 

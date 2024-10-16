@@ -397,6 +397,11 @@ HWTEST_F(BufferClientProducerRemoteTest, GetUniqueId001, Function | MediumTest |
 {
     uint64_t bpid = bp->GetUniqueId();
     ASSERT_NE(bpid, 0);
+    string name;
+    GSError ret = bp->GetNameAndUniqueId(name, bpid);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(bpid, 0);
+    ASSERT_NE(bpid, 0);
 }
 
 /*
@@ -424,6 +429,9 @@ HWTEST_F(BufferClientProducerRemoteTest, SetTransform001, Function | MediumTest 
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_90;
     GSError ret = bp->SetTransform(transform);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    GraphicTransformType transform2 = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(bp->GetTransform(transform2), OHOS::GSERROR_OK);
+    ASSERT_EQ(transform, transform2);
 }
 
 /*
@@ -687,5 +695,33 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function |
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
     ret = bp->DetachBufferFromQueue(buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+}
+
+/*
+* Function: SetBufferhold
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferhold and check ret
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetBufferhold001, Function | MediumTest | Level2)
+{
+    EXPECT_EQ(bp->SetBufferHold(true), GSERROR_OK);
+    EXPECT_EQ(bp->SetBufferHold(false), GSERROR_OK);
+}
+
+/*
+* Function: SetWhitePointBrightness
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetWhitePointBrightness and check ret
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, Function | MediumTest | Level2)
+{
+    EXPECT_EQ(bp->SetHdrWhitePointBrightness(1), GSERROR_OK);
+    EXPECT_EQ(bp->SetSdrWhitePointBrightness(1), GSERROR_OK);
 }
 }

@@ -25,7 +25,6 @@
 #include <sys/poll.h>
 #include <linux/sync_file.h>
 #include <sys/ioctl.h>
-#include "sw_sync.h"
 #include "hilog/log.h"
 
 namespace OHOS {
@@ -52,61 +51,6 @@ constexpr int32_t INVALID_FD = -1;
 const sptr<SyncFence> SyncFence::INVALID_FENCE = sptr<SyncFence>(new SyncFence(INVALID_FD));
 const ns_sec_t SyncFence::INVALID_TIMESTAMP = -1;
 const ns_sec_t SyncFence::FENCE_PENDING_TIMESTAMP = INT64_MAX;
-
-SyncTimeline::SyncTimeline() noexcept
-{
-    if (!IsSupportSoftwareSync()) {
-        UTILS_LOGE("don't support SyncTimeline");
-        return;
-    }
-    int32_t fd = CreateSyncTimeline();
-    if (fd > 0) {
-        timeLineFd_ = fd;
-    }
-}
-
-SyncTimeline::~SyncTimeline() noexcept
-{
-    if (timeLineFd_ > 0) {
-        close(timeLineFd_);
-        timeLineFd_ = -1;
-        isValid_ = false;
-    }
-}
-
-int32_t SyncTimeline::IncreaseSyncPoint(uint32_t step)
-{
-    if (timeLineFd_ < 0) {
-        return -1;
-    }
-    return IncreaseSyncPointOnTimeline(timeLineFd_, step);
-}
-
-bool SyncTimeline::IsValid()
-{
-    if (timeLineFd_ > 0) {
-        if (fcntl(timeLineFd_, F_GETFD, 0) < 0) {
-            return false;
-        } else {
-            return true;
-        }
-    } else {
-        return false;
-    }
-}
-
-int32_t SyncTimeline::GenerateFence(std::string name, uint32_t point)
-{
-    if (timeLineFd_ < 0) {
-        return -1;
-    }
-    int32_t fd = CreateSyncFence(timeLineFd_, name.c_str(), point);
-    if (fd < 0) {
-        UTILS_LOGE("Fail to CreateSyncFence");
-        return -1;
-    }
-    return fd;
-}
 
 SyncFence::SyncFence(int32_t fenceFd) : fenceFd_(fenceFd)
 {

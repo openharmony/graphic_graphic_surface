@@ -329,8 +329,8 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     }
 }
 
-void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32_t width, int32_t height,
-    const std::string name)
+void WriteToFile(std::string prefixPath, std::string pid, void* dest, size_t size, int32_t format, int32_t width,
+    int32_t height, const std::string name)
 {
     struct timeval now;
     gettimeofday(&now, nullptr);
@@ -338,7 +338,7 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
     int64_t nowVal = (int64_t)now.tv_sec * secToUsec + (int64_t)now.tv_usec;
 
     std::stringstream ss;
-    ss << "/data/bq_" << pid << "_" << name << "_" << nowVal << "_" << format << "_"
+    ss << prefixPath << pid << "_" << name << "_" << nowVal << "_" << format << "_"
         << width << "x" << height << ".raw";
 
     // Open the file for writing in binary mode
@@ -360,6 +360,12 @@ void WriteToFile(std::string pid, void* dest, size_t size, int32_t format, int32
 
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer)
 {
+    bool rsDumpFlag = access("/data/bq_dump", F_OK) == 0;
+    bool appDumpFlag = access("/data/storage/el1/base/bq_dump", F_OK) == 0;
+    if (!rsDumpFlag && !appDumpFlag) {
+        return GSERROR_OK;
+    }
+
     if (buffer == nullptr) {
         BLOGE("buffer is a nullptr.");
         return GSERROR_INVALID_ARGUMENTS;
@@ -378,8 +384,15 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
         if (dest != nullptr) {
             // Copy through multithreading
             CloneBuffer(dest, src, size);
+
+            std::string prefixPath = "/data/bq_";
+            if (appDumpFlag) {
+                // Is app texture export
+                prefixPath = "/data/storage/el1/base/bq_";
+            }
+
             // create dump thread，async export file
-            std::thread file_writer(WriteToFile, std::to_string(pid), dest, size, buffer->GetFormat(),
+            std::thread file_writer(WriteToFile, prefixPath, std::to_string(pid), dest, size, buffer->GetFormat(),
                 buffer->GetWidth(), buffer->GetHeight(), name);
             file_writer.detach();
         } else {

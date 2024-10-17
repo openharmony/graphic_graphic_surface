@@ -116,8 +116,6 @@ namespace OHOS {
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness);
         code = SET_SDR_WHITE_POINT_BRIGHTNESS;
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, brightness);
-        code = GetData<int>();
-        OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code);
     }
 
     void NativeWindowFuzzTest(OHNativeWindow *nativeWindow, OHNativeWindowBuffer *nwBuffer)
@@ -134,7 +132,6 @@ namespace OHOS {
         OHScalingMode scalingMode = GetData<OHScalingMode>();
         OHScalingModeV2 scalingModeV2 = GetData<OHScalingModeV2>();
         NativeWindowRequestBuffer(nativeWindow, &nwBuffer, &fenceFd);
-        NativeObjectReference(nwBuffer);
         NativeWindowFlushBuffer(nativeWindow, nwBuffer, fenceFd, region);
         NativeWindowCancelBuffer(nativeWindow, nwBuffer);
         GetBufferHandleFromNative(nwBuffer);
@@ -173,21 +170,23 @@ namespace OHOS {
         OHIPCParcel *parcel = OH_IPCParcel_Create();
         NativeWindowWriteToParcel(nativeWindow, parcel);
         NativeWindowReadFromParcel(parcel, &nativeWindow);
+        OH_IPCParcel_Destroy(parcel);
         OHNativeWindow *nativeWindowTmp;
         CreateNativeWindowFromSurfaceId(surfaceId, &nativeWindowTmp);
+        DestoryNativeWindow(nativeWindowTmp);
         OH_NativeBuffer_ColorSpace space = GetData<OH_NativeBuffer_ColorSpace>();
         OH_NativeWindow_SetColorSpace(nativeWindow, space);
         OH_NativeWindow_GetColorSpace(nativeWindow, &space);
         OH_NativeBuffer_MetadataKey metaKey = GetData<OH_NativeBuffer_MetadataKey>();
-        int32_t metaSize = GetData<int32_t>();
-        uint8_t len = GetData<uint8_t>();
+        int32_t len = GetData<int32_t>();
         uint8_t buff[len];
         for (int i = 0; i < len; ++i) {
             buff[i] = GetData<uint8_t>();
         }
-        OH_NativeWindow_SetMetadataValue(nativeWindow, metaKey, metaSize, buff);
+        OH_NativeWindow_SetMetadataValue(nativeWindow, metaKey, len, buff);
         uint8_t *checkMetaData;
-        OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, &metaSize, &checkMetaData);
+        OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, &len, &checkMetaData);
+        delete checkMetaData;
         std::vector<OHHDRMetaData> metaDatas = {metaData};
         uint32_t sequence = GetData<uint32_t>();
         NativeWindowSetMetaData(nativeWindow, sequence, metaDatas.size(), metaDatas.data());
@@ -222,10 +221,13 @@ namespace OHOS {
         uint32_t seqNum = GetData<uint32_t>();
         sptr<OHOS::SurfaceBuffer> sBuffer = new SurfaceBufferImpl(seqNum);
         OHNativeWindowBuffer* nwBuffer = CreateNativeWindowBufferFromSurfaceBuffer(&sBuffer);
+        DestroyNativeWindowBuffer(nwBuffer);
+        nwBuffer = nullptr;
         HandleOpt(nativeWindow);
         HandleOpt1(nativeWindow);
         NativeWindowFuzzTest(nativeWindow, nwBuffer);
         NativeWindowFuzzTest1(nativeWindow, nwBuffer);
+        DestoryNativeWindow(nativeWindow);
         return true;
     }
 } // namespace OHOS

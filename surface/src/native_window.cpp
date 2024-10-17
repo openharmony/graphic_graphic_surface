@@ -779,16 +779,11 @@ int32_t OH_NativeWindow_SetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     if (window == nullptr || NATIVE_COLORSPACE_TO_HDI_MAP.find(colorSpace) == NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    OHNativeWindowBuffer *lastFlushedBuffer;
-    int lastFlushFenceFd;
-    float matrix[16] = {0};
-    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
-    if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
-        return status;
+    std::string param = std::to_string(NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
+    GSError ret = GSERROR_OK;
+    if (window->surface != nullptr && param != window->surface->GetUserData("ATTRKEY_COLORSPACE_INFO")) {
+        ret = window->surface->SetUserData("ATTRKEY_COLORSPACE_INFO", param);
     }
-    GSError ret = MetadataHelper::SetColorSpaceType(lastFlushedBuffer->sfbuffer,
-        NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]);
     if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("SetColorSpaceType failed!, ret: %d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
@@ -801,25 +796,20 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     if (window == nullptr || colorSpace == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    OHOS::HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType colorSpaceType;
-    OHNativeWindowBuffer *lastFlushedBuffer;
-    int lastFlushFenceFd;
-    float matrix[16] = {0};
-    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
-    if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
-        return status;
-    }
-    GSError ret = MetadataHelper::GetColorSpaceType(lastFlushedBuffer->sfbuffer, colorSpaceType);
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
-        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
-    } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetColorSpaceType failed!, ret: %d", ret);
-        return OHOS::SURFACE_ERROR_UNKOWN;
-    }
-    for (auto type : NATIVE_COLORSPACE_TO_HDI_MAP) {
-        if (type.second == colorSpaceType) {
-            *colorSpace = type.first;
+    CM_ColorSpaceType colorSpaceType = CM_COLORSPACE_NONE;
+    if (window->surface != nullptr) {
+        std::string value = window->surface->GetUserData("ATTRKEY_COLORSPACE_INFO");
+        if (value.empty()) {
+            BLOGE("no colorspace!");
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+        colorSpaceType = static_cast<CM_ColorSpaceType>(atoi(value.c_str()));
+        auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
+            [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType>& element) {
+                return element.second == colorSpaceType;
+            });
+        if (it != NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
+            *colorSpace = it->first;
             return OHOS::SURFACE_ERROR_OK;
         }
     }
@@ -830,27 +820,29 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
 int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t size, uint8_t *metadata)
 {
-    if (window == nullptr || metadata == nullptr || size <= 0 || size > META_DATA_MAX_SIZE) {
+    if (window == nullptr || metadata == nullptr || size <= 0 || size > META_DATA_MAX_SIZE ||
+        window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
-    }
-    OHNativeWindowBuffer *lastFlushedBuffer;
-    int lastFlushFenceFd;
-    float matrix[16] = {0};
-    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
-    if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
-        return status;
     }
     GSError ret = GSERROR_OK;
     std::vector<uint8_t> mD(metadata, metadata + size);
+    std::string param;
     if (metadataKey == OH_HDR_DYNAMIC_METADATA) {
-        ret = MetadataHelper::SetHDRDynamicMetadata(lastFlushedBuffer->sfbuffer, mD);
+        param.assign(mD.begin(), mD.end());
+        if (param != window->surface->GetUserData("OH_HDR_DYNAMIC_METADATA")) {
+            ret = window->surface->SetUserData("OH_HDR_DYNAMIC_METADATA", param);
+        }
     } else if (metadataKey == OH_HDR_STATIC_METADATA) {
-        ret = MetadataHelper::SetHDRStaticMetadata(lastFlushedBuffer->sfbuffer, mD);
+        param.assign(mD.begin(), mD.end());
+        if (param != window->surface->GetUserData("OH_HDR_STATIC_METADATA")) {
+            ret = window->surface->SetUserData("OH_HDR_STATIC_METADATA", param);
+        }
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
         OH_NativeBuffer_MetadataType hdrMetadataType = static_cast<OH_NativeBuffer_MetadataType>(*metadata);
-        ret = MetadataHelper::SetHDRMetadataType(lastFlushedBuffer->sfbuffer,
-            NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
+        param = std::to_string(NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
+        if (param != window->surface->GetUserData("OH_HDR_METADATA_TYPE")) {
+            ret = window->surface->SetUserData("OH_HDR_METADATA_TYPE", param);
+        }
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
@@ -864,28 +856,26 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     return OHOS::SURFACE_ERROR_OK;
 }
 
-GSError OH_NativeWindow_GetMatedataValueType(sptr<SurfaceBuffer> sfbuffer, int32_t *size, uint8_t **metadata)
+static GSError OH_NativeWindow_GetMatedataValueType(OHNativeWindow *window, int32_t *size, uint8_t **metadata)
 {
+    std::string value = window->surface->GetUserData("OH_HDR_METADATA_TYPE");
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
-    GSError ret = MetadataHelper::GetHDRMetadataType(sfbuffer, hdrMetadataType);
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
-        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
-    } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetHDRMetadataType failed!, ret: %d", ret);
-        return OHOS::SURFACE_ERROR_UNKOWN;
-    }
-    for (auto type : NATIVE_METADATATYPE_TO_HDI_MAP) {
-        if (type.second == hdrMetadataType) {
-            *size = sizeof(OH_NativeBuffer_MetadataType);
-            *metadata = new uint8_t[*size];
-            errno_t err = memcpy_s(*metadata, *size, &(type.first), *size);
-            if (err != 0) {
-                delete[] *metadata;
-                BLOGE("memcpy_s failed! , ret: %d", err);
-                return OHOS::SURFACE_ERROR_UNKOWN;
-            }
-            return OHOS::SURFACE_ERROR_OK;
+    hdrMetadataType = static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str()));
+    auto it = std::find_if(NATIVE_METADATATYPE_TO_HDI_MAP.begin(), NATIVE_METADATATYPE_TO_HDI_MAP.end(),
+    [hdrMetadataType](const std::pair<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type>& element) {
+        return element.second == hdrMetadataType;
+    });
+    if (it != NATIVE_METADATATYPE_TO_HDI_MAP.end()) {
+        *size = sizeof(OH_NativeBuffer_MetadataType);
+        *metadata = new uint8_t[*size];
+        errno_t err = memcpy_s(*metadata, *size, &(it->first), *size);
+        if (err != 0) {
+            delete[] *metadata;
+            *metadata = nullptr;
+            BLOGE("memcpy_s failed! , ret: %d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
         }
+        return OHOS::SURFACE_ERROR_OK;
     }
     BLOGE("the hdrMetadataType does not support it.");
     return OHOS::SURFACE_ERROR_NOT_SUPPORT;
@@ -894,25 +884,21 @@ GSError OH_NativeWindow_GetMatedataValueType(sptr<SurfaceBuffer> sfbuffer, int32
 int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t *size, uint8_t **metadata)
 {
-    if (window == nullptr || metadata == nullptr || size == nullptr) {
+    if (window == nullptr || metadata == nullptr || size == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
-    }
-    OHNativeWindowBuffer *lastFlushedBuffer;
-    int lastFlushFenceFd;
-    float matrix[16] = {0};
-    int32_t status = GetLastFlushedBuffer(window, &lastFlushedBuffer, &lastFlushFenceFd, matrix);
-    if (status != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("GetLastFlushedBuffer fail, ret: %{public}d", status);
-        return status;
     }
     GSError ret = GSERROR_OK;
     std::vector<uint8_t> mD;
     if (metadataKey == OH_HDR_DYNAMIC_METADATA) {
-        ret = MetadataHelper::GetHDRDynamicMetadata(lastFlushedBuffer->sfbuffer, mD);
+        std::string value = window->surface->GetUserData("OH_HDR_DYNAMIC_METADATA");
+        mD.resize(value.size());
+        mD.assign(value.begin(), value.end());
     } else if (metadataKey == OH_HDR_STATIC_METADATA) {
-        ret = MetadataHelper::GetHDRStaticMetadata(lastFlushedBuffer->sfbuffer, mD);
+        std::string value = window->surface->GetUserData("OH_HDR_STATIC_METADATA");
+        mD.resize(value.size());
+        mD.assign(value.begin(), value.end());
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
-        ret = OH_NativeWindow_GetMatedataValueType(lastFlushedBuffer->sfbuffer, size, metadata);
+        ret = OH_NativeWindow_GetMatedataValueType(window, size, metadata);
         return ret;
     } else {
         BLOGE("the metadataKey does not support it.");
@@ -930,12 +916,14 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
         if (err != 0) {
             delete[] *metadata;
-            BLOGE("memcpy_s failed! , ret: %d", err);
+            *metadata = nullptr;
+            BLOGE("memcpy_s failed! , ret:%d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
     } else {
         delete[] *metadata;
-        BLOGE("new metadata failed!");
+        *metadata = nullptr;
+        BLOGE("new metadata failed! ");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

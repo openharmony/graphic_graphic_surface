@@ -122,6 +122,7 @@ ohos_shared_library("surface") {
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
     sources += libsurface_ext_delegator_sources
     sources -= libsurface_ext_delegator_sources_del
+    external_deps += libsurface_ext_delegator_external_deps;
   }
 
   innerapi_tags = [

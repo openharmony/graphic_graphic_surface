@@ -768,7 +768,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, fence->Get(), uniqueId_);
     } else if (ret == GSERROR_NO_BUFFER) {
         for (auto &[id, ele] : bufferQueueCache_) {
-            SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %u", id, ele.state);
+            SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
             BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
                 id, ele.state, uniqueId_);
         }

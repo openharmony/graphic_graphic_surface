@@ -21,6 +21,7 @@ group("systemtest") {
 
   deps = [
     ":native_window_buffer_test",
+    ":native_window_test",
     ":surface_ipc_test",
   ]
 }
@@ -59,6 +60,37 @@ ohos_systemtest("native_window_buffer_test") {
 }
 
 ## SystemTest native_window_buffer_test }}}
+
+## SystemTest native_window_test {{{
+ohos_systemtest("native_window_test") {
+  module_out_path = module_out_path
+
+  sources = [ "native_window_test.cpp" ]
+
+  include_dirs = [ "$graphic_surface_root/surface/include" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-g3",
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
+
+  deps = [
+    "$graphic_surface_root/buffer_handle:buffer_handle",
+    "$graphic_surface_root/surface:surface",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+  ]
+}
+
+## SystemTest native_window_test }}}
 
 ## SystemTest surface_ipc_test {{{
 ohos_systemtest("surface_ipc_test") {

@@ -44,7 +44,6 @@ ohos_systemtest("native_window_buffer_test") {
   deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle",
     "$graphic_surface_root/surface:surface",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -52,6 +51,7 @@ ohos_systemtest("native_window_buffer_test") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "c_utils:utils",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
@@ -66,12 +66,7 @@ ohos_systemtest("surface_ipc_test") {
 
   sources = [ "surface_ipc_test.cpp" ]
 
-  include_dirs = [
-    "$graphic_surface_root/surface/include",
-    "//base/security/access_token/interfaces/innerkits/nativetoken/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
-    "//base/security/access_token/interfaces/innerkits/token_setproc/include",
-  ]
+  include_dirs = [ "$graphic_surface_root/surface/include" ]
 
   cflags = [
     "-Wall",
@@ -79,16 +74,14 @@ ohos_systemtest("surface_ipc_test") {
     "-g3",
   ]
 
-  deps = [
-    "$graphic_surface_root/surface:surface",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$graphic_surface_root/surface:surface" ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "c_utils:utils",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",

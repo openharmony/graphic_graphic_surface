@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 module_out_path = "graphic_surface/utils"
 
@@ -33,13 +34,13 @@ ohos_unittest("sync_fence_test") {
 
   deps = [
     ":sync_fence_common",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
+    "$graphic_surface_root/sync_fence:sync_fence",
   ]
 
   external_deps = [
     "c_utils:utils",
-    "graphic_surface:sync_fence",
     "hilog:libhilog",
+    "ipc:ipc_core",
   ]
 }
 

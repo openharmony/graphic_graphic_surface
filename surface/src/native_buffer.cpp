@@ -353,6 +353,7 @@ static GSError OH_NativeBuffer_GetMatedataValueType(sptr<SurfaceBuffer> sbuffer,
             BLOGE("memcpy_s failed!, ret: %d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
+        return OHOS::SURFACE_ERROR_OK;
     }
     BLOGE("the hdrMetadataType does not support it.");
     return OHOS::SURFACE_ERROR_NOT_SUPPORT;

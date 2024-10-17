@@ -71,7 +71,7 @@ GSError BufferClientProducer::SendRequest(uint32_t command, MessageParcel &arg,
 {
     sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
-        BLOGE("Remote is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        BLOGE("Remote is nullptr!");
         return GSERROR_SERVER_ERROR;
     }
     int32_t ret = remote->SendRequest(command, arg, reply, opt);
@@ -142,7 +142,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
         BLOGE("num is invalid, %{public}u, uniqueId: %{public}" PRIu64 ".", num, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-    
+
     ret = GSERROR_OK;
     retvalues.resize(num);
     for (size_t i = 0; i < num; ++i) {

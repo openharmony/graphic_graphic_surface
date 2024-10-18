@@ -1898,4 +1898,44 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferNoConsumer, Function | MediumTest | L
     pSurfaceTmp = nullptr;
     producerTmp = nullptr;
 }
+
+/*
+* Function: RequestBufferNoListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, RequestBufferNoListener, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
+
+    ret = pSurfaceTmp->Disconnect();
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_CONSUMER_DISCONNECTED);
+
+    ret = pSurfaceTmp->Connect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurfaceTmp->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
 }

@@ -633,7 +633,10 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
         return OHOS::GSERROR_OK;
     }
 
-    OHNativeWindow *nativeWindow = new OHNativeWindow();
+    OHNativeWindow *nativeWindow = new(std::nothrow) OHNativeWindow();
+    if (nativeWindow == nullptr) {
+        return OHOS::SURFACE_ERROR_NOMEM;
+    }
     nativeWindow->surface = utils->GetSurface(surfaceId);
     if (nativeWindow->surface == nullptr) {
         BLOGE("window surface is null, surfaceId: %{public}" PRIu64 ".", surfaceId);

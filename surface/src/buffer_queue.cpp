@@ -584,6 +584,7 @@ GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fen
 
 void BufferQueue::CallConsumerListener()
 {
+    SURFACE_TRACE_NAME_FMT("CallConsumerListener");
     sptr<IBufferConsumerListener> listener;
     IBufferConsumerListenerClazz *listenerClazz;
     {

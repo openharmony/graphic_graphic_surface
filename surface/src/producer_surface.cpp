@@ -621,8 +621,8 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
     if (func == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new BufferReleaseProducerListener(func);
-    return producer_->RegisterReleaseListener(listener_);
+    sptr<IProducerListener> listener = new BufferReleaseProducerListener(func);
+    return producer_->RegisterReleaseListener(listener);
 }
 
 GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWithFence)
@@ -630,8 +630,8 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     if (funcWithFence == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
-    return producer_->RegisterReleaseListener(listener_);
+    sptr<IProducerListener> listener = new BufferReleaseProducerListener(nullptr, funcWithFence);
+    return producer_->RegisterReleaseListener(listener);
 }
 
 GSError ProducerSurface::UnRegisterReleaseListener()

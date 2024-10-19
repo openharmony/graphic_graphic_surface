@@ -126,7 +126,6 @@ private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
     bool HandleDeathRecipient(sptr<IRemoteObject> token);
-    GSError ConnectLocked();
 
     int32_t GetProducerInitInfoRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

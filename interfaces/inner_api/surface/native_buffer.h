@@ -375,7 +375,8 @@ typedef struct {
 typedef enum OH_NativeBuffer_MetadataType {
     OH_VIDEO_HDR_HLG,      /**< HLG */
     OH_VIDEO_HDR_HDR10,    /**< HDR10 */
-    OH_VIDEO_HDR_VIVID     /**< HDR VIVID */
+    OH_VIDEO_HDR_VIVID,     /**< HDR VIVID */
+    OH_VIDEO_NONE          /**< NONE Metadata */
 } OH_NativeBuffer_MetadataType;
 
 /**

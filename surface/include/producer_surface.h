@@ -246,6 +246,7 @@ private:
     uint64_t queueId_ = 0;
     bool isDisconnected_ = true;
     sptr<IProducerListener> listener_;
+    std::mutex listenerMutex_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;
     wptr<ProducerSurfaceDelegator> wpPSurfaceDelegator_ = nullptr;
     std::mutex delegatorMutex_;

@@ -122,6 +122,53 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2
 * CaseDescription: 1. call DumpToFileAsync
 *                  2. check ret
  */
+HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, Function | MediumTest | Level2)
+{
+    const pid_t pid = GetRealPid();
+
+    // Alloc buffer
+    buffer = new SurfaceBufferImpl();
+    buffer->Alloc(requestConfig);
+
+    // Call DumpToFileAsync
+    GSError ret = DumpToFileAsync(pid, name_, buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    // Expect Buffer Dump to be completed within 20ms.
+    std::chrono::milliseconds dura(20);
+    std::this_thread::sleep_for(dura);
+
+    const std::string directory = "/data/storage/el1/base";
+    if (access(directory.c_str(), F_OK) == 0) {
+        const std::string prefix = "bq_" + std::to_string(pid) + "_" + name_;
+        size_t dumpFileSize = 0;
+        // Traverse the directory and find the dump file.
+        for (const auto& entry : fs::recursive_directory_iterator(directory)) {
+            if (entry.is_regular_file() && entry.path().filename().string().find(prefix) == 0) {
+                // Open the file to create a stream
+                std::ifstream dumpFile(entry.path(), std::ios::binary);
+                std::vector<uint8_t> file_data((std::istreambuf_iterator<char>(dumpFile)),
+                    std::istreambuf_iterator<char>());
+                // Get fileSize from the file stream
+                dumpFileSize = file_data.size();
+                dumpFile.close();
+                fs::remove(entry.path());
+                break;
+            }
+        }
+
+        ASSERT_EQ(dumpFileSize, buffer->GetSize());
+    }
+}
+
+/*
+* Function: WriteToFile
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DumpToFileAsync
+*                  2. check ret
+ */
 HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, Function | MediumTest | Level2)
 {
     buffer = nullptr;

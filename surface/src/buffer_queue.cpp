@@ -306,12 +306,22 @@ bool BufferQueue::WaitForCondition()
 void BufferQueue::RequestBufferDebugInfo()
 {
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
+    std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %d state: %u", id, ele.state);
         BLOGD("request no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
             id, ele.state, uniqueId_);
+        bufferState[ele.state] += 1;
     }
-    BLOGD("all buffer are using, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+    std::string str = std::to_string(uniqueId_) +
+        ", Released: " + std::to_string(bufferState[BUFFER_STATE_RELEASED]) +
+        " Requested: " + std::to_string(bufferState[BUFFER_STATE_REQUESTED]) +
+        " Flushed: " + std::to_string(bufferState[BUFFER_STATE_FLUSHED]) +
+        " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
+    if (str.compare(requestBufferStateStr_) != 0) {
+        requestBufferStateStr_ = str;
+        BLOGE("all buffer are using, uniqueId: %{public}s", str.c_str());
+    }
 }
 
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
@@ -748,6 +758,26 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     return GSERROR_OK;
 }
 
+void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
+{
+    std::map<BufferState, int32_t> bufferState;
+    for (auto &[id, ele] : bufferQueueCache_) {
+        SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
+        BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
+            id, ele.state, uniqueId_);
+        bufferState[ele.state] += 1;
+    }
+    std::string str = std::to_string(uniqueId_) +
+        ", Released: " + std::to_string(bufferState[BUFFER_STATE_RELEASED]) +
+        " Requested: " + std::to_string(bufferState[BUFFER_STATE_REQUESTED]) +
+        " Flushed: " + std::to_string(bufferState[BUFFER_STATE_FLUSHED]) +
+        " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
+    if (str.compare(acquireBufferStateStr_) != 0) {
+        acquireBufferStateStr_ = str;
+        BLOGE("there is no dirty buffer, uniqueId: %{public}s", str.c_str());
+    }
+}
+
 GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
 {
@@ -766,12 +796,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         BLOGD("Success Buffer seq id: %{public}d AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
             sequence, fence->Get(), uniqueId_);
     } else if (ret == GSERROR_NO_BUFFER) {
-        for (auto &[id, ele] : bufferQueueCache_) {
-            SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
-            BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
-                id, ele.state, uniqueId_);
-        }
-        BLOGD("there is no dirty buffer, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        LogAndTraceAllBufferInBufferQueueCache();
     }
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
@@ -1805,7 +1830,7 @@ void BufferQueue::Dump(std::string &result)
     ss.precision(BUFFER_MEMSIZE_FORMAT);
     ss.setf(std::ios::fixed);
     static double allSurfacesMemSize = 0;
-    uint32_t totalBufferListSize = 0;
+    uint64_t totalBufferListSize = 0;
     double memSizeInKB = 0;
 
     for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {

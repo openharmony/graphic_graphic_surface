@@ -213,6 +213,7 @@ private:
     void RequestBufferDebugInfo();
     bool GetStatusLocked() const;
     void CallConsumerListener();
+    void LogAndTraceAllBufferInBufferQueueCache();
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
@@ -257,6 +258,8 @@ private:
     float hdrWhitePointBrightness_ = 0.0;
     float sdrWhitePointBrightness_ = 0.0;
     uint32_t acquireLastFlushedBufSequence_;
+    std::string requestBufferStateStr_;
+    std::string acquireBufferStateStr_;
 };
 }; // namespace OHOS
 

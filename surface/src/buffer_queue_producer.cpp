@@ -911,34 +911,24 @@ GSError BufferQueueProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
 GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                            RequestBufferReturnValue &retval)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
 
-    auto lastconnectedPid = connectedPid_;
-    auto ret = ConnectLocked();
+    auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
-    ret = bufferQueue_->RequestBuffer(config, bedata, retval);
-    if ((lastconnectedPid == 0) && (ret != SURFACE_ERROR_OK)) {
-        BLOGW("First connect revert, connectedPid: %{public}d, ret: %{public}d, uniqueId: %{public}" PRIu64 ".",
-            connectedPid_, ret, uniqueId_);
-        connectedPid_ = 0;
-    }
-    return ret;
+    return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
 GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    auto lastconnectedPid = connectedPid_;
-    auto ret = ConnectLocked();
+    auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
@@ -952,11 +942,6 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     }
     bufferQueue_->SetBatchHandle(false);
     if (retvalues.size() == 0) {
-        if (lastconnectedPid == 0) {
-            BLOGW("First connect revert, connectedPid: %{public}d, uniqueId: %{public}" PRIu64 ".",
-                connectedPid_, uniqueId_);
-            connectedPid_ = 0;
-        }
         return ret;
     }
     return GSERROR_OK;
@@ -1294,8 +1279,9 @@ GSError BufferQueueProducer::GetNameAndUniqueId(std::string& name, uint64_t& uni
     return GetName(name);
 }
 
-GSError BufferQueueProducer::ConnectLocked()
+GSError BufferQueueProducer::Connect()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     auto callingPid = GetCallingPid();
     if (connectedPid_ != 0 && connectedPid_ != callingPid) {
         BLOGW("connected by: %{public}d, request by: %{public}d , uniqueId: %{public}" PRIu64 ".",
@@ -1304,12 +1290,6 @@ GSError BufferQueueProducer::ConnectLocked()
     }
     connectedPid_ = callingPid;
     return SURFACE_ERROR_OK;
-}
-
-GSError BufferQueueProducer::Connect()
-{
-    std::lock_guard<std::mutex> lock(mutex_);
-    return ConnectLocked();
 }
 
 GSError BufferQueueProducer::Disconnect()

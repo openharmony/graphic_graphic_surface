@@ -1586,20 +1586,6 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer001, Functio
 }
 
 /*
-* Function: OH_NativeWindow_DestroyNativeWindowBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeWindow_DestroyNativeWindowBuffer again
-*                  2. check ret
- */
-HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, Function | MediumTest | Level2)
-{
-    ASSERT_NE(nativeWindowBuffer, nullptr);
-    OH_NativeWindow_DestroyNativeWindowBuffer(nativeWindowBuffer);
-}
-
-/*
 * Function: OH_NativeWindow_NativeWindowSetScalingMode
 * Type: Function
 * Rank: Important(2)
@@ -1950,7 +1936,7 @@ HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest |
     region->rectNumber = 0;
     region->rects = nullptr;
     ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
-              OHOS::SURFACE_ERROR_INVALID_PARAM);
+              OHOS::GSERROR_BUFFER_STATE_INVALID);
     region->rectNumber = 1;
     struct Region::Rect * rect = new Region::Rect();
     rect->x = 0x100;
@@ -1959,7 +1945,7 @@ HWTEST_F(NativeWindowTest, NativeWindowSetBufferHold001, Function | MediumTest |
     rect->h = 0x100;
     region->rects = rect;
     ASSERT_EQ(OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, fenceFd, *region),
-              OHOS::SURFACE_ERROR_INVALID_PARAM);
+              OHOS::GSERROR_BUFFER_STATE_INVALID);
     cSurface->SetBufferHold(false);
     delete rect;
     delete region;
@@ -2150,5 +2136,19 @@ HWTEST_F(NativeWindowTest, NativeWindowSetRequestWidthAndHeight001, Function | M
     ASSERT_EQ(NativeWindowSetRequestWidthAndHeight(nativeWindow, 100, 0), OHOS::GSERROR_OK);
     ASSERT_NE(OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer1, &fence),
         OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeWindow_DestroyNativeWindowBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_DestroyNativeWindowBuffer again
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, Function | MediumTest | Level2)
+{
+    ASSERT_NE(nativeWindowBuffer, nullptr);
+    OH_NativeWindow_DestroyNativeWindowBuffer(nativeWindowBuffer);
 }
 }

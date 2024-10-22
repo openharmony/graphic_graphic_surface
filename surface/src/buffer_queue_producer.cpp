@@ -172,6 +172,8 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
             bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
             !reply.WriteUInt32Vector(retval.deletingBuffers))) {
         return IPC_STUB_WRITE_PARCEL_ERR;
+    } else if (sRet != GSERROR_OK && !reply.WriteBool(retval.isConnected)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
     if (isActiveGame) {
@@ -219,6 +221,8 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
         }
+    } else if (sRet != GSERROR_OK && !reply.WriteBool(retvalues[0].isConnected)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
 }
@@ -915,10 +919,12 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
         return SURFACE_ERROR_UNKOWN;
     }
 
+    retval.isConnected = false;
     auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
+    retval.isConnected = true;
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
@@ -928,11 +934,12 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-
+    retvalues[0].isConnected = false;
     auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
+    retvalues[0].isConnected = true;
     bufferQueue_->SetBatchHandle(true);
     for (size_t i = 0; i < retvalues.size(); ++i) {
         ret = bufferQueue_->RequestBuffer(config, bedata[i], retvalues[i]);

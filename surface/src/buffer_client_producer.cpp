@@ -144,7 +144,7 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     if (ret != GSERROR_OK) {
         return ret;
     }
-    retval.isConnected = false;
+    retvalues[0].isConnected = false;
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
     ret = CheckRetval(reply);
     if (ret != GSERROR_OK && ret != GSERROR_NO_BUFFER) {

@@ -115,12 +115,17 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
             if (ret == GSERROR_NO_CONSUMER) {
                 CleanCacheLocked(false);
             }
+            /**
+             * if server is connected, but result is failed.
+             * client needs to synchronize status.
+             */
             if (retval.isConnected) {
                 isDisconnected_ = false;
             }
             BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
+        isDisconnected_ = false;
         AddCacheLocked(bedataimpl, retval, config);
     }
     buffer = retval.buffer;
@@ -196,7 +201,6 @@ void ProducerSurface::OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer)
 GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
 {
-    isDisconnected_ = false;
     // add cache
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
@@ -246,12 +250,17 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffer
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
     if (ret != GSERROR_NO_BUFFER && ret != GSERROR_OK) {
+        /**
+         * if server is connected, but result is failed.
+         * client needs to synchronize status.
+         */
         if (retvalues[0].isConnected) {
             isDisconnected_ = false;
         }
         BLOGD("RequestBuffers ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
         return ret;
     }
+    isDisconnected_ = false;
     for (size_t i = 0; i < retvalues.size(); ++i) {
         AddCacheLocked(bedataimpls[i], retvalues[i], config);
         buffers.emplace_back(retvalues[i].buffer);

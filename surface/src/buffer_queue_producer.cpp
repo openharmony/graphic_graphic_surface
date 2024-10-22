@@ -205,11 +205,11 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
         bedataimpls.emplace_back(data);
     }
     GSError sRet = RequestBuffers(config, bedataimpls, retvalues);
-    num = static_cast<uint32_t>(retvalues.size());
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     if (sRet == GSERROR_OK || sRet == GSERROR_NO_BUFFER) {
+        num = static_cast<uint32_t>(retvalues.size());
         if (!reply.WriteUint32(num)) {
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
@@ -939,7 +939,6 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
-    retvalues[0].isConnected = true;
     bufferQueue_->SetBatchHandle(true);
     for (size_t i = 0; i < retvalues.size(); ++i) {
         ret = bufferQueue_->RequestBuffer(config, bedata[i], retvalues[i]);
@@ -950,6 +949,8 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     }
     bufferQueue_->SetBatchHandle(false);
     if (retvalues.size() == 0) {
+        retvalues.resize(1);
+        retvalues[0].isConnected = true;
         return ret;
     }
     return GSERROR_OK;

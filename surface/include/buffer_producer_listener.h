@@ -71,6 +71,8 @@ public:
         }
         return GSERROR_OK;
     }
+
+    void ResetReleaseFunc() override {}
 private:
     static inline BrokerDelegator<ProducerListenerProxy> delegator_;
 };
@@ -145,6 +147,11 @@ public:
             return funcWithFence_(buffer, fence);
         }
         return GSERROR_INTERNAL;
+    }
+    void ResetReleaseFunc() override
+    {
+        func_ = nullptr;
+        funcWithFence_ = nullptr;
     }
 private:
     OnReleaseFunc func_;

@@ -621,8 +621,13 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFunc func)
     if (func == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new BufferReleaseProducerListener(func);
-    return producer_->RegisterReleaseListener(listener_);
+    sptr<IProducerListener> listener;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        listener_ = new BufferReleaseProducerListener(func);
+        listener = listener_;
+    }
+    return producer_->RegisterReleaseListener(listener);
 }
 
 GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWithFence)
@@ -630,8 +635,13 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     if (funcWithFence == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    listener_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
-    return producer_->RegisterReleaseListener(listener_);
+    sptr<IProducerListener> listener;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        listener_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
+        listener = listener_;
+    }
+    return producer_->RegisterReleaseListener(listener);
 }
 
 GSError ProducerSurface::UnRegisterReleaseListener()
@@ -642,6 +652,12 @@ GSError ProducerSurface::UnRegisterReleaseListener()
     {
         std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
         wpPSurfaceDelegator_ = nullptr;
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        if (listener_ != nullptr) {
+            listener_->ResetReleaseFunc();
+        }
     }
     return producer_->UnRegisterReleaseListener();
 }

@@ -204,7 +204,7 @@ HWTEST_F(FrameReportTest, Report001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().Report(FRT_SURFACE_NAME_EMPTY);
     Rosen::FrameReport::GetInstance().Report(FRT_SURFACE_NAME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ != nullptr);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() == FRT_GAME_BUFFER_TIME);
 }
 
 /*

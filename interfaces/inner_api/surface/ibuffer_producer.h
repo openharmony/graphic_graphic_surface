@@ -44,6 +44,7 @@ public:
         sptr<SurfaceBuffer> buffer;
         sptr<SyncFence> fence;
         std::vector<uint32_t> deletingBuffers;
+        bool isConnected;
     };
     virtual GSError GetProducerInitInfo(ProducerInitInfo &info) = 0;
 

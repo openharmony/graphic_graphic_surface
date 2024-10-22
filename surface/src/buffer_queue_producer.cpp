@@ -172,6 +172,8 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
             bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
             !reply.WriteUInt32Vector(retval.deletingBuffers))) {
         return IPC_STUB_WRITE_PARCEL_ERR;
+    } else if (sRet != GSERROR_OK && !reply.WriteBool(retval.isConnected)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
     if (isActiveGame) {
@@ -203,11 +205,11 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
         bedataimpls.emplace_back(data);
     }
     GSError sRet = RequestBuffers(config, bedataimpls, retvalues);
-    num = static_cast<uint32_t>(retvalues.size());
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     if (sRet == GSERROR_OK || sRet == GSERROR_NO_BUFFER) {
+        num = static_cast<uint32_t>(retvalues.size());
         if (!reply.WriteUint32(num)) {
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
@@ -219,6 +221,8 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
         }
+    } else if (sRet != GSERROR_OK && !reply.WriteBool(retvalues[0].isConnected)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
 }
@@ -915,10 +919,12 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
         return SURFACE_ERROR_UNKOWN;
     }
 
+    retval.isConnected = false;
     auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
+    retval.isConnected = true;
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
@@ -928,6 +934,7 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    retvalues[0].isConnected = false;
     auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
@@ -942,6 +949,8 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     }
     bufferQueue_->SetBatchHandle(false);
     if (retvalues.size() == 0) {
+        retvalues.resize(1);
+        retvalues[0].isConnected = true;
         return ret;
     }
     return GSERROR_OK;

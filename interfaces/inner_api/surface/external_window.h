@@ -136,39 +136,41 @@ typedef enum NativeWindowOperation {
      */
     SET_USAGE,
     /**
-     * set native window buffer stride,
+     * set native window buffer stride in bytes,
      * variable parameter in function is
-     * [in] int32_t stride.
+     * [in] int32_t stride, in bytes.
      */
     SET_STRIDE,
     /**
-     * get native window buffer stride,
+     * get native window buffer stride in bytes,
      * variable parameter in function is
-     * [out] int32_t *stride.
+     * [out] int32_t *stride, in bytes.
      */
     GET_STRIDE,
     /**
      * set native window buffer swap interval,
      * variable parameter in function is
      * [in] int32_t interval.
+     * @deprecated since 14
      */
     SET_SWAP_INTERVAL,
     /**
      * get native window buffer swap interval,
      * variable parameter in function is
      * [out] int32_t *interval.
+     * @deprecated since 14
      */
     GET_SWAP_INTERVAL,
     /**
-     * set native window buffer timeout,
+     * set native window buffer timeout in milliseconds,
      * variable parameter in function is
-     * [in] int32_t timeout.
+     * [in] int32_t timeout, in milliseconds.
      */
     SET_TIMEOUT,
     /**
-     * get native window buffer timeout,
+     * get native window buffer timeout in milliseconds,
      * variable parameter in function is
-     * [out] int32_t *timeout.
+     * [out] int32_t *timeout, in milliseconds.
      */
     GET_TIMEOUT,
     /**

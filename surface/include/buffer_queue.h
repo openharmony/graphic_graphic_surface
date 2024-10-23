@@ -228,10 +228,11 @@ private:
     void RequestBufferDebugInfo();
     bool GetStatusLocked() const;
     void CallConsumerListener();
-    bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
     void LogAndTraceAllBufferInBufferQueueCache();
+    bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
     void SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                  uint64_t uiTimestamp);
+
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;

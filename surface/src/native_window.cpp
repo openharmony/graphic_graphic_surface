@@ -996,3 +996,4 @@ WEAK_ALIAS(NativeWindowSetBufferHold, OH_NativeWindow_SetBufferHold);
 WEAK_ALIAS(NativeWindowWriteToParcel, OH_NativeWindow_WriteToParcel);
 WEAK_ALIAS(NativeWindowReadFromParcel, OH_NativeWindow_ReadFromParcel);
 WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
+

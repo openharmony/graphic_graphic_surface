@@ -118,7 +118,6 @@ void WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const 
         parcel.WriteInt32(rect.w);
         parcel.WriteInt32(rect.h);
     }
-
     parcel.WriteInt64(config.timestamp);
     parcel.WriteInt64(config.desiredPresentTimestamp);
 }

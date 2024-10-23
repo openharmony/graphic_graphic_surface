@@ -167,12 +167,10 @@ public:
         (void)buffer;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-
     virtual uint32_t GetAvailableBufferCount() const
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-
 protected:
     IConsumerSurface() = default;
 };

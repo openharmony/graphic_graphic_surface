@@ -37,7 +37,7 @@ struct NativeWindow : public NativeWindowMagic {
     int64_t uiTimestamp = 0;
     uint32_t lastBufferSeqNum = 0;
     std::unordered_map<uint32_t, NativeWindowBuffer*> bufferCache_;
-    std::atomic<uint64_t> desiredPresentTimestamp{0};
+    std::atomic<int64_t> desiredPresentTimestamp{0};
 };
 
 struct NativeWindowBuffer : public NativeWindowMagic {

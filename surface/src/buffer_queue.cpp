@@ -785,16 +785,18 @@ void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, in
     } else {
         bufferQueueCache_[sequence].desiredPresentTimestamp = desiredPresentTimestamp;
     }
-    bufferQueueCache_[sequence].timestamp = uiTimestamp;
+    bufferQueueCache_[sequence].timestamp = static_cast<int64_t>(uiTimestamp);
 }
 
 void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
 {
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
-        SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
-        BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
-            id, ele.state, uniqueId_);
+        SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d desiredPresentTimestamp: %" PRId64
+            " isAotuTimestamp: %d", id, ele.state, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
+        BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64
+            "desiredPresentTimestamp: %{public}" PRId64 " isAotuTimestamp: %{public}d.",
+            id, ele.state, uniqueId_, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
         bufferState[ele.state] += 1;
     }
     std::string str = std::to_string(uniqueId_) +
@@ -804,7 +806,7 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
         " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
     if (str.compare(acquireBufferStateStr_) != 0) {
         acquireBufferStateStr_ = str;
-        BLOGE("there is no dirty buffer, uniqueId: %{public}s", str.c_str());
+        BLOGE("there is no dirty buffer or no dirty buffer ready, uniqueId: %{public}s", str.c_str());
     }
 }
 
@@ -836,6 +838,8 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
 GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue,
                                    int64_t expectPresentTimestamp, bool isUsingAutoTimestamp)
 {
+    SURFACE_TRACE_NAME_FMT("AcquireBuffer with PresentTimestamp name: %s queueId: %" PRIu64 " queueSize: %u"
+        "expectPresentTimestamp: %" PRId64, name_.c_str(), uniqueId_, bufferQueueSize_, expectPresentTimestamp);
     if (isShared_ || expectPresentTimestamp <= 0) {
         return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
     }
@@ -867,13 +871,13 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             
             if ((secondBufferElement.isAutoTimestamp && !isUsingAutoTimestamp)
                 || secondBufferElement.desiredPresentTimestamp > expectPresentTimestamp) {
-                BLOGD("Next dirty buffer desiredPresentTimestamp: %{public}" PRIu64 " not match expectPresentTimestamp"
-                    ": %{public}" PRIu64 ".", secondBufferElement.desiredPresentTimestamp, expectPresentTimestamp);
+                BLOGD("Next dirty buffer desiredPresentTimestamp: %{public}" PRId64 " not match expectPresentTimestamp"
+                    ": %{public}" PRId64 ".", secondBufferElement.desiredPresentTimestamp, expectPresentTimestamp);
                 break;
             }
             //second buffer match, should drop front buffer
             SURFACE_TRACE_NAME_FMT("DropBuffer name: %s queueId: %" PRIu64 " ,buffer seq: %u , buffer "
-                "desiredPresentTimestamp: %" PRIu64 " acquire expectPresentTimestamp: %" PRIu64 ".", name_.c_str(),
+                "desiredPresentTimestamp: %" PRId64 " acquire expectPresentTimestamp: %" PRId64, name_.c_str(),
                 uniqueId_, frontBufferElement.buffer->GetSeqNum(), frontBufferElement.desiredPresentTimestamp,
                 expectPresentTimestamp);
             dirtyList_.pop_front();
@@ -884,6 +888,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
         }
         //Present Later When first buffer not ready
         if (!frontIsAutoTimestamp && !IsPresentTimestampReady(frontDesiredPresentTimestamp, expectPresentTimestamp)) {
+            SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER_READY;
         }

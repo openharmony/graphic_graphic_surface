@@ -198,7 +198,6 @@ namespace OHOS {
         NativeWindowSetTunnelHandle(nativeWindow, reinterpret_cast<OHExtDataHandle *>(handle));
         FreeExtDataHandle(reinterpret_cast<GraphicExtDataHandle *>(handle));
         NativeWindowDisconnect(nativeWindow);
-        DestoryNativeWindow(nativeWindow);
         DestroyNativeWindowBuffer(nwBuffer);
     }
 

@@ -259,7 +259,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
 
 int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
-    if (window == nullptr || buffer == nullptr || fenceFd == nullptr || window->surface == nullptr) {
+    if (window == nullptr || buffer == nullptr || window->surface == nullptr || fenceFd == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
@@ -922,13 +922,13 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
         if (err != 0) {
             delete[] *metadata;
             *metadata = nullptr;
-            BLOGE("memcpy_s failed! , ret:%d", err);
+            BLOGE("memcpy_s failed! , ret: %d", err);
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
     } else {
         delete[] *metadata;
         *metadata = nullptr;
-        BLOGE("new metadata failed! ");
+        BLOGE("new metadata failed!");
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

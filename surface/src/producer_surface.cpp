@@ -24,7 +24,7 @@
 #include "native_window.h"
 #include "surface_utils.h"
 #include "metadata_helper.h"
- 
+
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
 
@@ -37,7 +37,7 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
     sptr<ProducerSurface> surf = new ProducerSurface(producer);
     GSError ret = surf->Init();
     if (ret != GSERROR_OK) {
-        BLOGE("producerSurface is nullptr");
+        BLOGE("producer surf init failed");
         return nullptr;
     }
     auto utils = SurfaceUtils::GetInstance();
@@ -105,8 +105,8 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         return GSERROR_INVALID_ARGUMENTS;
     }
     IBufferProducer::RequestBufferReturnValue retval;
-    GSError ret;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    GSError ret;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         ret = producer_->RequestBuffer(config, bedataimpl, retval);
@@ -127,7 +127,7 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     return ret;
 }
- 
+
 GSError ProducerSurface::SetMetadataValve(sptr<SurfaceBuffer>& buffer)
 {
     GSError ret = GSERROR_OK;

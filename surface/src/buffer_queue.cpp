@@ -444,7 +444,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     }
     auto &cacheConfig = bufferQueueCache_[retval.sequence].config;
     SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
-        cacheConfig.width, cacheConfig.height, cacheConfig.usage, cacheConfig.format, retval.buffer->GetSeqNum());
+        cacheConfig.width, cacheConfig.height, cacheConfig.usage, cacheConfig.format, retval.sequence);
 
     bool needRealloc = (config != bufferQueueCache_[retval.sequence].config);
     // config, realloc
@@ -1311,7 +1311,6 @@ GSError BufferQueue::SetDefaultWidthAndHeight(int32_t width, int32_t height)
         BLOGW("height is %{public}d, uniqueId: %{public}" PRIu64 ".", height, uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
-
     BLOGD("SetDefaultWidthAndHeight(width: %{public}d, height: %{public}d), uniqueId: %{public}" PRIu64 ".",
         width, height, uniqueId_);
     std::lock_guard<std::mutex> lockGuard(mutex_);

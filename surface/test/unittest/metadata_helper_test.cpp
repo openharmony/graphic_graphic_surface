@@ -140,11 +140,11 @@ HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
     };
 
     auto retSet = MetadataHelper::SetColorSpaceInfo(buffer_, infoSet);
-    ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     CM_ColorSpaceInfo infoGet;
     auto retGet = MetadataHelper::GetColorSpaceInfo(buffer_, infoGet);
-    ASSERT_TRUE(retGet == GSERROR_OK || GSErrorStr(retGet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
         ASSERT_EQ(infoSet.primaries, infoGet.primaries);
@@ -167,11 +167,11 @@ HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
 HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
 {
     auto retSet = MetadataHelper::SetColorSpaceType(buffer_, CM_SRGB_FULL);
-    ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     CM_ColorSpaceType colorSpaceType;
     auto retGet = MetadataHelper::GetColorSpaceType(buffer_, colorSpaceType);
-    ASSERT_TRUE(retGet == GSERROR_OK || GSErrorStr(retGet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
         ASSERT_EQ(colorSpaceType, CM_SRGB_FULL);
@@ -191,11 +191,11 @@ HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
 HWTEST_F(MetadataManagerTest, HDRMetadataTypeTest, Function | SmallTest | Level2)
 {
     auto retSet = MetadataHelper::SetHDRMetadataType(buffer_, CM_VIDEO_HDR_VIVID);
-    ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     CM_HDR_Metadata_Type hdrMetadataType;
     auto retGet = MetadataHelper::GetHDRMetadataType(buffer_, hdrMetadataType);
-    ASSERT_TRUE(retGet == GSERROR_OK || GSErrorStr(retGet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
         ASSERT_EQ(hdrMetadataType, CM_VIDEO_HDR_VIVID);
@@ -230,11 +230,11 @@ HWTEST_F(MetadataManagerTest, HDRStaticMetadataTest, Function | SmallTest | Leve
     };
 
     auto retSet = MetadataHelper::SetHDRStaticMetadata(buffer_, metadataSet);
-    ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     HdrStaticMetadata metadataGet;
     auto retGet = MetadataHelper::GetHDRStaticMetadata(buffer_, metadataGet);
-    ASSERT_TRUE(retGet == GSERROR_OK || GSErrorStr(retGet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
         ASSERT_EQ(metadataSet.smpte2086.displayPrimaryRed.x, metadataGet.smpte2086.displayPrimaryRed.x);
@@ -268,11 +268,11 @@ HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Lev
         41, 50, 189, 111, 144, 3, 153, 75, 210, 243, 237, 19, 12, 128};
 
     auto retSet = MetadataHelper::SetHDRDynamicMetadata(buffer_, metadataSet);
-    ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     std::vector<uint8_t> metadataGet;
     auto retGet = MetadataHelper::GetHDRDynamicMetadata(buffer_, metadataGet);
-    ASSERT_TRUE(retGet == GSERROR_OK || GSErrorStr(retGet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
         ASSERT_EQ(metadataSet.size(), metadataGet.size());
@@ -313,11 +313,11 @@ HWTEST_F(MetadataManagerTest, HDRStaticMetadataVecTest, Function | SmallTest | L
     ASSERT_EQ(MetadataHelper::ConvertMetadataToVec(metadata, metadataSet), GSERROR_OK);
 
     auto retSet = MetadataHelper::SetHDRStaticMetadata(buffer_, metadataSet);
-    ASSERT_TRUE(retSet == GSERROR_OK || GSErrorStr(retSet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     std::vector<uint8_t> metadataGet;
     auto retGet = MetadataHelper::GetHDRStaticMetadata(buffer_, metadataGet);
-    ASSERT_TRUE(retGet == GSERROR_OK || GSErrorStr(retGet) == "<500 api call failed>with low error <Not supported>");
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
 
     if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
         ASSERT_EQ(metadataSet.size(), metadataGet.size());

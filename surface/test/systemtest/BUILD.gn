@@ -119,5 +119,4 @@ ohos_systemtest("surface_ipc_test") {
     "samgr:samgr_proxy",
   ]
 }
-
 ## SystemTest surface_ipc_test }}}

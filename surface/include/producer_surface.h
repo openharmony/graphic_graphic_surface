@@ -166,7 +166,7 @@ private:
     void CleanAllLocked();
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
-    GSError SetMetadataValve(sptr<SurfaceBuffer>& buffer);
+    GSError SetMetadataValue(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
     
     mutable std::mutex mutex_;

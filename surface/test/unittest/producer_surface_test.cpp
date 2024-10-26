@@ -21,9 +21,12 @@
 #include <native_window.h>
 #include "sync_fence.h"
 #include "producer_surface_delegator.h"
+#include "metadata_helper.h"
+#include "surface_buffer_impl.h"
 
 using namespace testing;
 using namespace testing::ext;
+using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 
 namespace OHOS::Rosen {
 class ProducerSurfaceTest : public testing::Test {
@@ -60,6 +63,7 @@ public:
         return GSERROR_OK;
     }
     sptr<ProducerSurface> surface_ = nullptr;
+    sptr<ProducerSurface> surfaceMd_ = nullptr;
 };
 
 void ProducerSurfaceTest::SetUpTestCase()
@@ -85,6 +89,10 @@ void ProducerSurfaceTest::SetUp()
     surface_ = new ProducerSurface(producer);
     ASSERT_NE(surface_, nullptr);
     surface_->producer_ = nullptr;
+
+    surfaceMd_ = new ProducerSurface(producer);
+    ASSERT_NE(surfaceMd_, nullptr);
+    surfaceMd_->producer_ = nullptr;
 }
 
 void ProducerSurfaceTest::TearDown()
@@ -1097,6 +1105,57 @@ HWTEST_F(ProducerSurfaceTest, metaData004, Function | MediumTest | Level2)
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ret = surface_->GetMetaData(0, metaData);
     ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
+* Function: SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions:
+* CaseDescription: 1. call SetUserData then SetMetadataValue and check ret
+*                  2. call get functions and compare
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetadataValue001, Function | MediumTest | Level2)
+{
+    GSError ret;
+    sptr<SurfaceBuffer> buffer_;
+    int releaseFence = -1;
+    ret = pSurface->RequestBuffer(buffer_, releaseFence, requestConfig);
+ 
+    std::string valueInfo = "mockInfo";
+    std::string valueDynamic = "mockDynamic";
+    std::string valueStatic = "mockStatic";
+    std::string valueType = "mockType";
+ 
+    surfaceMd_->SetUserData("ATTRKEY_COLORSPACE_INFO", valueInfo);
+    surfaceMd_->SetUserData("OH_HDR_DYNAMIC_METADATA", valueDynamic);
+    surfaceMd_->SetUserData("OH_HDR_STATIC_METADATA", valueStatic);
+    surfaceMd_->SetUserData("OH_HDR_METADATA_TYPE", valueType);
+ 
+    ret = surfaceMd_->SetMetadataValue(buffer_);
+    if (ret == OHOS::GSERROR_OK) {
+        CM_ColorSpaceType colorSpaceType;
+        MetadataHelper::GetColorSpaceType(buffer_, colorSpaceType);
+        EXPECT_EQ(static_cast<CM_ColorSpaceType>(atoi(valueInfo.c_str())), colorSpaceType);
+        
+        std::vector<uint8_t> setDynamicMetadata, getDynamicMetadata;
+        setDynamicMetadata.resize(valueDynamic.size());
+        setDynamicMetadata.assign(valueDynamic.begin(), valueDynamic.end());
+        MetadataHelper::GetHDRDynamicMetadata(buffer_, getDynamicMetadata);
+        EXPECT_EQ(setDynamicMetadata, getDynamicMetadata);
+ 
+        std::vector<uint8_t> setStaticMetadata, getStaticMetadata;
+        setStaticMetadata.resize(valueStatic.size());
+        setStaticMetadata.assign(valueStatic.begin(), valueStatic.end());
+        MetadataHelper::GetHDRStaticMetadata(buffer_, getStaticMetadata);
+        EXPECT_EQ(setStaticMetadata, getStaticMetadata);
+ 
+        CM_HDR_Metadata_Type hdrMetadataType;
+        MetadataHelper::GetHDRMetadataType(buffer_, hdrMetadataType);
+        EXPECT_EQ(static_cast<CM_HDR_Metadata_Type>(atoi(valueType.c_str())), hdrMetadataType);
+    } else {
+        EXPECT_EQ(ret, OHOS::GSERROR_HDI_ERROR);
+    }
 }
 
 /*

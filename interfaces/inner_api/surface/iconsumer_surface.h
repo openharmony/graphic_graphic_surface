@@ -28,6 +28,12 @@
 namespace OHOS {
 class IConsumerSurface : public Surface {
 public:
+    using AcquireBufferReturnValue = struct {
+        sptr<SurfaceBuffer> buffer;
+        sptr<SyncFence> fence;
+        int64_t timestamp;
+        std::vector<Rect> damages;
+    };
     static sptr<IConsumerSurface> Create(std::string name = "noname", bool isShared = false);
 
     virtual ~IConsumerSurface() = default;
@@ -119,6 +125,14 @@ public:
 
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                   int64_t &timestamp, std::vector<Rect> &damages) = 0;
+    virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
+                                  bool isUsingAutoTimestamp)
+    {
+        (void)returnValue;
+        (void)expectPresentTimestamp;
+        (void)isUsingAutoTimestamp;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                 BufferFlushConfigWithDamages &config) = 0;
     virtual GSError SetWptrNativeWindowToPSurface(void* nativeWindow) = 0;
@@ -151,6 +165,10 @@ public:
     virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
     {
         (void)buffer;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
+    virtual uint32_t GetAvailableBufferCount() const
+    {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
 protected:

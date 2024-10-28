@@ -42,6 +42,7 @@ constexpr uint32_t BUFFER_MEMSIZE_RATE = 1024;
 constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
 constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 constexpr uint32_t INVALID_SEQUENCE = 0xFFFFFFFF;
+constexpr uint32_t ONE_SECOND_TIMESTAMP = 1e9;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -739,8 +740,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
             return sret;
         }
     }
-
-    bufferQueueCache_[sequence].timestamp = config.timestamp;
+    SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
     if (isLocalRender_) {
         AcquireFenceTracker::TrackFence(fence, traceTag);
@@ -758,13 +758,33 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     return GSERROR_OK;
 }
 
+void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
+                                                           uint64_t uiTimestamp)
+{
+    if (desiredPresentTimestamp <= 0) {
+        if (desiredPresentTimestamp == 0 && uiTimestamp != 0
+            && uiTimestamp <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+            bufferQueueCache_[sequence].desiredPresentTimestamp = static_cast<int64_t>(uiTimestamp);
+        } else {
+            bufferQueueCache_[sequence].desiredPresentTimestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+            bufferQueueCache_[sequence].isAutoTimestamp = true;
+        }
+    } else {
+        bufferQueueCache_[sequence].desiredPresentTimestamp = desiredPresentTimestamp;
+    }
+    bufferQueueCache_[sequence].timestamp = static_cast<int64_t>(uiTimestamp);
+}
+
 void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
 {
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
-        SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d", id, ele.state);
-        BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
-            id, ele.state, uniqueId_);
+        SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d desiredPresentTimestamp: %" PRId64
+            " isAotuTimestamp: %d", id, ele.state, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
+        BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64
+            "desiredPresentTimestamp: %{public}" PRId64 " isAotuTimestamp: %{public}d.",
+            id, ele.state, uniqueId_, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
         bufferState[ele.state] += 1;
     }
     std::string str = std::to_string(uniqueId_) +
@@ -774,7 +794,7 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
         " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
     if (str.compare(acquireBufferStateStr_) != 0) {
         acquireBufferStateStr_ = str;
-        BLOGE("there is no dirty buffer, uniqueId: %{public}s", str.c_str());
+        BLOGE("there is no dirty buffer or no dirty buffer ready, uniqueId: %{public}s", str.c_str());
     }
 }
 
@@ -801,6 +821,90 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return ret;
+}
+
+GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue,
+                                   int64_t expectPresentTimestamp, bool isUsingAutoTimestamp)
+{
+    SURFACE_TRACE_NAME_FMT("AcquireBuffer with PresentTimestamp name: %s queueId: %" PRIu64 " queueSize: %u"
+        "expectPresentTimestamp: %" PRId64, name_.c_str(), uniqueId_, queueSize_, expectPresentTimestamp);
+    if (isShared_ || expectPresentTimestamp <= 0) {
+        return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
+    }
+    std::vector<BufferElement*> dropBufferElements;
+    // traverse dirtyList_
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
+        if (frontSequence == dirtyList_.end()) {
+            LogAndTraceAllBufferInBufferQueueCache();
+            return GSERROR_NO_BUFFER;
+        }
+        BufferElement& frontBufferElement = bufferQueueCache_[*frontSequence];
+        int64_t frontDesiredPresentTimestamp = frontBufferElement.desiredPresentTimestamp;
+        bool frontIsAutoTimestamp = frontBufferElement.isAutoTimestamp;
+        if (!frontIsAutoTimestamp && frontDesiredPresentTimestamp > expectPresentTimestamp
+            && frontDesiredPresentTimestamp - ONE_SECOND_TIMESTAMP <= expectPresentTimestamp) {
+            LogAndTraceAllBufferInBufferQueueCache();
+            return GSERROR_NO_BUFFER_READY;
+        }
+        while (!(frontIsAutoTimestamp && !isUsingAutoTimestamp)
+            && frontDesiredPresentTimestamp <= expectPresentTimestamp) {
+            BufferElement& frontBufferElement = bufferQueueCache_[*frontSequence];
+            if (++frontSequence == dirtyList_.end()) {
+                BLOGD("Buffer seq(%{public}d) is the last buffer, do acquire.", dirtyList_.front());
+                break;
+            }
+            BufferElement& secondBufferElement = bufferQueueCache_[*frontSequence];
+            
+            if ((secondBufferElement.isAutoTimestamp && !isUsingAutoTimestamp)
+                || secondBufferElement.desiredPresentTimestamp > expectPresentTimestamp) {
+                BLOGD("Next dirty buffer desiredPresentTimestamp: %{public}" PRId64 " not match expectPresentTimestamp"
+                    ": %{public}" PRId64 ".", secondBufferElement.desiredPresentTimestamp, expectPresentTimestamp);
+                break;
+            }
+            //second buffer match, should drop front buffer
+            SURFACE_TRACE_NAME_FMT("DropBuffer name: %s queueId: %" PRIu64 " ,buffer seq: %u , buffer "
+                "desiredPresentTimestamp: %" PRId64 " acquire expectPresentTimestamp: %" PRId64, name_.c_str(),
+                uniqueId_, frontBufferElement.buffer->GetSeqNum(), frontBufferElement.desiredPresentTimestamp,
+                expectPresentTimestamp);
+            dirtyList_.pop_front();
+            frontBufferElement.state = BUFFER_STATE_ACQUIRED;
+            dropBufferElements.push_back(&frontBufferElement);
+            frontDesiredPresentTimestamp = secondBufferElement.desiredPresentTimestamp;
+            frontIsAutoTimestamp = secondBufferElement.isAutoTimestamp;
+        }
+        //Present Later When first buffer not ready
+        if (!frontIsAutoTimestamp && !IsPresentTimestampReady(frontDesiredPresentTimestamp, expectPresentTimestamp)) {
+            SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
+            LogAndTraceAllBufferInBufferQueueCache();
+            return GSERROR_NO_BUFFER_READY;
+        }
+    }
+    //drop buffers
+    for (const auto& dropBufferElement : dropBufferElements) {
+        if (dropBufferElement == nullptr) {
+           continue;
+        }
+        auto ret = ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
+        if (ret != GSERROR_OK) {
+            BLOGE("DropBuffer failed, ret: %{public}d, sequence: %{public}u, uniqueId: %{public}" PRIu64 ".",
+                ret, dropBufferElement->buffer->GetSeqNum(), uniqueId_);
+        }
+    }
+    //Acquire
+    return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
+}
+
+bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp)
+{
+    if (desiredPresentTimestamp <= expectPresentTimestamp) {
+        return true;
+    }
+    if (desiredPresentTimestamp - ONE_SECOND_TIMESTAMP > expectPresentTimestamp) {
+        return true;
+    }
+    return false;
 }
 
 void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence)
@@ -1891,5 +1995,11 @@ void BufferQueue::SetStatus(bool status)
     std::lock_guard<std::mutex> lockGuard(mutex_);
     isValidStatus_ = status;
     waitReqCon_.notify_all();
+}
+
+uint32_t BufferQueue::GetAvailableBufferCount()
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return static_cast<uint32_t>(dirtyList_.size());
 }
 }; // namespace OHOS

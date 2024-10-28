@@ -238,6 +238,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         config.damages.emplace_back(damage);
         config.timestamp = buffer->uiTimestamp;
     }
+    config.desiredPresentTimestamp = window->desiredPresentTimestamp;
     OHOS::sptr<OHOS::SyncFence> acquireFence = new OHOS::SyncFence(fenceFd);
     int32_t ret = window->surface->FlushBuffer(buffer->sfbuffer, acquireFence, config);
     if (ret != OHOS::GSError::SURFACE_ERROR_OK) {
@@ -363,6 +364,12 @@ static void HandleNativeWindowSetUiTimestamp(OHNativeWindow *window, va_list arg
     window->uiTimestamp = static_cast<int64_t>(uiTimestamp);
 }
 
+static void HandleNativeWindowSetDesiredPresentTimestamp(OHNativeWindow *window, va_list args)
+{
+    int64_t desiredPresentTimestamp = va_arg(args, int64_t);
+    window->desiredPresentTimestamp = desiredPresentTimestamp;
+}
+
 static void HandleNativeWindowSetSurfaceSourceType(OHNativeWindow *window, va_list args)
 {
     OHSurfaceSource sourceType = va_arg(args, OHSurfaceSource);
@@ -483,6 +490,7 @@ static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap
     {GET_APP_FRAMEWORK_TYPE, HandleNativeWindowGetSurfaceAppFrameworkType},
     {SET_HDR_WHITE_POINT_BRIGHTNESS, HandleNativeWindowSetHdrWhitePointBrightness},
     {SET_SDR_WHITE_POINT_BRIGHTNESS, HandleNativeWindowSetSdrWhitePointBrightness},
+    {SET_DESIRED_PRESENT_TIMESTAMP, HandleNativeWindowSetDesiredPresentTimestamp},
 };
 
 static int32_t InternalHandleNativeWindowOpt(OHNativeWindow *window, int code, va_list args)

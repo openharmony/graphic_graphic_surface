@@ -28,7 +28,7 @@
 namespace OHOS {
 class ConsumerSurface : public IConsumerSurface {
 public:
-    ConsumerSurface(const std::string &name, bool isShared = false);
+    ConsumerSurface(const std::string &name);
     virtual ~ConsumerSurface();
     GSError Init();
 
@@ -246,7 +246,6 @@ private:
     sptr<BufferQueueProducer> producer_ = nullptr;
     sptr<BufferQueueConsumer> consumer_ = nullptr;
     std::string name_ = "not init";
-    bool isShared_ = false;
     std::map<std::string, OnUserDataChangeFunc> onUserDataChange_;
     std::mutex lockMutex_;
     uint64_t uniqueId_ = 0;

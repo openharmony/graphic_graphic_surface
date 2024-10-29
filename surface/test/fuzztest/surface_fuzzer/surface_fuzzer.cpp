@@ -217,7 +217,6 @@ namespace OHOS {
     {
         // get data
         std::string name = GetStringFromData(STR_LEN);
-        bool isShared = GetData<bool>();
         std::string key = GetStringFromData(STR_LEN);
         std::string val = GetStringFromData(STR_LEN);
         BufferVerifyAllocInfo info = GetData<BufferVerifyAllocInfo>();
@@ -226,7 +225,7 @@ namespace OHOS {
         GraphicPresentTimestampType type = GetData<GraphicPresentTimestampType>();
         int64_t time = GetData<int64_t>();
         std::string result = GetStringFromData(STR_LEN);
-        sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name, isShared);
+        sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name);
         auto producer = cSurface->GetProducer();
         sptr<OHOS::Surface> pSurface = OHOS::Surface::CreateSurfaceAsProducer(producer);
         sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
@@ -267,9 +266,8 @@ namespace OHOS {
         g_size = size;
         g_pos = 0;
         std::string name = GetStringFromData(STR_LEN);
-        bool isShared = GetData<bool>();
         uint32_t seqNum = GetData<uint32_t>();
-        sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name, isShared);
+        sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name);
         auto producer = cSurface->GetProducer();
         sptr<OHOS::Surface> pSurface = OHOS::Surface::CreateSurfaceAsProducer(producer);
         sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();

@@ -57,7 +57,6 @@ namespace OHOS {
     void BufferQueueFuzzTest2()
     {
         std::string name = GetStringFromData(STR_LEN);
-        bool isShared = GetData<bool>();
         uint32_t queueSize = GetData<uint32_t>();
         int32_t width = GetData<int32_t>();
         int32_t height = GetData<int32_t>();
@@ -81,7 +80,7 @@ namespace OHOS {
         OHSurfaceSource sourceType = GetData<OHSurfaceSource>();
         std::string appFrameworkType = GetStringFromData(STR_LEN);
         // test
-        sptr<BufferQueue> bufferqueue = new BufferQueue(name, isShared);
+        sptr<BufferQueue> bufferqueue = new BufferQueue(name);
         bufferqueue->SetQueueSize(queueSize);
         bufferqueue->SetDefaultWidthAndHeight(width, height);
         bufferqueue->SetDefaultUsage(usage);
@@ -104,8 +103,7 @@ namespace OHOS {
     {
         int32_t timeOut = 0;
         std::string name = GetStringFromData(STR_LEN);
-        bool isShared = GetData<bool>();
-        sptr<BufferQueue> bufferqueue = new BufferQueue(name, isShared);
+        sptr<BufferQueue> bufferqueue = new BufferQueue(name);
         uint32_t seqNum = GetData<uint32_t>();
         BufferRequestConfig requestConfig = GetData<BufferRequestConfig>();
         OHOS::Rect rect = GetData<OHOS::Rect>();
@@ -161,8 +159,7 @@ namespace OHOS {
         g_size = size;
         g_pos = 0;
         std::string name = GetStringFromData(STR_LEN);
-        bool isShared = GetData<bool>();
-        sptr<BufferQueue> bufferqueue = new BufferQueue(name, isShared);
+        sptr<BufferQueue> bufferqueue = new BufferQueue(name);
         bool cleanAll = GetData<bool>();
         bufferqueue->CleanCache(cleanAll);
         bufferqueue->GetHdrWhitePointBrightness();

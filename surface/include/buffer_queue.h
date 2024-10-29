@@ -74,7 +74,7 @@ using BufferElement = struct BufferElement {
 
 class BufferQueue : public RefBase {
 public:
-    BufferQueue(const std::string &name, bool isShared = false);
+    BufferQueue(const std::string &name);
     virtual ~BufferQueue();
 
     GSError GetProducerInitInfo(ProducerInitInfo &info);
@@ -257,7 +257,6 @@ private:
     sptr<IProducerListener> producerListener_ = nullptr;
     OnDeleteBufferFunc onBufferDeleteForRSMainThread_;
     OnDeleteBufferFunc onBufferDeleteForRSHardwareThread_;
-    bool isShared_ = false;
     std::condition_variable waitReqCon_;
     std::condition_variable waitAttachCon_;
     sptr<SurfaceTunnelHandle> tunnelHandle_ = nullptr;

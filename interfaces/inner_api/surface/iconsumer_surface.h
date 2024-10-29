@@ -34,7 +34,7 @@ public:
         int64_t timestamp;
         std::vector<Rect> damages;
     };
-    static sptr<IConsumerSurface> Create(std::string name = "noname", bool isShared = false);
+    static sptr<IConsumerSurface> Create(std::string name = "noname");
 
     virtual ~IConsumerSurface() = default;
 

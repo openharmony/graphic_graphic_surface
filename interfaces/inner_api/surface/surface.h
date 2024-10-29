@@ -27,7 +27,7 @@
 namespace OHOS {
 class Surface : public RefBase {
 public:
-    static sptr<Surface> CreateSurfaceAsConsumer(std::string name = "noname", bool isShared = false);
+    static sptr<Surface> CreateSurfaceAsConsumer(std::string name = "noname");
     static sptr<Surface> CreateSurfaceAsProducer(sptr<IBufferProducer>& producer);
 
     virtual ~Surface() = default;

@@ -88,7 +88,7 @@ namespace OHOS {
         uint64_t uiTimestamp = GetData<uint64_t>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, uiTimestamp);
         code = SET_DESIRED_PRESENT_TIMESTAMP;
-        uint64_t desiredPresentTimestamp = GetData<uint64_t>();
+        int64_t desiredPresentTimestamp = GetData<int64_t>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, desiredPresentTimestamp);
         code = SET_SOURCE_TYPE;
         OHSurfaceSource typeSet = GetData<OHSurfaceSource>();

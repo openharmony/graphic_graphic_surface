@@ -219,7 +219,6 @@ namespace OHOS {
         std::string name = GetStringFromData(STR_LEN);
         std::string key = GetStringFromData(STR_LEN);
         std::string val = GetStringFromData(STR_LEN);
-        BufferVerifyAllocInfo info = GetData<BufferVerifyAllocInfo>();
         uint32_t sequence = GetData<uint32_t>();
         ScalingMode scalingMode = GetData<ScalingMode>();
         GraphicPresentTimestampType type = GetData<GraphicPresentTimestampType>();

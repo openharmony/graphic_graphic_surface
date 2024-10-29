@@ -29,7 +29,6 @@ group("unittest") {
     ":buffer_queue_producer_remote_test",
     ":buffer_queue_producer_test",
     ":buffer_queue_test",
-    ":buffer_shared_test",
     ":buffer_utils_test",
     ":consumer_surface_delegator_test",
     ":consumer_surface_test",
@@ -152,17 +151,6 @@ ohos_unittest("buffer_queue_test") {
 }
 
 ## UnitTest buffer_queue_test }}}
-
-## UnitTest buffer_shared_test {{{
-ohos_unittest("buffer_shared_test") {
-  module_out_path = module_out_path
-
-  sources = [ "buffer_shared_test.cpp" ]
-
-  deps = [ ":surface_test_common" ]
-}
-
-## UnitTest buffer_shared_test }}}
 
 ## UnitTest consumer_surface_test {{{
 ohos_unittest("consumer_surface_test") {

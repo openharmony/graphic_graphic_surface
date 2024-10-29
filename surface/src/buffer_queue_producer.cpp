@@ -62,7 +62,6 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_CACHE, CleanCacheRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, RegisterReleaseListenerRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORM, SetTransformRemote),
-        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_IS_SUPPORTED_ALLOC, IsSupportedAllocRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, GetNameAndUniqueIdRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT, DisconnectRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT, ConnectRemote),
@@ -585,24 +584,6 @@ int32_t BufferQueueProducer::SetTransformRemote(MessageParcel &arguments, Messag
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    return ERR_NONE;
-}
-
-int32_t BufferQueueProducer::IsSupportedAllocRemote(MessageParcel &arguments, MessageParcel &reply,
-                                                    MessageOption &option)
-{
-    std::vector<BufferVerifyAllocInfo> infos;
-    ReadVerifyAllocInfo(arguments, infos);
-
-    std::vector<bool> supporteds;
-    GSError sRet = IsSupportedAlloc(infos, supporteds);
-    if (!reply.WriteInt32(sRet)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-    if (sRet == GSERROR_OK && !reply.WriteBoolVector(supporteds)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-
     return ERR_NONE;
 }
 
@@ -1269,16 +1250,6 @@ GSError BufferQueueProducer::SetSdrWhitePointBrightness(float brightness)
     return bufferQueue_->SetSdrWhitePointBrightness(brightness);
 }
 
-GSError BufferQueueProducer::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                              std::vector<bool> &supporteds)
-{
-    if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-
-    return bufferQueue_->IsSupportedAlloc(infos, supporteds);
-}
-
 GSError BufferQueueProducer::GetNameAndUniqueId(std::string& name, uint64_t& uniqueId)
 {
     if (bufferQueue_ == nullptr) {
@@ -1447,12 +1418,12 @@ void BufferQueueProducer::ProducerSurfaceDeathRecipient::OnRemoteDied(const wptr
 
     auto producer = producer_.promote();
     if (producer == nullptr) {
-        BLOGD("producer is nullptr");
+        BLOGW("producer is nullptr");
         return;
     }
 
     if (producer->token_ != remoteToken) {
-        BLOGD("token doesn't match, ignore it, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());
+        BLOGW("token doesn't match, ignore it, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());
         return;
     }
     BLOGD("remote object died, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());

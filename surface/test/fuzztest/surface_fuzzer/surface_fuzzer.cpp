@@ -242,10 +242,6 @@ namespace OHOS {
         cSurface->RegisterUserDataChangeListener(funcName,
             [](const std::string& key, const std::string& val) {});
         pSurface->SetUserData(key, val);
-        bool supported = GetData<bool>();
-        std::vector<bool> supporteds = {supported};
-        std::vector<BufferVerifyAllocInfo> infos = {info};
-        pSurface->IsSupportedAlloc(infos, supporteds);
         pSurface->SetScalingMode(sequence, scalingMode);
         pSurface->GetPresentTimestamp(sequence, type, time);
         cSurface->SetUserData(key, val);

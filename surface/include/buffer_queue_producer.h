@@ -82,8 +82,6 @@ public:
     GSError SetTransform(GraphicTransformType transform) override;
     GSError GetTransform(GraphicTransformType &transform) override;
 
-    GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
-
     GSError Connect() override;
     GSError Disconnect() override;
 
@@ -147,7 +145,6 @@ private:
     int32_t RegisterReleaseListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t UnRegisterReleaseListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetTransformRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t IsSupportedAllocRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetNameAndUniqueIdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DisconnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ConnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

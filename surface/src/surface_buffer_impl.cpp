@@ -156,8 +156,6 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig& config)
         surfaceBufferWidth_ = config.width;
         surfaceBufferHeight_ = config.height;
         bufferRequestConfig_ = config;
-        BLOGD("handle w: %{public}d h: %{public}d t: %{public}d, seq: %{public}u",
-            handle_->width, handle_->height, config.transform, sequenceNumber_);
         return GSERROR_OK;
     }
     BLOGW("Alloc Failed with %{public}d, seq: %{public}u", dRet, sequenceNumber_);
@@ -174,11 +172,9 @@ GSError SurfaceBufferImpl::Map()
     if (handle_ == nullptr) {
         return GSERROR_INVALID_OPERATING;
     } else if (handle_->virAddr != nullptr) {
-        BLOGD("handle_->virAddr has been maped, seq: %{public}u", sequenceNumber_);
         return GSERROR_OK;
     }
     if (handle_->usage & BUFFER_USAGE_PROTECTED) {
-        BLOGD("usage is BUFFER_USAGE_PROTECTED, do not Map, seq: %{public}u", sequenceNumber_);
         return GSERROR_OK;
     }
 
@@ -576,13 +572,6 @@ GSError SurfaceBufferImpl::CheckBufferConfig(int32_t width, int32_t height,
     return GSERROR_OK;
 }
 
-BufferWrapper SurfaceBufferImpl::GetBufferWrapper()
-{
-    return {};
-}
-
-void SurfaceBufferImpl::SetBufferWrapper(BufferWrapper wrapper) {}
-
 GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>& value)
 {
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
@@ -630,7 +619,6 @@ GSError SurfaceBufferImpl::GetMetadata(uint32_t key, std::vector<uint8_t>& value
     if (dRet == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGD("GetMetadata Failed with %{public}d", dRet);
     return GSERROR_HDI_ERROR;
 }
 

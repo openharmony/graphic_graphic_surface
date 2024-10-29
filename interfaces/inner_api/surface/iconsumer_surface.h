@@ -94,8 +94,6 @@ public:
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
     virtual GraphicTransformType GetTransform() const = 0;
 
-    virtual GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                     std::vector<bool> &supporteds) = 0;
     virtual GSError Connect() = 0;
     virtual GSError Disconnect() = 0;
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;

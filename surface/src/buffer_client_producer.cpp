@@ -585,30 +585,6 @@ GSError BufferClientProducer::SetTransform(GraphicTransformType transform)
     return GSERROR_OK;
 }
 
-GSError BufferClientProducer::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                               std::vector<bool> &supporteds)
-{
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-
-    GSError ret = WriteVerifyAllocInfo(arguments, infos);
-    if (ret != GSERROR_OK) {
-        return ret;
-    }
-
-    SEND_REQUEST(BUFFER_PRODUCER_IS_SUPPORTED_ALLOC, arguments, reply, option);
-    ret = CheckRetval(reply);
-    if (ret != GSERROR_OK) {
-        return ret;
-    }
-
-    if (!reply.ReadBoolVector(&supporteds)) {
-        BLOGE("reply.ReadBoolVector return false, uniqueId: %{public}" PRIu64 ".", uniqueId_);
-        return GSERROR_BINDER;
-    }
-
-    return static_cast<GSError>(ret);
-}
-
 GSError BufferClientProducer::Connect()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);

@@ -320,8 +320,6 @@ void BufferQueue::RequestBufferDebugInfoLocked()
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %u state: %u", id, ele.state);
-        BLOGD("request no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64 ".",
-            id, ele.state, uniqueId_);
         bufferState[ele.state] += 1;
     }
     std::string str = std::to_string(uniqueId_) +
@@ -387,8 +385,6 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         SetSurfaceBufferHebcMetaLocked(buffer);
         SetSurfaceBufferGlobalAlphaUnlocked(buffer);
         SetReturnValue(buffer, bedata, retval);
-        BLOGD("Success alloc Buffer[%{public}d %{public}d] seq: %{public}d, uniqueId: %{public}" PRIu64 ".",
-            config.width, config.height, retval.sequence, uniqueId_);
     } else {
         BLOGE("Fail to alloc or map Buffer[%{public}d %{public}d] ret: %{public}d, uniqueId: %{public}" PRIu64,
             config.width, config.height, ret, uniqueId_);
@@ -479,9 +475,6 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     deletingList_.clear();
 
     if (needRealloc || isShared_ || producerCacheClean_ || retval.buffer->GetConsumerAttachBufferFlag()) {
-        BLOGD("requestBuffer Succ realloc Buffer[%{public}d %{public}d] with new config "\
-            "seq: %{public}u attachFlag: %{public}d, uniqueId: %{public}" PRIu64 ".",
-            config.width, config.height, retval.sequence, retval.buffer->GetConsumerAttachBufferFlag(), uniqueId_);
         if (producerCacheClean_) {
             producerCacheList_.push_back(retval.sequence);
             if (CheckProducerCacheListLocked()) {
@@ -490,9 +483,6 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         }
         retval.buffer->SetConsumerAttachBufferFlag(false);
     } else {
-        BLOGD("RequestBuffer Succ Buffer[%{public}d %{public}d] in seq id: %{public}u "\
-            "releaseFence: %{public}d, uniqueId: %{public}" PRIu64 ".",
-            config.width, config.height, retval.sequence, retval.fence->Get(), uniqueId_);
         retval.buffer = nullptr;
     }
 
@@ -531,7 +521,6 @@ GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedat
 
     waitReqCon_.notify_all();
     waitAttachCon_.notify_all();
-    BLOGD("Success Buffer id: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
 
     return GSERROR_OK;
 }
@@ -638,8 +627,6 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
         return sret;
     }
     CallConsumerListener();
-    BLOGD("Success Buffer seq id: %{public}d AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
-        sequence, fence->Get(), uniqueId_);
 
     if (wpCSurfaceDelegator_ != nullptr) {
         sret = DelegatorQueueBuffer(sequence, fence);
@@ -794,9 +781,6 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d desiredPresentTimestamp: %" PRId64
             " isAotuTimestamp: %d", id, ele.state, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
-        BLOGD("acquire no buffer, buffer id:%{public}d state:%{public}d, uniqueId: %{public}" PRIu64
-            "desiredPresentTimestamp: %{public}" PRId64 " isAotuTimestamp: %{public}d.",
-            id, ele.state, uniqueId_, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
         bufferState[ele.state] += 1;
     }
     std::string str = std::to_string(uniqueId_) +
@@ -825,8 +809,6 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         timestamp = bufferQueueCache_[sequence].timestamp;
         damages = bufferQueueCache_[sequence].damages;
         SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u", sequence);
-        BLOGD("Success Buffer seq id: %{public}u AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
-            sequence, fence->Get(), uniqueId_);
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCache();
     }
@@ -989,11 +971,8 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 
         if (bufferQueueCache_[sequence].isDeleting) {
             DeleteBufferInCache(sequence);
-            BLOGD("Succ delete Buffer seq id: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         } else {
             freeList_.push_back(sequence);
-            BLOGD("Succ push Buffer seq id: %{public}u to free list, releaseFence: %{public}d,"
-                "uniqueId: %{public}" PRIu64 ".", sequence, fence->Get(), uniqueId_);
         }
         waitReqCon_.notify_all();
         waitAttachCon_.notify_all();
@@ -1039,7 +1018,6 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 
     ret = bufferImpl->Map();
     if (ret == GSERROR_OK) {
-        BLOGD("Map Success, seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         bufferQueueCache_[sequence] = ele;
         buffer = bufferImpl;
     } else {
@@ -1247,14 +1225,12 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
         if (freeSize >= usedSize - queueSize + 1) {
             DeleteBuffersLocked(usedSize - queueSize + 1);
             bufferQueueCache_[sequence] = ele;
-            BLOGD("AttachBuffer release seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
             return GSERROR_OK;
         } else {
             BLOGN_FAILURE_RET(GSERROR_OUT_OF_RANGE);
         }
     } else {
         bufferQueueCache_[sequence] = ele;
-        BLOGD("AttachBuffer no release seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         return GSERROR_OK;
     }
 }
@@ -1346,7 +1322,6 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
         bufferQueueSize_ = queueSize;
     }
 
-    BLOGD("queue size: %{public}d, uniqueId: %{public}" PRIu64 ".", bufferQueueSize_, uniqueId_);
     return GSERROR_OK;
 }
 
@@ -1427,8 +1402,6 @@ GSError BufferQueue::SetDefaultWidthAndHeight(int32_t width, int32_t height)
         BLOGW("height is %{public}d, uniqueId: %{public}" PRIu64 ".", height, uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    BLOGD("SetDefaultWidthAndHeight(width: %{public}d, height: %{public}d), uniqueId: %{public}" PRIu64 ".",
-        width, height, uniqueId_);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     defaultWidth_ = width;
     defaultHeight_ = height;
@@ -1449,7 +1422,6 @@ int32_t BufferQueue::GetDefaultHeight()
 
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
-    BLOGD("SetDefaultUsage(usage: %{public}" PRIu64 ") , uniqueId: %{public}" PRIu64 ".", usage, uniqueId_);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     defaultUsage_ = usage;
     return GSERROR_OK;
@@ -1484,7 +1456,6 @@ void BufferQueue::ClearLocked()
 
 GSError BufferQueue::GoBackground()
 {
-    BLOGD("GoBackground, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     sptr<IBufferConsumerListener> listener;
     IBufferConsumerListenerClazz *listenerClazz;
     {
@@ -1508,7 +1479,6 @@ GSError BufferQueue::GoBackground()
 
 GSError BufferQueue::CleanCache(bool cleanAll)
 {
-    BLOGD("CleanCache, uniqueId: %{public}" PRIu64 ". cleanAll: %{public}d.", uniqueId_, cleanAll);
     sptr<IBufferConsumerListener> listener;
     IBufferConsumerListenerClazz *listenerClazz;
     {
@@ -1666,21 +1636,6 @@ std::string BufferQueue::GetSurfaceAppFrameworkType() const
 {
     std::unique_lock<std::mutex> lock(mutex_);
     return appFrameworkType_;
-}
-
-GSError BufferQueue::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                      std::vector<bool> &supporteds) const
-{
-    supporteds.clear();
-    for (uint32_t index = 0; index < infos.size(); index++) {
-        if (infos[index].format == GRAPHIC_PIXEL_FMT_RGBA_8888 ||
-            infos[index].format == GRAPHIC_PIXEL_FMT_YCRCB_420_SP) {
-            supporteds.push_back(true);
-        } else {
-            supporteds.push_back(false);
-        }
-    }
-    return GSERROR_OK;
 }
 
 GSError BufferQueue::SetBufferHold(bool hold)

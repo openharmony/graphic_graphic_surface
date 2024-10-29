@@ -140,9 +140,6 @@ public:
     GSError SetTransform(GraphicTransformType transform);
     GraphicTransformType GetTransform() const;
 
-    GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                             std::vector<bool> &supporteds) const;
-
     GSError SetBufferHold(bool hold);
     inline bool IsBufferHold()
     {

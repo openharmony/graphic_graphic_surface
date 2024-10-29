@@ -145,12 +145,6 @@ public:
     GSError SetTransform(GraphicTransformType transform) override;
     GraphicTransformType GetTransform() const override;
 
-    SURFACE_HIDDEN GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-        std::vector<bool> &supporteds) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
     SURFACE_HIDDEN GSError Connect() override
     {
         return GSERROR_NOT_SUPPORT;

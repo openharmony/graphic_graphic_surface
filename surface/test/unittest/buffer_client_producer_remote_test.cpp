@@ -435,51 +435,6 @@ HWTEST_F(BufferClientProducerRemoteTest, SetTransform001, Function | MediumTest 
 }
 
 /*
-* Function: IsSupportedAlloc
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call IsSupportedAlloc with abnormal parameters and check ret
-*/
-HWTEST_F(BufferClientProducerRemoteTest, isSupportedAlloc001, Function | MediumTest | Level2)
-{
-    std::vector<BufferVerifyAllocInfo> infos;
-    std::vector<bool> supporteds;
-    GSError ret = bp->IsSupportedAlloc(infos, supporteds);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-/*
-* Function: IsSupportedAlloc
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call IsSupportedAlloc with abnormal parameters and check ret
-*/
-HWTEST_F(BufferClientProducerRemoteTest, isSupportedAlloc002, Function | MediumTest | Level2)
-{
-    std::vector<BufferVerifyAllocInfo> infos;
-    std::vector<bool> supporteds;
-    GSError ret = bp->IsSupportedAlloc(infos, supporteds);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-
-    BufferVerifyAllocInfo info = {
-        .width = 0x100,
-        .height = 0x100,
-        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
-        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
-    };
-    infos.push_back(info);
-    info.format = GRAPHIC_PIXEL_FMT_YCRCB_420_SP;
-    infos.push_back(info);
-    info.format = GRAPHIC_PIXEL_FMT_YUV_422_I;
-    infos.push_back(info);
-
-    ret = bp->IsSupportedAlloc(infos, supporteds);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-/*
 * Function: SetScalingMode
 * Type: Function
 * Rank: Important(2)

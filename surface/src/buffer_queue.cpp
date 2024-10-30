@@ -804,7 +804,6 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
         return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
     }
     std::vector<BufferElement*> dropBufferElements;
-    // traverse dirtyList_
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
@@ -812,9 +811,8 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER;
         }
-        BufferElement& frontBufferElement = bufferQueueCache_[*frontSequence];
-        int64_t frontDesiredPresentTimestamp = frontBufferElement.desiredPresentTimestamp;
-        bool frontIsAutoTimestamp = frontBufferElement.isAutoTimestamp;
+        int64_t frontDesiredPresentTimestamp = bufferQueueCache_[*frontSequence].desiredPresentTimestamp;
+        bool frontIsAutoTimestamp = bufferQueueCache_[*frontSequence].isAutoTimestamp;
         if (!frontIsAutoTimestamp && frontDesiredPresentTimestamp > expectPresentTimestamp
             && frontDesiredPresentTimestamp - ONE_SECOND_TIMESTAMP <= expectPresentTimestamp) {
             LogAndTraceAllBufferInBufferQueueCache();
@@ -828,44 +826,50 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
                 break;
             }
             BufferElement& secondBufferElement = bufferQueueCache_[*frontSequence];
-            
             if ((secondBufferElement.isAutoTimestamp && !isUsingAutoTimestamp)
                 || secondBufferElement.desiredPresentTimestamp > expectPresentTimestamp) {
                 BLOGD("Next dirty buffer desiredPresentTimestamp: %{public}" PRId64 " not match expectPresentTimestamp"
                     ": %{public}" PRId64 ".", secondBufferElement.desiredPresentTimestamp, expectPresentTimestamp);
                 break;
             }
-            //second buffer match, should drop front buffer
             SURFACE_TRACE_NAME_FMT("DropBuffer name: %s queueId: %" PRIu64 " ,buffer seq: %u , buffer "
                 "desiredPresentTimestamp: %" PRId64 " acquire expectPresentTimestamp: %" PRId64, name_.c_str(),
                 uniqueId_, frontBufferElement.buffer->GetSeqNum(), frontBufferElement.desiredPresentTimestamp,
                 expectPresentTimestamp);
-            dirtyList_.pop_front();
-            frontBufferElement.state = BUFFER_STATE_ACQUIRED;
-            dropBufferElements.push_back(&frontBufferElement);
-            frontDesiredPresentTimestamp = secondBufferElement.desiredPresentTimestamp;
-            frontIsAutoTimestamp = secondBufferElement.isAutoTimestamp;
+            DropFirstDirtyBuffer(frontBufferElement, frontDesiredPresentTimestamp, frontIsAutoTimestamp);
         }
-        //Present Later When first buffer not ready
         if (!frontIsAutoTimestamp && !IsPresentTimestampReady(frontDesiredPresentTimestamp, expectPresentTimestamp)) {
             SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER_READY;
         }
     }
-    //drop buffers
+    ReleaseDropBuffers(&dropBufferElements);
+    return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
+}
+
+void BufferQueue::DropFirstDirtyBuffer(BufferElement &frontBufferElement, int64_t &frontDesiredPresentTimestamp,
+                                       bool &frontIsAutoTimestamp)
+{
+    dirtyList_.pop_front();
+    frontBufferElement.state = BUFFER_STATE_ACQUIRED;
+    dropBufferElements.push_back(&frontBufferElement);
+    frontDesiredPresentTimestamp = secondBufferElement.desiredPresentTimestamp;
+    frontIsAutoTimestamp = secondBufferElement.isAutoTimestamp;
+}
+
+void BufferQueue::ReleaseDropBuffers(std::vector<BufferElement*> &dropBufferElements)
+{
     for (const auto& dropBufferElement : dropBufferElements) {
         if (dropBufferElement == nullptr) {
             continue;
         }
-        auto ret = ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
+        ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
         if (ret != GSERROR_OK) {
             BLOGE("DropBuffer failed, ret: %{public}d, sequence: %{public}u, uniqueId: %{public}" PRIu64 ".",
                 ret, dropBufferElement->buffer->GetSeqNum(), uniqueId_);
         }
     }
-    //Acquire
-    return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
 }
 
 bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp)

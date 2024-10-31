@@ -207,7 +207,7 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
             retvalues[i].fence->WriteToMessageParcel(reply);
             reply.WriteUInt32Vector(retvalues[i].deletingBuffers);
         }
-    } else if (sRet != GSERROR_OK) {
+    } else if (sret != GSERROR_OK) {
         reply.WriteBool(retvalues[0].isConnected);
     }
     return 0;

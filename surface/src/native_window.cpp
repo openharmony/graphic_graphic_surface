@@ -649,7 +649,6 @@ int32_t CreateNativeWindowFromSurfaceId(uint64_t surfaceId, OHNativeWindow **win
     *window = reinterpret_cast<OHNativeWindow*>(utils->GetNativeWindow(surfaceId));
     if (*window != nullptr) {
         NativeObjectReference(*window);
-        BLOGD("get nativeWindow from cache, uniqueId: %{public}" PRIu64 ".", surfaceId);
         return OHOS::GSERROR_OK;
     }
 

@@ -27,7 +27,7 @@
 namespace OHOS {
 class Surface : public RefBase {
 public:
-    static sptr<Surface> CreateSurfaceAsConsumer(std::string name = "noname", bool isShared = false);
+    static sptr<Surface> CreateSurfaceAsConsumer(std::string name = "noname");
     static sptr<Surface> CreateSurfaceAsProducer(sptr<IBufferProducer>& producer);
 
     virtual ~Surface() = default;
@@ -92,8 +92,6 @@ public:
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
     virtual GraphicTransformType GetTransform() const = 0;
 
-    virtual GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                     std::vector<bool> &supporteds) = 0;
     virtual GSError Connect() = 0;
     virtual GSError Disconnect() = 0;
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;

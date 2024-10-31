@@ -85,7 +85,6 @@ GSError ProducerSurface::Init()
     name_ = initInfo_.name;
     queueId_ = initInfo_.uniqueId;
     inited_.store(true);
-    BLOGD("Init name: %{public}s, uniqueId: %{public}" PRIu64 ".", name_.c_str(), queueId_);
     return GSERROR_OK;
 }
 
@@ -147,7 +146,6 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
     if (!value.empty()) {
         ret = MetadataHelper::SetColorSpaceType(buffer, static_cast<CM_ColorSpaceType>(atoi(value.c_str())));
         if (ret != GSERROR_OK) {
-            BLOGD("SetColorSpaceType ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
     }
@@ -157,7 +155,6 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
         metaData.assign(value.begin(), value.end());
         ret = MetadataHelper::SetHDRDynamicMetadata(buffer, metaData);
         if (ret != GSERROR_OK) {
-            BLOGD("SetHDRDynamicMetadata ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
     }
@@ -167,16 +164,12 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
         metaData.assign(value.begin(), value.end());
         ret = MetadataHelper::SetHDRStaticMetadata(buffer, metaData);
         if (ret != GSERROR_OK) {
-            BLOGD("SetHDRStaticMetadata ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
     }
     value = GetUserData("OH_HDR_METADATA_TYPE");
     if (!value.empty()) {
         ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str())));
-        if (ret != GSERROR_OK) {
-            BLOGD("SetHDRMetadataType ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
-        }
     }
     return ret;
 }
@@ -736,7 +729,6 @@ void ProducerSurface::CleanAllLocked()
 
 GSError ProducerSurface::CleanCacheLocked(bool cleanAll)
 {
-    BLOGD("CleanCacheLocked, uniqueId: %{public}" PRIu64 ".", queueId_);
     CleanAllLocked();
     return producer_->CleanCache(cleanAll);
 }
@@ -746,7 +738,6 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    BLOGD("CleanCache, uniqueId: %{public}" PRIu64 ".", queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         CleanAllLocked();
@@ -759,7 +750,6 @@ GSError ProducerSurface::GoBackground()
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    BLOGD("GoBackground, uniqueId: %{public}" PRIu64 ".", queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         CleanAllLocked();
@@ -796,15 +786,6 @@ GraphicTransformType ProducerSurface::GetTransform() const
     return transform;
 }
 
-GSError ProducerSurface::IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo>& infos,
-                                          std::vector<bool>& supporteds)
-{
-    if (producer_ == nullptr || infos.size() == 0 || infos.size() != supporteds.size()) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    return producer_->IsSupportedAlloc(infos, supporteds);
-}
-
 GSError ProducerSurface::Connect()
 {
     if (producer_ == nullptr) {
@@ -815,7 +796,6 @@ GSError ProducerSurface::Connect()
         BLOGE("Surface has been connect, uniqueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
-    BLOGD("Connect, uniqueId: %{public}" PRIu64 ".", queueId_);
     GSError ret = producer_->Connect();
     if (ret == GSERROR_OK) {
         isDisconnected_ = false;
@@ -833,7 +813,6 @@ GSError ProducerSurface::Disconnect()
         BLOGD("Surface is disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
-    BLOGD("Disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
     CleanAllLocked();
     GSError ret = producer_->Disconnect();
     if (ret == GSERROR_OK) {

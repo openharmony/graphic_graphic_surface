@@ -135,7 +135,6 @@ public:
     GSError SetTransform(GraphicTransformType transform) override;
     GraphicTransformType GetTransform() const override;
 
-    GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
     GSError Connect() override;
     GSError Disconnect() override;
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;

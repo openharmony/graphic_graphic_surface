@@ -153,7 +153,6 @@ namespace OHOS {
         g_size = size;
         g_pos = 0;
         // get data
-        bool isShared = GetData<bool>();
         uint32_t seqNum = GetData<uint32_t>();
         BufferRequestConfig requestConfig = GetData<BufferRequestConfig>();
         OHOS::Rect rect = GetData<OHOS::Rect>();
@@ -163,7 +162,7 @@ namespace OHOS {
 
         // test
         std::string name = GetStringFromData(STR_LEN);
-        sptr<BufferQueue> bq = new BufferQueue(name, isShared);
+        sptr<BufferQueue> bq = new BufferQueue(name);
         sptr<BufferQueueProducer> bqp = new BufferQueueProducer(bq);
         sptr<OHOS::SurfaceBuffer> buffer = new SurfaceBufferImpl(seqNum);
         sptr<BufferExtraData> bedata = GetBufferExtraDataFromData();

@@ -63,9 +63,6 @@ public:
     virtual GSError ReadFromMessageParcel(MessageParcel &parcel) = 0;
     virtual void SetBufferHandle(BufferHandle *handle) = 0;
 
-    virtual BufferWrapper GetBufferWrapper() = 0;
-    virtual void SetBufferWrapper(BufferWrapper wrapper) = 0;
-
     // gralloc
     virtual GSError Alloc(const BufferRequestConfig &config) = 0;
     virtual GSError Map() = 0;

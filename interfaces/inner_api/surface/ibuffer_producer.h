@@ -86,9 +86,6 @@ public:
 
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
 
-    virtual GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos,
-                                     std::vector<bool> &supporteds) = 0;
-
     virtual GSError Connect() = 0;
     virtual GSError Disconnect() = 0;
 
@@ -157,7 +154,6 @@ protected:
         BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER,
         BUFFER_PRODUCER_GET_UNIQUE_ID,
         BUFFER_PRODUCER_SET_TRANSFORM,
-        BUFFER_PRODUCER_IS_SUPPORTED_ALLOC,
         BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID,
         BUFFER_PRODUCER_DISCONNECT,
         BUFFER_PRODUCER_SET_SCALING_MODE,

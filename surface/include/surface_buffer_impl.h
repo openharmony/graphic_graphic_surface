@@ -74,9 +74,6 @@ public:
     static GSError CheckBufferConfig(int32_t width, int32_t height,
                                      int32_t format, uint64_t usage);
 
-    BufferWrapper GetBufferWrapper() override;
-    void SetBufferWrapper(BufferWrapper wrapper) override;
-
     // metadata
     GSError SetMetadata(uint32_t key, const std::vector<uint8_t>& value) override;
     GSError GetMetadata(uint32_t key, std::vector<uint8_t>& value) override;

@@ -86,7 +86,7 @@ void ConsumerSurfaceTest::TearDownTestCase()
 
 void ConsumerSurfaceTest::SetUp()
 {
-    surface_ = new ConsumerSurface("test", false);
+    surface_ = new ConsumerSurface("test");
     ASSERT_NE(surface_, nullptr);
     ASSERT_EQ(surface_->producer_, nullptr);
     ASSERT_EQ(surface_->consumer_, nullptr);
@@ -131,7 +131,7 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerSurface001, Function | MediumTest | Level2
  */
 HWTEST_F(ConsumerSurfaceTest, ConsumerSurfaceDtor001, Function | MediumTest | Level2)
 {
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->producer_ = new BufferQueueProducer(queue);
     ASSERT_NE(surface_->producer_, nullptr);
     ASSERT_EQ(surface_->consumer_, nullptr);
@@ -147,7 +147,7 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerSurfaceDtor001, Function | MediumTest | Le
  */
 HWTEST_F(ConsumerSurfaceTest, ConsumerSurfaceDtor002, Function | MediumTest | Level2)
 {
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(queue);
     ASSERT_NE(surface_->consumer_, nullptr);
 }
@@ -824,7 +824,7 @@ HWTEST_F(ConsumerSurfaceTest, RegisterReleaseListener001, Function | MediumTest 
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterReleaseListener002, Function | MediumTest | Level2)
 {
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(queue);
     ASSERT_NE(surface_->consumer_, nullptr);
     OnReleaseFunc onBufferRelease = nullptr;
@@ -886,7 +886,7 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener001, Function | Medium
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener002, Function | MediumTest | Level2)
 {
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(queue);
     ASSERT_NE(surface_->consumer_, nullptr);
     OnDeleteBufferFunc func = nullptr;
@@ -920,7 +920,7 @@ HWTEST_F(ConsumerSurfaceTest, UnregisterConsumerListener001, Function | MediumTe
  */
 HWTEST_F(ConsumerSurfaceTest, UnregisterConsumerListener002, Function | MediumTest | Level2)
 {
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(queue);
     ASSERT_NE(surface_->consumer_, nullptr);
     GSError ret = surface_->UnregisterConsumerListener();
@@ -965,7 +965,7 @@ HWTEST_F(ConsumerSurfaceTest, GoBackground001, Function | MediumTest | Level2)
  */
 HWTEST_F(ConsumerSurfaceTest, GoBackground002, Function | MediumTest | Level2)
 {
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(queue);
     ASSERT_NE(surface_->consumer_, nullptr);
     GSError ret = surface_->GoBackground();
@@ -1002,7 +1002,7 @@ HWTEST_F(ConsumerSurfaceTest, Dump001, Function | MediumTest | Level2)
 {
     std::string result;
     surface_->Dump(result);
-    sptr<BufferQueue> queue = new BufferQueue("test", false);
+    sptr<BufferQueue> queue = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(queue);
     ASSERT_NE(surface_->consumer_, nullptr);
     surface_->Dump(result);

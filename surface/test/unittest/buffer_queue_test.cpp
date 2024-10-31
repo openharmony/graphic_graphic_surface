@@ -104,8 +104,7 @@ HWTEST_F(BufferQueueTest, QueueSize001, Function | MediumTest | Level2)
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 
     ASSERT_EQ(bq->GetQueueSize(), 2u);
-    BufferQueue *bqTmp = new BufferQueue("testTmp", true);
-    EXPECT_EQ(bqTmp->SetQueueSize(2), GSERROR_INVALID_ARGUMENTS);
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
     EXPECT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
     bqTmp = nullptr;
 }
@@ -701,9 +700,6 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, Function | MediumTest 
     EXPECT_EQ(bq->DetachBuffer(retval.buffer), GSERROR_INVALID_ARGUMENTS);
     sptr<SurfaceBuffer> buffer = nullptr;
     EXPECT_EQ(bq->DetachBuffer(buffer), GSERROR_INVALID_ARGUMENTS);
-    BufferQueue *bqTmp = new BufferQueue("testTmp", true);
-    EXPECT_EQ(bqTmp->DetachBuffer(buffer), GSERROR_INVALID_OPERATING);
-    bqTmp = nullptr;
 }
 
 /*

@@ -606,8 +606,6 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->UnRegisterReleaseListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetTransform(GraphicTransformType::GRAPHIC_FLIP_H), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<BufferVerifyAllocInfo> infos;
-    std::vector<bool> supporteds;
-    EXPECT_EQ(bqpTmp->IsSupportedAlloc(infos, supporteds), OHOS::GSERROR_INVALID_ARGUMENTS);
     uint64_t uniqueId;
     EXPECT_EQ(bqpTmp->GetNameAndUniqueId(name, uniqueId), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->Disconnect(), OHOS::SURFACE_ERROR_UNKOWN);

@@ -22,9 +22,9 @@
 #include "sync_fence.h"
 
 namespace OHOS {
-sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
+sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name)
 {
-    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
+    sptr<ConsumerSurface> surf = new ConsumerSurface(name);
     if (surf->Init() != GSERROR_OK) {
         BLOGE("consumer surf init failed");
         return nullptr;
@@ -32,9 +32,9 @@ sptr<Surface> Surface::CreateSurfaceAsConsumer(std::string name, bool isShared)
     return surf;
 }
 
-sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
+sptr<IConsumerSurface> IConsumerSurface::Create(std::string name)
 {
-    sptr<ConsumerSurface> surf = new ConsumerSurface(name, isShared);
+    sptr<ConsumerSurface> surf = new ConsumerSurface(name);
     if (surf->Init() != GSERROR_OK) {
         BLOGE("consumer surf init failed");
         return nullptr;
@@ -42,8 +42,8 @@ sptr<IConsumerSurface> IConsumerSurface::Create(std::string name, bool isShared)
     return surf;
 }
 
-ConsumerSurface::ConsumerSurface(const std::string& name, bool isShared)
-    : name_(name), isShared_(isShared)
+ConsumerSurface::ConsumerSurface(const std::string& name)
+    : name_(name)
 {
     consumer_ = nullptr;
     producer_ = nullptr;
@@ -65,7 +65,7 @@ ConsumerSurface::~ConsumerSurface()
 
 GSError ConsumerSurface::Init()
 {
-    sptr<BufferQueue> queue_ = new BufferQueue(name_, isShared_);
+    sptr<BufferQueue> queue_ = new BufferQueue(name_);
     producer_ = new BufferQueueProducer(queue_);
     consumer_ = new BufferQueueConsumer(queue_);
     uniqueId_ = GetUniqueId();

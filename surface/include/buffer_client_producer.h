@@ -71,8 +71,6 @@ public:
     GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
 
-    GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
-
     // Call carefully. This interface will empty all caches of the current process
     GSError CleanCache(bool cleanAll) override;
     GSError Connect() override;

@@ -57,7 +57,7 @@ namespace OHOS {
         for (int i = 0; i < MATRIX_SIZE; i++) {
             matrix[i] = GetData<float>();
         }
-        uint32_t matrixSize = GetData<uint32_t>();
+        uint32_t matrixSize = MATRIX_SIZE;
         Rect crop = GetData<Rect>();
         sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
         utils->ComputeTransformMatrix(matrix, matrixSize, buffer, transformType, crop);

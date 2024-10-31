@@ -71,6 +71,8 @@ public:
         }
         return GSERROR_OK;
     }
+
+    void ResetReleaseFunc() override {}
 private:
     static inline BrokerDelegator<ProducerListenerProxy> delegator_;
 };
@@ -133,22 +135,43 @@ public:
     ~BufferReleaseProducerListener() override {};
     GSError OnBufferReleased() override
     {
-        if (func_ != nullptr) {
+        OnReleaseFunc func = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (func_ != nullptr) {
+                func = func_;
+            }
+        }
+        if (func != nullptr) {
             sptr<OHOS::SurfaceBuffer> sBuffer = nullptr;
-            return func_(sBuffer);
+            return func(sBuffer);
         }
         return GSERROR_INTERNAL;
     };
     GSError OnBufferReleasedWithFence(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) override
     {
-        if (funcWithFence_ != nullptr) {
-            return funcWithFence_(buffer, fence);
+        OnReleaseFuncWithFence funcWithFence = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (funcWithFence_ != nullptr) {
+                funcWithFence = funcWithFence_;
+            }
+        }
+        if (funcWithFence != nullptr) {
+            return funcWithFence(buffer, fence);
         }
         return GSERROR_INTERNAL;
+    }
+    void ResetReleaseFunc() override
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        func_ = nullptr;
+        funcWithFence_ = nullptr;
     }
 private:
     OnReleaseFunc func_;
     OnReleaseFuncWithFence funcWithFence_;
+    std::mutex mutex_;
 };
 } // namespace OHOS
 

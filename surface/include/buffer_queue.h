@@ -232,6 +232,10 @@ private:
     bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
     void SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                  uint64_t uiTimestamp);
+    void DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
+                              int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
+                              std::vector<BufferElement*> &dropBufferElements);
+    void ReleaseDropBuffers(const std::vector<BufferElement*> &dropBufferElements);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

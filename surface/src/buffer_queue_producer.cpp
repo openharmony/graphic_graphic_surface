@@ -164,6 +164,8 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
         bedataimpl->WriteToParcel(reply);
         retval.fence->WriteToMessageParcel(reply);
         reply.WriteUInt32Vector(retval.deletingBuffers);
+    }  else {
+        reply.WriteBool(retval.isConnected);
     }
 
     if (isActiveGame) {
@@ -195,9 +197,9 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
         bedataimpls.emplace_back(data);
     }
     GSError sret = RequestBuffers(config, bedataimpls, retvalues);
-    num = static_cast<uint32_t>(retvalues.size());
     reply.WriteInt32(sret);
     if (sret == GSERROR_OK || sret == GSERROR_NO_BUFFER) {
+        num = static_cast<uint32_t>(retvalues.size());
         reply.WriteUint32(num);
         for (uint32_t i = 0; i < num; ++i) {
             WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer);
@@ -205,6 +207,8 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
             retvalues[i].fence->WriteToMessageParcel(reply);
             reply.WriteUInt32Vector(retvalues[i].deletingBuffers);
         }
+    } else if (sRet != GSERROR_OK) {
+        reply.WriteBool(retvalues[0].isConnected);
     }
     return 0;
 }
@@ -763,10 +767,12 @@ GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sp
         return SURFACE_ERROR_UNKOWN;
     }
 
+    retval.isConnected = false;
     auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
     }
+    retval.isConnected = true;
     return bufferQueue_->RequestBuffer(config, bedata, retval);
 }
 
@@ -776,6 +782,7 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    retvalues[0].isConnected = false;
     auto ret = Connect();
     if (ret != SURFACE_ERROR_OK) {
         return ret;
@@ -790,6 +797,8 @@ GSError BufferQueueProducer::RequestBuffers(const BufferRequestConfig &config,
     }
     bufferQueue_->SetBatchHandle(false);
     if (retvalues.size() == 0) {
+        retvalues.resize(1);
+        retvalues[0].isConnected = true;
         return ret;
     }
     return GSERROR_OK;

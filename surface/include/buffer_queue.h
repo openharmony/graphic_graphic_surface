@@ -53,7 +53,6 @@ using BufferElement = struct BufferElement {
     sptr<SyncFence> fence;
     int64_t timestamp;
     std::vector<Rect> damages;
-    ScalingMode scalingMode;
     HDRMetaDataType hdrMetaDataType = HDRMetaDataType::HDR_NOT_USED;
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetadataKey key;

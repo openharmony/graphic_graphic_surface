@@ -118,7 +118,14 @@ public:
         (void)planesInfo;
         return GSERROR_OK;
     };
-
+    virtual void SetSurfaceBufferScalingMode(const ScalingMode &scalingMode)
+    {
+        (void) scalingMode;
+    }
+    virtual ScalingMode GetSurfaceBufferScalingMode() const
+    {
+        return SCALING_MODE_SCALE_TO_WINDOW;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

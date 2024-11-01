@@ -688,4 +688,16 @@ bool SurfaceBufferImpl::GetConsumerAttachBufferFlag()
     std::lock_guard<std::mutex> lock(mutex_);
     return isConsumerAttachBufferFlag_;
 }
+
+void SurfaceBufferImpl::SetSurfaceBufferScalingMode(const ScalingMode &scalingMode)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    scalingMode_ = scalingMode;
+}
+
+ScalingMode SurfaceBufferImpl::GetSurfaceBufferScalingMode() const
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return scalingMode_;
+}
 } // namespace OHOS

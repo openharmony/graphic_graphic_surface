@@ -93,6 +93,8 @@ public:
     void SetConsumerAttachBufferFlag(bool value) override;
     bool GetConsumerAttachBufferFlag() override;
     GSError GetPlanesInfo(void **planesInfo) override;
+    void SetSurfaceBufferScalingMode(const ScalingMode &scalingMode) override;
+    ScalingMode GetSurfaceBufferScalingMode() const override;
 
 private:
     void FreeBufferHandleLocked();
@@ -105,6 +107,7 @@ private:
     sptr<EglData> eglData_ = nullptr;
     GraphicColorGamut surfaceBufferColorGamut_ = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     int32_t surfaceBufferWidth_ = 0;
     int32_t surfaceBufferHeight_ = 0;
     mutable std::mutex mutex_;

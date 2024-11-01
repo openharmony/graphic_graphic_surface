@@ -249,24 +249,6 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel004, Function | MediumTest | Level2)
 
     ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
     ASSERT_NE(ret, OHOS::GSERROR_OK);
-
-    // call SetDesiredPresentTimestampAndUiTimestamp, check desiredPresentTimestamp and uiTimestamp
-    int64_t desiredPresentTimestamp = -1;
-    uint64_t uiTimestamp = 2;
-    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
-    ASSERT_GT(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, 0);
-    ASSERT_NE(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, uiTimestamp);
-    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
-
-    desiredPresentTimestamp = 0;
-    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
-    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, uiTimestamp);
-    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
-
-    desiredPresentTimestamp = 1;
-    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
-    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, desiredPresentTimestamp);
-    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
 }
 
 /*
@@ -424,6 +406,78 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, Function | MediumTest | Level2)
     ASSERT_EQ(retval.deletingBuffers.size(), 1u);
     ASSERT_GE(retval.sequence, 0);
     ASSERT_NE(retval.buffer, nullptr);
+
+    ret = bq->CancelBuffer(retval.sequence, bedata);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SetDesiredPresentTimestampAndUiTimestamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetDesiredPresentTimestampAndUiTimestamp with different parameter and check ret
+*                  2. call SetDesiredPresentTimestampAndUiTimestamp with empty parameter and check ret
+*                  3. repeatly call SetDesiredPresentTimestampAndUiTimestamp with different parameter and check ret
+ */
+HWTEST_F(BufferQueueTest, SetDesiredPresentTimestampAndUiTimestamp001, Function | MediumTest | Level2)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    BufferRequestConfig config = requestConfig;
+    config.width = 1921;
+    GSError ret = bq->RequestBuffer(config, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval.sequence, 0);
+
+    // call SetDesiredPresentTimestampAndUiTimestamp with different uiTimestamp and desireTimestamp, check ret
+    int64_t desiredPresentTimestamp = 0;
+    uint64_t uiTimestamp = 2;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, false);
+
+    desiredPresentTimestamp = -1;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_GT(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, 0);
+    ASSERT_NE(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, true);
+
+    desiredPresentTimestamp = 1;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, desiredPresentTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, false);
+
+    // call SetDesiredPresentTimestampAndUiTimestamp with empty uiTimestamp and desireTimestamp, check ret
+    desiredPresentTimestamp = 0;
+    uiTimestamp = 0;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_NE(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, desiredPresentTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, true);
+
+    //repeatly call SetDesiredPresentTimestampAndUiTimestamp with different uiTimestamp and desireTimestamp, check ret
+    desiredPresentTimestamp = 0;
+    uiTimestamp = 2;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, false);
+
+    desiredPresentTimestamp = -1;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_GT(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, 0);
+    ASSERT_NE(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, true);
+
+    desiredPresentTimestamp = 1;
+    bq->SetDesiredPresentTimestampAndUiTimestamp(retval.sequence, desiredPresentTimestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].desiredPresentTimestamp, desiredPresentTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].timestamp, uiTimestamp);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].isAutoTimestamp, false);
 
     ret = bq->CancelBuffer(retval.sequence, bedata);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

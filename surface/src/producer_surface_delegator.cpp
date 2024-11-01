@@ -123,4 +123,14 @@ void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot)
     dequeueFailedSet_.erase(slot);
 }
 
+void ProducerSurfaceDelegator::UpdateBufferTransform()
+{
+}
+
+GraphicTransformType ProducerSurfaceDelegator::ConvertTransformToHmos(uint32_t transform)
+{
+    (void)transform;
+    return GraphicTransformType::GRAPHIC_ROTATE_NONE;
+}
+
 } // namespace OHOS

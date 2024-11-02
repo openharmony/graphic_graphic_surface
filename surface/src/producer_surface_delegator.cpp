@@ -126,6 +126,11 @@ void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot)
     dequeueFailedSet_.erase(slot);
 }
 
+void SetDisplayRotation(int32_t rotation)
+{
+    mDisplayRotation_.store(rotation);
+}
+
 void ProducerSurfaceDelegator::UpdateBufferTransform()
 {
 }

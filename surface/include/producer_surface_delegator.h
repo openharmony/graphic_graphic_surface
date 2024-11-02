@@ -42,6 +42,8 @@ public:
     int OnDequeueBuffer(MessageParcel &data, MessageParcel &reply);
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 
+    static void SetDisplayRotation(int32_t rotation);
+
 private:
     std::map<int32_t, std::vector<sptr<SurfaceBuffer>>> map_;
     std::vector<sptr<SurfaceBuffer>> pendingReleaseBuffer_;

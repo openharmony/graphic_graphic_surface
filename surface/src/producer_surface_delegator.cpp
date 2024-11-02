@@ -19,6 +19,9 @@
 #include "sync_fence.h"
 
 namespace OHOS {
+
+std::atomic<int32_t> ProducerSurfaceDelegator::mDisplayRotation_ = 0;
+
 ProducerSurfaceDelegator::~ProducerSurfaceDelegator()
 {
     map_.clear();
@@ -121,6 +124,21 @@ void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot)
 {
     std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
     dequeueFailedSet_.erase(slot);
+}
+
+void ProducerSurfaceDelegator::SetDisplayRotation(int32_t rotation)
+{
+    mDisplayRotation_.store(rotation);
+}
+
+void ProducerSurfaceDelegator::UpdateBufferTransform()
+{
+}
+
+GraphicTransformType ProducerSurfaceDelegator::ConvertTransformToHmos(uint32_t transform)
+{
+    mTransform_ = transform;
+    return mLastTransform_;
 }
 
 } // namespace OHOS

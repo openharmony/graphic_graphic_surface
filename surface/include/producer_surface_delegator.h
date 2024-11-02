@@ -42,6 +42,8 @@ public:
     int OnDequeueBuffer(MessageParcel &data, MessageParcel &reply);
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 
+    static void SetDisplayRotation(int32_t rotation);
+
 private:
     std::map<int32_t, std::vector<sptr<SurfaceBuffer>>> map_;
     std::vector<sptr<SurfaceBuffer>> pendingReleaseBuffer_;
@@ -49,7 +51,11 @@ private:
     std::mutex dequeueFailedSetMutex_;
     std::mutex mapMutex_;
     std::mutex mstate_;
+    uint32_t mTransform_ = 0;
+    GraphicTransformType mLastTransform_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     uint32_t mAncoDataspace = 0;
+
+    static std::atomic<int32_t> mDisplayRotation_;
 
     void AddBufferLocked(const sptr<SurfaceBuffer>& buffer, int32_t slot);
     sptr<SurfaceBuffer> GetBufferLocked(int32_t slot);
@@ -58,6 +64,8 @@ private:
     bool HasSlotInSet(int32_t slot);
     void InsertSlotIntoSet(int32_t slot);
     void EraseSlotFromSet(int32_t slot);
+    void UpdateBufferTransform();
+    GraphicTransformType ConvertTransformToHmos(uint32_t transform);
 };
 } // namespace OHOS
 #endif // PRODUCER_SURFACE_DELEGATOR_H

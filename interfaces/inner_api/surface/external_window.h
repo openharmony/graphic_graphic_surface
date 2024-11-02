@@ -162,13 +162,15 @@ typedef enum NativeWindowOperation {
      */
     GET_SWAP_INTERVAL,
     /**
-     * set native window buffer timeout in milliseconds,
+     * set the timeout in milliseconds when the native window requests a buffer,
+     * the default value is 3000 milliseconds when not set,
      * variable parameter in function is
      * [in] int32_t timeout, in milliseconds.
      */
     SET_TIMEOUT,
     /**
-     * get native window buffer timeout in milliseconds,
+     * get the timeout in milliseconds when the native window requests a buffer,
+     * the default value is 3000 milliseconds when not set,
      * variable parameter in function is
      * [out] int32_t *timeout, in milliseconds.
      */
@@ -263,7 +265,7 @@ typedef enum NativeWindowOperation {
      * the desiredPresentTimestamp will be ignored.\n
      * Variable parameter in function is
      * [in] int64_t desiredPresentTimestamp.
-     * @since 14
+     * @since 13
      */
     SET_DESIRED_PRESENT_TIMESTAMP = 24,
 } NativeWindowOperation;

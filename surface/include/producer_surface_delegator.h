@@ -52,7 +52,7 @@ private:
     std::mutex mapMutex_;
     std::mutex mstate_;
     uint32_t mTransform_ = 0;
-    GraphicTransformType mLastTransform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    GraphicTransformType mLastTransform_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     uint32_t mAncoDataspace = 0;
 
     static std::atomic<int32_t> mDisplayRotation_;

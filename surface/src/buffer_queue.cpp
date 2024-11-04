@@ -1228,6 +1228,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
         return AttachBufferUpdateStatus(lock, sequence, timeOut);
     }
 
+    buffer->SetSurfaceBufferScalingMode(scalingMode_);
     BufferElement ele = {
         .buffer = buffer,
         .state = BUFFER_STATE_ATTACHED,
@@ -1236,7 +1237,6 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
             .format = buffer->GetFormat(), .usage = buffer->GetUsage(), .timeout = timeOut,
         },
         .damages = { { .w = buffer->GetWidth(), .h = buffer->GetHeight(), } },
-        .scalingMode = scalingMode_,
     };
     AttachBufferUpdateBufferInfo(buffer);
     int32_t usedSize = static_cast<int32_t>(GetUsedSize());

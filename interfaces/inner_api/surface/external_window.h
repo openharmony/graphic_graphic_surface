@@ -261,7 +261,7 @@ typedef enum NativeWindowOperation {
      * the desiredPresentTimestamp will be ignored.\n
      * Variable parameter in function is
      * [in] int64_t desiredPresentTimestamp.
-     * @since 14
+     * @since 13
      */
     SET_DESIRED_PRESENT_TIMESTAMP = 24,
 } NativeWindowOperation;

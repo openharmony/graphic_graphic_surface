@@ -86,6 +86,7 @@ namespace OHOS {
         uint32_t seqNum = GetData<uint32_t>();
         GraphicColorGamut colorGamut = GetData<GraphicColorGamut>();
         GraphicTransformType transform = GetData<GraphicTransformType>();
+        ScalingMode scalingMode = GetData<ScalingMode>();
         int32_t width = GetData<int32_t>();
         int32_t height = GetData<int32_t>();
         width = width > MAX_SIZE ? MAX_SIZE : width;
@@ -118,6 +119,8 @@ namespace OHOS {
         MessageParcel parcel;
         surfaceBuffer->WriteToMessageParcel(parcel);
         surfaceBuffer->ReadFromMessageParcel(parcel);
+        surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
+        surfaceBuffer->GetSurfaceBufferScalingMode();
 
         return true;
     }

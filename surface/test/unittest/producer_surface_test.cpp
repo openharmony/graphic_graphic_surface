@@ -1871,11 +1871,10 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
         ASSERT_EQ(time < 1, true);
     };
     std::thread t1(func, "thread1");
-    t1.join();
 
     ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
-
+    t1.join();
     pSurfaceTmp = nullptr;
     producerTmp = nullptr;
     cSurfTmp = nullptr;

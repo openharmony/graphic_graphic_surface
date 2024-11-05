@@ -111,8 +111,6 @@ public:
         return consumer_->IsBufferHold();
     }
     void SetBufferHold(bool hold) override;
-
-    int32_t GetRequestHeight() override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     OHSurfaceSource GetSurfaceSourceType() const override;

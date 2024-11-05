@@ -123,7 +123,10 @@ public:
     {
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError RegisterReleaseListener(OnReleaseFunc func) = 0;
+    virtual GSError RegisterReleaseListener(OnReleaseFunc func)
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) = 0;
     virtual GSError UnregisterConsumerListener()
     {

@@ -26,6 +26,7 @@
 #include "buffer_extra_data.h"
 #include "buffer_extra_data_impl.h"
 #include "sync_fence.h"
+#include <buffer_producer_listener.h>
 
 using namespace g_fuzzCommon;
 namespace OHOS {

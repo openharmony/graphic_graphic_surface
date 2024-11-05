@@ -1863,7 +1863,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
     }
 
     auto func = [&pSurfaceTmp](const std::string& FuncName) {
-        usleep(1000000);
+        usleep(1000);
         clock_t start = clock();
         pSurfaceTmp->GetSurfaceSourceType();
         clock_t end = clock();

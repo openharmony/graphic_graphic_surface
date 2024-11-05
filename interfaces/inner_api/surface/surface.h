@@ -130,6 +130,8 @@ public:
 
     virtual GSError SetDefaultWidthAndHeight(int32_t width, int32_t height)
     {
+        (void)width;
+        (void)height;
         return GSERROR_NOT_SUPPORT;
     }
     virtual int32_t GetDefaultWidth() = 0;
@@ -150,10 +152,12 @@ public:
     }
     virtual GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener)
     {
+        (void)listener;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError RegisterReleaseListener(OnReleaseFunc func)
     {
+        (void)func;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) = 0;
@@ -183,6 +187,8 @@ public:
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
     virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
     {
+        (void)sequence;
+        (void)scalingMode;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
@@ -190,15 +196,22 @@ public:
                                    const std::vector<uint8_t> &metaData) = 0;
     virtual GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const
     {
+        (void)sequence;
+        (void)type;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const
     {
+        (void)sequence;
+        (void)metaData;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
                                    std::vector<uint8_t> &metaData) const
     {
+        (void)sequence;
+        (void)key;
+        (void)metaData;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle) = 0;
@@ -208,11 +221,16 @@ public:
     }
     virtual GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
     {
+        (void)sequence;
+        (void)timestamp;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
                                         int64_t &time) const
     {
+        (void)sequence;
+        (void)type;
+        (void)time;
         return GSERROR_NOT_SUPPORT;
     }
 
@@ -224,6 +242,7 @@ public:
     }
     virtual GSError SetDefaultFormat(int32_t format)
     {
+        (void)format;
         return GSERROR_NOT_SUPPORT;
     }
     virtual int32_t GetDefaultColorGamut()
@@ -232,6 +251,7 @@ public:
     }
     virtual GSError SetDefaultColorGamut(int32_t colorGamut)
     {
+        (void)colorGamut;
         return GSERROR_NOT_SUPPORT;
     }
 
@@ -244,11 +264,17 @@ public:
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                 BufferFlushConfigWithDamages &config)
     {
+        (void)buffer;
+        (void)fence;
+        (void)config;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
         const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &configs)
     {
+        (void)buffers;
+        (void)fences;
+        (void)configs;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError UnRegisterReleaseListener()
@@ -257,11 +283,16 @@ public:
     }
     virtual GSError SetWptrNativeWindowToPSurface(void* nativeWindow)
     {
+        (void)nativeWindow;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix = false)
     {
+        (void)buffer;
+        (void)fence;
+        (void)matrix;
+        (void)isUseNewMatrix;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
@@ -311,23 +342,32 @@ public:
     virtual std::string GetSurfaceAppFrameworkType() const = 0;
     virtual GSError SetHdrWhitePointBrightness(float brightness)
     {
+        (void)brightness;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError SetSdrWhitePointBrightness(float brightness)
     {
+        (void)brightness;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
     {
+        (void)buffer;
+        (void)fence;
+        (void)matrix;
+        (void)matriSize;
+        (void)isUseNewMatrix;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
     {
+        (void)buffer;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError SetGlobalAlpha(int32_t alpha)
     {
+        (void)alpha;
         return GSERROR_NOT_SUPPORT;
     }
     virtual bool IsInHebcList()

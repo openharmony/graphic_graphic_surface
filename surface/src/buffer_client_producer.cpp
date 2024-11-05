@@ -99,9 +99,11 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
 
     WriteRequestConfig(arguments, config);
 
+    retval.isConnected = false;
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFER, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
+        reply.ReadBool(retval.isConnected);
         return ret;
     }
 
@@ -131,9 +133,11 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     uint32_t num = static_cast<uint32_t>(bedata.size());
     arguments.WriteUint32(num);
     WriteRequestConfig(arguments, config);
+    retvalues[0].isConnected = false;
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK && ret != GSERROR_NO_BUFFER) {
+        reply.ReadBool(retvalues[0].isConnected);
         return ret;
     }
 

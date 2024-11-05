@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 #include <surface.h>
 #include <consumer_surface.h>
-#include <ctime>
+#include <sys/time.h>
 #include <producer_surface.h>
 #include "buffer_consumer_listener.h"
 #include <native_window.h>

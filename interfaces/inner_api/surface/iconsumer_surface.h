@@ -41,22 +41,10 @@ public:
     virtual bool IsConsumer() const = 0;
     virtual sptr<IBufferProducer> GetProducer() const = 0;
 
-    virtual GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
-                                  int32_t &fence, BufferRequestConfig &config) = 0;
-
-    virtual GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) = 0;
-
-    virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
-                                int32_t fence, BufferFlushConfig &config) = 0;
-
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
                                   int64_t &timestamp, Rect &damage) = 0;
     virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence) = 0;
 
-    virtual GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
-                                  sptr<SyncFence>& fence, BufferRequestConfig &config) = 0;
-    virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
-                                const sptr<SyncFence>& fence, BufferFlushConfig &config) = 0;
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                   int64_t &timestamp, Rect &damage) = 0;
     virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) = 0;
@@ -87,15 +75,11 @@ public:
     virtual GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) = 0;
     virtual GSError UnregisterConsumerListener() = 0;
 
-    // Call carefully. This interface will empty all caches of the current process
-    virtual GSError CleanCache(bool cleanAll = false) = 0;
     virtual GSError GoBackground() = 0;
 
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
     virtual GraphicTransformType GetTransform() const = 0;
 
-    virtual GSError Connect() = 0;
-    virtual GSError Disconnect() = 0;
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
     virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) = 0;
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
@@ -108,16 +92,7 @@ public:
     virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle) = 0;
     virtual sptr<SurfaceTunnelHandle> GetTunnelHandle() const = 0;
     virtual GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) = 0;
-    virtual GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
-                                        int64_t &time) const = 0;
     virtual void Dump(std::string &result) const = 0;
-
-    virtual int32_t GetDefaultFormat() = 0;
-    virtual GSError SetDefaultFormat(int32_t format) = 0;
-    virtual int32_t GetDefaultColorGamut() = 0;
-    virtual GSError SetDefaultColorGamut(int32_t colorGamut) = 0;
-
-    virtual sptr<NativeSurface> GetNativeSurface() = 0;
 
     virtual bool QueryIfBufferAvailable() = 0;
 
@@ -126,19 +101,10 @@ public:
     virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
                                   bool isUsingAutoTimestamp)
     {
-        (void)returnValue;
-        (void)expectPresentTimestamp;
-        (void)isUsingAutoTimestamp;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-    virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-                                BufferFlushConfigWithDamages &config) = 0;
-    virtual GSError SetWptrNativeWindowToPSurface(void* nativeWindow) = 0;
-    virtual GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-        sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix) = 0;
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) = 0;
-    virtual GSError RegisterReleaseListener(OnReleaseFuncWithFence func) = 0;
     virtual void ConsumerRequestCpuAccess(bool on) = 0;
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
@@ -150,21 +116,6 @@ public:
     virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) = 0;
 
     virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) = 0;
-    virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
-    {
-        (void)buffer;
-        (void)fence;
-        (void)matrix;
-        (void)matrixSize;
-        (void)isUseNewMatrix;
-        return SURFACE_ERROR_NOT_SUPPORT;
-    };
-    virtual GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
-    {
-        (void)buffer;
-        return SURFACE_ERROR_NOT_SUPPORT;
-    };
     virtual GSError GetGlobalAlpha(int32_t &alpha) = 0;
     virtual uint32_t GetAvailableBufferCount() const
     {

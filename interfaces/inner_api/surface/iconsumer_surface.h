@@ -100,6 +100,9 @@ public:
     virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
                                   bool isUsingAutoTimestamp)
     {
+        (void)returnValue;
+        (void)expectPresentTimestamp;
+        (void)isUsingAutoTimestamp;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;

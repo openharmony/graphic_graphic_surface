@@ -53,6 +53,7 @@ namespace OHOS {
         OH_NativeBuffer_Map(buffer, &virAddr);
         OH_NativeBuffer_Unmap(buffer);
         OH_NativeBuffer_Unreference(buffer);
+        OH_NativeBuffer_Unreference(buffer);
 
         return true;
     }

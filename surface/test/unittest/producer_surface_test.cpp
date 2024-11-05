@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <surface.h>
 #include <consumer_surface.h>
+#include <sys/time.h>
 #include <producer_surface.h>
 #include "buffer_consumer_listener.h"
 #include <native_window.h>
@@ -1826,6 +1827,57 @@ HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, Function | MediumTest | Lev
 {
     bool isInHebcList = pSurface->IsInHebcList();
     ASSERT_EQ(isInHebcList, false);
+}
+
+/*
+* Function: RequestBufferConcurrence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    for (uint32_t i = 0; i < 3; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    auto func = [&pSurfaceTmp](const std::string& FuncName) {
+        usleep(1000);
+        clock_t start = clock();
+        pSurfaceTmp->GetSurfaceSourceType();
+        clock_t end = clock();
+        int32_t time = (end - start) / CLOCKS_PER_SEC;
+        ASSERT_EQ(time < 1, true);
+    };
+    std::thread t1(func, "thread1");
+
+    ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
+    t1.join();
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
 }
 
 /*

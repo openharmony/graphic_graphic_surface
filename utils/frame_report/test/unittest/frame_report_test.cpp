@@ -123,6 +123,9 @@ HWTEST_F(FrameReportTest, IsActiveGameWithUniqueId001, Function | MediumTest | L
     bool result = Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(FRT_GAME_ERROR_UNIQUEID);
     ASSERT_TRUE(!result);
 
+    result = Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(FR_DEFAULT_UNIQUEID);
+    ASSERT_TRUE(!result);
+
     result = Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(FRT_GAME_UNIQUEID);
     ASSERT_TRUE(!result);
 }

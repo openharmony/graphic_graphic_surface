@@ -47,6 +47,7 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2
 {
     auto tracker = new SyncFenceTracker("TrackFenceTest001");
     sptr<SyncFence> fence = new SyncFence(0);
+    tracker->TrackFence(nullptr, true);
     tracker->TrackFence(fence, true);
     tracker->isGpuFence_ = true;
     tracker->TrackFence(fence, true);
@@ -119,6 +120,8 @@ HWTEST_F(SyncFenceTrackerTest, GetFrameRate001, Function | MediumTest | Level2)
 HWTEST_F(SyncFenceTrackerTest, ReportEventGpuSubhealth001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("ReportEventGpuSubhealth001");
+    EXPECT_NE(tracker->handler_, nullptr);
+    tracker->ReportEventGpuSubhealth(0);
     tracker->handler_ = nullptr;
     tracker->ReportEventGpuSubhealth(0);
     delete tracker;

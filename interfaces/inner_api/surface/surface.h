@@ -148,6 +148,7 @@ public:
 
     virtual GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener)
     {
+        (void)listener;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener)
@@ -169,6 +170,7 @@ public:
     // Call carefully. This interface will empty all caches of the current process
     virtual GSError CleanCache(bool cleanAll = false)
     {
+        (void)cleanAll;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError GoBackground() = 0;
@@ -308,7 +310,11 @@ public:
     virtual GraphicTransformType GetTransformHint() const = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
 
-    virtual void SetRequestWidthAndHeight(int32_t width, int32_t height) {}
+    virtual void SetRequestWidthAndHeight(int32_t width, int32_t height)
+    {
+        (void)width;
+        (void)height;
+    }
     virtual int32_t GetRequestWidth()
     {
         return 0;
@@ -323,13 +329,35 @@ public:
     {
         (void)config;
     }
-    virtual void SetWindowConfigWidthAndHeight(int32_t width, int32_t height) { }
-    virtual void SetWindowConfigStride(int32_t stride) {}
-    virtual void SetWindowConfigFormat(int32_t format) {}
-    virtual void SetWindowConfigUsage(uint64_t usage) {}
-    virtual void SetWindowConfigTimeout(int32_t timeout) {}
-    virtual void SetWindowConfigColorGamut(GraphicColorGamut colorGamut) {}
-    virtual void SetWindowConfigTransform(GraphicTransformType transform) {}
+    virtual void SetWindowConfigWidthAndHeight(int32_t width, int32_t height)
+    {
+        (void)width;
+        (void)height;
+    }
+    virtual void SetWindowConfigStride(int32_t stride)
+    {
+        (void)stride;
+    }
+    virtual void SetWindowConfigFormat(int32_t format)
+    {
+        (void)format;
+    }
+    virtual void SetWindowConfigUsage(uint64_t usage)
+    {
+        (void)usage;
+    }
+    virtual void SetWindowConfigTimeout(int32_t timeout)
+    {
+        (void)timeout;
+    }
+    virtual void SetWindowConfigColorGamut(GraphicColorGamut colorGamut)
+    {
+        (void)colorGamut;
+    }
+    virtual void SetWindowConfigTransform(GraphicTransformType transform)
+    {
+        (void)transform;
+    }
     virtual BufferRequestConfig GetWindowConfig()
     {
         BufferRequestConfig config;
@@ -356,7 +384,7 @@ public:
         (void)buffer;
         (void)fence;
         (void)matrix;
-        (void)matriSize;
+        (void)matrixSize;
         (void)isUseNewMatrix;
         return GSERROR_NOT_SUPPORT;
     }

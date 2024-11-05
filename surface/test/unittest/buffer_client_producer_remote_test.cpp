@@ -29,6 +29,7 @@
 #include "accesstoken_kit.h"
 #include "nativetoken_kit.h"
 #include "token_setproc.h"
+#include <buffer_producer_listener.h>
 
 using namespace testing;
 using namespace testing::ext;

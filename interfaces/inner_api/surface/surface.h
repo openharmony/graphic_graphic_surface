@@ -34,6 +34,7 @@ public:
 
     virtual GSError GetProducerInitInfo(ProducerInitInfo &info)
     {
+        (void)info;
         return GSERROR_NOT_SUPPORT;
     }
     virtual bool IsConsumer() const = 0;
@@ -42,53 +43,81 @@ public:
     virtual GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                   int32_t &fence, BufferRequestConfig &config)
     {
+        (void)buffer;
+        (void)fence;
+        (void)config;
         return GSERROR_NOT_SUPPORT;
     }
 
     virtual GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
         std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config)
     {
+        (void)buffers;
+        (void)fences;
+        (void)config;
         return GSERROR_NOT_SUPPORT;
     }
 
     virtual GSError CancelBuffer(sptr<SurfaceBuffer>& buffer)
     {
+        (void)buffer;
         return GSERROR_NOT_SUPPORT;
     }
 
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
                                 int32_t fence, BufferFlushConfig &config)
     {
+        (void)buffer;
+        (void)fence;
+        (void)config;
         return GSERROR_NOT_SUPPORT;
     }
 
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
                                   int64_t &timestamp, Rect &damage)
     {
+        (void)buffer;
+        (void)fence;
+        (void)timestamp;
+        (void)damage;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
     {
+        (void)buffer;
+        (void)fence;
         return GSERROR_NOT_SUPPORT;
     }
 
     virtual GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                   sptr<SyncFence>& fence, BufferRequestConfig &config)
     {
+        (void)buffer;
+        (void)fence;
+        (void)config;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
                                 const sptr<SyncFence>& fence, BufferFlushConfig &config)
     {
+        (void)buffer;
+        (void)fence;
+        (void)config;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                   int64_t &timestamp, Rect &damage)
     {
+        (void)buffer;
+        (void)fence;
+        (void)timestamp;
+        (void)damage;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
     {
+        (void)buffer;
+        (void)fence;
         return GSERROR_NOT_SUPPORT;
     }
 
@@ -237,10 +266,7 @@ public:
     }
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) = 0;
-    virtual GSError RegisterReleaseListener(OnReleaseFuncWithFence func)
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
+    virtual GSError RegisterReleaseListener(OnReleaseFuncWithFence func) = 0;
     virtual GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func) = 0;
     virtual GSError UnRegisterUserDataChangeListener(const std::string &funcName) = 0;
     virtual GSError ClearUserDataChangeListener() = 0;

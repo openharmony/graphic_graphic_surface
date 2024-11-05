@@ -83,11 +83,6 @@ sptr<IBufferProducer> ConsumerSurface::GetProducer() const
     return producer_;
 }
 
-GSError ConsumerSurface::GetProducerInitInfo(ProducerInitInfo& info)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                        int64_t& timestamp, Rect& damage)
 {

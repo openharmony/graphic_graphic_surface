@@ -70,6 +70,10 @@ public:
     GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener) override;
     GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener) override;
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
+    GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
     GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) override;
     GSError UnregisterConsumerListener() override;
 

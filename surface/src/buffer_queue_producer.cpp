@@ -896,6 +896,7 @@ GSError BufferQueueProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
 GSError BufferQueueProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
                                            RequestBufferReturnValue &retval)
 {
+        std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
@@ -1261,7 +1262,6 @@ GSError BufferQueueProducer::GetNameAndUniqueId(std::string& name, uint64_t& uni
 
 GSError BufferQueueProducer::Connect()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     auto callingPid = GetCallingPid();
     if (connectedPid_ != 0 && connectedPid_ != callingPid) {
         BLOGW("connected by: %{public}d, request by: %{public}d , uniqueId: %{public}" PRIu64 ".",

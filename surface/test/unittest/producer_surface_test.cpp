@@ -1862,10 +1862,8 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
     }
 
-    ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
-
     auto func = [&pSurfaceTmp](const std::string& FuncName) {
+        usleep(1000000);
         clock_t start = clock();
         pSurfaceTmp->GetSurfaceSourceType();
         clock_t end = clock();
@@ -1874,6 +1872,9 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
     };
     std::thread t1(func, "thread1");
     t1.join();
+
+    ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
 
     pSurfaceTmp = nullptr;
     producerTmp = nullptr;

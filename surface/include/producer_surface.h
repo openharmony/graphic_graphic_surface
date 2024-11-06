@@ -55,16 +55,6 @@ public:
     GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
         const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config) override;
 
-    SURFACE_HIDDEN GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
-        int64_t &timestamp, Rect &damage) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
     GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
                           sptr<SyncFence>& fence, BufferRequestConfig &config) override;
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
@@ -73,15 +63,6 @@ public:
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix = false) override;
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                         BufferFlushConfigWithDamages &config) override;
-    SURFACE_HIDDEN GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                          int64_t &timestamp, Rect &damage) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) override;
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;
@@ -95,11 +76,6 @@ public:
 
     const std::string& GetName() override;
     uint64_t GetUniqueId() const override;
-
-    SURFACE_HIDDEN GSError SetDefaultWidthAndHeight(int32_t width, int32_t height) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     int32_t GetDefaultWidth() override;
     int32_t GetDefaultHeight() override;
     GSError SetDefaultUsage(uint64_t usage) override;
@@ -109,22 +85,10 @@ public:
     GSError SetUserData(const std::string &key, const std::string &val) override;
     std::string GetUserData(const std::string &key) override;
 
-    SURFACE_HIDDEN GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
     GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override;
     GSError UnRegisterReleaseListener() override;
     GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) override;
-    SURFACE_HIDDEN GSError UnregisterConsumerListener() override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
 
     void Dump(std::string &result) const override {};
 
@@ -138,56 +102,10 @@ public:
     GSError Connect() override;
     GSError Disconnect() override;
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
-    SURFACE_HIDDEN GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key, const std::vector<uint8_t> &metaData) override;
-    SURFACE_HIDDEN GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
-        std::vector<uint8_t> &metaData) const override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
-    SURFACE_HIDDEN sptr<SurfaceTunnelHandle> GetTunnelHandle() const override
-    {
-        return nullptr;
-    }
-    SURFACE_HIDDEN GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) const override;
-
-    SURFACE_HIDDEN int32_t GetDefaultFormat() override
-    {
-        return 0;
-    }
-    SURFACE_HIDDEN GSError SetDefaultFormat(int32_t format) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN int32_t GetDefaultColorGamut() override
-    {
-        return 0;
-    }
-    SURFACE_HIDDEN GSError SetDefaultColorGamut(int32_t colorGamut) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN sptr<NativeSurface> GetNativeSurface() override
-    {
-        return nullptr;
-    }
     GSError SetWptrNativeWindowToPSurface(void* nativeWindow) override;
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) override;
     GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func) override;

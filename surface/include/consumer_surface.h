@@ -35,64 +35,10 @@ public:
     bool IsConsumer() const override;
     sptr<IBufferProducer> GetProducer() const override;
 
-    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
-
-    SURFACE_HIDDEN GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
-        int32_t &fence, BufferRequestConfig &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError RequestBuffers(std::vector<sptr<SurfaceBuffer>> &buffers,
-        std::vector<sptr<SyncFence>> &fences, BufferRequestConfig &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError CancelBuffer(sptr<SurfaceBuffer>& buffer) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence, BufferFlushConfig &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
                           int64_t &timestamp, Rect &damage) override;
 
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence) override;
-
-    SURFACE_HIDDEN GSError RequestBuffer(sptr<SurfaceBuffer>& buffer,
-        sptr<SyncFence>& fence, BufferRequestConfig &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError FlushBuffer(sptr<SurfaceBuffer>& buffer,
-        const sptr<SyncFence>& fence, BufferFlushConfig &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-        BufferFlushConfigWithDamages &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
-        const std::vector<sptr<SyncFence>> &fences, const std::vector<BufferFlushConfigWithDamages> &config) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
-        sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix = false) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
 
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                           int64_t &timestamp, Rect &damage) override;
@@ -124,7 +70,7 @@ public:
     GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener) override;
     GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener) override;
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
-    SURFACE_HIDDEN GSError UnRegisterReleaseListener() override
+    GSError UnRegisterReleaseListener() override
     {
         return GSERROR_OK;
     }
@@ -135,25 +81,10 @@ public:
 
     void Dump(std::string &result) const override;
 
-    SURFACE_HIDDEN GSError CleanCache(bool cleanAll = false) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
     GSError GoBackground() override;
 
     GSError SetTransform(GraphicTransformType transform) override;
     GraphicTransformType GetTransform() const override;
-
-    SURFACE_HIDDEN GSError Connect() override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN GSError Disconnect() override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) override;
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
@@ -165,40 +96,10 @@ public:
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const override;
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) override;
-    SURFACE_HIDDEN GSError GetPresentTimestamp(uint32_t sequence,
-        GraphicPresentTimestampType type, int64_t &time) const override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
 
-    SURFACE_HIDDEN int32_t GetDefaultFormat() override
-    {
-        return 0;
-    }
-    SURFACE_HIDDEN GSError SetDefaultFormat(int32_t format) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-    SURFACE_HIDDEN int32_t GetDefaultColorGamut() override
-    {
-        return 0;
-    }
-    SURFACE_HIDDEN GSError SetDefaultColorGamut(int32_t colorGamut) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
-
-    SURFACE_HIDDEN sptr<NativeSurface> GetNativeSurface() override
-    {
-        return nullptr;
-    }
-    SURFACE_HIDDEN GSError SetWptrNativeWindowToPSurface(void* nativeWindow) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;
     GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) override;
-    SURFACE_HIDDEN GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override
+    GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override
     {
         return GSERROR_NOT_SUPPORT;
     }
@@ -218,27 +119,16 @@ public:
         return consumer_->IsBufferHold();
     }
     void SetBufferHold(bool hold) override;
-
-    void SetRequestWidthAndHeight(int32_t width, int32_t height) override;
-    int32_t GetRequestWidth() override;
-    int32_t GetRequestHeight() override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     OHSurfaceSource GetSurfaceSourceType() const override;
     GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) override;
     std::string GetSurfaceAppFrameworkType() const override;
-
-    GSError SetHdrWhitePointBrightness(float brightness) override;
-    GSError SetSdrWhitePointBrightness(float brightness) override;
     float GetHdrWhitePointBrightness() const override;
     float GetSdrWhitePointBrightness() const override;
 
     GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) override;
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) override;
-    GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-        float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
-    GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
-    GSError SetGlobalAlpha(int32_t alpha) override;
     GSError GetGlobalAlpha(int32_t &alpha) override;
     uint32_t GetAvailableBufferCount() const override;
 private:

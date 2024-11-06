@@ -83,11 +83,6 @@ sptr<IBufferProducer> ConsumerSurface::GetProducer() const
     return producer_;
 }
 
-GSError ConsumerSurface::GetProducerInitInfo(ProducerInitInfo& info)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                        int64_t& timestamp, Rect& damage)
 {
@@ -595,34 +590,6 @@ std::string ConsumerSurface::GetSurfaceAppFrameworkType() const
     return appFrameworkType;
 }
 
-void ConsumerSurface::SetRequestWidthAndHeight(int32_t width, int32_t height)
-{
-    (void)width;
-    (void)height;
-}
-
-int32_t ConsumerSurface::GetRequestWidth()
-{
-    return 0;
-}
-
-int32_t ConsumerSurface::GetRequestHeight()
-{
-    return 0;
-}
-
-GSError ConsumerSurface::SetHdrWhitePointBrightness(float brightness)
-{
-    (void)brightness;
-    return GSERROR_OK;
-}
-
-GSError ConsumerSurface::SetSdrWhitePointBrightness(float brightness)
-{
-    (void)brightness;
-    return GSERROR_OK;
-}
-
 float ConsumerSurface::GetHdrWhitePointBrightness() const
 {
     if (consumer_ == nullptr) {
@@ -655,23 +622,6 @@ GSError ConsumerSurface::IsSurfaceBufferInCache(uint32_t seqNum, bool& isInCache
         return SURFACE_ERROR_UNKOWN;
     }
     return consumer_->IsSurfaceBufferInCache(seqNum, isInCache);
-}
-
-GSError ConsumerSurface::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-    float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
-GSError ConsumerSurface::ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
-GSError ConsumerSurface::SetGlobalAlpha(int32_t alpha)
-{
-    (void)alpha;
-    return GSERROR_NOT_SUPPORT;
 }
 
 GSError ConsumerSurface::GetGlobalAlpha(int32_t &alpha)

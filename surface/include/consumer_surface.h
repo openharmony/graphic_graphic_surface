@@ -70,10 +70,6 @@ public:
     GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener) override;
     GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener) override;
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
-    GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override
-    {
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError UnRegisterReleaseListener() override;
     {
         return GSERROR_OK;
@@ -103,6 +99,10 @@ public:
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;
     GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) override;
+    GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
     GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func) override;
     GSError UnRegisterUserDataChangeListener(const std::string &funcName) override;
     GSError ClearUserDataChangeListener() override;

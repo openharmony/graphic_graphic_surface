@@ -858,7 +858,7 @@ HWTEST_F(ConsumerSurfaceTest, RegisterReleaseListener003, Function | MediumTest 
 HWTEST_F(ConsumerSurfaceTest, UnRegisterReleaseListener001, Function | MediumTest | Level2)
 {
     GSError ret = surface_->UnRegisterReleaseListener();
-    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
 /*

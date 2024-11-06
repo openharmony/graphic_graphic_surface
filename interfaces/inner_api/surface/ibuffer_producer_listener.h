@@ -27,6 +27,7 @@ public:
     virtual ~IProducerListener() noexcept = default;
     virtual GSError OnBufferReleased() = 0;
     virtual GSError OnBufferReleasedWithFence(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) = 0;
+    virtual void ResetReleaseFunc() = 0;
     enum {
         ON_BUFFER_RELEASED = 0,
         ON_BUFFER_RELEASED_WITH_FENCE = 1,

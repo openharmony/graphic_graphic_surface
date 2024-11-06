@@ -70,7 +70,7 @@ public:
     GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener) override;
     GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener) override;
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
-    GSError UnRegisterReleaseListener() override;
+    GSError UnRegisterReleaseListener() override
     {
         return GSERROR_OK;
     }

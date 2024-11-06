@@ -72,6 +72,10 @@ public:
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
     GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override
     {
+        return GSERROR_NOT_SUPPORT;
+    }
+    GSError UnRegisterReleaseListener() override;
+    {
         return GSERROR_OK;
     }
     GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) override;

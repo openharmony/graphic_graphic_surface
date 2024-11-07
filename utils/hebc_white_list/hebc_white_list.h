@@ -40,9 +40,9 @@ public:
 private:
     HebcWhiteList() = default;
     [[nodiscard]] bool ParseJson(std::string const &json) noexcept;
-    [[nodiscard]] std::string AcquireConfig(const std::string& filePath) noexcept;
+    void AcquireConfig(const std::string& filePath, std::string& jsonStr) noexcept;
     std::string GetConfigAbsolutePath() noexcept;
-    std::unique_ptr<char[]> ReadFile(std::string const &file, size_t &size, size_t maxSize) noexcept;
+    void ReadFile(std::string const &file, size_t maxSize, std::string& buffer) noexcept;
     std::atomic_bool inited_ = false;
     std::vector<std::string> hebcList_;
 };

@@ -42,7 +42,9 @@ bool HebcWhiteList::Init() noexcept
         return true;
     }
 
-    inited_.store(ParseJson(AcquireConfig(GetConfigAbsolutePath())));
+    std::string jsonStr;
+    AcquireConfig(GetConfigAbsolutePath(), jsonStr);
+    inited_.store(ParseJson(jsonStr));
     return inited_.load();
 }
 
@@ -75,17 +77,11 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
     return true;
 }
 
-std::string HebcWhiteList::AcquireConfig(const std::string& filePath) noexcept
+void HebcWhiteList::AcquireConfig(const std::string& filePath, std::string& jsonStr) noexcept
 {
-    size_t size = 0;
-    std::unique_ptr<char[]> buffer = nullptr;
     if (!filePath.empty()) {
-        buffer = ReadFile(filePath, size, MAX_FILE_SIZE);
+        ReadFile(filePath, MAX_FILE_SIZE, jsonStr);
     }
-    if (buffer == nullptr) {
-        return std::string("{}");
-    }
-    return std::string(buffer.get());
 }
 
 std::string HebcWhiteList::GetConfigAbsolutePath() noexcept
@@ -99,18 +95,18 @@ std::string HebcWhiteList::GetConfigAbsolutePath() noexcept
     return std::string(path);
 }
 
-std::unique_ptr<char[]> HebcWhiteList::ReadFile(std::string const &file, size_t &size, size_t maxSize) noexcept
+void HebcWhiteList::ReadFile(std::string const &file, size_t maxSize, std::string& buffer) noexcept
 {
     std::ifstream ifs;
     ifs.open(file, std::ifstream::binary);
     if (!ifs.good()) {
         BLOGE("file is bad");
-        return nullptr;
+        return;
     }
 
     if (!ifs.is_open()) {
         BLOGE("open file failed");
-        return nullptr;
+        return;
     }
 
     ifs.seekg(0, std::ios::end);
@@ -118,14 +114,12 @@ std::unique_ptr<char[]> HebcWhiteList::ReadFile(std::string const &file, size_t 
     if (tellg <= 0 || tellg > maxSize) {
         ifs.close();
         BLOGE("read file failed");
-        return nullptr;
+        return;
     }
-    size = tellg;
-    auto buffer = std::make_unique<char[]>(size);
     ifs.seekg(0, std::ios::beg);
-    ifs.read(buffer.get(), size);
+    std::stringstream data;
+    data << ifs.rdbuf();
     ifs.close();
-
-    return buffer;
+    buffer = data.str();
 }
 } // namespace OHOS

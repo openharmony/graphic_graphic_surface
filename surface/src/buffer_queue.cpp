@@ -1194,6 +1194,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
         return AttachBufferUpdateStatus(lock, sequence, timeOut);
     }
 
+    buffer->SetSurfaceBufferScalingMode(scalingMode_);
     BufferElement ele = {
         .buffer = buffer,
         .state = BUFFER_STATE_ATTACHED,

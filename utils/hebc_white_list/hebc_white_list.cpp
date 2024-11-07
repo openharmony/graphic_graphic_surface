@@ -27,13 +27,13 @@ const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
 } // end of anonymous namespace
 
-bool HebcWhiteList::Check(const std::string& name) noexcept
+bool HebcWhiteList::Check(const std::string& appName) noexcept
 {
     if (!Init()) {
         BLOGE("Init failed");
         return false;
     }
-    return (std::find(hebcList_.begin(), hebcList_.end(), name) != hebcList_.end());
+    return (std::find(hebcList_.begin(), hebcList_.end(), appName) != hebcList_.end());
 }
 
 bool HebcWhiteList::Init() noexcept

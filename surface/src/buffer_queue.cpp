@@ -973,8 +973,8 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 {
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     uint32_t sequence = bufferImpl->GetSeqNum();
-    SURFACE_TRACE_NAME_FMT("AllocBuffer config width: %d height: %d usage: %llu format: %d id: %u",
-        config.width, config.height, config.usage, config.format, sequence);
+    SURFACE_TRACE_NAME_FMT("AllocBuffer name: %s queueId: %" PRIu64 ", config width: %d height: %d usage: %llu format:"
+        " %d id: %u", name_.c_str(), uniqueId_, config.width, config.height, config.usage, config.format, sequence);
 
     BufferRequestConfig updateConfig = config;
     updateConfig.usage |= defaultUsage_;

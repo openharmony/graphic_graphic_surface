@@ -1275,7 +1275,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue003, Function | Mediu
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }
- 
+
 /*
 * Function: OH_NativeWindow_SetMetadataValue
 * Type: Function
@@ -1319,7 +1319,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_SetMetadataValue004, Function | Mediu
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }
- 
+
 /*
 * Function: OH_NativeWindow_SetMetadataValue
 * Type: Function
@@ -1403,7 +1403,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetMetadataValue003, Function | Mediu
     int len = 60;
     uint8_t buff[len];
     for (int i = 0; i < 60; ++i) {
-        buff[i] = static_cast<uint8_t>(60-i);
+        buff[i] = static_cast<uint8_t>(60 - i);
     }
     int32_t buffSize;
     uint8_t *checkMetaData;
@@ -2101,6 +2101,7 @@ HWTEST_F(NativeWindowTest, NativeWindowSetRequestWidthAndHeight001, Function | M
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, Function | MediumTest | Level2)
 {
+    ASSERT_NE(nativeWindowBuffer, nullptr);
     OH_NativeWindow_DestroyNativeWindowBuffer(nativeWindowBuffer);
 }
 }

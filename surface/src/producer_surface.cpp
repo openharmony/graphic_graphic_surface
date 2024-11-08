@@ -58,7 +58,8 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.timeout = 3000;          // default timeout is 3000 ms
     windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    BLOGD("ProducerSurface ctor");
+    BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
+        " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
 }
 
 ProducerSurface::~ProducerSurface()

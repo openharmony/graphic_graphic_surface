@@ -16,7 +16,9 @@
 #include "buffer_queue.h"
 #include <algorithm>
 #include <fstream>
+#include <linux/dma-buf.h>
 #include <sstream>
+#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <cinttypes>
 #include <unistd.h>
@@ -1011,6 +1013,12 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, ret, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
+
+    BufferHandle* bufferHandle = bufferImpl->GetBufferHandle();
+    if (connectedPid_ != 0 && bufferHandle != nullptr) {
+        ioctl(bufferHandle->fd, DMA_BUF_SET_NAME_A, std::to_string(connectedPid_).c_str());
+    }
+
     return SURFACE_ERROR_OK;
 }
 
@@ -1987,4 +1995,10 @@ uint32_t BufferQueue::GetAvailableBufferCount()
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return static_cast<uint32_t>(dirtyList_.size());
 }
+
+void BufferQueue::SetConnectedPid(int32_t connectedPid)
+{
+    connectedPid_ = connectedPid;
+}
+
 }; // namespace OHOS

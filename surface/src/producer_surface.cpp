@@ -451,7 +451,11 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
             BLOGE("pSurface is nullptr");
             return GSERROR_INVALID_ARGUMENTS;
         }
-        auto surfaceDelegator = pSurface->wpPSurfaceDelegator_.promote();
+        sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
+        {
+            std::lock_guard lockGuard(pSurface->delegatorMutex_);			
+            surfaceDelegator = pSurface->wpPSurfaceDelegator_.promote();
+		}
         if (surfaceDelegator == nullptr) {
             return GSERROR_INVALID_ARGUMENTS;
         }
@@ -674,7 +678,10 @@ GSError ProducerSurface::UnRegisterReleaseListener()
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    wpPSurfaceDelegator_ = nullptr;
+    {
+        std::lock_guard lockGuard(delegatorMutex_);
+        wpPSurfaceDelegator_ = nullptr;
+	}
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {

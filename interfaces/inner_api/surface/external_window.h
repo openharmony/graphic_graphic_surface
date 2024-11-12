@@ -160,13 +160,15 @@ typedef enum NativeWindowOperation {
      */
     GET_SWAP_INTERVAL,
     /**
-     * set native window buffer timeout,
+     * set the timeout in milliseconds when the native window requests a buffer,
+     * the default value is 3000 milliseconds when not set,
      * variable parameter in function is
      * [in] int32_t timeout.
      */
     SET_TIMEOUT,
     /**
-     * get native window buffer timeout,
+     * get the timeout in milliseconds when the native window requests a buffer,
+     * the default value is 3000 milliseconds when not set,
      * variable parameter in function is
      * [out] int32_t *timeout.
      */

@@ -762,6 +762,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                            uint64_t uiTimestamp)
 {
+    bufferQueueCache_[sequence].isAutoTimestamp = false;
     if (desiredPresentTimestamp <= 0) {
         if (desiredPresentTimestamp == 0 && uiTimestamp != 0
             && uiTimestamp <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
@@ -813,7 +814,9 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         fence = bufferQueueCache_[sequence].fence;
         timestamp = bufferQueueCache_[sequence].timestamp;
         damages = bufferQueueCache_[sequence].damages;
-        SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u", sequence);
+        SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u desiredPresentTimestamp: %" PRId64 " isAotuTimestamp: %d",
+            sequence, bufferQueueCache_[sequence].desiredPresentTimestamp,
+            bufferQueueCache_[sequence].isAutoTimestamp);
         BLOGD("Success Buffer seq id: %{public}d AcquireFence:%{public}d, uniqueId: %{public}" PRIu64 ".",
             sequence, fence->Get(), uniqueId_);
     } else if (ret == GSERROR_NO_BUFFER) {
@@ -833,7 +836,6 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
         return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
     }
     std::vector<BufferElement*> dropBufferElements;
-    // traverse dirtyList_
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
@@ -841,11 +843,11 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER;
         }
-        BufferElement& frontBufferElement = bufferQueueCache_[*frontSequence];
-        int64_t frontDesiredPresentTimestamp = frontBufferElement.desiredPresentTimestamp;
-        bool frontIsAutoTimestamp = frontBufferElement.isAutoTimestamp;
+        int64_t frontDesiredPresentTimestamp = bufferQueueCache_[*frontSequence].desiredPresentTimestamp;
+        bool frontIsAutoTimestamp = bufferQueueCache_[*frontSequence].isAutoTimestamp;
         if (!frontIsAutoTimestamp && frontDesiredPresentTimestamp > expectPresentTimestamp
             && frontDesiredPresentTimestamp - ONE_SECOND_TIMESTAMP <= expectPresentTimestamp) {
+            SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER_READY;
         }
@@ -857,35 +859,45 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
                 break;
             }
             BufferElement& secondBufferElement = bufferQueueCache_[*frontSequence];
-            
             if ((secondBufferElement.isAutoTimestamp && !isUsingAutoTimestamp)
                 || secondBufferElement.desiredPresentTimestamp > expectPresentTimestamp) {
                 BLOGD("Next dirty buffer desiredPresentTimestamp: %{public}" PRId64 " not match expectPresentTimestamp"
                     ": %{public}" PRId64 ".", secondBufferElement.desiredPresentTimestamp, expectPresentTimestamp);
                 break;
             }
-            //second buffer match, should drop front buffer
             SURFACE_TRACE_NAME_FMT("DropBuffer name: %s queueId: %" PRIu64 " ,buffer seq: %u , buffer "
                 "desiredPresentTimestamp: %" PRId64 " acquire expectPresentTimestamp: %" PRId64, name_.c_str(),
                 uniqueId_, frontBufferElement.buffer->GetSeqNum(), frontBufferElement.desiredPresentTimestamp,
                 expectPresentTimestamp);
-            dirtyList_.pop_front();
-            frontBufferElement.state = BUFFER_STATE_ACQUIRED;
-            dropBufferElements.push_back(&frontBufferElement);
-            frontDesiredPresentTimestamp = secondBufferElement.desiredPresentTimestamp;
-            frontIsAutoTimestamp = secondBufferElement.isAutoTimestamp;
+            DropFirstDirtyBuffer(frontBufferElement, secondBufferElement, frontDesiredPresentTimestamp,
+                                 frontIsAutoTimestamp, dropBufferElements);
         }
-        //Present Later When first buffer not ready
         if (!frontIsAutoTimestamp && !IsPresentTimestampReady(frontDesiredPresentTimestamp, expectPresentTimestamp)) {
             SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER_READY;
         }
     }
-    //drop buffers
+    ReleaseDropBuffers(dropBufferElements);
+    return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
+}
+
+void BufferQueue::DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
+                                       int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
+                                       std::vector<BufferElement*> &dropBufferElements)
+{
+    dirtyList_.pop_front();
+    frontBufferElement.state = BUFFER_STATE_ACQUIRED;
+    dropBufferElements.push_back(&frontBufferElement);
+    frontDesiredPresentTimestamp = secondBufferElement.desiredPresentTimestamp;
+    frontIsAutoTimestamp = secondBufferElement.isAutoTimestamp;
+}
+
+void BufferQueue::ReleaseDropBuffers(const std::vector<BufferElement*> &dropBufferElements)
+{
     for (const auto& dropBufferElement : dropBufferElements) {
         if (dropBufferElement == nullptr) {
-           continue;
+            continue;
         }
         auto ret = ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
         if (ret != GSERROR_OK) {
@@ -893,8 +905,6 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
                 ret, dropBufferElement->buffer->GetSeqNum(), uniqueId_);
         }
     }
-    //Acquire
-    return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
 }
 
 bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp)

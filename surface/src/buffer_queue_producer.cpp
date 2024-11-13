@@ -1268,7 +1268,7 @@ GSError BufferQueueProducer::Connect()
             connectedPid_, callingPid, uniqueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
-    connectedPid_ = callingPid;
+    SetConnectedPid(callingPid);
     return SURFACE_ERROR_OK;
 }
 
@@ -1284,7 +1284,7 @@ GSError BufferQueueProducer::Disconnect()
         if (ret != GSERROR_OK) {
             return ret;
         }
-        connectedPid_ = 0;
+        SetConnectedPid(0);
     }
     return bufferQueue_->CleanCache(false);
 }
@@ -1398,7 +1398,7 @@ void BufferQueueProducer::OnBufferProducerRemoteDied()
             BLOGD("no connections, uniqueId: %{public}" PRIu64 ".", uniqueId_);
             return;
         }
-        connectedPid_ = 0;
+        SetConnectedPid(0);
     }
     bufferQueue_->CleanCache(false);
 }
@@ -1428,5 +1428,13 @@ void BufferQueueProducer::ProducerSurfaceDeathRecipient::OnRemoteDied(const wptr
     }
     BLOGD("remote object died, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());
     producer->OnBufferProducerRemoteDied();
+}
+
+void BufferQueueProducer::SetConnectedPid(int32_t connectedPid)
+{
+    connectedPid_ = connectedPid;
+    if (bufferQueue_) {
+        bufferQueue_->SetConnectedPid(connectedPid_);
+    }
 }
 }; // namespace OHOS

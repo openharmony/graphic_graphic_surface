@@ -195,6 +195,8 @@ public:
     GSError GetGlobalAlpha(int32_t &alpha);
     uint32_t GetAvailableBufferCount();
 
+    void SetConnectedPid(int32_t connectedPid);
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     void DeleteBufferInCache(uint32_t sequence);
@@ -282,6 +284,7 @@ private:
     std::mutex globalAlphaMutex_;
     std::string requestBufferStateStr_;
     std::string acquireBufferStateStr_;
+    int32_t connectedPid_ = 0;
 };
 }; // namespace OHOS
 

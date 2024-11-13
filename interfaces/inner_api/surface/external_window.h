@@ -13,9 +13,6 @@
  * limitations under the License.
  */
 
-#ifndef NDK_INCLUDE_EXTERNAL_NATIVE_WINDOW_H_
-#define NDK_INCLUDE_EXTERNAL_NATIVE_WINDOW_H_
-
 /**
  * @addtogroup NativeWindow
  * @{
@@ -36,6 +33,9 @@
  * @since 8
  * @version 1.0
  */
+ 
+#ifndef NDK_INCLUDE_EXTERNAL_NATIVE_WINDOW_H_
+#define NDK_INCLUDE_EXTERNAL_NATIVE_WINDOW_H_
 
 #include <stdint.h>
 #include "buffer_handle.h"

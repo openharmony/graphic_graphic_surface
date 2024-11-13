@@ -123,7 +123,11 @@ namespace OHOS {
         bool isForUniRedraw = GetData<bool>();
         bufferqueue->RegisterDeleteBufferListener(deleteBufferFunc, isForUniRedraw);
         bufferqueue->RequestBuffer(requestConfig, bedata, retval);
-        bufferqueue->ReuseBuffer(requestConfig, bedata, retval);
+        {
+            std::mutex mutex;
+            std::unique_lock<std::mutex> lock(mutex);
+            bufferqueue->ReuseBuffer(requestConfig, bedata, retval, lock);
+        }
         bufferqueue->CancelBuffer(sequence, bedata);
         sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
         bufferqueue->FlushBuffer(sequence, bedata, syncFence, flushConfig);

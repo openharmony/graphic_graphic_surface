@@ -23,9 +23,6 @@
 #include "buffer_extra_data_impl.h"
 #include <message_parcel.h>
 #include <iostream>
-#include "v1_1/buffer_handle_meta_key_type.h"
-#include "v1_2/display_buffer_type.h"
-#include "v1_2/include/idisplay_buffer.h"
 
 namespace OHOS {
     namespace {
@@ -125,11 +122,7 @@ namespace OHOS {
         surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
         surfaceBuffer->GetSurfaceBufferScalingMode();
         uint32_t key = GetData<uint32_t>();
-        std::vector<uint8_t> value;
-        surfaceBuffer->MetaDataCachedLocked(key, value);
         surfaceBuffer->FlushCache();
-        OHOS::HDI::Display::Buffer::V1_2::ImageLayout *layout;
-        surfaceBuffer->GetImageLayout((void *)layout);
         surfaceBuffer->InvalidateCache();
         surfaceBuffer->GetBufferHandle();
         surfaceBuffer->GetSurfaceBufferWidth();

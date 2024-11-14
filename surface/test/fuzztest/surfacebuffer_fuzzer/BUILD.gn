@@ -36,6 +36,11 @@ ohos_fuzztest("SurfaceBufferFuzzTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
+    "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_2",
+    "drivers_interface_display:libdisplay_buffer_proxy_1.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1.1",
+    "drivers_interface_display:libdisplay_commontype_proxy_2.0",
   ]
 }
 

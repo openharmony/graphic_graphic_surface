@@ -23,6 +23,9 @@
 #include "buffer_extra_data_impl.h"
 #include <message_parcel.h>
 #include <iostream>
+#include "v1_1/buffer_handle_meta_key_type.h"
+#include "v1_2/display_buffer_type.h"
+#include "v1_2/include/idisplay_buffer.h"
 
 namespace OHOS {
     namespace {
@@ -121,7 +124,7 @@ namespace OHOS {
         surfaceBuffer->ReadFromMessageParcel(parcel);
         surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
         surfaceBuffer->GetSurfaceBufferScalingMode();
-        unit32_t key = GetData<uint32_t>();
+        uint32_t key = GetData<uint32_t>();
         std::vector<uint8_t> value;
         surfaceBuffer->MetaDataCachedLocked(key, value);
         surfaceBuffer->FlushCache();
@@ -142,12 +145,9 @@ namespace OHOS {
         surfaceBuffer->ListMetadataKeys(keys);
         surfaceBuffer->EraseMetadataKey(key);
         surfaceBuffer->SetBufferRequestConfig(config);
-        bool value = GetData<bool>();
-        surfaceBuffer->SetConsumerAttachBufferFlag(value);
+        bool flag = GetData<bool>();
+        surfaceBuffer->SetConsumerAttachBufferFlag(flag);
         surfaceBuffer->GetConsumerAttachBufferFlag();
-        ScalingMode scalingMode = GetData<uint32_t>(scalingMode);
-        surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
-        surfaceBuffer->GetSurfaceBufferScalingMode();
 
         return true;
     }

@@ -21,6 +21,7 @@
 #include "data_generate.h"
 #include "native_buffer.h"
 #include "native_window.h"
+#include "native_buffer_inner.h"
 
 using namespace g_fuzzCommon;
 
@@ -53,17 +54,17 @@ namespace OHOS {
         OHNativeWindowBuffer *nativeWindowBuffer = CreateNativeWindowBufferFromNativeBuffer(buffer);
         OH_NativeBufferFromNativeWindowBuffer(nativeWindowBuffer);
         OH_NativeBuffer_SetColorSpace(buffer, colorSpace);
-        void *virAddr;
+        void *getVirAddr;
         OH_NativeBuffer_Planes outPlanes;
-        OH_NativeBuffer_MapPlanes(buffer, &virAddr, &outPlanes);
+        OH_NativeBuffer_MapPlanes(buffer, &getVirAddr, &outPlanes);
         OH_NativeBuffer *nativeBuffer;
         OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBuffer);
-        OH_NativeBuffer_ColorSpace colorSpace;
-        OH_NativeBuffer_GetColorSpace(buffer, &colorSpace);
-        OH_NativeBuffer_MetadataKey metadataKey = GetData<OH_NativeBuffer_MetadataKey>()
-        int32_t size = GetData<int32_t>();
-        uint8_t *metadata = malloc(size * sizeof(uint8_t));
-        OH_NativeBuffer_SetMetadataValue(buffer, metadataKey, size, metadata);
+        OH_NativeBuffer_ColorSpace getColorSpace;
+        OH_NativeBuffer_GetColorSpace(buffer, &getColorSpace);
+        OH_NativeBuffer_MetadataKey metadataKey = GetData<OH_NativeBuffer_MetadataKey>();
+        int32_t setSize = GetData<int32_t>();
+        uint8_t *metadata = malloc(setSize * sizeof(uint8_t));
+        OH_NativeBuffer_SetMetadataValue(buffer, metadataKey, setSize, metadata);
         int32_t getSize;
         uint8_t *getMetadata;
         OH_NativeBuffer_GetMatedataValueType(buffer, &getSize, &getMetadata);

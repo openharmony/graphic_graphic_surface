@@ -63,11 +63,8 @@ namespace OHOS {
         OH_NativeBuffer_GetColorSpace(buffer, &getColorSpace);
         OH_NativeBuffer_MetadataKey metadataKey = GetData<OH_NativeBuffer_MetadataKey>();
         int32_t setSize = GetData<int32_t>();
-        uint8_t *metadata = malloc(setSize * sizeof(uint8_t));
+        uint8_t *metadata = (uint8_t *)malloc(setSize * sizeof(uint8_t));
         OH_NativeBuffer_SetMetadataValue(buffer, metadataKey, setSize, metadata);
-        int32_t getSize;
-        uint8_t *getMetadata;
-        OH_NativeBuffer_GetMatedataValueType(buffer, &getSize, &getMetadata);
         OH_NativeBuffer_GetMetadataValue(buffer, metadataKey, &getSize, &getMetadata);
         OH_NativeBuffer_GetConfig(buffer, &checkConfig);
         OH_NativeBuffer_Reference(buffer);

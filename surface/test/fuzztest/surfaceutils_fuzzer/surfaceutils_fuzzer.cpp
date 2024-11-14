@@ -61,6 +61,7 @@ namespace OHOS {
         Rect crop = GetData<Rect>();
         sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
         utils->ComputeTransformMatrix(matrix, matrixSize, buffer, transformType, crop);
+        utils->ComputeTransformMatrixV2(matrix, matrixSize, buffer, transformType, crop);
         utils->GetNativeWindow(uniqueId1);
         return true;
     }

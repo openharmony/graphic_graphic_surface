@@ -121,6 +121,33 @@ namespace OHOS {
         surfaceBuffer->ReadFromMessageParcel(parcel);
         surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
         surfaceBuffer->GetSurfaceBufferScalingMode();
+        unit32_t key = GetData<uint32_t>();
+        std::vector<uint8_t> value;
+        surfaceBuffer->MetaDataCachedLocked(key, value);
+        surfaceBuffer->FlushCache();
+        OHOS::HDI::Display::Buffer::V1_2::ImageLayout *layout;
+        surfaceBuffer->GetImageLayout((void *)layout);
+        surfaceBuffer->InvalidateCache();
+        surfaceBuffer->GetBufferHandle();
+        surfaceBuffer->GetSurfaceBufferWidth();
+        surfaceBuffer->GetSurfaceBufferHeight();
+        surfaceBuffer->GetPhyAddr();
+        surfaceBuffer->GetFileDescriptor();
+        surfaceBuffer->GetSize();
+        void *planesInfo;
+        surfaceBuffer->GetPlanesInfo(&planesInfo);
+        surfaceBuffer->WriteBufferRequestConfig(parcel);
+        surfaceBuffer->ReadBufferRequestConfig(parcel);
+        std::vector<uint32_t> keys;
+        surfaceBuffer->ListMetadataKeys(keys);
+        surfaceBuffer->EraseMetadataKey(key);
+        surfaceBuffer->SetBufferRequestConfig(config);
+        bool value = GetData<bool>();
+        surfaceBuffer->SetConsumerAttachBufferFlag(value);
+        surfaceBuffer->GetConsumerAttachBufferFlag();
+        ScalingMode scalingMode = GetData<uint32_t>(scalingMode);
+        surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
+        surfaceBuffer->GetSurfaceBufferScalingMode();
 
         return true;
     }

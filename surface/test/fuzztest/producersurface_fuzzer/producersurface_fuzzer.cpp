@@ -24,6 +24,7 @@
 #include <buffer_producer_listener.h>
 #include <buffer_client_producer.h>
 #include <sys/wait.h>
+#include <buffer_extra_data_impl.h>
 
 using namespace g_fuzzCommon;
 namespace OHOS {
@@ -60,7 +61,7 @@ namespace OHOS {
 
     void CreateProducerSurface()
     {
-        pid = fork();
+        pid_t pid = fork();
         if (pid < 0) {
             exit(1);
         }
@@ -94,7 +95,7 @@ namespace OHOS {
 
         // test
         CreateProducerSurface();
-        float brightness = GetData<float>()
+        float brightness = GetData<float>();
         g_pSurface->SetHdrWhitePointBrightness(brightness);
 
         DestroyProducerSurface();

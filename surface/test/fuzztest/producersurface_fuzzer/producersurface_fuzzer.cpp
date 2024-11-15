@@ -36,6 +36,7 @@ namespace OHOS {
     pid_t g_pid = 0;
     int g_pipeFd[2] = {};
     int g_pipe1Fd[2] = {};
+    int32_t g_systemAbilityID = 345135;
 
     sptr<BufferExtraData> GetBufferExtraDataFromData()
     {
@@ -97,7 +98,8 @@ namespace OHOS {
             g_listener = new BufferConsumerListener();
             g_cSurface->RegisterConsumerListener(g_listener);
             sptr<OHOS::IBufferProducer> g_producer = g_cSurface->GetProducer();
-            g_pSurface = Surface::CreateSurfaceAsProducer(g_producer);
+            auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+            sam->AddSystemAbility(g_systemAbilityID, bqp);
 
             close(g_pipeFd[1]);
             close(g_pipe1Fd[0]);
@@ -105,6 +107,7 @@ namespace OHOS {
             write(g_pipe1Fd[1], buf, sizeof(buf));
             sleep(0);
             read(g_pipeFd[0], buf, sizeof(buf));
+            sam->RemoveSystemAbility(g_systemAbilityID);
             close(g_pipeFd[0]);
             close(g_pipe1Fd[1]);
             exit(0);
@@ -113,6 +116,10 @@ namespace OHOS {
             close(g_pipe1Fd[1]);
             char buf[10];
             read(g_pipe1Fd[0], buf, sizeof(buf));
+            auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+            sptr<IRemoteObject> robj = sam->GetSystemAbility(systemAbilityID);
+            g_producer = iface_cast<IBufferProducer>(robj);
+            g_pSurface = Surface::CreateSurfaceAsProducer(g_producer);
         }
     }
 

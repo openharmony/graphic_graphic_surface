@@ -82,6 +82,11 @@ namespace OHOS {
             close(g_pipeFd[0]);
             close(g_pipe1Fd[1]);
             exit(0);
+        } else {
+            close(g_pipeFd[0]);
+            close(g_pipe1Fd[1]);
+            char buf[10];
+            read(g_pipe1Fd[0], buf, sizeof(buf));
         }
     }
 

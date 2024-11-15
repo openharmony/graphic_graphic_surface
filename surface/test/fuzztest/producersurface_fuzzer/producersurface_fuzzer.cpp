@@ -62,25 +62,25 @@ namespace OHOS {
 
     void CreateProducerSurface()
     {
-        pid_t pid = fork();
-        if (pid < 0) {
+        g_pid = fork();
+        if (g_pid < 0) {
             exit(1);
         }
-        if (pid == 0) {
+        if (g_pid == 0) {
             g_cSurface = IConsumerSurface::Create();
             g_listener = new BufferConsumerListener();
             g_cSurface->RegisterConsumerListener(g_listener);
             sptr<OHOS::IBufferProducer> g_producer = g_cSurface->GetProducer();
             g_pSurface = Surface::CreateSurfaceAsProducer(g_producer);
 
-            close(pipeFd[1]);
-            close(pipe1Fd[0]);
+            close(g_pipeFd[1]);
+            close(g_pipe1Fd[0]);
             char buf[10] = "start";
-            write(pipe1Fd[1], buf, sizeof(buf));
+            write(g_pipe1Fd[1], buf, sizeof(buf));
             sleep(0);
-            read(pipeFd[0], buf, sizeof(buf));
-            close(pipeFd[0]);
-            close(pipe1Fd[1]);
+            read(g_pipeFd[0], buf, sizeof(buf));
+            close(g_pipeFd[0]);
+            close(g_pipe1Fd[1]);
             exit(0);
         }
     }
@@ -93,13 +93,13 @@ namespace OHOS {
         g_listener = nullptr;
 
         char buf[10] = "over";
-        write(pipeFd[1], buf, sizeof(buf));
-        close(pipeFd[1]);
-        close(pipe1Fd[0]);
+        write(g_pipeFd[1], buf, sizeof(buf));
+        close(g_pipeFd[1]);
+        close(g_pipe1Fd[0]);
 
         int32_t ret = 0;
         do {
-            waitpid(pid, nullptr, 0);
+            waitpid(g_pid, nullptr, 0);
         } while (ret == -1 && errno == EINTR);
     }
 

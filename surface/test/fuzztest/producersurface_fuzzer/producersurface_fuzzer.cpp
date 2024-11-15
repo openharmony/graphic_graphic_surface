@@ -22,6 +22,7 @@
 #include "sync_fence.h"
 #include <buffer_producer_listener.h>
 #include <buffer_extra_data_impl.h>
+#include <sys/wait.h>
 
 using namespace g_fuzzCommon;
 namespace OHOS {
@@ -29,6 +30,9 @@ namespace OHOS {
     sptr<OHOS::IConsumerSurface> g_cSurface = nullptr;
     sptr<IBufferConsumerListener> g_listener = nullptr;
     sptr<OHOS::IBufferProducer> g_producer = nullptr;
+    pid_t g_pid = 0;
+    int g_pipeFd[2] = {};
+    int g_pipe1Fd[2] = {};
 
     sptr<BufferExtraData> GetBufferExtraDataFromData()
     {
@@ -68,6 +72,15 @@ namespace OHOS {
             g_cSurface->RegisterConsumerListener(g_listener);
             sptr<OHOS::IBufferProducer> g_producer = g_cSurface->GetProducer();
             g_pSurface = Surface::CreateSurfaceAsProducer(g_producer);
+
+            close(pipeFd[1]);
+            close(pipe1Fd[0]);
+            char buf[10] = "start";
+            write(pipe1Fd[1], buf, sizeof(buf));
+            sleep(0);
+            read(pipeFd[0], buf, sizeof(buf));
+            close(pipeFd[0]);
+            close(pipe1Fd[1]);
             exit(0);
         }
     }
@@ -78,6 +91,16 @@ namespace OHOS {
         g_producer = nullptr;
         g_cSurface = nullptr;
         g_listener = nullptr;
+
+        char buf[10] = "over";
+        write(pipeFd[1], buf, sizeof(buf));
+        close(pipeFd[1]);
+        close(pipe1Fd[0]);
+
+        int32_t ret = 0;
+        do {
+            waitpid(pid, nullptr, 0);
+        } while (ret == -1 && errno == EINTR);
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
@@ -92,6 +115,12 @@ namespace OHOS {
 
         // test
         CreateProducerSurface();
+        while (1) {
+            if (g_pSurface != nullptr) {
+                break;
+            }
+            usleep(10);
+        }
         float brightness = GetData<float>();
         g_pSurface->SetHdrWhitePointBrightness(brightness);
 

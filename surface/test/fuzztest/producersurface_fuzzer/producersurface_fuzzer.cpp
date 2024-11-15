@@ -23,6 +23,7 @@
 #include <buffer_producer_listener.h>
 #include <buffer_extra_data_impl.h>
 #include <sys/wait.h>
+#include <iservice_registry.h>
 #include "accesstoken_kit.h"
 #include "nativetoken_kit.h"
 #include "token_setproc.h"
@@ -99,7 +100,7 @@ namespace OHOS {
             g_cSurface->RegisterConsumerListener(g_listener);
             sptr<OHOS::IBufferProducer> g_producer = g_cSurface->GetProducer();
             auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-            sam->AddSystemAbility(g_systemAbilityID, bqp);
+            sam->AddSystemAbility(g_systemAbilityID, g_producer->AsObject());
 
             close(g_pipeFd[1]);
             close(g_pipe1Fd[0]);
@@ -117,7 +118,7 @@ namespace OHOS {
             char buf[10];
             read(g_pipe1Fd[0], buf, sizeof(buf));
             auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-            sptr<IRemoteObject> robj = sam->GetSystemAbility(systemAbilityID);
+            sptr<IRemoteObject> robj = sam->GetSystemAbility(g_systemAbilityID);
             g_producer = iface_cast<IBufferProducer>(robj);
             g_pSurface = Surface::CreateSurfaceAsProducer(g_producer);
         }

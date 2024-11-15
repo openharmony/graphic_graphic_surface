@@ -14,16 +14,12 @@
  */
 
 #include "producersurface_fuzzer.h"
-#include <iremote_proxy.h>
-#include <iremote_object.h>
 #include <securec.h>
 #include "data_generate.h"
 #include "producer_surface.h"
 #include "surface.h"
 #include "sync_fence.h"
 #include <buffer_producer_listener.h>
-#include <buffer_client_producer.h>
-#include <sys/wait.h>
 #include <buffer_extra_data_impl.h>
 
 using namespace g_fuzzCommon;

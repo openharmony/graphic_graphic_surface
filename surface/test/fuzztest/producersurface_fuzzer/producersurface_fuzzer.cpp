@@ -17,30 +17,20 @@
 #include <iremote_proxy.h>
 #include <iremote_object.h>
 #include <securec.h>
-#include "buffer_queue.h"
-#include "buffer_queue_producer.h"
 #include "data_generate.h"
+#include "producer_surface.h"
 #include "surface.h"
-#include "surface_buffer.h"
-#include "surface_buffer_impl.h"
-#include "buffer_extra_data.h"
-#include "buffer_extra_data_impl.h"
 #include "sync_fence.h"
 #include <buffer_producer_listener.h>
 #include <buffer_client_producer.h>
-#include "accesstoken_kit.h"
-#include "nativetoken_kit.h"
-#include "token_setproc.h"
-#include <iservice_registry.h>
 #include <sys/wait.h>
 
 using namespace g_fuzzCommon;
 namespace OHOS {
-    sptr<IRemoteObject> g_robj = nullptr;
-    sptr<IBufferProducer> g_bufferClientProducer = nullptr;
-    pid_t g_pid = 0;
-    int g_pipeFd[2] = {};
-    int g_pipe1Fd[2] = {};
+    sptr<OHOS::Surface> g_pSurface = nullptr;
+    sptr<OHOS::IConsumerSurface> g_cSurface = nullptr;
+    sptr<IBufferConsumerListener> g_listener = nullptr;
+    sptr<OHOS::IBufferProducer> g_producer = nullptr;
 
     sptr<BufferExtraData> GetBufferExtraDataFromData()
     {
@@ -68,17 +58,46 @@ namespace OHOS {
         return bedata;
     }
 
+    void CreateProducerSurface()
+    {
+        pid = fork();
+        if (pid < 0) {
+            exit(1);
+        }
+        if (pid == 0) {
+            g_cSurface = IConsumerSurface::Create();
+            g_listener = new BufferConsumerListener();
+            g_cSurface->RegisterConsumerListener(g_listener);
+            sptr<OHOS::IBufferProducer> g_producer = g_cSurface->GetProducer();
+            g_pSurface = Surface::CreateSurfaceAsProducer(g_producer);
+            exit(0);
+        }
+    }
+
+    void DestroyProducerSurface()
+    {
+        g_pSurface = nullptr;
+        g_producer = nullptr;
+        g_cSurface = nullptr;
+        g_listener = nullptr;
+    }
+
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         if (data == nullptr) {
             return false;
         }
-
         // initialize
         g_data = data;
         g_size = size;
         g_pos = 0;
+
         // test
+        CreateProducerSurface();
+        float brightness = GetData<float>()
+        g_pSurface->SetHdrWhitePointBrightness(brightness);
+
+        DestroyProducerSurface();
 
         return true;
     }

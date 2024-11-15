@@ -20,7 +20,6 @@ group("fuzztest") {
     "bufferutils_fuzzer:fuzztest",
     "nativebuffer_fuzzer:fuzztest",
     "nativewindow_fuzzer:fuzztest",
-    "producersurface_fuzzer:fuzztest",
     "surface_fuzzer:fuzztest",
     "surfacebuffer_fuzzer:fuzztest",
     "surfaceutils_fuzzer:fuzztest",

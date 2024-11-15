@@ -23,6 +23,9 @@
 #include <buffer_producer_listener.h>
 #include <buffer_extra_data_impl.h>
 #include <sys/wait.h>
+#include "accesstoken_kit.h"
+#include "nativetoken_kit.h"
+#include "token_setproc.h"
 
 using namespace g_fuzzCommon;
 namespace OHOS {
@@ -60,6 +63,28 @@ namespace OHOS {
         return bedata;
     }
 
+    void InitNativeTokenInfo()
+    {
+        uint64_t tokenId;
+        const char *perms[2];
+        perms[0] = "ohos.permission.DISTRIBUTED_DATASYNC";
+        perms[1] = "ohos.permission.CAMERA";
+        NativeTokenInfoParams infoInstance = {
+            .dcapsNum = 0,
+            .permsNum = 2,
+            .aclsNum = 0,
+            .dcaps = NULL,
+            .perms = perms,
+            .acls = NULL,
+            .processName = "dcamera_client_demo",
+            .aplStr = "system_basic",
+        };
+        tokenId = GetAccessTokenId(&infoInstance);
+        SetSelfTokenID(tokenId);
+        Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // wait 50ms
+    }
+
     void CreateProducerSurface()
     {
         g_pid = fork();
@@ -67,6 +92,7 @@ namespace OHOS {
             exit(1);
         }
         if (g_pid == 0) {
+            InitNativeTokenInfo();
             g_cSurface = IConsumerSurface::Create();
             g_listener = new BufferConsumerListener();
             g_cSurface->RegisterConsumerListener(g_listener);

@@ -15,6 +15,7 @@
 
 #include "producersurface_fuzzer.h"
 #include <securec.h>
+#include "native_window.h"
 #include "data_generate.h"
 #include "producer_surface.h"
 #include "surface.h"

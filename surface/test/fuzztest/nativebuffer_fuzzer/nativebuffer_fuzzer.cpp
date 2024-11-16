@@ -21,6 +21,7 @@
 #include "data_generate.h"
 #include "native_buffer.h"
 #include "native_window.h"
+#include "native_buffer_inner.h"
 
 using namespace g_fuzzCommon;
 
@@ -42,11 +43,31 @@ namespace OHOS {
         config.height = 1080; // 1080 pixels
         OH_NativeBuffer_Config checkConfig = GetData<OH_NativeBuffer_Config>();
         void *virAddr = static_cast<void*>(GetStringFromData(STR_LEN).data());
+        OH_NativeBuffer_ColorSpace colorSpace = GetData<OH_NativeBuffer_ColorSpace>();
 
         // test
         OH_NativeBuffer* buffer = OH_NativeBuffer_Alloc(&config);
         CreateNativeWindowBufferFromNativeBuffer(buffer);
         OH_NativeBuffer_GetSeqNum(buffer);
+        OH_NativeBuffer_GetBufferHandle(buffer);
+        OH_NativeBuffer_GetNativeBufferConfig(buffer, &checkConfig);
+        OHNativeWindowBuffer *nativeWindowBuffer = CreateNativeWindowBufferFromNativeBuffer(buffer);
+        OH_NativeBufferFromNativeWindowBuffer(nativeWindowBuffer);
+        OH_NativeBuffer_SetColorSpace(buffer, colorSpace);
+        void *getVirAddr;
+        OH_NativeBuffer_Planes outPlanes;
+        OH_NativeBuffer_MapPlanes(buffer, &getVirAddr, &outPlanes);
+        OH_NativeBuffer *nativeBuffer;
+        OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBuffer);
+        OH_NativeBuffer_ColorSpace getColorSpace;
+        OH_NativeBuffer_GetColorSpace(buffer, &getColorSpace);
+        OH_NativeBuffer_MetadataKey metadataKey = GetData<OH_NativeBuffer_MetadataKey>();
+        int32_t setSize = GetData<int32_t>() % 100000;
+        uint8_t *metadata = (uint8_t *)malloc(setSize * sizeof(uint8_t));
+        OH_NativeBuffer_SetMetadataValue(buffer, metadataKey, setSize, metadata);
+        int32_t getSize;
+        uint8_t *getMetadata;
+        OH_NativeBuffer_GetMetadataValue(buffer, metadataKey, &getSize, &getMetadata);
         OH_NativeBuffer_GetConfig(buffer, &checkConfig);
         OH_NativeBuffer_Reference(buffer);
         OH_NativeBuffer_Unreference(buffer);

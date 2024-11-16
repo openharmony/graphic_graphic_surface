@@ -121,6 +121,26 @@ namespace OHOS {
         surfaceBuffer->ReadFromMessageParcel(parcel);
         surfaceBuffer->SetSurfaceBufferScalingMode(scalingMode);
         surfaceBuffer->GetSurfaceBufferScalingMode();
+        uint32_t key = GetData<uint32_t>();
+        surfaceBuffer->FlushCache();
+        surfaceBuffer->InvalidateCache();
+        surfaceBuffer->GetBufferHandle();
+        surfaceBuffer->GetSurfaceBufferWidth();
+        surfaceBuffer->GetSurfaceBufferHeight();
+        surfaceBuffer->GetPhyAddr();
+        surfaceBuffer->GetFileDescriptor();
+        surfaceBuffer->GetSize();
+        void *planesInfo;
+        surfaceBuffer->GetPlanesInfo(&planesInfo);
+        surfaceBuffer->WriteBufferRequestConfig(parcel);
+        surfaceBuffer->ReadBufferRequestConfig(parcel);
+        std::vector<uint32_t> keys;
+        surfaceBuffer->ListMetadataKeys(keys);
+        surfaceBuffer->EraseMetadataKey(key);
+        surfaceBuffer->SetBufferRequestConfig(config);
+        bool flag = GetData<bool>();
+        surfaceBuffer->SetConsumerAttachBufferFlag(flag);
+        surfaceBuffer->GetConsumerAttachBufferFlag();
 
         return true;
     }

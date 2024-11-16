@@ -43,14 +43,14 @@ namespace OHOS {
     void HandleOpt(OHNativeWindow *nativeWindow)
     {
         int code = SET_USAGE;
-        uint64_t usage = GetData<uint64_t>();
+        uint64_t usage = GetData<OH_NativeBuffer_Usage>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, usage);
         code = SET_BUFFER_GEOMETRY;
-        int32_t height = GetData<int32_t>();
-        int32_t width = GetData<int32_t>();
+        int32_t height = GetData<int32_t>() % 10000;
+        int32_t width = GetData<int32_t>() % 10000;
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, height, width);
         code = SET_FORMAT;
-        int32_t format = GetData<int32_t>();
+        int32_t format = GetData<OH_NativeBuffer_Format>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, format);
         code = SET_STRIDE;
         int32_t stride = GetData<int32_t>();
@@ -75,10 +75,10 @@ namespace OHOS {
         int32_t timeoutSet = GetData<int32_t>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, timeoutSet);
         code = SET_COLOR_GAMUT;
-        int32_t colorGamutSet = GetData<int32_t>();
+        int32_t colorGamutSet = GetData<OH_NativeBuffer_ColorGamut>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, colorGamutSet);
         code = SET_TRANSFORM;
-        int32_t transform = GetData<int32_t>();
+        int32_t transform = GetData<OH_NativeBuffer_TransformType>();
         OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, transform);
     }
 

@@ -52,10 +52,30 @@ bool DoSetGameScene(const uint8_t* data, size_t size)
     DATA = data;
     g_size = size;
     g_pos = 0;
+
+    std::string layerName = "LayerName";
     // get data
     int32_t pid = GetData<int32_t>();
     int32_t state = GetData<int32_t>();
     Rosen::FrameReport::GetInstance().SetGameScene(pid, state);
+
+    uint64_t uniqueId = GetData<uint64_t>();
+    Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(uniqueId);
+
+    int64_t lastSwapBufferTime = GetData<int64_t>();
+    Rosen::FrameReport::GetInstance().SetLastSwapBufferTime(lastSwapBufferTime);
+
+    int64_t dequeueBufferTime = GetData<int64_t>();
+    Rosen::FrameReport::GetInstance().SetDequeueBufferTime(layerName, dequeueBufferTime);
+
+    int64_t queueBufferTime = GetData<int64_t>();
+    Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, layerName, queueBufferTime);
+
+    int64_t pendingBufferNum = GetData<int64_t>();
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(layerName, pendingBufferNum);
+
+    Rosen::FrameReport::GetInstance().Report(layerName);
+
     return true;
 }
 } // namespace Rosen

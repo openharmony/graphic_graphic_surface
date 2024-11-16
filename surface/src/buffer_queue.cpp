@@ -342,13 +342,14 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     }
 
     std::unique_lock<std::mutex> lock(mutex_);
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     SURFACE_TRACE_NAME_FMT("RequestBuffer name: %s queueId: %" PRIu64 " queueSize: %u",
         name_.c_str(), uniqueId_, bufferQueueSize_);
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
     ret = PopFromFreeListLocked(buffer, config);
     if (ret == GSERROR_OK) {
-        return ReuseBuffer(config, bedata, retval);
+        return ReuseBuffer(config, bedata, retval, lock);
     }
 
     // check queue size
@@ -362,14 +363,14 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
         // try dequeue from free list again
         ret = PopFromFreeListLocked(buffer, config);
         if (ret == GSERROR_OK) {
-            return ReuseBuffer(config, bedata, retval);
+            return ReuseBuffer(config, bedata, retval, lock);
         } else if (GetUsedSize() >= bufferQueueSize_) {
             RequestBufferDebugInfoLocked();
             return GSERROR_NO_BUFFER;
         }
     }
 
-    ret = AllocBuffer(buffer, config);
+    ret = AllocBuffer(buffer, config, lock);
     if (ret == GSERROR_OK) {
         SetSurfaceBufferHebcMetaLocked(buffer);
         SetSurfaceBufferGlobalAlphaUnlocked(buffer);
@@ -385,11 +386,12 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
 GSError BufferQueue::SetProducerCacheCleanFlag(bool flag)
 {
     std::unique_lock<std::mutex> lock(mutex_);
-    return SetProducerCacheCleanFlagLocked(flag);
+    return SetProducerCacheCleanFlagLocked(flag, lock);
 }
 
-GSError BufferQueue::SetProducerCacheCleanFlagLocked(bool flag)
+GSError BufferQueue::SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock)
 {
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     producerCacheClean_ = flag;
     producerCacheList_.clear();
     return GSERROR_OK;
@@ -406,12 +408,12 @@ bool BufferQueue::CheckProducerCacheListLocked()
 }
 
 GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
-    struct IBufferProducer::RequestBufferReturnValue &retval)
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
     DeleteBufferInCache(retval.sequence);
 
     sptr<SurfaceBuffer> buffer = nullptr;
-    auto sret = AllocBuffer(buffer, config);
+    auto sret = AllocBuffer(buffer, config, lock);
     if (sret != GSERROR_OK) {
         BLOGE("AllocBuffer failed: %{public}d, uniqueId: %{public}" PRIu64 ".", sret, uniqueId_);
         return sret;
@@ -424,7 +426,7 @@ GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
 }
 
 GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-    struct IBufferProducer::RequestBufferReturnValue &retval)
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
     if (retval.buffer == nullptr) {
         BLOGE("input buffer is null, uniqueId: %{public}" PRIu64 ".", uniqueId_);
@@ -442,7 +444,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     bool needRealloc = (config != bufferQueueCache_[retval.sequence].config);
     // config, realloc
     if (needRealloc) {
-        auto sret = ReallocBufferLocked(config, retval);
+        auto sret = ReallocBufferLocked(config, retval, lock);
         if (sret != GSERROR_OK) {
             return sret;
         }
@@ -463,7 +465,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         if (producerCacheClean_) {
             producerCacheList_.push_back(retval.sequence);
             if (CheckProducerCacheListLocked()) {
-                SetProducerCacheCleanFlagLocked(false);
+                SetProducerCacheCleanFlagLocked(false, lock);
             }
         }
         retval.buffer->SetConsumerAttachBufferFlag(false);
@@ -687,7 +689,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 {
     SURFACE_TRACE_NAME_FMT("DoFlushBuffer name: %s queueId: %" PRIu64 " seq: %u",
         name_.c_str(), uniqueId_, sequence);
-    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         BLOGE("bufferQueueCache not find sequence:%{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
@@ -939,7 +941,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     uint32_t sequence = buffer->GetSeqNum();
     SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
     {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
+        std::unique_lock<std::mutex> lock(mutex_);
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
             SURFACE_TRACE_NAME_FMT("buffer not found in cache");
             BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
@@ -971,7 +973,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 }
 
 GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
-    const BufferRequestConfig &config)
+    const BufferRequestConfig &config, std::unique_lock<std::mutex> &lock)
 {
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
     uint32_t sequence = bufferImpl->GetSeqNum();
@@ -980,15 +982,21 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 
     BufferRequestConfig updateConfig = config;
     updateConfig.usage |= defaultUsage_;
-
+    ScalingMode scalingMode = scalingMode_;
+    int32_t connectedPid = connectedPid_;
+    isAllocatingBuffer_ = true;
+    lock.unlock();
     GSError ret = bufferImpl->Alloc(updateConfig);
+    lock.lock();
+    isAllocatingBuffer_ = false;
+    isAllocatingBufferCon_.notify_all();
     if (ret != GSERROR_OK) {
         BLOGE("Alloc failed, sequence:%{public}u, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
             sequence, ret, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
 
-    bufferImpl->SetSurfaceBufferScalingMode(scalingMode_);
+    bufferImpl->SetSurfaceBufferScalingMode(scalingMode);
     BufferElement ele = {
         .buffer = bufferImpl,
         .state = BUFFER_STATE_REQUESTED,
@@ -1015,8 +1023,8 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     }
 
     BufferHandle* bufferHandle = bufferImpl->GetBufferHandle();
-    if (connectedPid_ != 0 && bufferHandle != nullptr) {
-        ioctl(bufferHandle->fd, DMA_BUF_SET_NAME_A, std::to_string(connectedPid_).c_str());
+    if (connectedPid != 0 && bufferHandle != nullptr) {
+        ioctl(bufferHandle->fd, DMA_BUF_SET_NAME_A, std::to_string(connectedPid).c_str());
     }
 
     return SURFACE_ERROR_OK;
@@ -1044,13 +1052,14 @@ uint32_t BufferQueue::GetQueueSize()
     return bufferQueueSize_;
 }
 
-void BufferQueue::DeleteBuffersLocked(int32_t count)
+void BufferQueue::DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex> &lock)
 {
     SURFACE_TRACE_NAME_FMT("DeleteBuffersLocked count: %d", count);
     if (count <= 0) {
         return;
     }
 
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     while (!freeList_.empty()) {
         DeleteBufferInCache(freeList_.front());
         freeList_.pop_front();
@@ -1218,7 +1227,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
     if (usedSize >= queueSize) {
         int32_t freeSize = static_cast<int32_t>(dirtyList_.size() + freeList_.size());
         if (freeSize >= usedSize - queueSize + 1) {
-            DeleteBuffersLocked(usedSize - queueSize + 1);
+            DeleteBuffersLocked(usedSize - queueSize + 1, lock);
             bufferQueueCache_[sequence] = ele;
             return GSERROR_OK;
         } else {
@@ -1296,9 +1305,9 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     if (bufferQueueSize_ > queueSize) {
-        DeleteBuffersLocked(bufferQueueSize_ - queueSize);
+        DeleteBuffersLocked(bufferQueueSize_ - queueSize, lock);
     }
     // if increase the queue size, try to wakeup the blocked thread
     if (queueSize > bufferQueueSize_) {
@@ -1419,8 +1428,9 @@ uint64_t BufferQueue::GetDefaultUsage()
     return defaultUsage_;
 }
 
-void BufferQueue::ClearLocked()
+void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock)
 {
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     for (auto &[id, ele] : bufferQueueCache_) {
         if (onBufferDeleteForRSMainThread_ != nullptr) {
             onBufferDeleteForRSMainThread_(id);
@@ -1456,10 +1466,10 @@ GSError BufferQueue::GoBackground()
         SURFACE_TRACE_NAME_FMT("OnGoBackground name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
         listenerClazz->OnGoBackground();
     }
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    ClearLocked();
+    std::unique_lock<std::mutex> lock(mutex_);
+    ClearLocked(lock);
     waitReqCon_.notify_all();
-    SetProducerCacheCleanFlagLocked(false);
+    SetProducerCacheCleanFlagLocked(false, lock);
     return GSERROR_OK;
 }
 
@@ -1489,16 +1499,16 @@ GSError BufferQueue::CleanCache(bool cleanAll)
             listenerClazz->OnCleanCache();
         }
     }
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    ClearLocked();
+    std::unique_lock<std::mutex> lock(mutex_);
+    ClearLocked(lock);
     waitReqCon_.notify_all();
     return GSERROR_OK;
 }
 
 GSError BufferQueue::OnConsumerDied()
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    ClearLocked();
+    std::unique_lock<std::mutex> lock(mutex_);
+    ClearLocked(lock);
     waitReqCon_.notify_all();
     return GSERROR_OK;
 }
@@ -1921,7 +1931,7 @@ void BufferQueue::DumpCache(std::string &result)
 
 void BufferQueue::Dump(std::string &result)
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     std::ostringstream ss;
     ss.precision(BUFFER_MEMSIZE_FORMAT);
     ss.setf(std::ios::fixed);
@@ -1929,6 +1939,7 @@ void BufferQueue::Dump(std::string &result)
     uint64_t totalBufferListSize = 0;
     double memSizeInKB = 0;
 
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
         BufferElement element = it->second;
         if (element.buffer != nullptr) {

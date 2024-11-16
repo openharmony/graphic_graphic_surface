@@ -81,7 +81,7 @@ public:
                           struct IBufferProducer::RequestBufferReturnValue &retval);
 
     GSError ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-                        struct IBufferProducer::RequestBufferReturnValue &retval);
+                        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
 
     GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata);
 
@@ -89,7 +89,7 @@ public:
                         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
-                          sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
+        sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, bool needRecordSequence = false);
@@ -198,11 +198,12 @@ public:
     void SetConnectedPid(int32_t connectedPid);
 
 private:
-    GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
+    GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
+        std::unique_lock<std::mutex> &lock);
     void DeleteBufferInCache(uint32_t sequence);
 
     uint32_t GetUsedSize();
-    void DeleteBuffersLocked(int32_t count);
+    void DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex> &lock);
 
     GSError PopFromFreeListLocked(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
     GSError PopFromDirtyListLocked(sptr<SurfaceBuffer>& buffer);
@@ -211,16 +212,16 @@ private:
     GSError CheckFlushConfig(const BufferFlushConfigWithDamages &config);
     void DumpCache(std::string &result);
     void DumpMetadata(std::string &result, BufferElement element);
-    void ClearLocked();
+    void ClearLocked(std::unique_lock<std::mutex> &lock);
     bool CheckProducerCacheListLocked();
-    GSError SetProducerCacheCleanFlagLocked(bool flag);
+    GSError SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock);
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
     void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
     GSError CheckBufferQueueCache(uint32_t sequence);
     GSError ReallocBufferLocked(const BufferRequestConfig &config,
-        struct IBufferProducer::RequestBufferReturnValue &retval);
+        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
     void SetSurfaceBufferHebcMetaLocked(sptr<SurfaceBuffer> buffer);
     GSError RequestBufferCheckStatus();
     GSError DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence);
@@ -285,6 +286,8 @@ private:
     std::string requestBufferStateStr_;
     std::string acquireBufferStateStr_;
     int32_t connectedPid_ = 0;
+    bool isAllocatingBuffer_ = false;
+    std::condition_variable isAllocatingBufferCon_;
 };
 }; // namespace OHOS
 

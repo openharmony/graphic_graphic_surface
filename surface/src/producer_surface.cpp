@@ -277,7 +277,8 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
 GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& buffers,
     const std::vector<sptr<SyncFence>>& fences, const std::vector<BufferFlushConfigWithDamages>& configs)
 {
-    if (buffers.size() == 0 || buffers.size() != fences.size() || producer_ == nullptr) {
+    if (buffers.size() == 0 || buffers.size() != fences.size() || producer_ == nullptr
+        || buffers.size() > SURFACE_MAX_QUEUE_SIZE) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     for (size_t i = 0; i < buffers.size(); ++i) {

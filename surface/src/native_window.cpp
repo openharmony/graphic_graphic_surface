@@ -79,6 +79,7 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
 namespace {
     constexpr int32_t INVALID_PARAM = -1;
     constexpr int32_t META_DATA_MAX_SIZE = 3000;
+    constexpr int32_t DAMAGES_MAX_SIZE = 1000;
 }
 
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
@@ -214,7 +215,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
     }
 
     OHOS::BufferFlushConfigWithDamages config;
-    if ((region.rectNumber != 0) && (region.rects != nullptr)) {
+    if ((region.rectNumber <= DAMAGES_MAX_SIZE) && (region.rectNumber > 0) && (region.rects != nullptr)) {
         config.damages.reserve(region.rectNumber);
         for (int32_t i = 0; i < region.rectNumber; i++) {
             OHOS::Rect damage = {

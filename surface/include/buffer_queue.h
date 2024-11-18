@@ -71,6 +71,8 @@ using BufferElement = struct BufferElement {
     bool isAutoTimestamp;
 };
 
+using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
+
 class BufferQueue : public RefBase {
 public:
     BufferQueue(const std::string &name, bool isShared = false);
@@ -233,8 +235,8 @@ private:
                                                  uint64_t uiTimestamp);
     void DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
                               int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
-                              std::vector<BufferElement*> &dropBufferElements);
-    void ReleaseDropBuffers(const std::vector<BufferElement*> &dropBufferElements);
+                              std::vector<BufferAndFence> &dropBuffers);
+    void ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

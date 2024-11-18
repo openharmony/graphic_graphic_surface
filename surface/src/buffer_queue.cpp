@@ -876,8 +876,7 @@ void BufferQueue::ReleaseDropBuffers(const std::vector<BufferElement*> &dropBuff
         }
         auto ret = ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
         if (ret != GSERROR_OK) {
-            BLOGE("DropBuffer failed, ret: %{public}d, sequence: %{public}u, uniqueId: %{public}" PRIu64 ".",
-                ret, dropBufferElement->buffer->GetSeqNum(), uniqueId_);
+            BLOGE("DropBuffer failed, ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         }
     }
 }

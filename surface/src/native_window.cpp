@@ -81,6 +81,7 @@ namespace {
     constexpr int32_t INVALID_PARAM = -1;
     constexpr int32_t META_DATA_MAX_SIZE = 3000;
     constexpr int32_t DAMAGES_MAX_SIZE = 1000;
+    constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 }
 
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
@@ -370,7 +371,7 @@ static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window,
 {
     char* appFrameworkType = va_arg(args, char*);
     if (appFrameworkType != nullptr) {
-        std::string typeStr(appFrameworkType);
+        std::string typeStr(appFrameworkType, MAXIMUM_LENGTH_OF_APP_FRAMEWORK);
         window->surface->SetSurfaceAppFrameworkType(typeStr);
     }
 }

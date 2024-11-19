@@ -23,7 +23,6 @@ using namespace HiviewDFX;
 static SurfaceUtils* instance = nullptr;
 static std::once_flag createFlag_;
 constexpr uint32_t MATRIX_ARRAY_SIZE = 16;
-static constexpr uint32_t MAX_MATRIX_SIZE = std::numeric_limits<size_t>::max() / sizeof(float);
 
 SurfaceUtils* SurfaceUtils::GetInstance()
 {
@@ -280,7 +279,7 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
         changeFlag = true;
     }
     if (crop.h < bufferHeight && bufferHeight != 0) {
-        ty = (float(bufferHeight) / bufferHeight);
+        ty = (float(bufferHeight - crop.y - crop.h) / bufferHeight);
         sy = (float(crop.h) / bufferHeight);
         changeFlag = true;
     }
@@ -306,26 +305,21 @@ void SurfaceUtils::ComputeBufferMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t
         return;
     }
 
-    if (matrixSize < TRANSFORM_MATRIX_ELE_COUNT) {
-        BLOGE("Invalid matrix size: %{public}u, expected at least %{public}zu", 
+    if (matrixSize != TRANSFORM_MATRIX_ELE_COUNT) {
+        BLOGE("Invalid matrix size: %{public}u, expected size: %{public}u",
               matrixSize, TRANSFORM_MATRIX_ELE_COUNT);
-        return;
-    }
-
-    if (matrixSize > MAX_MATRIX_SIZE) {
-        BLOGE("Matrix size too large: %{public}u, max allowed: %{public}u", 
-              matrixSize, MAX_MATRIX_SIZE);
         return;
     }
     
     std::array<float, TRANSFORM_MATRIX_ELE_COUNT> transformMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    ComputeTransformByMatrixV2(transform, &transformMatrix);
     float bufferWidth = buffer->GetWidth();
     float bufferHeight = buffer->GetHeight();
     
-    float tx = (float(crop.x) / bufferWidth);
-    float ty = (float(crop.y) / bufferHeight);
-    float sx = (float(crop.w) / bufferWidth);
-    float sy = (float(crop.h) / bufferHeight);
+    float tx = crop.x / bufferWidth;
+    float ty = bufferHeight - crop.y - crop.h / bufferHeight;
+    float sx = crop.w / bufferWidth;
+    float sy = crop.h / bufferHeight;
     
     std::array<float, MATRIX_ARRAY_SIZE> cropMatrix = {
         sx, 0, 0, 0,

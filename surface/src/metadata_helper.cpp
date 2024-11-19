@@ -198,4 +198,18 @@ GSError MetadataHelper::GetHDRStaticMetadata(const sptr<SurfaceBuffer>& buffer,
 
     return buffer->GetMetadata(ATTRKEY_HDR_STATIC_METADATA, hdrStaticMetadata);
 }
+
+GSError MetadataHelper::GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer, BufferHandleMetaRegion& crop)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+
+    std::vector<uint8_t> cropRect;
+    auto ret = buffer->GetMetadata(ATTRKEY_CROP_REGION, cropRect);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    return ConvertVecToMetadata(cropRect, crop);
+}
 } // namespace OHOS

@@ -52,7 +52,7 @@ namespace OHOS {
         utils->Add(uniqueId1, surface);
         utils->Add(uniqueId2, pSurface);
         utils->Remove(uniqueId3);
-        GraphicTransformType transformType = GetData<GraphicTransformType>();
+        GraphicTransformType transformType = (GraphicTransformType)GetData<uint32_t>();
         float matrix[MATRIX_SIZE];
         for (int i = 0; i < MATRIX_SIZE; i++) {
             matrix[i] = GetData<float>();

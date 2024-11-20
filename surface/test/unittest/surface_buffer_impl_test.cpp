@@ -289,6 +289,10 @@ HWTEST_F(SurfaceBufferImplTest, BufferWrapper001, Function | MediumTest | Level2
 
 /*
 * Function: SetSurfaceBufferScalingMode&GetSurfaceBufferScalingMode
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
 *                  2. call GetSurfaceBufferScalingMode and check default is SCALING_MODE_SCALE_TO_WINDOW
 *                  3. call SetSurfaceBufferScalingMode and GetSurfaceBufferScalingMode and check ret
 *                  4. repeatly call SetSurfaceBufferScalingMode and GetSurfaceBufferScalingMode and check ret

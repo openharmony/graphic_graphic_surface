@@ -52,7 +52,7 @@ private:
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
     void ComputeTransformByMatrixV2(GraphicTransformType& transform,
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
-    
+
     std::unordered_map<uint64_t, wptr<Surface>> surfaceCache_;
     std::mutex mutex_;
     std::unordered_map<uint64_t, void*> nativeWindowCache_;

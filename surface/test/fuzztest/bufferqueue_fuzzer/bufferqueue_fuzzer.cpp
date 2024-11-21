@@ -150,6 +150,36 @@ namespace OHOS {
         bufferqueue->GetSurfaceSourceType();
         float brightness = GetData<float>();
         bufferqueue->SetHdrWhitePointBrightness(brightness);
+        IConsumerSurface::AcquireBufferReturnValue returnValue;
+        int64_t expectPresentTimestamp = GetData<int64_t>();
+        bool isUsingAutoTimestamp = GetData<bool>();
+        bufferqueue->AcquireBuffer(returnValue, expectPresentTimestamp, isUsingAutoTimestamp);
+        bufferqueue->WaitForCondition();
+        bufferqueue->RequestBufferDebugInfoLocked();
+        bufferqueue->CheckProducerCacheListLocked();
+        {
+            std::mutex mutex;
+            std::unique_lock<std::mutex> lock(mutex);
+            bufferqueue->ReallocBufferLocked(requestConfig, retval, lock);
+        }
+        bufferqueue->DelegatorQueueBuffer(sequence, syncFence);
+        bufferqueue->CallConsumerListener();
+        uint64_t uiTimestamp = GetData<uint64_t>();
+        bufferqueue->SetDesiredPresentTimestampAndUiTimestamp(sequence, expectPresentTimestamp, uiTimestamp);
+        int64_t desiredPresentTimestamp = GetData<int64_t>();
+        bufferqueue->IsPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
+        bufferqueue->ListenerBufferReleasedCb(buffer, syncFence);
+        bufferqueue->OnBufferDeleteCbForHardwareThreadLocked(buffer);
+        bufferqueue->DeleteBufferInCache(sequence);
+        sptr<OHOS::SurfaceBuffer> buffer2 = new SurfaceBufferImpl();
+        bufferqueue->SetSurfaceBufferGlobalAlphaUnlocked(buffer2);
+        int32_t alpha;
+        bufferqueue->GetGlobalAlpha(alpha);
+        std::string result;
+        bufferqueue->DumpCache(result);
+        BufferElement element = GetData<BufferElement>();
+        bufferqueue->DumpMetadata(result, element);
+        bufferqueue->GetAvailableBufferCount();
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)

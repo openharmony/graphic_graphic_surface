@@ -38,9 +38,11 @@ namespace OHOS {
         g_pos = 0;
 
         // get data
-        OH_NativeBuffer_Config config = GetData<OH_NativeBuffer_Config>();
-        config.width = 1920; // 1920 pixels
-        config.height = 1080; // 1080 pixels
+        OH_NativeBuffer_Config config;
+        config.width = 100; // 100 pixels
+        config.height = 100; // 100 pixels
+        config.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+        config.usage = BUFFER_USAGE_CPU_READ;
         OH_NativeBuffer_Config checkConfig = GetData<OH_NativeBuffer_Config>();
         void *virAddr = static_cast<void*>(GetStringFromData(STR_LEN).data());
         OH_NativeBuffer_ColorSpace colorSpace = GetData<OH_NativeBuffer_ColorSpace>();

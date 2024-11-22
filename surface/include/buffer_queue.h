@@ -202,7 +202,7 @@ public:
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
-    void DeleteBufferInCache(uint32_t sequence);
+    void DeleteBufferInCache(uint32_t sequence, std::unique_lock<std::mutex> &lock);
 
     uint32_t GetUsedSize();
     void DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex> &lock);
@@ -241,7 +241,7 @@ private:
                               std::vector<BufferAndFence> &dropBuffers);
     void ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers);
     void OnBufferDeleteForRS(uint32_t sequence);
-    void DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence, std::unique_lock<std::mutex> &lock);
+    void DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

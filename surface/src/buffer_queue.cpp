@@ -164,17 +164,6 @@ GSError BufferQueue::PopFromDirtyListLocked(sptr<SurfaceBuffer> &buffer)
 
 GSError BufferQueue::CheckRequestConfig(const BufferRequestConfig &config)
 {
-    uint32_t align = config.strideAlignment;
-    if (align < SURFACE_MIN_STRIDE_ALIGNMENT || align > SURFACE_MAX_STRIDE_ALIGNMENT) {
-        BLOGW("align is %{public}d, uniqueId: %{public}" PRIu64 ".", align, uniqueId_);
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-
-    if (align & (align - 1)) {
-        BLOGW("align is %{public}d, uniqueId: %{public}" PRIu64 ".", align, uniqueId_);
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-
     if (config.colorGamut <= GraphicColorGamut::GRAPHIC_COLOR_GAMUT_INVALID ||
         config.colorGamut > GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_BT2020 + 1) {
         BLOGW("colorGamut is %{public}d, uniqueId: %{public}" PRIu64 ".",

@@ -1163,7 +1163,7 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerTy
     SURFACE_TRACE_NAME_FMT("DetachBufferFromQueue name: %s queueId: %" PRIu64 " sequence: %u invokerType%u",
         name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType);
     {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
+        std::unique_lock<std::mutex> lock(mutex_);
         uint32_t sequence = buffer->GetSeqNum();
         if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
             BLOGE("seq: %{public}u, not find in cache, uniqueId: %{public}" PRIu64 ".",
@@ -1184,7 +1184,7 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerTy
                     sequence, bufferQueueCache_[sequence].state, uniqueId_);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
-            DeleteBufferInCache(sequence);
+            DeleteBufferInCache(sequence, lock);
         }
     }
     return GSERROR_OK;

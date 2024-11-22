@@ -240,6 +240,8 @@ private:
                               int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
                               std::vector<BufferAndFence> &dropBuffers);
     void ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers);
+    void OnBufferDeleteForRS(uint32_t sequence);
+    void DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

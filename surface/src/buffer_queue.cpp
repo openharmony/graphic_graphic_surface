@@ -97,12 +97,7 @@ BufferQueue::~BufferQueue()
 {
     BLOGD("~BufferQueue dtor, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     for (auto &[id, _] : bufferQueueCache_) {
-        if (onBufferDeleteForRSMainThread_ != nullptr) {
-            onBufferDeleteForRSMainThread_(id);
-        }
-        if (onBufferDeleteForRSHardwareThread_ != nullptr) {
-            onBufferDeleteForRSHardwareThread_(id);
-        }
+        OnBufferDeleteForRS(id);
     }
 }
 
@@ -410,7 +405,7 @@ bool BufferQueue::CheckProducerCacheListLocked()
 GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
-    DeleteBufferInCache(retval.sequence);
+    DeleteBufferInCacheNoWaitForAllocatingState(retval.sequence);
 
     sptr<SurfaceBuffer> buffer = nullptr;
     auto sret = AllocBuffer(buffer, config, lock);
@@ -1027,21 +1022,31 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     return SURFACE_ERROR_OK;
 }
 
-void BufferQueue::DeleteBufferInCache(uint32_t sequence)
+void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
+{
+    if (onBufferDeleteForRSMainThread_ != nullptr) {
+        onBufferDeleteForRSMainThread_(sequence);
+    }
+    if (onBufferDeleteForRSHardwareThread_ != nullptr) {
+        onBufferDeleteForRSHardwareThread_(sequence);
+    }
+}
+
+void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
 {
     auto it = bufferQueueCache_.find(sequence);
     if (it != bufferQueueCache_.end()) {
-        if (onBufferDeleteForRSMainThread_ != nullptr) {
-            onBufferDeleteForRSMainThread_(sequence);
-        }
-        if (onBufferDeleteForRSHardwareThread_ != nullptr) {
-            onBufferDeleteForRSHardwareThread_(sequence);
-        }
+        OnBufferDeleteForRS(sequence);
         BLOGD("DeleteBufferInCache seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         bufferQueueCache_.erase(it);
         deletingList_.push_back(sequence);
     }
 }
+
+void BufferQueue::DeleteBufferInCache(uint32_t sequence)
+{
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
+    DeleteBufferInCacheNoWaitForLock(sequence);
 
 uint32_t BufferQueue::GetQueueSize()
 {
@@ -1058,7 +1063,7 @@ void BufferQueue::DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex
 
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     while (!freeList_.empty()) {
-        DeleteBufferInCache(freeList_.front());
+        DeleteBufferInCacheNoWaitForAllocatingState(freeList_.front());
         freeList_.pop_front();
         count--;
         if (count <= 0) {
@@ -1067,7 +1072,7 @@ void BufferQueue::DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex
     }
 
     while (!dirtyList_.empty()) {
-        DeleteBufferInCache(dirtyList_.front());
+        DeleteBufferInCacheNoWaitForAllocatingState(dirtyList_.front());
         dirtyList_.pop_front();
         count--;
         if (count <= 0) {
@@ -1170,14 +1175,16 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerTy
                     sequence, bufferQueueCache_[sequence].state, uniqueId_);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
+            OnBufferDeleteForRS(sequence);
+            bufferQueueCache_.erase(sequence);
         } else {
             if (bufferQueueCache_[sequence].state != BUFFER_STATE_ACQUIRED) {
                 BLOGE("seq: %{public}u, state: %{public}d, uniqueId: %{public}" PRIu64 ".",
                     sequence, bufferQueueCache_[sequence].state, uniqueId_);
                 return SURFACE_ERROR_BUFFER_STATE_INVALID;
             }
+            DeleteBufferInCache(sequence);
         }
-        bufferQueueCache_.erase(sequence);
     }
     return GSERROR_OK;
 }
@@ -1258,12 +1265,7 @@ GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)
             bufferQueueCache_[sequence].state, sequence, uniqueId_);
         return GSERROR_NO_ENTRY;
     }
-    if (onBufferDeleteForRSMainThread_ != nullptr) {
-        onBufferDeleteForRSMainThread_(sequence);
-    }
-    if (onBufferDeleteForRSHardwareThread_ != nullptr) {
-        onBufferDeleteForRSHardwareThread_(sequence);
-    }
+    OnBufferDeleteForRS(sequence);
     bufferQueueCache_.erase(sequence);
     return GSERROR_OK;
 }
@@ -1429,12 +1431,7 @@ void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock)
 {
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     for (auto &[id, ele] : bufferQueueCache_) {
-        if (onBufferDeleteForRSMainThread_ != nullptr) {
-            onBufferDeleteForRSMainThread_(id);
-        }
-        if (onBufferDeleteForRSHardwareThread_ != nullptr) {
-            onBufferDeleteForRSHardwareThread_(id);
-        }
+        OnBufferDeleteForRS(id);
 
         if (name_  == "RosenWeb") {
             BLOGD("ClearLocked, bufferFd: %{public}d, refCount: %{public}d.",

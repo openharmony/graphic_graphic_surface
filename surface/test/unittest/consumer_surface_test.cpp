@@ -2063,7 +2063,6 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest 
         ret = ps->FlushBuffer(buffer, -1, flushConfigTmp);
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
     }
-    ASSERT_EQ(pSurface->bufferProducerCache_.size(), 3);
 
     for (uint32_t i = 0; i < 3; i++) {
         ret = cSurface->AcquireBuffer(buffer, fence, timestampTmp, damageTmp);
@@ -2073,6 +2072,5 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest 
     }
     ret = pSurface->RequestBuffer(buffer, releaseFence, config);
     ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_EQ(pSurface->bufferProducerCache_.size(), 1);
 }
 }

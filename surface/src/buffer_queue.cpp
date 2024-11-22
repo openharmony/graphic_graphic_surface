@@ -690,7 +690,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
     if (bufferQueueCache_[sequence].isDeleting) {
-        DeleteBufferInCache(sequence);
+        DeleteBufferInCache(sequence, lock);
         BLOGD("DoFlushBuffer delete seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
         return GSERROR_OK;
@@ -952,7 +952,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         bufferQueueCache_[sequence].fence = fence;
 
         if (bufferQueueCache_[sequence].isDeleting) {
-            DeleteBufferInCache(sequence);
+            DeleteBufferInCache(sequence, lock);
         } else {
             freeList_.push_back(sequence);
         }
@@ -1043,7 +1043,7 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
     }
 }
 
-void BufferQueue::DeleteBufferInCache(uint32_t sequence)
+void BufferQueue::DeleteBufferInCache(uint32_t sequence, std::unique_lock<std::mutex> &lock)
 {
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     DeleteBufferInCacheNoWaitForLock(sequence);

@@ -1046,7 +1046,7 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
 void BufferQueue::DeleteBufferInCache(uint32_t sequence, std::unique_lock<std::mutex> &lock)
 {
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
-    DeleteBufferInCacheNoWaitForLock(sequence);
+    DeleteBufferInCacheNoWaitForAllocatingState(sequence);
 
 uint32_t BufferQueue::GetQueueSize()
 {

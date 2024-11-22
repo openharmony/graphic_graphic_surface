@@ -33,6 +33,11 @@ namespace OHOS {
         if (data == nullptr) {
             return false;
         }
+        // initialize
+        g_data = data;
+        g_size = size;
+        g_pos = 0;
+
         int fd = GetData<int>();
         BufferRequestConfig rqConfig = GetData<BufferRequestConfig>();
         BufferFlushConfigWithDamages flConfig = {
@@ -83,9 +88,6 @@ namespace OHOS {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     /* Run your code on data */
-    g_data = data;
-    g_size = size;
-    g_pos = 0;
     OHOS::DoSomethingInterestingWithMyAPI(data, size);
     return 0;
 }

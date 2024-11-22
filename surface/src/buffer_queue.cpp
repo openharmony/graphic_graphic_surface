@@ -367,6 +367,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
 
     ret = AllocBuffer(buffer, config, lock);
     if (ret == GSERROR_OK) {
+        AddDeletingBuffersLocked(retval.deletingBuffers);
         SetSurfaceBufferHebcMetaLocked(buffer);
         SetSurfaceBufferGlobalAlphaUnlocked(buffer);
         SetReturnValue(buffer, bedata, retval);
@@ -420,6 +421,13 @@ GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
     return GSERROR_OK;
 }
 
+void BufferQueue::AddDeletingBuffersLocked(std::vector<uint32_t> &deletingBuffers)
+{
+    deletingBuffers.reserve(deletingBuffers.size() + deletingList_.size());
+    deletingBuffers.insert(deletingBuffers.end(), deletingList_.begin(), deletingList_.end());
+    deletingList_.clear();
+}
+
 GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
@@ -452,9 +460,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     SetSurfaceBufferGlobalAlphaUnlocked(retval.buffer);
 
     auto &dbs = retval.deletingBuffers;
-    dbs.reserve(dbs.size() + deletingList_.size());
-    dbs.insert(dbs.end(), deletingList_.begin(), deletingList_.end());
-    deletingList_.clear();
+    AddDeletingBuffersLocked(dbs);
 
     if (needRealloc || producerCacheClean_ || retval.buffer->GetConsumerAttachBufferFlag()) {
         if (producerCacheClean_) {

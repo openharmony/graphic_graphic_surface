@@ -2060,7 +2060,7 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest 
         ret = pSurface->RequestBuffer(buffer, releaseFence, config);
         ASSERT_EQ(ret, GSERROR_OK);
         ASSERT_NE(buffer, nullptr);
-        ret = ps->FlushBuffer(buffer, -1, flushConfigTmp);
+        ret = pSurface->FlushBuffer(buffer, -1, flushConfigTmp);
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
     }
 

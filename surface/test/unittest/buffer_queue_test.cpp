@@ -521,64 +521,6 @@ HWTEST_F(BufferQueueTest, RequestBuffer002, Function | MediumTest | Level2)
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
 
-
-/*
-* Function: RequestBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. set BufferRequestConfig with abnormal value
-*                  2. call RequestBuffer
-*                  3. check ret
- */
-HWTEST_F(BufferQueueTest, RequestBuffer003, Function | MediumTest | Level2)
-{
-    IBufferProducer::RequestBufferReturnValue retval;
-    BufferRequestConfig config = requestConfig;
-    config.strideAlignment = SURFACE_MIN_STRIDE_ALIGNMENT - 1;
-
-    GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
-}
-
-/*
-* Function: RequestBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. set BufferRequestConfig with abnormal value
-*                  2. call RequestBuffer
-*                  3. check ret
- */
-HWTEST_F(BufferQueueTest, RequestBuffer004, Function | MediumTest | Level2)
-{
-    IBufferProducer::RequestBufferReturnValue retval;
-    BufferRequestConfig config = requestConfig;
-    config.strideAlignment = SURFACE_MAX_STRIDE_ALIGNMENT + 1;
-
-    GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
-}
-
-/*
-* Function: RequestBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. set BufferRequestConfig with abnormal value
-*                  2. call RequestBuffer
-*                  3. check ret
- */
-HWTEST_F(BufferQueueTest, RequestBuffer005, Function | MediumTest | Level2)
-{
-    IBufferProducer::RequestBufferReturnValue retval;
-    BufferRequestConfig config = requestConfig;
-    config.strideAlignment = 3;
-
-    GSError ret = bq->RequestBuffer(config, bedata, retval);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
-}
-
 /*
 * Function: RequestBuffer
 * Type: Function

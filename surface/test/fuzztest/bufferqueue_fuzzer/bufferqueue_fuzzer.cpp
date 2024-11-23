@@ -170,7 +170,11 @@ namespace OHOS {
         bufferqueue->IsPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
         bufferqueue->ListenerBufferReleasedCb(buffer, syncFence);
         bufferqueue->OnBufferDeleteCbForHardwareThreadLocked(buffer);
-        bufferqueue->DeleteBufferInCache(sequence);
+        {
+            std::mutex mutex;
+            std::unique_lock<std::mutex> lock(mutex);
+            bufferqueue->DeleteBufferInCache(sequence, lock);
+        }
         sptr<OHOS::SurfaceBuffer> buffer2 = new SurfaceBufferImpl();
         bufferqueue->SetSurfaceBufferGlobalAlphaUnlocked(buffer2);
         int32_t alpha;

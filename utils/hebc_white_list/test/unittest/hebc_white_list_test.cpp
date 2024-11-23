@@ -23,8 +23,8 @@ class HebcWhilteListTest : public testing::Test {
 public:
     static void SetUpTestSuite(void);
     static void TearDownTestSuite(void);
-    void SetUp();
-    void TearDown();
+    void SetUp() override;
+    void TearDown() override;
 };
 
 void HebcWhilteListTest::SetUpTestSuite(void) {}
@@ -50,6 +50,6 @@ HWTEST_F(HebcWhilteListTest, Check001, Function | MediumTest | Level2)
     std::string appName = "";
     HebcWhiteList::GetInstance().GetApplicationName(appName);
     bool isInHebcList = HebcWhiteList::GetInstance().Check(appName);
-    ASSERT_TRUE(isInHebcList == false);
+    ASSERT_EQ(false, isInHebcList);
 }
 } // namespace OHOS::Rosen

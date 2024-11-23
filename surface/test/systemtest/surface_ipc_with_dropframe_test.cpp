@@ -174,7 +174,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
             code = SET_DESIRED_PRESENT_TIMESTAMP;
             OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, desiredPresentTimestamp);
         }
-        if (i == 2) {
+        if (i == bufferNum - 1) {
             sRet = SetData(nativeWindowBuffer->sfbuffer, pSurface);
             if (sRet != OHOS::GSERROR_OK) {
                 data = sRet;
@@ -256,7 +256,7 @@ HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
-    int64_t data = 2;
+    int64_t data = 3;
     write(pipeFd[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     read(pipeFd[0], &data, sizeof(data));

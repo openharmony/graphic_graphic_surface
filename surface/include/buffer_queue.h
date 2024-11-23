@@ -21,7 +21,6 @@
 #include <vector>
 #include <mutex>
 
-#include <buffer_producer_listener.h>
 #include <ibuffer_consumer_listener.h>
 #include <ibuffer_producer.h>
 #include "iconsumer_surface.h"
@@ -71,6 +70,8 @@ using BufferElement = struct BufferElement {
      */
     bool isAutoTimestamp;
 };
+
+using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
 
 class BufferQueue : public RefBase {
 public:
@@ -234,8 +235,8 @@ private:
                                                  uint64_t uiTimestamp);
     void DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
                               int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
-                              std::vector<BufferElement*> &dropBufferElements);
-    void ReleaseDropBuffers(const std::vector<BufferElement*> &dropBufferElements);
+                              std::vector<BufferAndFence> &dropBuffers);
+    void ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

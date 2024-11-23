@@ -835,7 +835,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
     if (isShared_ || expectPresentTimestamp <= 0) {
         return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
     }
-    std::vector<BufferElement*> dropBufferElements;
+    std::vector<BufferAndFence> dropBuffers;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
@@ -870,7 +870,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
                 uniqueId_, frontBufferElement.buffer->GetSeqNum(), frontBufferElement.desiredPresentTimestamp,
                 expectPresentTimestamp);
             DropFirstDirtyBuffer(frontBufferElement, secondBufferElement, frontDesiredPresentTimestamp,
-                                 frontIsAutoTimestamp, dropBufferElements);
+                                 frontIsAutoTimestamp, dropBuffers);
         }
         if (!frontIsAutoTimestamp && !IsPresentTimestampReady(frontDesiredPresentTimestamp, expectPresentTimestamp)) {
             SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
@@ -878,31 +878,28 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             return GSERROR_NO_BUFFER_READY;
         }
     }
-    ReleaseDropBuffers(dropBufferElements);
+    ReleaseDropBuffers(dropBuffers);
     return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
 }
 
 void BufferQueue::DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
                                        int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
-                                       std::vector<BufferElement*> &dropBufferElements)
+                                       std::vector<BufferAndFence> &dropBuffers)
 {
     dirtyList_.pop_front();
     frontBufferElement.state = BUFFER_STATE_ACQUIRED;
-    dropBufferElements.push_back(&frontBufferElement);
+    dropBuffers.emplace_back(frontBufferElement.buffer, frontBufferElement.fence);
     frontDesiredPresentTimestamp = secondBufferElement.desiredPresentTimestamp;
     frontIsAutoTimestamp = secondBufferElement.isAutoTimestamp;
 }
 
-void BufferQueue::ReleaseDropBuffers(const std::vector<BufferElement*> &dropBufferElements)
+void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
 {
-    for (const auto& dropBufferElement : dropBufferElements) {
-        if (dropBufferElement == nullptr) {
-            continue;
-        }
-        auto ret = ReleaseBuffer(dropBufferElement->buffer, dropBufferElement->fence);
+    for (auto& dropBuffer : dropBuffers) {
+        auto ret = ReleaseBuffer(dropBuffer.first, dropBuffer.second);
         if (ret != GSERROR_OK) {
-            BLOGE("DropBuffer failed, ret: %{public}d, sequence: %{public}u, uniqueId: %{public}" PRIu64 ".",
-                ret, dropBufferElement->buffer->GetSeqNum(), uniqueId_);
+            BLOGE("DropBuffer failed, ret: %{public}d, sequeue: %{public}u, uniqueId: %{public}" PRIu64 ".",
+                ret, dropBuffer.first->GetSeqNum(), uniqueId_);
         }
     }
 }

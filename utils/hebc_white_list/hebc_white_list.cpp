@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-#include "config_policy_utils.h"
-#include "hebc_white_list.h"
-#include "buffer_log.h"
 #include <unistd.h>
 #include <fstream>
 #include <json/json.h>
+#include "config_policy_utils.h"
+#include "buffer_log.h"
+#include "hebc_white_list.h"
 
 namespace OHOS {
 namespace {

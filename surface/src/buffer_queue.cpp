@@ -1017,13 +1017,13 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
         return SURFACE_ERROR_UNKOWN;
     }
 
+    bufferImpl->SetSurfaceBufferScalingMode(scalingMode_);
     BufferElement ele = {
         .buffer = bufferImpl,
         .state = BUFFER_STATE_REQUESTED,
         .isDeleting = false,
         .config = config,
         .fence = SyncFence::InvalidFence(),
-        .scalingMode = scalingMode_,
     };
 
     if (config.usage & BUFFER_USAGE_PROTECTED) {
@@ -1150,13 +1150,13 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
                 sequence, uniqueId_);
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
+        buffer->SetSurfaceBufferScalingMode(scalingMode_);
         BufferElement ele;
         ele = {
             .buffer = buffer,
             .isDeleting = false,
             .config = buffer->GetBufferRequestConfig(),
             .fence = SyncFence::InvalidFence(),
-            .scalingMode = scalingMode_,
         };
         if (invokerType == InvokerType::PRODUCER_INVOKER) {
             ele.state = BUFFER_STATE_REQUESTED;
@@ -1225,6 +1225,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
         return AttachBufferUpdateStatus(lock, sequence, timeOut);
     }
 
+    buffer->SetSurfaceBufferScalingMode(scalingMode_);
     BufferElement ele = {
         .buffer = buffer,
         .state = BUFFER_STATE_ATTACHED,
@@ -1233,7 +1234,6 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
             .format = buffer->GetFormat(), .usage = buffer->GetUsage(), .timeout = timeOut,
         },
         .damages = { { .w = buffer->GetWidth(), .h = buffer->GetHeight(), } },
-        .scalingMode = scalingMode_,
     };
     AttachBufferUpdateBufferInfo(buffer);
     int32_t usedSize = static_cast<int32_t>(GetUsedSize());
@@ -1686,7 +1686,7 @@ GSError BufferQueue::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    bufferQueueCache_[sequence].scalingMode = scalingMode;
+    bufferQueueCache_[sequence].buffer->SetSurfaceBufferScalingMode(scalingMode);
     return GSERROR_OK;
 }
 
@@ -1694,7 +1694,7 @@ GSError BufferQueue::SetScalingMode(ScalingMode scalingMode)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
-        it->second.scalingMode = scalingMode;
+        it->second.buffer->SetSurfaceBufferScalingMode(scalingMode);
     }
     scalingMode_ = scalingMode;
     return GSERROR_OK;
@@ -1706,7 +1706,7 @@ GSError BufferQueue::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    scalingMode = bufferQueueCache_.at(sequence).scalingMode;
+    scalingMode = bufferQueueCache_.at(sequence).buffer->GetSurfaceBufferScalingMode();
     return GSERROR_OK;
 }
 
@@ -1915,7 +1915,7 @@ void BufferQueue::DumpCache(std::string &result)
             std::to_string(element.config.colorGamut) + ", " +
             std::to_string(element.config.transform) + "],";
         DumpMetadata(result, element);
-        result += " scalingMode = " + std::to_string(element.scalingMode) + ",";
+        result += " scalingMode = " + std::to_string(element.buffer->GetSurfaceBufferScalingMode()) + ",";
         result += " HDR = " + std::to_string(element.hdrMetaDataType) + ", ";
 
         double bufferMemSize = 0;

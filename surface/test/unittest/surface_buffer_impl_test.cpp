@@ -286,4 +286,24 @@ HWTEST_F(SurfaceBufferImplTest, BufferWrapper001, Function | MediumTest | Level2
     buffer->SetBufferWrapper(wrapper);
     buffer->GetBufferWrapper();
 }
+
+/*
+* Function: SetSurfaceBufferScalingMode&GetSurfaceBufferScalingMode
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call GetSurfaceBufferScalingMode and check default is SCALING_MODE_SCALE_TO_WINDOW
+*                  3. call SetSurfaceBufferScalingMode and GetSurfaceBufferScalingMode and check ret
+*                  4. repeatly call SetSurfaceBufferScalingMode and GetSurfaceBufferScalingMode and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    buffer->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_CROP);
+    ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_CROP);
+    buffer->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+}
 }

@@ -161,7 +161,12 @@ public:
         (void)func;
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) = 0;
+    virtual GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false)
+    {
+        (void)func;
+        (void)isForUniRedraw;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError UnregisterConsumerListener()
     {
         return GSERROR_NOT_SUPPORT;
@@ -262,7 +267,10 @@ public:
         return nullptr;
     }
 
-    virtual bool QueryIfBufferAvailable() = 0;
+    virtual bool QueryIfBufferAvailable()
+    {
+        return false;
+    }
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                 BufferFlushConfigWithDamages &config)
     {

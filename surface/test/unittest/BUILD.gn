@@ -38,6 +38,7 @@ group("unittest") {
     ":producer_surface_delegator_test",
     ":producer_surface_test",
     ":surface_buffer_impl_test",
+    ":surface_test",
     ":surface_utils_test",
     ":transact_surface_delegator_stub_test",
   ]
@@ -269,6 +270,22 @@ ohos_unittest("buffer_utils_test") {
 }
 
 ## UnitTest buffer_utils_test }}}
+
+## UnitTest surface_test {{{
+ohos_unittest("surface_test") {
+  module_out_path = module_out_path
+
+  sources = [ "surface_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
+}
+
+## UnitTest surface_test }}}
 
 ## Build surface_test_common.a {{{
 config("surface_test_common_public_config") {

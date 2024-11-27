@@ -28,6 +28,8 @@ ohos_fuzztest("SurfaceBufferFuzzTest") {
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
+    "-Dprivate=public",
+    "-Dprotected=public",
   ]
   sources = [ "surfacebuffer_fuzzer.cpp" ]
   deps = [ "$graphic_surface_root/surface:surface" ]

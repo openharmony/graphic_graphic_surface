@@ -329,6 +329,19 @@ GSError ConsumerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, b
     if (func == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    if (isForUniRedraw) {
+        if (hasRegistercallBackForRedraw) {
+            return GSERROR_OK;
+        } else {
+            hasRegistercallBackForRedraw = true;
+        }
+    } else {
+        if (hasRegistercallBackForRT) {
+            return GSERROR_OK;
+        } else {
+            hasRegistercallBackForRT = true;
+        }
+    }
     return consumer_->RegisterDeleteBufferListener(func, isForUniRedraw);
 }
 

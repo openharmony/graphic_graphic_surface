@@ -49,7 +49,6 @@ namespace OHOS {
 
         // test
         OH_NativeBuffer* buffer = OH_NativeBuffer_Alloc(&config);
-        CreateNativeWindowBufferFromNativeBuffer(buffer);
         OH_NativeBuffer_GetSeqNum(buffer);
         OH_NativeBuffer_GetBufferHandle(buffer);
         OH_NativeBuffer_GetNativeBufferConfig(buffer, &checkConfig);
@@ -67,6 +66,7 @@ namespace OHOS {
         int32_t setSize = GetData<int32_t>() % 100000;
         uint8_t *metadata = (uint8_t *)malloc(setSize * sizeof(uint8_t));
         OH_NativeBuffer_SetMetadataValue(buffer, metadataKey, setSize, metadata);
+        free(metadata);
         int32_t getSize;
         uint8_t *getMetadata;
         OH_NativeBuffer_GetMetadataValue(buffer, metadataKey, &getSize, &getMetadata);
@@ -75,7 +75,7 @@ namespace OHOS {
         OH_NativeBuffer_Unreference(buffer);
         OH_NativeBuffer_Map(buffer, &virAddr);
         OH_NativeBuffer_Unmap(buffer);
-        OH_NativeBuffer_Unreference(buffer);
+        DestroyNativeWindowBuffer(nativeWindowBuffer);
         OH_NativeBuffer_Unreference(buffer);
 
         return true;

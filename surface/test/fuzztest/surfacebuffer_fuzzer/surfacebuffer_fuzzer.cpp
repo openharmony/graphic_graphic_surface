@@ -141,6 +141,7 @@ namespace OHOS {
         bool flag = GetData<bool>();
         surfaceBuffer->SetConsumerAttachBufferFlag(flag);
         surfaceBuffer->GetConsumerAttachBufferFlag();
+        surfaceBuffer->FreeBufferHandleLocked();
 
         return true;
     }

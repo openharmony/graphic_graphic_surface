@@ -181,8 +181,6 @@ namespace OHOS {
         bufferqueue->GetGlobalAlpha(alpha);
         std::string result;
         bufferqueue->DumpCache(result);
-        BufferElement element = GetData<BufferElement>();
-        bufferqueue->DumpMetadata(result, element);
         bufferqueue->GetAvailableBufferCount();
     }
 

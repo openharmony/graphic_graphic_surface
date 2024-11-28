@@ -111,6 +111,10 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         ret = producer_->RequestBuffer(config, bedataimpl, retval);
+#ifdef HIPERF_TRACE_ENABLE
+        BLOGE("hiperf_dsamp|hiperf RequestBuffer %{public}lx %{public}u %{public}u %{public}u",
+            config.usage, config.format, config.width, config.height);
+#endif
         if (ret != GSERROR_OK) {
             if (ret == GSERROR_NO_CONSUMER) {
                 CleanCacheLocked(false);

@@ -188,6 +188,10 @@ namespace OHOS {
         }
         bqp->FlushBuffers(sequences, bedataimpls, fences, flushConfigs);
         BufferQueueProducerFuzzTest1(bqp);
+        listener = nullptr;
+        buffer = nullptr;
+        bqp = nullptr;
+        bq = nullptr;
         return true;
     }
 }

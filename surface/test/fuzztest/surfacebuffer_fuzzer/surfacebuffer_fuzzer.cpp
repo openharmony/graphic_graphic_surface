@@ -104,7 +104,7 @@ namespace OHOS {
         std::string valueStr = GetStringFromData(STR_LEN);
 
         // test
-        sptr<SurfaceBuffer> surfaceBuffer = new SurfaceBufferImpl(seqNum);
+        sptr<SurfaceBufferImpl> surfaceBuffer = new SurfaceBufferImpl(seqNum);
         surfaceBuffer->SetSurfaceBufferColorGamut(colorGamut);
         surfaceBuffer->SetSurfaceBufferTransform(transform);
         surfaceBuffer->SetSurfaceBufferWidth(width);

@@ -667,6 +667,22 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
     return GSERROR_HDI_ERROR;
 }
 
+void SurfaceBufferImpl::SetCropMetadata(const Rect& crop)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    crop_ = crop;
+}
+
+bool SurfaceBufferImpl::GetCropMetadata(Rect& crop)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (crop_.w <= 0 || crop_.h <= 0) {
+        return false;
+    }
+    crop = crop_;
+    return true;
+}
+
 BufferRequestConfig SurfaceBufferImpl::GetBufferRequestConfig() const
 {
     std::lock_guard<std::mutex> lock(mutex_);

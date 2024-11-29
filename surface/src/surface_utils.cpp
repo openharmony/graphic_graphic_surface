@@ -160,7 +160,7 @@ void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
 }
 
 void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
-    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
+    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
     if (buffer == nullptr) {
         return;
@@ -283,7 +283,7 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
  * @param crop Rectangle defining the region of interest for cropping
  */
 void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
-    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
+    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
     if (buffer == nullptr) {
         return;
@@ -334,7 +334,7 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
 }
 
 void SurfaceUtils::ComputeBufferMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
-    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
+    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
     ComputeTransformMatrixV2(matrix, matrixSize, buffer, transform, crop);
 }

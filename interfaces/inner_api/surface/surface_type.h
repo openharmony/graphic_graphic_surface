@@ -223,11 +223,24 @@ using GraphicPresentTimestamp = struct {
     int64_t time;                         /**< Present timestamp value */
 };
 
-using Rect = struct {
+using Rect = struct Rect {
     int32_t x;
     int32_t y;
     int32_t w;
     int32_t h;
+
+    bool operator==(const Rect& other) const
+    {
+        return x == other.x &&
+               y == other.y &&
+               w == other.w &&
+               h == other.h;
+    }
+
+    bool operator!=(const Rect& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 using ScalingMode = enum {

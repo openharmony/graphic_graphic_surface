@@ -80,6 +80,9 @@ public:
     GSError ListMetadataKeys(std::vector<uint32_t>& keys) override;
     GSError EraseMetadataKey(uint32_t key) override;
 
+    void SetCropMetadata(const Rect& crop) override;
+    bool GetCropMetadata(Rect& crop) override;
+
     GSError WriteBufferRequestConfig(MessageParcel &parcel) override;
     GSError ReadBufferRequestConfig(MessageParcel &parcel) override;
     BufferRequestConfig GetBufferRequestConfig() const override;
@@ -109,6 +112,7 @@ private:
     BufferRequestConfig bufferRequestConfig_ = {0, 0, 0, 0, 0, 0};
     bool isConsumerAttachBufferFlag_ = false;
     std::map<uint32_t, std::vector<uint8_t>> metaDataCache_;
+    Rect crop_ = {0, 0, 0, 0};
 };
 } // namespace OHOS
 

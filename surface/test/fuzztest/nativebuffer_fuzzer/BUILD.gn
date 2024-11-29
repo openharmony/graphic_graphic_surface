@@ -15,7 +15,7 @@
 import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
-module_output_path = "graphic_surface/graphic_surface"
+module_output_path = "graphic_2d/graphic_surface"
 
 ##############################fuzztest##########################################
 ohos_fuzztest("NativeBufferFuzzTest") {

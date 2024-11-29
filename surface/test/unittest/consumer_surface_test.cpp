@@ -32,6 +32,7 @@ class ConsumerSurfaceTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
+    static void deleteBuffer(int32_t bufferId);
     void SetUp() override;
     void TearDown() override;
 
@@ -82,6 +83,10 @@ void ConsumerSurfaceTest::SetUpTestCase()
 void ConsumerSurfaceTest::TearDownTestCase()
 {
     cs = nullptr;
+}
+
+void ConsumerSurfaceTest::deleteBuffer(int32_t bufferId)
+{
 }
 
 void ConsumerSurfaceTest::SetUp()
@@ -894,6 +899,82 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener002, Function | Medium
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ret = surface_->RegisterDeleteBufferListener(func, true);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: RegisterDeleteBufferListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener003, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(surface_->hasRegistercallBackForRT_, true);
+}
+
+/*
+* Function: RegisterDeleteBufferListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener004, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+    surface_->hasRegistercallBackForRT_ = true;
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: RegisterDeleteBufferListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener005, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, true);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(surface_->hasRegistercallBackForRedraw_, true);
+}
+
+/*
+* Function: RegisterDeleteBufferListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener006, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+    surface_->hasRegistercallBackForRedraw_ = true;
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, true);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
 /*

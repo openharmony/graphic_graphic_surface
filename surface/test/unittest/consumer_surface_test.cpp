@@ -902,12 +902,12 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener002, Function | Medium
 }
 
 /*
-* Function: RegisterDeleteBufferListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
-*                  2. check ret
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener003, Function | MediumTest | Level2)
 {
@@ -921,12 +921,12 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener003, Function | Medium
 }
 
 /*
-* Function: RegisterDeleteBufferListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
-*                  2. check ret
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener004, Function | MediumTest | Level2)
 {
@@ -940,12 +940,12 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener004, Function | Medium
 }
 
 /*
-* Function: RegisterDeleteBufferListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
-*                  2. check ret
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener005, Function | MediumTest | Level2)
 {
@@ -959,12 +959,12 @@ HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener005, Function | Medium
 }
 
 /*
-* Function: RegisterDeleteBufferListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
-*                  2. check ret
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterDeleteBufferListener006, Function | MediumTest | Level2)
 {

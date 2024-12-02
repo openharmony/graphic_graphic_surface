@@ -701,11 +701,6 @@ GSError ProducerSurface::UnRegisterReleaseListenerWithFence()
     return producer_->UnRegisterReleaseListenerWithFence();
 }
 
-GSError ProducerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
 GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)
 {
     if (func == nullptr) {

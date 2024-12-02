@@ -84,13 +84,13 @@ BufferQueue::BufferQueue(const std::string &name)
     : name_(name), uniqueId_(GetUniqueIdImpl()), isLocalRender_(IsLocalRender())
 {
     BLOGD("BufferQueue ctor, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+    acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
 
     if (isLocalRender_) {
         if (!HebcWhiteList::GetInstance().Init()) {
             BLOGW("HebcWhiteList init failed");
         }
     }
-    acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
 }
 
 BufferQueue::~BufferQueue()
@@ -1447,13 +1447,8 @@ uint64_t BufferQueue::GetDefaultUsage()
 void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock)
 {
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
-    for (auto &[id, ele] : bufferQueueCache_) {
+    for (auto &[id, _] : bufferQueueCache_) {
         OnBufferDeleteForRS(id);
-
-        if (name_  == "RosenWeb") {
-            BLOGD("ClearLocked, bufferFd: %{public}d, refCount: %{public}d.",
-                ele.buffer->GetBufferHandle()->fd, ele.buffer->GetSptrRefCount());
-        }
     }
     bufferQueueCache_.clear();
     freeList_.clear();

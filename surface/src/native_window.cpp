@@ -259,7 +259,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
 
 int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buffer, int *fenceFd, float matrix[16])
 {
-    if (window == nullptr || buffer == nullptr || fenceFd == nullptr || window->surface == nullptr) {
+    if (window == nullptr || buffer == nullptr || window->surface == nullptr || fenceFd == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
@@ -602,7 +602,7 @@ int32_t NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32
                                 const OHHDRMetaData *metaData)
 {
     if (window == nullptr || window->surface == nullptr ||
-        size <= 0 ||size > META_DATA_MAX_SIZE || metaData == nullptr) {
+        size <= 0 || size > META_DATA_MAX_SIZE || metaData == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 

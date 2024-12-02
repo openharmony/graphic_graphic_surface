@@ -119,7 +119,9 @@ public:
     GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener);
     GSError RegisterReleaseListener(OnReleaseFunc func);
     GSError RegisterProducerReleaseListener(sptr<IProducerListener> listener);
+    GSError RegisterProducerReleaseListenerWithFence(sptr<IProducerListener> listener);
     GSError UnRegisterProducerReleaseListener();
+    GSError UnRegisterProducerReleaseListenerWithFence();
     GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false);
     GSError UnregisterConsumerListener();
 
@@ -266,6 +268,7 @@ private:
     OnReleaseFunc onBufferRelease_ = nullptr;
     std::mutex onBufferReleaseMutex_;
     sptr<IProducerListener> producerListener_ = nullptr;
+    sptr<IProducerListener> producerListenerWithFence_ = nullptr;
     OnDeleteBufferFunc onBufferDeleteForRSMainThread_;
     OnDeleteBufferFunc onBufferDeleteForRSHardwareThread_;
     std::condition_variable waitReqCon_;

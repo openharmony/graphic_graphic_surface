@@ -61,6 +61,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_UNIQUE_ID, GetUniqueIdRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_CACHE, CleanCacheRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, RegisterReleaseListenerRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE, RegisterReleaseListenerWithFenceRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORM, SetTransformRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, GetNameAndUniqueIdRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT, DisconnectRemote),
@@ -72,6 +73,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GO_BACKGROUND, GoBackgroundRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, GetPresentTimestampRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, UnRegisterReleaseListenerRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE, UnRegisterReleaseListenerWithFenceRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, GetLastFlushedBufferRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORM, GetTransformRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, AttachBufferToQueueRemote),
@@ -567,10 +569,38 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::RegisterReleaseListenerWithFenceRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
+    if (listenerObject == nullptr) {
+        if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_REPLY;
+    }
+    sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    GSError sRet = RegisterReleaseListenerWithFence(listener);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
 int32_t BufferQueueProducer::UnRegisterReleaseListenerRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     GSError sRet = UnRegisterReleaseListener();
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::UnRegisterReleaseListenerWithFenceRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    GSError sRet = UnRegisterReleaseListenerWithFence();
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1134,12 +1164,28 @@ GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> lis
     return bufferQueue_->RegisterProducerReleaseListener(listener);
 }
 
+GSError BufferQueueProducer::RegisterReleaseListenerWithFence(sptr<IProducerListener> listener)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->RegisterProducerReleaseListenerWithFence(listener);
+}
+
 GSError BufferQueueProducer::UnRegisterReleaseListener()
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->UnRegisterProducerReleaseListener();
+}
+
+GSError BufferQueueProducer::UnRegisterReleaseListenerWithFence()
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->UnRegisterProducerReleaseListenerWithFence();
 }
 
 bool BufferQueueProducer::HandleDeathRecipient(sptr<IRemoteObject> token)

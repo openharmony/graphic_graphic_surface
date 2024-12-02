@@ -77,7 +77,9 @@ public:
     GSError GoBackground() override;
 
     GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;
+    GSError RegisterReleaseListenerWithFence(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
+    GSError UnRegisterReleaseListenerWithFence() override;
 
     GSError SetTransform(GraphicTransformType transform) override;
     GSError GetTransform(GraphicTransformType &transform) override;
@@ -143,7 +145,9 @@ private:
     int32_t GetUniqueIdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t CleanCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RegisterReleaseListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t RegisterReleaseListenerWithFenceRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t UnRegisterReleaseListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t UnRegisterReleaseListenerWithFenceRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetTransformRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetNameAndUniqueIdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DisconnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

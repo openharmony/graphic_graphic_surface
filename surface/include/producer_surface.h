@@ -88,7 +88,6 @@ public:
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
     GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override;
     GSError UnRegisterReleaseListener() override;
-    GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false) override;
 
     void Dump(std::string &result) const override {};
 

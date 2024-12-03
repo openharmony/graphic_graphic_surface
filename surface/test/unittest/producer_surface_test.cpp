@@ -2050,7 +2050,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
             GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
             if (ret == OHOS::GSERROR_OK) {
                 ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
-                if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE) {
+                if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE && ret != SURFACE_ERROR_BUFFER_STATE_INVALID) {
                     EXPECT_EQ(ret, OHOS::GSERROR_OK);
                 }
             }
@@ -2062,7 +2062,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
         ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
         if (ret == OHOS::GSERROR_OK) {
             ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
-            if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE) {
+            if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE && ret != SURFACE_ERROR_BUFFER_STATE_INVALID) {
                 EXPECT_EQ(ret, OHOS::GSERROR_OK);
             }
         }

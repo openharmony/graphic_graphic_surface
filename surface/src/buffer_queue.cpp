@@ -905,7 +905,6 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
             BLOGE("seq: %{public}u, OnBufferReleased faile, uniqueId: %{public}" PRIu64 ".",
                 buffer->GetSeqNum(), uniqueId_);
         }
-        
     }
 
     if (listenerWithFence != nullptr) {

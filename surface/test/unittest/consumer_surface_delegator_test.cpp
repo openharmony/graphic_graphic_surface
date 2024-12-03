@@ -170,7 +170,6 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest
     MessageOption option;
     MessageParcel dataQueue;
     dataQueue.WriteInt32(10);
-    dataQueue.WriteFileDescriptor(20);
     int ret = consumerDelegator->OnRemoteRequest(code, dataQueue, reply, option);
     ASSERT_EQ(ret, ERR_NONE);
 }

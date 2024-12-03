@@ -184,6 +184,8 @@ private:
     std::map<std::string, OnUserDataChangeFunc> onUserDataChange_;
     std::mutex lockMutex_;
     uint64_t uniqueId_ = 0;
+    std::atomic<bool> hasRegistercallBackForRT_ = false;
+    std::atomic<bool> hasRegistercallBackForRedraw_ = false;
 };
 } // namespace OHOS
 

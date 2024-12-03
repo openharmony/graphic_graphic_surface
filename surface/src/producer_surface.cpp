@@ -107,10 +107,9 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     IBufferProducer::RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
-    GSError ret;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        ret = producer_->RequestBuffer(config, bedataimpl, retval);
+        GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
         if (ret != GSERROR_OK) {
             if (ret == GSERROR_NO_CONSUMER) {
                 CleanCacheLocked(false);
@@ -127,14 +126,12 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
         }
         isDisconnected_ = false;
         AddCacheLocked(bedataimpl, retval, config);
-    }
-    buffer = retval.buffer;
-    fence = retval.fence;
+        buffer = retval.buffer;
+        fence = retval.fence;
 
-    OutputRequestBufferLog(buffer);
-
-    if (SetMetadataValue(buffer) != GSERROR_OK) {
-        BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
+        if (SetMetadataValue(buffer) != GSERROR_OK) {
+            BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
+        }
     }
     return ret;
 }
@@ -173,22 +170,6 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
         ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str())));
     }
     return ret;
-}
-
-void ProducerSurface::OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer)
-{
-    if (name_ != "RosenWeb") {
-        return;
-    }
-
-    static uint64_t fdRec[1024] = { 0 };
-    int32_t fd = buffer->GetBufferHandle()->fd;
-    int32_t fdTmp = fd < 1024 ? fd : fd % 1024;
-
-    if (fdRec[fdTmp] != queueId_) {
-        BLOGD("RequestBuffer, surfaceId %{public}" PRIu64 ", bufferFd: %{public}d.", queueId_, fd);
-        fdRec[fdTmp] = queueId_;
-    }
 }
 
 GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
@@ -464,11 +445,6 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     };
     RegisterReleaseListener(releaseBufferCallBack);
     return GSERROR_OK;
-}
-
-bool ProducerSurface::QueryIfBufferAvailable()
-{
-    return false;
 }
 
 uint32_t ProducerSurface::GetQueueSize()

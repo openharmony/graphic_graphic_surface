@@ -69,8 +69,6 @@ public:
 
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) override;
 
-    bool QueryIfBufferAvailable() override;
-
     uint32_t GetQueueSize() override;
     GSError SetQueueSize(uint32_t queueSize) override;
 
@@ -150,7 +148,6 @@ private:
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
     GSError SetMetadataValue(sptr<SurfaceBuffer>& buffer);
-    void OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
 
     mutable std::mutex mutex_;

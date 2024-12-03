@@ -107,31 +107,30 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     IBufferProducer::RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
-        if (ret != GSERROR_OK) {
-            if (ret == GSERROR_NO_CONSUMER) {
-                CleanCacheLocked(false);
-            }
-            /**
-             * if server is connected, but result is failed.
-             * client needs to synchronize status.
-             */
-            if (retval.isConnected) {
-                isDisconnected_ = false;
-            }
-            BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
-            return ret;
-        }
-        isDisconnected_ = false;
-        AddCacheLocked(bedataimpl, retval, config);
-        buffer = retval.buffer;
-        fence = retval.fence;
 
-        if (SetMetadataValue(buffer) != GSERROR_OK) {
-            BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
+    if (ret != GSERROR_OK) {
+        if (ret == GSERROR_NO_CONSUMER) {
+            CleanCacheLocked(false);
         }
+        /**
+         * if server is connected, but result is failed.
+         * client needs to synchronize status.
+         */
+        if (retval.isConnected) {
+            isDisconnected_ = false;
+        }
+        BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+        return ret;
+    }
+    isDisconnected_ = false;
+    AddCacheLocked(bedataimpl, retval, config);
+    buffer = retval.buffer;
+    fence = retval.fence;
+
+    if (SetMetadataValue(buffer) != GSERROR_OK) {
+        BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
     }
     return ret;
 }

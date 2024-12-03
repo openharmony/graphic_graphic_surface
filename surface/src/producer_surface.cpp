@@ -129,14 +129,13 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     buffer = retval.buffer;
     fence = retval.fence;
-    ret = SetMetadataValve(buffer);
-    if (ret != GSERROR_OK) {
-        BLOGD("SetMetadataValve ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+    if (SetMetadataValue(buffer) != GSERROR_OK) {
+        BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
     }
     return ret;
 }
 
-GSError ProducerSurface::SetMetadataValve(sptr<SurfaceBuffer>& buffer)
+GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
 {
     GSError ret = GSERROR_OK;
     std::vector<uint8_t> metaData;
@@ -152,9 +151,9 @@ GSError ProducerSurface::SetMetadataValve(sptr<SurfaceBuffer>& buffer)
     if (!value.empty()) {
         metaData.resize(value.size());
         metaData.assign(value.begin(), value.end());
-        ret = MetadataHelper::SetHDRStaticMetadata(buffer, metaData);
+        ret = MetadataHelper::SetHDRDynamicMetadata(buffer, metaData);
         if (ret != GSERROR_OK) {
-            BLOGD("SetHDRStaticMetadata ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+            BLOGD("SetHDRDynamicMetadata ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
             return ret;
         }
     }

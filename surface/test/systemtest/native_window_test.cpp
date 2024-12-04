@@ -168,11 +168,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, Function | Med
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -288,11 +288,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, Function | Med
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -401,11 +401,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId001, F
 
     g_onBufferAvailable_ = 0;
     write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -558,11 +558,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId002, F
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -696,11 +696,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetLastFlushedBufferV2001, Function |
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -786,11 +786,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeObjectReference001, Function | 
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -894,11 +894,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetSurfaceId001, Function | MediumTes
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -1065,11 +1065,11 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
-    close(pipeFd[0]);
-    close(pipeFd[1]);
     if (thread.joinable()) {
         thread.join();
     }
+    close(pipeFd[0]);
+    close(pipeFd[1]);
     producer = nullptr;
     cSurface = nullptr;
 }

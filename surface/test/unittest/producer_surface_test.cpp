@@ -1602,6 +1602,23 @@ HWTEST_F(ProducerSurfaceTest, ReleaseListener001, Function | MediumTest | Level2
 }
 
 /*
+* Function: RegisterReleaseListenerWithFence and UnRegisterReleaseListenerWithFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterReleaseListenerWithFence with producer_ is nullptr and check ret
+*                  2. call UnRegisterReleaseListenerWithFence with producer_ is nullptr and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, ReleaseListenerWithFence001, Function | MediumTest | Level2)
+{
+    OnReleaseFuncWithFence releaseFuncWithFence;
+    GSError ret = surface_->RegisterReleaseListenerWithFence(releaseFuncWithFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->UnRegisterReleaseListenerWithFence();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: RegisterUserDataChangeListener
 * Type: Function
 * Rank: Important(2)

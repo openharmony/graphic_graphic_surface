@@ -25,6 +25,7 @@ namespace {
 const std::string CONFIG_FILE_RELATIVE_PATH = "etc/graphics_game/config/graphics_game.json";
 const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
+static constexpr int MAX_HEBC_WHITELIST_NUMBER = 10000; // hebcwhiteList size not exceed 10000
 } // end of anonymous namespace
 
 bool HebcWhiteList::Check(const std::string& appName) noexcept
@@ -70,7 +71,7 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
 
     Json::Value const hebc = root.get("HEBC", Json::Value{});
     Json::Value const appNameJson = hebc.get("AppName", Json::Value{});
-    for (unsigned int i = 0; i < appNameJson.size(); i++) {
+    for (unsigned int i = 0; i < appNameJson.size() && i < MAX_HEBC_WHITELIST_NUMBER; i++) {
         std::string name = appNameJson[i].asString();
         hebcList_.emplace_back(name);
     }

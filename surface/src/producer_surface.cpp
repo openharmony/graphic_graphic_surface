@@ -671,10 +671,6 @@ GSError ProducerSurface::UnRegisterReleaseListener()
         return GSERROR_INVALID_ARGUMENTS;
     }
     {
-        std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
-        wpPSurfaceDelegator_ = nullptr;
-    }
-    {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ != nullptr) {
             listener_->ResetReleaseFunc();

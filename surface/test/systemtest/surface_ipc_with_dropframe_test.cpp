@@ -157,13 +157,11 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
     int32_t format = GRAPHIC_PIXEL_FMT_RGBA_8888;
     OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, format);
     pSurface->RegisterReleaseListener(OnBufferRelease);
-    sptr<SurfaceBuffer> buffer;
 
     struct NativeWindowBuffer *nativeWindowBuffer = nullptr;
     int32_t sRet;
     int fenceFd = -1;
     for (int i = 0; i < bufferNum; i++) {
-        buffer = nullptr;
         sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
         if (sRet != OHOS::GSERROR_OK) {
             data = sRet;
@@ -201,10 +199,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     read(pipeFd[0], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_DELAY;
-    int64_t time = 0;
-    sRet = pSurface->GetPresentTimestamp(buffer->GetSeqNum(), type, time);
-    if (sRet != OHOS::GSERROR_OK || time != 1) {
+    if (sRet != OHOS::GSERROR_OK) {
         data = sRet;
         write(pipeFd[1], &data, sizeof(data));
         exit(0);

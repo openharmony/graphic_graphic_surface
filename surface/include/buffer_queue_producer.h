@@ -138,8 +138,8 @@ private:
     int32_t GetNameRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetDefaultWidthRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetDefaultHeightRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t GetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t GetDefaultUsageRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetUniqueIdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t CleanCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RegisterReleaseListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
@@ -161,12 +161,12 @@ private:
     int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-
     int32_t SetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+
+    int32_t SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetHdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

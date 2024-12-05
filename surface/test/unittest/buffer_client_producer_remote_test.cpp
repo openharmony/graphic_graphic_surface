@@ -617,6 +617,26 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestBuffersAndFlushBuffers, Function
 }
 
 /*
+* Function: AcquireAndReleaseLastFlushedBuffer
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call AcquireLastFlushedBuffer and check the ret
+*                  2. call ReleaseLastFlushedBuffer and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer;
+    sptr<SyncFence> fence;
+    float matrix[16];
+    GSError ret = bp->AcquireLastFlushedBuffer(buffer, fence, matrix, 16, false);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_NE(buffer, nullptr);
+    ret = bp->ReleaseLastFlushedBuffer(buffer->GetSeqNum());
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: SetBufferhold
 * Type: Function
 * Rank: Important(1)
@@ -645,26 +665,6 @@ HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, Function | 
 }
 
 /*
-* Function: AcquireAndReleaseLastFlushedBuffer
-* Type: Function
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. call AcquireLastFlushedBuffer and check the ret
-*                  2. call ReleaseLastFlushedBuffer and check the ret
- */
-HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, Function | MediumTest | Level2)
-{
-    sptr<SurfaceBuffer> buffer;
-    sptr<SyncFence> fence;
-    float matrix[16];
-    GSError ret = bp->AcquireLastFlushedBuffer(buffer, fence, matrix, 16, false);
-    EXPECT_EQ(ret, OHOS::GSERROR_OK);
-    EXPECT_NE(buffer, nullptr);
-    ret = bp->ReleaseLastFlushedBuffer(buffer->GetSeqNum());
-    EXPECT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-/*
 * Function: AttachAndDetachBuffer
 * Type: Function
 * Rank: Important(1)
@@ -687,7 +687,6 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function |
 * Rank: Important(1)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetGlobalAlpha and check the ret
-*                  2. call DetachBufferFromQueue and check the ret
  */
 HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, Function | MediumTest | Level2)
 {

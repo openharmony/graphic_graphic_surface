@@ -232,10 +232,10 @@ private:
     bool GetStatusLocked() const;
     void CallConsumerListener();
     void SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer);
-    bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
     void LogAndTraceAllBufferInBufferQueueCache();
+    bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
     void SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
-                                                 uint64_t uiTimestamp);
+                                                  uint64_t uiTimestamp);
     void DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
                               int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
                               std::vector<BufferAndFence> &dropBuffers);

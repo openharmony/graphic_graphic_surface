@@ -408,14 +408,12 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, Function | Mediu
     }
     uint8_t type = OH_NativeBuffer_MetadataType::OH_VIDEO_HDR_HLG;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
-    if (ret != GSERROR_NOT_SUPPORT)
-    { // some device not support set colorspace
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_OK);
     }
     type = OH_NativeBuffer_MetadataType::OH_VIDEO_NONE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
-    if (ret != GSERROR_NOT_SUPPORT)
-    { // some device not support set colorspace
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
     }
     ret = OH_NativeBuffer_SetMetadataValue(buffer, static_cast<OH_NativeBuffer_MetadataKey>(-1), len, outbuff);
@@ -537,8 +535,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue003, Function | Mediu
     uint8_t *resType = new uint8_t;
     int32_t typeSize = sizeof(OH_NativeBuffer_MetadataType);
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, typeSize, &type);
-    if (ret != GSERROR_NOT_SUPPORT)
-    { // some device not support set colorspace
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_OK);
     }
     ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_METADATA_TYPE, &typeSize, &resType);

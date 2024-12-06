@@ -2223,7 +2223,8 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTes
     ASSERT_EQ(pSurfaceTmp->FlushBuffers(buffers, fences, configWithDamages), OHOS::GSERROR_INVALID_ARGUMENTS);
     float matrix[16];
     bool isUseNewMatrix = false;
-    ASSERT_EQ(pSurfaceTmp->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->CancelBuffer(buffer), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);

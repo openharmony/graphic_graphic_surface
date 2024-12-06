@@ -529,7 +529,8 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     if (!parcel.ReadInt32(bufferRequestConfig_.width) || !parcel.ReadInt32(bufferRequestConfig_.height) ||
         !parcel.ReadInt32(bufferRequestConfig_.strideAlignment) || !parcel.ReadInt32(bufferRequestConfig_.format) ||
         !parcel.ReadUint64(bufferRequestConfig_.usage) || !parcel.ReadInt32(bufferRequestConfig_.timeout) ||
-        !parcel.ReadUint32(bufferRequestConfig_.colorGamut) || !parcel.ReadUint32(bufferRequestConfig_.transform) ||
+        !parcel.ReadUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
+        !parcel.ReadUint32(static_cast<uint32_t>(bufferRequestConfig_.transform)) ||
         !parcel.ReadInt32(scalingMode)) {
         BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);
         return GSERROR_API_FAILED;

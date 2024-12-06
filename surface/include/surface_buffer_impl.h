@@ -75,7 +75,7 @@ public:
                                      int32_t format, uint64_t usage);
 
     // metadata
-    GSError SetMetadata(uint32_t key, const std::vector<uint8_t>& value) override;
+    GSError SetMetadata(uint32_t key, const std::vector<uint8_t>& value, bool enableCache = true) override;
     GSError GetMetadata(uint32_t key, std::vector<uint8_t>& value) override;
     GSError ListMetadataKeys(std::vector<uint32_t>& keys) override;
     GSError EraseMetadataKey(uint32_t key) override;

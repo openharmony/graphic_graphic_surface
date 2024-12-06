@@ -233,6 +233,71 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
 }
 
 /*
+ * Function: SetMetadata
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and Alloc
+ *                  2. call Set Metadata interface with disbale cache
+                    3. check ret and metaDataCache_ should be empty
+ */
+HWTEST_F(SurfaceBufferImplTest, Metadata002, Function | MediumTest | Level2)
+{
+    using namespace HDI::Display::Graphic::Common::V1_0;
+
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl(0);
+    auto sret = sbi->Alloc(requestConfig);
+    ASSERT_EQ(sret, OHOS::GSERROR_OK);
+
+    uint32_t metadataKey = 2;
+
+    uint32_t setMetadata = 4260097;
+    std::vector<uint8_t> setData;
+    ASSERT_EQ(MetadataHelper::ConvertMetadataToVec(setMetadata, setData), OHOS::GSERROR_OK);
+    ASSERT_EQ(sbi->SetMetadata(0, setData, false), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(sbi->SetMetadata(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END, setData, false),
+        GSERROR_INVALID_ARGUMENTS);
+    sret = sbi->SetMetadata(metadataKey, setData, false);
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
+    if (sret == OHOS::GSERROR_OK) {
+        ASSERT_TRUE(sbi->metaDataCache_.empty());
+    }
+}
+
+/*
+ * Function: SetMetadata
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and Alloc
+ *                  2. call Set Metadata interface with enable cache
+                    3. check ret and metaDataCache_ size be 1
+ */
+HWTEST_F(SurfaceBufferImplTest, Metadata003, Function | MediumTest | Level2)
+{
+    using namespace HDI::Display::Graphic::Common::V1_0;
+
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl(0);
+    auto sret = sbi->Alloc(requestConfig);
+    ASSERT_EQ(sret, OHOS::GSERROR_OK);
+
+    uint32_t metadataKey = 2;
+
+    uint32_t setMetadata = 4260097;
+    std::vector<uint8_t> setData;
+    ASSERT_EQ(MetadataHelper::ConvertMetadataToVec(setMetadata, setData), OHOS::GSERROR_OK);
+    ASSERT_EQ(sbi->SetMetadata(0, setData, true), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(sbi->SetMetadata(HDI::Display::Graphic::Common::V1_1::ATTRKEY_END, setData, true),
+        GSERROR_INVALID_ARGUMENTS);
+    sret = sbi->SetMetadata(metadataKey, setData, true);
+    ASSERT_TRUE(sret == OHOS::GSERROR_OK || sret == GSERROR_HDI_ERROR);
+    if (sret == OHOS::GSERROR_OK) {
+        ASSERT_TRUE(sbi->metaDataCache_.size() == 1);
+    }
+}
+
+
+/*
 * Function: BufferRequestConfig
 * Type: Function
 * Rank: Important(2)

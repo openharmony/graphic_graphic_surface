@@ -63,6 +63,10 @@ public:
     {
         return GSERROR_OK;
     }
+    static inline GSError OnBufferReleaseWithFence(const sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence)
+    {
+        return GSERROR_OK;
+    }
     sptr<ProducerSurface> surface_ = nullptr;
     sptr<ProducerSurface> surfaceMd_ = nullptr;
 };
@@ -2191,5 +2195,90 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffersNoListener, Function | MediumTest | 
     pSurfaceTmp = nullptr;
     producerTmp = nullptr;
     cSurfTmp = nullptr;
+}
+
+/*
+* Function: ProducerSurfaceParameterNull
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ProducerSurfuce function and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTest | Level2)
+{
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(nullptr);
+    ProducerInitInfo info;
+    ASSERT_EQ(pSurfaceTmp->GetProducerInitInfo(info), OHOS::GSERROR_INVALID_ARGUMENTS);
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    BufferRequestConfig config;
+    ASSERT_EQ(pSurfaceTmp->RequestBuffer(buffer, fence, config), OHOS::GSERROR_INVALID_ARGUMENTS);
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    ASSERT_EQ(pSurfaceTmp->RequestBuffers(buffers, fences, config), OHOS::GSERROR_INVALID_ARGUMENTS);
+    BufferFlushConfigWithDamages configWithDamage;
+    ASSERT_EQ(pSurfaceTmp->FlushBuffer(buffer, fence, configWithDamage), OHOS::GSERROR_INVALID_ARGUMENTS);
+    std::vector<BufferFlushConfigWithDamages> configWithDamages;
+    ASSERT_EQ(pSurfaceTmp->FlushBuffers(buffers, fences, configWithDamages), OHOS::GSERROR_INVALID_ARGUMENTS);
+    float matrix[16];
+    bool isUseNewMatrix;
+    ASSERT_EQ(pSurfaceTmp->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->CancelBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    sptr<SurfaceBuffer> bufferTmp;
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(bufferTmp), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(bufferTmp, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(buffer, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->DetachBuffer(bufferTmp), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->DetachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetQueueSize(), 0);
+    ASSERT_EQ(pSurfaceTmp->SetQueueSize(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp->GetName();
+    ASSERT_EQ(pSurfaceTmp->GetDefaultWidth(), -1);
+    ASSERT_EQ(pSurfaceTmp->GetDefaultHeight(), -1);
+    ASSERT_EQ(pSurfaceTmp->SetTransformHint(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetDefaultUsage(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetDefaultUsage(), 0);
+    ASSERT_EQ(pSurfaceTmp->SetSurfaceSourceType(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetSurfaceSourceType(), OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT);
+    std::string appFrameworkType;
+    ASSERT_EQ(pSurfaceTmp->SetSurfaceAppFrameworkType(appFrameworkType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetSurfaceAppFrameworkType(), "");
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(OnBufferRelease), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OnReleaseFuncWithFence funcWithFence = nullptr;
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(funcWithFence), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(OnBufferReleaseWithFence), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->UnRegisterReleaseListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->IsRemote(), false);
+    ASSERT_EQ(pSurfaceTmp->CleanCache(true), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp->GetUniqueId();
+    ASSERT_EQ(pSurfaceTmp->SetTransform(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetTransform(), GraphicTransformType::GRAPHIC_ROTATE_BUTT);
+    ASSERT_EQ(pSurfaceTmp->Connect(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->Disconnect(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetScalingMode(0, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetScalingMode(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp->SetBufferHold(false);
+    std::vector<GraphicHDRMetaData> metaData;
+    ASSERT_EQ(pSurfaceTmp->SetMetaData(0, metaData), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetMetaDataSet(0, 0, metaData), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetTunnelHandle(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    int64_t time;
+    ASSERT_EQ(pSurfaceTmp->GetPresentTimestamp(0, 0, time), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetWptrNativeWindowToPSurface(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetHdrWhitePointBrightness(0.0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetSdrWhitePointBrightness(0.0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AcquireLastFlushedBuffer(buffer, fence, matrix, 0, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->ReleaseLastFlushedBuffer(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->ReleaseLastFlushedBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetGlobalAlpha(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    pSurfaceTmp = nullptr;
 }
 }

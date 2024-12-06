@@ -118,7 +118,11 @@ public:
     virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) = 0;
 
     virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) = 0;
-    virtual GSError GetGlobalAlpha(int32_t &alpha) = 0;
+    virtual GSError GetGlobalAlpha(int32_t &alpha)
+    {
+        (void)alpha;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual uint32_t GetAvailableBufferCount() const
     {
         return SURFACE_ERROR_NOT_SUPPORT;

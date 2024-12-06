@@ -1525,7 +1525,7 @@ HWTEST_F(ProducerSurfaceTest, GoBackground001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetSurfaceSourceType and check ret
 *                  2. call GetSurfaceSourceType and check ret
-*/
+ */
 HWTEST_F(ProducerSurfaceTest, SurfaceSourceType001, Function | MediumTest | Level2)
 {
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
@@ -1845,7 +1845,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
     sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
 
     GSError ret = pSurfaceTmp->SetQueueSize(3);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfigTmp = {
         .width = 0x100,
@@ -1859,7 +1859,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
     int releaseFence = -1;
     for (uint32_t i = 0; i < 3; i++) {
         ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
-        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        EXPECT_EQ(ret, OHOS::GSERROR_OK);
     }
 
     auto func = [&pSurfaceTmp](const std::string& FuncName) {
@@ -1868,12 +1868,12 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
         pSurfaceTmp->GetSurfaceSourceType();
         clock_t end = clock();
         int32_t time = (end - start) / CLOCKS_PER_SEC;
-        ASSERT_EQ(time < 1, true);
+        EXPECT_EQ(time < 1, true);
     };
     std::thread t1(func, "thread1");
 
     ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
     t1.join();
     pSurfaceTmp = nullptr;
     producerTmp = nullptr;
@@ -1896,7 +1896,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence002, Function | MediumTest
     sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
 
     GSError ret = pSurfaceTmp->SetQueueSize(3);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfigTmp = {
         .width = 0x100,
@@ -1924,7 +1924,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence002, Function | MediumTest
         if (ret == SURFACE_ERROR_NO_BUFFER) {
             break;
         } else {
-            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            EXPECT_EQ(ret, OHOS::GSERROR_OK);
         }
     }
 
@@ -1950,7 +1950,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, Function | MediumTest
     sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
 
     GSError ret = pSurfaceTmp->SetQueueSize(3);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfigTmp = {
         .width = 0x100,
@@ -1973,10 +1973,10 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, Function | MediumTest
             usleep(5);
             ret = cSurfTmp->AcquireBuffer(buffer, flushFence, timestamp, damage);
             if (ret != SURFACE_ERROR_NO_BUFFER) {
-                ASSERT_EQ(ret, OHOS::GSERROR_OK);
+                EXPECT_EQ(ret, OHOS::GSERROR_OK);
                 ret = cSurfTmp->ReleaseBuffer(buffer, -1);
                 if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE) {
-                    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+                    EXPECT_EQ(ret, OHOS::GSERROR_OK);
                 }
             }
             pSurfaceTmp->CleanCache(true);
@@ -1994,13 +1994,13 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, Function | MediumTest
         if (ret == SURFACE_ERROR_NO_BUFFER) {
             break;
         } else {
-            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            EXPECT_EQ(ret, OHOS::GSERROR_OK);
         }
         ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
         if (ret == SURFACE_ERROR_BUFFER_NOT_INCACHE) {
             continue;
         } else {
-            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            EXPECT_EQ(ret, OHOS::GSERROR_OK);
         }
     }
 
@@ -2026,7 +2026,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
     sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
 
     GSError ret = pSurfaceTmp->SetQueueSize(10);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfigTmp = {
         .width = 0x100,
@@ -2050,8 +2050,8 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
             GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
             if (ret == OHOS::GSERROR_OK) {
                 ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
-                if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE) {
-                    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+                if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE && ret != SURFACE_ERROR_BUFFER_STATE_INVALID) {
+                    EXPECT_EQ(ret, OHOS::GSERROR_OK);
                 }
             }
             pSurfaceTmp->CleanCache(true);
@@ -2062,8 +2062,8 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
         ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
         if (ret == OHOS::GSERROR_OK) {
             ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
-            if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE) {
-                ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE && ret != SURFACE_ERROR_BUFFER_STATE_INVALID) {
+                EXPECT_EQ(ret, OHOS::GSERROR_OK);
             }
         }
         pSurfaceTmp->CleanCache(true);

@@ -107,35 +107,31 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     }
     IBufferProducer::RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
-    GSError ret;
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        ret = producer_->RequestBuffer(config, bedataimpl, retval);
+
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
 #ifdef HIPERF_TRACE_ENABLE
-        BLOGE("hiperf_dsamp|hiperf RequestBuffer %{public}lx %{public}u %{public}u %{public}u",
-            config.usage, config.format, config.width, config.height);
+    BLOGW("hiperf_surface RequestBuffer %{public}lx %{public}u %{public}u %{public}u",
+        config.usage, config.format, config.width, config.height);
 #endif
-        if (ret != GSERROR_OK) {
-            if (ret == GSERROR_NO_CONSUMER) {
-                CleanCacheLocked(false);
-            }
-            /**
-             * if server is connected, but result is failed.
-             * client needs to synchronize status.
-             */
-            if (retval.isConnected) {
-                isDisconnected_ = false;
-            }
-            BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
-            return ret;
+    if (ret != GSERROR_OK) {
+        if (ret == GSERROR_NO_CONSUMER) {
+            CleanCacheLocked(false);
         }
-        isDisconnected_ = false;
-        AddCacheLocked(bedataimpl, retval, config);
+        /**
+         * if server is connected, but result is failed.
+         * client needs to synchronize status.
+         */
+        if (retval.isConnected) {
+            isDisconnected_ = false;
+        }
+        BLOGD("RequestBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+        return ret;
     }
+    isDisconnected_ = false;
+    AddCacheLocked(bedataimpl, retval, config);
     buffer = retval.buffer;
     fence = retval.fence;
-
-    OutputRequestBufferLog(buffer);
 
     if (SetMetadataValue(buffer) != GSERROR_OK) {
         BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
@@ -177,22 +173,6 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
         ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str())));
     }
     return ret;
-}
-
-void ProducerSurface::OutputRequestBufferLog(sptr<SurfaceBuffer>& buffer)
-{
-    if (name_ != "RosenWeb") {
-        return;
-    }
-
-    static uint64_t fdRec[1024] = { 0 };
-    int32_t fd = buffer->GetBufferHandle()->fd;
-    int32_t fdTmp = fd < 1024 ? fd : fd % 1024;
-
-    if (fdRec[fdTmp] != queueId_) {
-        BLOGD("RequestBuffer, surfaceId %{public}" PRIu64 ", bufferFd: %{public}d.", queueId_, fd);
-        fdRec[fdTmp] = queueId_;
-    }
 }
 
 GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
@@ -470,11 +450,6 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     return GSERROR_OK;
 }
 
-bool ProducerSurface::QueryIfBufferAvailable()
-{
-    return false;
-}
-
 uint32_t ProducerSurface::GetQueueSize()
 {
     if (producer_ == nullptr) {
@@ -671,11 +646,6 @@ GSError ProducerSurface::UnRegisterReleaseListener()
         }
     }
     return producer_->UnRegisterReleaseListener();
-}
-
-GSError ProducerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw)
-{
-    return GSERROR_NOT_SUPPORT;
 }
 
 GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)

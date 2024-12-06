@@ -138,27 +138,27 @@ HWTEST_F(SyncFenceTrackerTest, ReportEventGpuSubhealth001, Function | MediumTest
 HWTEST_F(SyncFenceTrackerTest, WaitFence001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("WaitFence001");
-    sptr<SyncFence> fence = new SyncFence(0);
+    auto fence = SyncFence::INVALID_FENCE;
 
     tracker->isGpuFence_ = true;
     tracker->isGpuEnable_ = true;
     int32_t retCode = tracker->WaitFence(fence);
-    EXPECT_EQ(retCode, -22); // 22 is EINVAL
+    EXPECT_EQ(retCode, -1);
 
     tracker->isGpuFence_ = true;
     tracker->isGpuEnable_ = false;
     tracker->WaitFence(fence);
-    EXPECT_EQ(retCode, -22);
+    EXPECT_EQ(retCode, -1);
 
     tracker->isGpuFence_ = false;
     tracker->isGpuEnable_ = true;
     tracker->WaitFence(fence);
-    EXPECT_EQ(retCode, -22);
+    EXPECT_EQ(retCode, -1);
 
     tracker->isGpuFence_ = false;
     tracker->isGpuEnable_ = false;
     tracker->WaitFence(fence);
-    EXPECT_EQ(retCode, -22);
+    EXPECT_EQ(retCode, -1);
 
     delete tracker;
 }

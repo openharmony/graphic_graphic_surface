@@ -330,16 +330,14 @@ GSError ConsumerSurface::RegisterDeleteBufferListener(OnDeleteBufferFunc func, b
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (isForUniRedraw) {
-        if (hasRegistercallBackForRedraw) {
+        bool hasRegistercallBackForRedraw = false;
+        if (!hasRegistercallBackForRedraw_.compare_exchange_strong(hasRegistercallBackForRedraw, true)) {
             return GSERROR_OK;
-        } else {
-            hasRegistercallBackForRedraw = true;
         }
     } else {
-        if (hasRegistercallBackForRT) {
+        bool hasRegistercallBackForRT = false;
+        if (!hasRegistercallBackForRT_.compare_exchange_strong(hasRegistercallBackForRT, true)) {
             return GSERROR_OK;
-        } else {
-            hasRegistercallBackForRT = true;
         }
     }
     return consumer_->RegisterDeleteBufferListener(func, isForUniRedraw);

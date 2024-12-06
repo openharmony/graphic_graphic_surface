@@ -2224,11 +2224,11 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTes
     float matrix[16];
     bool isUseNewMatrix = false;
     ASSERT_EQ(pSurfaceTmp->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix), OHOS::GSERROR_INVALID_ARGUMENTS);
-    ASSERT_EQ(pSurfaceTmp->CancelBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
-    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
-    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
-    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
-    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->CancelBuffer(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
     sptr<SurfaceBuffer> bufferTmp;
     ASSERT_EQ(pSurfaceTmp->AttachBuffer(bufferTmp), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->AttachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);

@@ -47,6 +47,8 @@ public:
         .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
         .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
         .timeout = 0,
+        .transform = GraphicTransformType::GRAPHIC_ROTATE_90,
+        .colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_NATIVE,
     };
     static inline BufferFlushConfigWithDamages flushConfig = {
         .damages = {
@@ -303,6 +305,16 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqFlu001, Function | MediumTest | Leve
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
     ret = bp->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> bufferTmp;
+    float matrix[16];
+    bool isUseNewMatrix = false;
+    ret = bp->GetLastFlushedBuffer(bufferTmp, acquireFence, matrix, isUseNewMatrix);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bufferTmp->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_NATIVE);
+    ASSERT_EQ(bufferTmp->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_90);
+    ASSERT_EQ(bufferTmp->GetSurfaceBufferWidth(), 0x100);
+    ASSERT_EQ(bufferTmp->GetSurfaceBufferHeight(), 0x100);
 }
 
 /*

@@ -134,7 +134,11 @@ public:
         (void)sequence;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-    virtual GSError SetGlobalAlpha(int32_t alpha) = 0;
+    virtual GSError SetGlobalAlpha(int32_t alpha)
+    {
+        (void)alpha;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:

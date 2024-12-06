@@ -535,6 +535,10 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
         BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);
         return GSERROR_API_FAILED;
     }
+    surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);
+    transform_ = static_cast<GraphicTransformType>(transform);
+    surfaceBufferWidth_ = bufferRequestConfig_.width;
+    surfaceBufferHeight_ = bufferRequestConfig_.height;
     scalingMode_ = static_cast<ScalingMode>(scalingMode);
     bufferRequestConfig_.colorGamut = static_cast<GraphicColorGamut>(colorGamut);
     bufferRequestConfig_.transform = static_cast<GraphicTransformType>(transform);

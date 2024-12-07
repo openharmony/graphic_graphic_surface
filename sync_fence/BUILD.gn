@@ -63,15 +63,14 @@ ohos_shared_library("sync_fence") {
     "ipc:ipc_single",
   ]
 
-  innerapi_tags = [
-    "chipsetsdk",
-    "platformsdk_indirect",
-  ]
-
   if (!is_emulator && !build_ohos_sdk && current_os == "ohos") {
     defines = [ "FENCE_SCHED_ENABLE" ]
   }
 
+  innerapi_tags = [
+    "chipsetsdk",
+    "platformsdk_indirect",
+  ]
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

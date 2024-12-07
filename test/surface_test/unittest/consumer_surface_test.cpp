@@ -485,4 +485,496 @@ HWTEST_F(ConsumerSurfaceTest, AcquireAndRelease002, Function | MediumTest | Leve
     ret = cs->ReleaseBuffer(buffer, -1);
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
+
+/*
+ * Function: RequestBuffer and CancelBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer by cs and ps
+ *                  2. call CancelBuffer both
+ *                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, RequestAndCancle001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = ps->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = ps->CancelBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: SetUserData
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetUserData many times
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, SetUserData001, Function | MediumTest | Level2)
+{
+    GSError ret;
+
+    std::string strs[SURFACE_MAX_USER_DATA_COUNT];
+    constexpr int32_t stringLengthMax = 32;
+    char str[stringLengthMax] = {};
+    for (int i = 0; i < SURFACE_MAX_USER_DATA_COUNT; i++) {
+        auto secRet = snprintf_s(str, sizeof(str), sizeof(str) - 1, "%d", i);
+        ASSERT_GT(secRet, 0);
+
+        strs[i] = str;
+        ret = cs->SetUserData(strs[i], "magic");
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    ret = cs->SetUserData("-1", "error");
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
+
+    std::string retStr;
+    for (int i = 0; i < SURFACE_MAX_USER_DATA_COUNT; i++) {
+        retStr = cs->GetUserData(strs[i]);
+        ASSERT_EQ(retStr, "magic");
+    }
+}
+
+/*
+ * Function: UserDataChangeListen
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. RegisterUserDataChangeListen
+ *                  2. SetUserData
+ *                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, UserDataChangeListen001, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> csTestUserData = IConsumerSurface::Create();
+    GSError ret1 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    GSError ret2 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    auto func1 = [&ret1](const std::string& key, const std::string& value) {
+        ret1 = OHOS::GSERROR_OK;
+    };
+    auto func2 = [&ret2](const std::string& key, const std::string& value) {
+        ret2 = OHOS::GSERROR_OK;
+    };
+    csTestUserData->RegisterUserDataChangeListener("func1", func1);
+    csTestUserData->RegisterUserDataChangeListener("func2", func2);
+    csTestUserData->RegisterUserDataChangeListener("func3", nullptr);
+    ASSERT_EQ(csTestUserData->RegisterUserDataChangeListener("func2", func2), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    if (csTestUserData->SetUserData("Regist", "OK") == OHOS::GSERROR_OK) {
+        ASSERT_EQ(ret1, OHOS::GSERROR_OK);
+        ASSERT_EQ(ret2, OHOS::GSERROR_OK);
+    }
+
+    ret1 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    ret2 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    csTestUserData->UnRegisterUserDataChangeListener("func1");
+    ASSERT_EQ(csTestUserData->UnRegisterUserDataChangeListener("func1"), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    if (csTestUserData->SetUserData("UnRegist", "INVALID") == OHOS::GSERROR_OK) {
+        ASSERT_EQ(ret1, OHOS::GSERROR_INVALID_ARGUMENTS);
+        ASSERT_EQ(ret2, OHOS::GSERROR_OK);
+    }
+
+    ret1 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    ret2 = OHOS::GSERROR_INVALID_ARGUMENTS;
+    csTestUserData->ClearUserDataChangeListener();
+    csTestUserData->RegisterUserDataChangeListener("func1", func1);
+    if (csTestUserData->SetUserData("Clear", "OK") == OHOS::GSERROR_OK) {
+        ASSERT_EQ(ret1, OHOS::GSERROR_OK);
+        ASSERT_EQ(ret2, OHOS::GSERROR_INVALID_ARGUMENTS);
+    }
+}
+
+/*
+ * Function: UserDataChangeListen
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. RegisterUserDataChangeListen
+ *                  2. SetUserData
+ *                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, UserDataChangeListen002, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> csTestUserData = IConsumerSurface::Create();
+
+    auto func = [&csTestUserData](const std::string& FuncName) {
+        constexpr int32_t RegisterListenerNum = 1000;
+        std::vector<GSError> ret(RegisterListenerNum, OHOS::GSERROR_INVALID_ARGUMENTS);
+        std::string strs[RegisterListenerNum];
+        constexpr int32_t stringLengthMax = 32;
+        char str[stringLengthMax] = {};
+        for (int i = 0; i < RegisterListenerNum; i++) {
+            auto secRet = snprintf_s(str, sizeof(str), sizeof(str) - 1, "%s%d", FuncName.c_str(), i);
+            ASSERT_GT(secRet, 0);
+            strs[i] = str;
+            ASSERT_EQ(csTestUserData->RegisterUserDataChangeListener(strs[i], [i, &ret]
+            (const std::string& key, const std::string& value) {
+                ret[i] = OHOS::GSERROR_OK;
+            }), OHOS::GSERROR_OK);
+        }
+
+        if (csTestUserData->SetUserData("Regist", FuncName) == OHOS::GSERROR_OK) {
+            for (int i = 0; i < RegisterListenerNum; i++) {
+                ASSERT_EQ(ret[i], OHOS::GSERROR_OK);
+            }
+        }
+
+        for (int i = 0; i < RegisterListenerNum; i++) {
+            csTestUserData->UnRegisterUserDataChangeListener(strs[i]);
+        }
+    };
+
+    std::thread t1(func, "thread1");
+    std::thread t2(func, "thread2");
+    t1.join();
+    t2.join();
+}
+
+/*
+ * Function: RegisterConsumerListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterConsumerListener
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerListener001, Function | MediumTest | Level2)
+{
+    class TestConsumerListener : public IBufferConsumerListener {
+    public:
+        void OnBufferAvailable() override
+        {
+            sptr<SurfaceBuffer> buffer;
+            int32_t flushFence;
+
+            cs->AcquireBuffer(buffer, flushFence, timestamp, damage);
+            int32_t *p = (int32_t*)buffer->GetVirAddr();
+            if (p != nullptr) {
+                for (int32_t i = 0; i < 128; i++) {
+                    ASSERT_EQ(p[i], i);
+                }
+            }
+
+            cs->ReleaseBuffer(buffer, -1);
+        }
+    };
+
+    sptr<IBufferConsumerListener> listener = new TestConsumerListener();
+    GSError ret = cs->RegisterConsumerListener(listener);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    ret = ps->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    int32_t *p = (int32_t*)buffer->GetVirAddr();
+    if (p != nullptr) {
+        for (int32_t i = 0; i < 128; i++) {
+            p[i] = i;
+        }
+    }
+
+    GraphicTransformType tranformType = ps->GetTransform();
+    ret = ps->FlushBuffer(buffer, -1, flushConfig);
+    ASSERT_EQ(ps->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_180), OHOS::GSERROR_OK);
+    GraphicTransformType bufferTranformType = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(nullptr, &bufferTranformType), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(buffer, nullptr), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(buffer, &bufferTranformType), OHOS::GSERROR_OK);
+    ASSERT_EQ(bufferTranformType, tranformType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    listener->OnTunnelHandleChange();
+    listener->OnGoBackground();
+    listener->OnCleanCache();
+    listener->OnTransformChange();
+    TestConsumerListenerClazz* listenerClazz = new TestConsumerListenerClazz();
+    listenerClazz->OnTunnelHandleChange();
+    listenerClazz->OnGoBackground();
+    listenerClazz->OnCleanCache();
+    listenerClazz->OnTransformChange();
+    delete listenerClazz;
+}
+
+/*
+ * Function: RegisterConsumerListener, RequestBuffer and FlushBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterConsumerListener
+ *                  2. call RequestBuffer
+ *                  3. call FlushBuffer
+ *                  4. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerListener002, Function | MediumTest | Level2)
+{
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    GSError ret = cs->RegisterConsumerListener(listener);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    ret = ps->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    int32_t *p = (int32_t*)buffer->GetVirAddr();
+    if (p != nullptr) {
+        for (int32_t i = 0; i < requestConfig.width * requestConfig.height; i++) {
+            p[i] = i;
+        }
+    }
+    ASSERT_EQ(ps->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_90), OHOS::GSERROR_OK);
+
+    ret = ps->FlushBuffer(buffer, -1, flushConfig);
+    GraphicTransformType bufferTranformType = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(cs->GetSurfaceBufferTransformType(buffer, &bufferTranformType), OHOS::GSERROR_OK);
+    ASSERT_EQ(bufferTranformType, GraphicTransformType::GRAPHIC_ROTATE_90);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(ps->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE), OHOS::GSERROR_OK);
+
+    sptr<OHOS::SyncFence> flushFence;
+    ret = cs->AcquireBuffer(buffer, flushFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    bool isInCache = false;
+    ASSERT_EQ(cs->IsSurfaceBufferInCache(buffer->GetSeqNum(), isInCache), OHOS::GSERROR_OK);
+    ASSERT_EQ(isInCache, true);
+    ASSERT_EQ(cs->IsSurfaceBufferInCache(0xFFFFFFFF, isInCache), OHOS::GSERROR_OK);
+    ASSERT_EQ(isInCache, false);
+}
+
+/*
+ * Function: RegisterConsumerListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterConsumerListener with nullptr params
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerListener003, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->RegisterConsumerListener(nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    ret = surface_->RegisterConsumerListener(listener);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: RegisterConsumerListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterConsumerListener with nullptr params
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerListener004, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->RegisterConsumerListener(nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    TestConsumerListenerClazz* listenerClazz = new TestConsumerListenerClazz();
+    ret = surface_->RegisterConsumerListener(listenerClazz);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    delete listenerClazz;
+}
+
+/*
+ * Function: UnregisterConsumerListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call UnregisterConsumerListener with consumer_ is nullptr
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerListener005, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->UnregisterConsumerListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: UnregisterConsumerListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call UnregisterConsumerListener with consumer_ is normal
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ConsumerListener006, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+    GSError ret = surface_->UnregisterConsumerListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: RegisterReleaseListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterReleaseListener with nullptr param
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseListener001, Function | MediumTest | Level2)
+{
+    OnReleaseFunc onBufferRelease = nullptr;
+    GSError ret = surface_->RegisterReleaseListener(onBufferRelease);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: RegisterReleaseListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterReleaseListener with consumer_ is normal
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseListener002, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+
+    OnReleaseFunc onBufferRelease = nullptr;
+    GSError ret = surface_->RegisterReleaseListener(onBufferRelease);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: RegisterReleaseListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterReleaseListener
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseListener003, Function | MediumTest | Level2)
+{
+    OnReleaseFuncWithFence func = nullptr;
+    GSError ret = surface_->RegisterReleaseListener(func);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
+ * Function: UnRegisterReleaseListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call UnRegisterReleaseListener
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseListener004, Function | MediumTest | Level2)
+{
+    GSError ret = surface_->UnRegisterReleaseListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is nullptr
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DeleteBufferListener001, Function | MediumTest | Level2)
+{
+    OnDeleteBufferFunc func = nullptr;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DeleteBufferListener002, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+
+    OnDeleteBufferFunc func = nullptr;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    ret = surface_->RegisterDeleteBufferListener(func, true);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DeleteBufferListener003, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(surface_->hasRegistercallBackForRT_, true);
+}
+
+/*
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DeleteBufferListener004, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+
+    surface_->hasRegistercallBackForRT_ = true;
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: RegisterDeleteBufferListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterDeleteBufferListener with consumer_ is normal
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DeleteBufferListener005, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+
+    OnDeleteBufferFunc func = deleteBuffer;
+    GSError ret = surface_->RegisterDeleteBufferListener(func, true);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(surface_->hasRegistercallBackForRedraw_, true);
+}
 }

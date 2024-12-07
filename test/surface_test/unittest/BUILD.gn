@@ -1,0 +1,199 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
+
+if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
+  import("${graphic_2d_ext_delegator_gni}")
+}
+
+module_out_path = "graphic_surface/surface"
+
+group("unittest") {
+  testonly = true
+
+  deps = [
+    ":buffer_client_producer_remote_test",
+    ":buffer_queue_consumer_test",
+    ":buffer_queue_producer_remote_test",
+    ":buffer_queue_producer_test",
+    ":buffer_utils_test",
+    ":metadata_helper_test",
+    ":native_buffer_test",
+    ":producer_surface_delegator_test",
+    ":producer_surface_test",
+  ]
+}
+
+## UnitTest producer_surface_delegator_test {{{
+ohos_unittest("producer_surface_delegator_test") {
+  module_out_path = module_out_path
+
+  sources = []
+  if (graphic_2d_ext_delegator &&
+      defined(libsurface_ext_test_producer_delegator_src)) {
+    sources += libsurface_ext_test_producer_delegator_src
+  } else {
+    sources += [ "producer_surface_delegator_test.cpp" ]
+  }
+
+  deps = [ ":surface_test_common" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
+}
+
+## UnitTest producer_surface_delegator_test }}}
+
+## UnitTest buffer_client_producer_remote_test {{{
+ohos_unittest("buffer_client_producer_remote_test") {
+  module_out_path = module_out_path
+
+  sources = [ "buffer_client_producer_remote_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+}
+
+## UnitTest buffer_client_producer_remote_test }}}
+
+## UnitTest buffer_queue_consumer_test {{{
+ohos_unittest("buffer_queue_consumer_test") {
+  module_out_path = module_out_path
+
+  sources = [ "buffer_queue_consumer_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+}
+
+## UnitTest buffer_queue_consumer_test }}}
+
+## UnitTest buffer_queue_producer_remote_test {{{
+ohos_unittest("buffer_queue_producer_remote_test") {
+  module_out_path = module_out_path
+
+  sources = [ "buffer_queue_producer_remote_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+}
+
+## UnitTest buffer_queue_producer_remote_test }}}
+
+## UnitTest buffer_queue_producer_test {{{
+ohos_unittest("buffer_queue_producer_test") {
+  module_out_path = module_out_path
+
+  sources = [ "buffer_queue_producer_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+}
+
+## UnitTest buffer_queue_producer_test }}}
+
+## UnitTest producer_surface_test {{{
+ohos_unittest("producer_surface_test") {
+  module_out_path = module_out_path
+
+  sources = [ "producer_surface_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "drivers_interface_display:display_commontype_idl_headers_1.1",
+  ]
+}
+
+## UnitTest producer_surface_test }}}
+
+## UnitTest metadata_helper_test {{{
+ohos_unittest("metadata_helper_test") {
+  module_out_path = module_out_path
+
+  sources = [ "metadata_helper_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "drivers_interface_display:display_commontype_idl_headers",
+    "hilog:libhilog",
+  ]
+}
+
+## UnitTest metadata_helper_test }}}
+
+## UnitTest native_buffer_test {{{
+ohos_unittest("native_buffer_test") {
+  module_out_path = module_out_path
+
+  sources = [ "native_buffer_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+  ]
+}
+
+## UnitTest native_buffer_test }}}
+
+## UnitTest buffer_utils_test {{{
+ohos_unittest("buffer_utils_test") {
+  module_out_path = module_out_path
+
+  sources = [ "buffer_utils_test.cpp" ]
+
+  deps = [ ":surface_test_common" ]
+}
+
+## UnitTest buffer_utils_test }}}
+
+## Build surface_test_common.a {{{
+config("surface_test_common_public_config") {
+  include_dirs = [ "../../include" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-g3",
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
+}
+
+ohos_static_library("surface_test_common") {
+  visibility = [ ":*" ]
+  testonly = true
+
+  public_configs = [ ":surface_test_common_public_config" ]
+
+  public_deps = [
+    "$graphic_surface_root/buffer_handle:buffer_handle",
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/sync_fence:sync_fence",
+    "$graphic_surface_root/test_header:test_header",
+  ]
+
+  public_external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
+  ]
+
+  subsystem_name = "graphic"
+  part_name = "graphic_surface"
+}
+## Build surface_test_common.a }}}

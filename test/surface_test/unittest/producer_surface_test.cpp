@@ -839,4 +839,360 @@ HWTEST_F(ProducerSurfaceTest, SetTransformTest004, Function | MediumTest | Level
     GSError ret = pSurface->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+ * Function: SetTransform and GetTransform
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTransform with producer_ is nullptr and check ret
+ *                  2. call GetTransform with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetTransformTest005, Function | MediumTest | Level1)
+{
+    GSError ret = surface_->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicTransformType type = surface_->GetTransform();
+    ASSERT_EQ(type, GraphicTransformType::GRAPHIC_ROTATE_BUTT);
+}
+
+/*
+ * Function: SetScalingMode and GetScalingMode
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetScalingModeTest001, Function | MediumTest | Level2)
+{
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    GSError ret = pSurface->SetScalingMode(-1, scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_ENTRY);
+}
+
+/*
+ * Function: SetScalingMode and GetScalingMode
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetScalingMode with normal parameters and check ret
+ *                  2. call GetScalingMode and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetScalingModeTest002, Function | MediumTest | Level1)
+{
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    uint32_t sequence = buffer->GetSeqNum();
+    ret = pSurface->SetScalingMode(sequence, scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: SetScalingMode003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetScalingModeTest003, Function | MediumTest | Level2)
+{
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    GSError ret = pSurface->SetScalingMode(scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: SetScalingMode and GetScalingMode
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetScalingMode with producer_ is nullptr and check ret
+ *                  2. call GetScalingMode and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetScalingModeTest004, Function | MediumTest | Level2)
+{
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    GSError ret = surface_->SetScalingMode(scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->SetScalingMode(0, scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetScalingMode(0, scalingMode);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
+ * Function: SetMetaData and GetMetaData
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaData with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataTest001, Function | MediumTest | Level2)
+{
+    std::vector<GraphicHDRMetaData> metaData;
+    GSError ret = pSurface->SetMetaData(firstSeqnum, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: SetMetaData and GetMetaData
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaData with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataTest002, Function | MediumTest | Level2)
+{
+    std::vector<GraphicHDRMetaData> metaData;
+    GraphicHDRMetaData data = {
+        .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
+        .value = 100,  // for test
+    };
+    metaData.push_back(data);
+    GSError ret = pSurface->SetMetaData(-1, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_ENTRY);
+}
+
+/*
+ * Function: SetMetaData and GetMetaData
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaData with normal parameters and check ret
+ *                  2. call GetMetaData and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataTest003, Function | MediumTest | Level1)
+{
+    std::vector<GraphicHDRMetaData> metaData;
+    GraphicHDRMetaData data = {
+        .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
+        .value = 100,  // for test
+    };
+    metaData.push_back(data);
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    uint32_t sequence = buffer->GetSeqNum();
+    ret = pSurface->SetMetaData(sequence, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: SetMetaData and GetMetaData
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaData with producer_ is nullptr and check ret
+ *                  2. call GetMetaData and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataAndGetMetaDataTest, Function | MediumTest | Level2)
+{
+    std::vector<GraphicHDRMetaData> metaData;
+    GSError ret = surface_->SetMetaData(0, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicHDRMetaData data = {
+        .key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X,
+        .value = 100,  // 100 metaData value for test
+    };
+    metaData.push_back(data);
+    ret = surface_->SetMetaData(0, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetMetaData(0, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
+ * Function: SetMetadataValue
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions:
+ * CaseDescription: 1. call SetUserData then SetMetadataValue and check ret
+ *                  2. call get functions and compare
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetadataValueTest, Function | MediumTest | Level2)
+{
+    GSError ret;
+    sptr<SurfaceBuffer> buffer_;
+    int releaseFence = -1;
+    ret = pSurface->RequestBuffer(buffer_, releaseFence, requestConfig);
+ 
+    std::string valueInfo = "mockInfo";
+    std::string valueDynamic = "mockDynamic";
+    std::string valueStatic = "mockStatic";
+    std::string valueType = "mockType";
+ 
+    surfaceMd_->SetUserData("ATTRKEY_COLORSPACE_INFO", valueInfo);
+    surfaceMd_->SetUserData("OH_HDR_DYNAMIC_METADATA", valueDynamic);
+    surfaceMd_->SetUserData("OH_HDR_STATIC_METADATA", valueStatic);
+    surfaceMd_->SetUserData("OH_HDR_METADATA_TYPE", valueType);
+ 
+    ret = surfaceMd_->SetMetadataValue(buffer_);
+    if (ret == OHOS::GSERROR_OK) {
+        CM_ColorSpaceType colorSpaceType;
+        MetadataHelper::GetColorSpaceType(buffer_, colorSpaceType);
+        EXPECT_EQ(static_cast<CM_ColorSpaceType>(atoi(valueInfo.c_str())), colorSpaceType);
+        
+        std::vector<uint8_t> setDynamicMetadata, getDynamicMetadata;
+        setDynamicMetadata.resize(valueDynamic.size());
+        setDynamicMetadata.assign(valueDynamic.begin(), valueDynamic.end());
+        MetadataHelper::GetHDRDynamicMetadata(buffer_, getDynamicMetadata);
+        EXPECT_EQ(setDynamicMetadata, getDynamicMetadata);
+ 
+        std::vector<uint8_t> setStaticMetadata, getStaticMetadata;
+        setStaticMetadata.resize(valueStatic.size());
+        setStaticMetadata.assign(valueStatic.begin(), valueStatic.end());
+        MetadataHelper::GetHDRStaticMetadata(buffer_, getStaticMetadata);
+        EXPECT_EQ(setStaticMetadata, getStaticMetadata);
+ 
+        CM_HDR_Metadata_Type hdrMetadataType;
+        MetadataHelper::GetHDRMetadataType(buffer_, hdrMetadataType);
+        EXPECT_EQ(static_cast<CM_HDR_Metadata_Type>(atoi(valueType.c_str())), hdrMetadataType);
+    } else {
+        EXPECT_EQ(ret, OHOS::GSERROR_HDI_ERROR);
+    }
+}
+
+/*
+ * Function: SetMetaDataSet and GetMetaDataSet
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaDataSet with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataSetTest001, Function | MediumTest | Level2)
+{
+    GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
+    std::vector<uint8_t> metaData;
+
+    GSError ret = pSurface->SetMetaDataSet(firstSeqnum, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: SetMetaDataSet and GetMetaDataSet
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaDataSet with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataSetTest002, Function | MediumTest | Level2)
+{
+    GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
+    std::vector<uint8_t> metaData;
+
+    uint8_t data = 10;  // for test
+    metaData.push_back(data);
+    GSError ret = pSurface->SetMetaDataSet(-1, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_ENTRY);
+}
+
+/*
+ * Function: SetMetaDataSet and GetMetaDataSet
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaDataSet with normal parameters and check ret
+ *                  2. call GetMetaDataSet and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataSetTest003, Function | MediumTest | Level1)
+{
+    GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
+    std::vector<uint8_t> metaData;
+    uint8_t data = 10;  // for test
+    metaData.push_back(data);
+
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    uint32_t sequence = buffer->GetSeqNum();
+    ret = pSurface->SetMetaDataSet(sequence, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->CancelBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: SetMetaDataSet and GetMetaDataSet
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetMetaDataSet with producer_ is nullptr and check ret
+ *                  2. call GetMetaDataSet and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetMetaDataSetAndGetMetaDataSetTest, Function | MediumTest | Level2)
+{
+    GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
+    std::vector<uint8_t> metaData;
+
+    uint8_t data = 10;  // metaData value for test
+    metaData.push_back(data);
+    GSError ret = surface_->SetMetaDataSet(0, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetMetaDataSet(0, key, metaData);
+    ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
+}
+
+/*
+ * Function: SetTunnelHandle and GetTunnelHandle
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelhandle with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetTunnelHandleTest001, Function | MediumTest | Level2)
+{
+    GraphicExtDataHandle *handle = nullptr;
+    handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
+    ASSERT_NE(handle, nullptr);
+    handle->fd = -1;
+    handle->reserveInts = 1;
+    handle->reserve[0] = 0;
+    GSError ret = surface_->SetTunnelHandle(handle);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    sptr<SurfaceTunnelHandle> handleGet = surface_->GetTunnelHandle();
+    ASSERT_EQ(handleGet, nullptr);
+    free(handle);
+}
+
+/*
+ * Function: SetTunnelHandle and GetTunnelHandle
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelhandle with normal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetTunnelHandleTest002, Function | MediumTest | Level2)
+{
+    GraphicExtDataHandle *handle = nullptr;
+    handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
+    ASSERT_NE(handle, nullptr);
+    handle->fd = -1;
+    handle->reserveInts = 1;
+    handle->reserve[0] = 0;
+    GSError ret = pSurface->SetTunnelHandle(handle);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->SetTunnelHandle(handle);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_ENTRY);
+    free(handle);
+}
 }

@@ -235,9 +235,9 @@ HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)
         .dcapsNum = 0,
         .permsNum = 2,
         .aclsNum = 0,
-        .dcaps = NULL,
+        .dcaps = nullptr,
         .perms = perms,
-        .acls = NULL,
+        .acls = nullptr,
         .processName = "dcamera_client_demo",
         .aplStr = "system_basic",
     };

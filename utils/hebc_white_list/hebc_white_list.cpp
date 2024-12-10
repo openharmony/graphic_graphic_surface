@@ -31,7 +31,7 @@ static constexpr unsigned int MAX_HEBC_WHITELIST_NUMBER = 10000; // hebcwhiteLis
 bool HebcWhiteList::Check(const std::string& appName) noexcept
 {
     if (!Init()) {
-        BLOGE("Init failed");
+        BLOGD("Init failed");
         return false;
     }
     return (std::find(hebcList_.begin(), hebcList_.end(), appName) != hebcList_.end());
@@ -65,7 +65,7 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
     Json::Value root{};
     Json::Reader reader(Json::Features::all());
     if (!reader.parse(json, root)) {
-        BLOGE("parse json failed");
+        BLOGD("parse json failed");
         return false;
     }
 
@@ -91,7 +91,7 @@ std::string HebcWhiteList::GetConfigAbsolutePath() noexcept
     char buf[MAX_PATH_LEN] = { 0 };
     char const *path = GetOneCfgFile(std::string(CONFIG_FILE_RELATIVE_PATH).c_str(), buf, MAX_PATH_LEN);
     if (path == nullptr) {
-        BLOGE("failed");
+        BLOGD("failed");
         return std::string("{}");
     }
     return std::string(path);
@@ -102,12 +102,12 @@ void HebcWhiteList::ReadFile(std::string const &file, size_t maxSize, std::strin
     std::ifstream ifs;
     ifs.open(file, std::ifstream::binary);
     if (!ifs.good()) {
-        BLOGE("file is bad");
+        BLOGD("file is bad");
         return;
     }
 
     if (!ifs.is_open()) {
-        BLOGE("open file failed");
+        BLOGD("open file failed");
         return;
     }
 
@@ -115,7 +115,7 @@ void HebcWhiteList::ReadFile(std::string const &file, size_t maxSize, std::strin
     auto const tellg = static_cast<size_t>(ifs.tellg());
     if (tellg <= 0 || tellg > maxSize) {
         ifs.close();
-        BLOGE("read file failed");
+        BLOGD("read file failed");
         return;
     }
     ifs.seekg(0, std::ios::beg);

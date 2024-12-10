@@ -2087,4 +2087,59 @@ HWTEST_F(ConsumerSurfaceTest, InvalidParameter001, Function | MediumTest | Level
     ASSERT_EQ(surface_->AcquireLastFlushedBuffer(sBuffer, fence, nullptr, 0, false), GSERROR_NOT_SUPPORT);
     ASSERT_EQ(surface_->ReleaseLastFlushedBuffer(sBuffer), GSERROR_NOT_SUPPORT);
 }
+
+/*
+* Function: AttachBufferToQueue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferToQueue and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest | Level2)
+{
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_CPU_HW_BOTH,
+        .timeout = 0,
+    };
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    BufferFlushConfig flushConfigTmp = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    int64_t timestampTmp = 0;
+    Rect damageTmp = {};
+    GSError ret;
+    sptr<OHOS::SyncFence> fence;
+    for (uint32_t i = 0; i < 3; i++) {
+        ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_NE(buffer, nullptr);
+        ret = pSurface->FlushBuffer(buffer, -1, flushConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    for (uint32_t i = 0; i < 3; i++) {
+        ret = cSurface->AcquireBuffer(buffer, fence, timestampTmp, damageTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ret = cSurface->DetachBufferFromQueue(buffer);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    for (uint32_t i = 0; i < 3; i++) {
+        ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
 }

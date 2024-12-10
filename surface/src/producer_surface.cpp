@@ -446,7 +446,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         int error = surfaceDelegator->ReleaseBuffer(buffer, fence);
         return static_cast<GSError>(error);
     };
-    RegisterReleaseListener(releaseBufferCallBack);
+    RegisterReleaseListenerWithFence(releaseBufferCallBack);
     return GSERROR_OK;
 }
 
@@ -630,7 +630,35 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     return producer_->RegisterReleaseListener(listener);
 }
 
+GSError ProducerSurface::RegisterReleaseListenerWithFence(OnReleaseFuncWithFence funcWithFence)
+{
+    if (funcWithFence == nullptr || producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sptr<IProducerListener> listener;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        listenerWithFence_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
+        listener = listenerWithFence_;
+    }
+    return producer_->RegisterReleaseListenerWithFence(listener);
+}
+
 GSError ProducerSurface::UnRegisterReleaseListener()
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        if (listener_ != nullptr) {
+            listener_->ResetReleaseFunc();
+        }
+    }
+    return producer_->UnRegisterReleaseListener();
+}
+
+GSError ProducerSurface::UnRegisterReleaseListenerWithFence()
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -641,11 +669,11 @@ GSError ProducerSurface::UnRegisterReleaseListener()
     }
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (listener_ != nullptr) {
-            listener_->ResetReleaseFunc();
+        if (listenerWithFence_ != nullptr) {
+            listenerWithFence_->ResetReleaseFunc();
         }
     }
-    return producer_->UnRegisterReleaseListener();
+    return producer_->UnRegisterReleaseListenerWithFence();
 }
 
 GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)

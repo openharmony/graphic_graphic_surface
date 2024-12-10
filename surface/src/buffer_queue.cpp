@@ -892,9 +892,11 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
     }
 
     sptr<IProducerListener> listener;
+    sptr<IProducerListener> listenerWithFence;
     {
         std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
         listener = producerListener_;
+        listenerWithFence = producerListenerWithFence_;
     }
 
     if (listener != nullptr) {
@@ -903,7 +905,11 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
             BLOGE("seq: %{public}u, OnBufferReleased faile, uniqueId: %{public}" PRIu64 ".",
                 buffer->GetSeqNum(), uniqueId_);
         }
-        if (listener->OnBufferReleasedWithFence(buffer, fence) != GSERROR_OK) {
+    }
+
+    if (listenerWithFence != nullptr) {
+        SURFACE_TRACE_NAME_FMT("onBufferReleasedWithFenceForProducer sequence: %u", buffer->GetSeqNum());
+        if (listenerWithFence->OnBufferReleasedWithFence(buffer, fence) != GSERROR_OK) {
             BLOGE("seq: %{public}u, OnBufferReleasedWithFence failed, uniqueId: %{public}" PRIu64 ".",
                 buffer->GetSeqNum(), uniqueId_);
         }
@@ -1357,10 +1363,24 @@ GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> lis
     return GSERROR_OK;
 }
 
+GSError BufferQueue::RegisterProducerReleaseListenerWithFence(sptr<IProducerListener> listener)
+{
+    std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
+    producerListenerWithFence_ = listener;
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::UnRegisterProducerReleaseListener()
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
     producerListener_ = nullptr;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::UnRegisterProducerReleaseListenerWithFence()
+{
+    std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
+    producerListenerWithFence_ = nullptr;
     return GSERROR_OK;
 }
 

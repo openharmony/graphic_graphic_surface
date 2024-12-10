@@ -85,7 +85,9 @@ public:
 
     GSError RegisterReleaseListener(OnReleaseFunc func) override;
     GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override;
+    GSError RegisterReleaseListenerWithFence(OnReleaseFuncWithFence func) override;
     GSError UnRegisterReleaseListener() override;
+    GSError UnRegisterReleaseListenerWithFence() override;
 
     void Dump(std::string &result) const override {};
 
@@ -159,6 +161,7 @@ private:
     uint64_t queueId_ = 0;
     bool isDisconnected_ = true;
     sptr<IProducerListener> listener_;
+    sptr<IProducerListener> listenerWithFence_;
     std::mutex listenerMutex_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;
     wptr<ProducerSurfaceDelegator> wpPSurfaceDelegator_ = nullptr;

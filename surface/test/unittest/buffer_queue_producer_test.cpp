@@ -603,7 +603,9 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->GetUniqueId(), 0);
     sptr<IProducerListener> listener = nullptr;
     EXPECT_EQ(bqpTmp->RegisterReleaseListener(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->RegisterReleaseListenerWithFence(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->UnRegisterReleaseListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->UnRegisterReleaseListenerWithFence(), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetTransform(GraphicTransformType::GRAPHIC_FLIP_H), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<BufferVerifyAllocInfo> infos;
     uint64_t uniqueId;

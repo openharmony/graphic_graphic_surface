@@ -83,6 +83,11 @@ public:
     virtual GSError GoBackground() = 0;
 
     virtual GSError RegisterReleaseListener(sptr<IProducerListener> listener) = 0;
+    virtual GSError RegisterReleaseListenerWithFence(sptr<IProducerListener> listener)
+    {
+        (void)listener;
+        return GSERROR_OK;
+    }
 
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
 
@@ -99,6 +104,10 @@ public:
 
     virtual sptr<NativeSurface> GetNativeSurface() = 0;
     virtual GSError UnRegisterReleaseListener() = 0;
+    virtual GSError UnRegisterReleaseListenerWithFence()
+    {
+        return GSERROR_OK;
+    }
     virtual GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix) = 0;
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
@@ -189,6 +198,8 @@ protected:
         BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_SET_GLOBALALPHA,
+        BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE,
+        BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE,
     };
 };
 } // namespace OHOS

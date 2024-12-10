@@ -394,10 +394,33 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
     return CheckRetval(reply);
 }
 
+GSError BufferClientProducer::RegisterReleaseListenerWithFence(sptr<IProducerListener> listener)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+
+    if (listener == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    if (!arguments.WriteRemoteObject(listener->AsObject())) {
+        return GSERROR_BINDER;
+    }
+
+    SEND_REQUEST(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
 GSError BufferClientProducer::UnRegisterReleaseListener()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::UnRegisterReleaseListenerWithFence()
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE, arguments, reply, option);
     return CheckRetval(reply);
 }
 

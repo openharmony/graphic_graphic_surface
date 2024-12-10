@@ -69,7 +69,9 @@ public:
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) override;
     GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;
+    GSError RegisterReleaseListenerWithFence(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
+    GSError UnRegisterReleaseListenerWithFence() override;
 
     // Call carefully. This interface will empty all caches of the current process
     GSError CleanCache(bool cleanAll) override;

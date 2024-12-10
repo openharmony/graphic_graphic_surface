@@ -373,6 +373,21 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener001, Function | 
 }
 
 /*
+* Function: RegisterReleaseListenerWithFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterReleaseListenerWithFence
+*/
+HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListenerWithFence001, Function | MediumTest | Level2)
+{
+    OnReleaseFuncWithFence onBufferReleaseWithFence = nullptr;
+    sptr<IProducerListener> listener = new BufferReleaseProducerListener(nullptr, onBufferReleaseWithFence);
+    GSError ret = bp->RegisterReleaseListenerWithFence(listener);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: UnRegisterReleaseListener
 * Type: Function
 * Rank: Important(2)
@@ -382,6 +397,19 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener001, Function | 
 HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListener001, Function | MediumTest | Level2)
 {
     GSError ret = bp->UnRegisterReleaseListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: UnRegisterReleaseListenerWithFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call UnRegisterReleaseListenerWithFence
+*/
+HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListenerWithFence001, Function | MediumTest | Level2)
+{
+    GSError ret = bp->UnRegisterReleaseListenerWithFence();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 

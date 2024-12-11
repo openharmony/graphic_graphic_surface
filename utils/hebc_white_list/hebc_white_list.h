@@ -45,6 +45,7 @@ private:
     void ReadFile(std::string const &file, size_t maxSize, std::string& buffer) noexcept;
     std::atomic_bool inited_ = false;
     std::vector<std::string> hebcList_;
+    std::string appName_;
 };
 
 } // namespace OHOS

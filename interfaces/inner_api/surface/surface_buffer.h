@@ -78,7 +78,16 @@ public:
     virtual GSError InvalidateCache() = 0;
 
     // metadata
-    virtual GSError SetMetadata(uint32_t key, const std::vector<uint8_t>& value) = 0;
+    /*
+     * @Description: SetMetadata
+     * @param key：Metadata key
+     * @param value：Metadata value
+     * @param enableCache：If true(default true), enable metaData cache optimization,
+     *                     when the same metaData is repeatedly set, the instruction count can be reduced.
+     *                     Prohibit setting different enableCache values for the same surfacebuffer object
+     * @return  Returns GSERROR_OK if SetMetadata is successful; returns GErrorCode otherwise.
+     */
+    virtual GSError SetMetadata(uint32_t key, const std::vector<uint8_t>& value, bool enableCache = true) = 0;
     virtual GSError GetMetadata(uint32_t key, std::vector<uint8_t>& value) = 0;
     virtual GSError ListMetadataKeys(std::vector<uint32_t>& keys) = 0;
     virtual GSError EraseMetadataKey(uint32_t key) = 0;

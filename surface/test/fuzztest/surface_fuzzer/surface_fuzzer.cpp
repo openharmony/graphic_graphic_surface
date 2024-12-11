@@ -210,6 +210,8 @@ namespace OHOS {
         cSurface->DetachBuffer(buffer1);
         cSurface->AttachBufferToQueue(buffer);
         cSurface->DetachBufferFromQueue(buffer);
+        syncFence = nullptr;
+        buffer = nullptr;
         cSurface->SetQueueSize(queueSize);
     }
 
@@ -253,6 +255,10 @@ namespace OHOS {
         SurfaceFuzzTest1(pSurface, cSurface);
         SurfaceFuzzTest3(pSurface, cSurface);
         SurfaceFuzzTest4(pSurface, cSurface);
+        listener = nullptr;
+        free(listenerClazz);
+        pSurface = nullptr;
+        cSurface = nullptr;
         MetadataHelperFuzzTest();
     }
 
@@ -291,12 +297,16 @@ namespace OHOS {
         pSurface->ReleaseLastFlushedBuffer(buffer);
         GraphicTransformType transformType;
         cSurface->GetSurfaceBufferTransformType(buffer, &transformType);
+        buffer = nullptr;
         SurfaceFuzzTest2();
         pSurface->UnRegisterUserDataChangeListener(funcName);
         pSurface->ClearUserDataChangeListener();
         cSurface->ClearUserDataChangeListener();
         sptr<OHOS::Surface> tmp = OHOS::Surface::CreateSurfaceAsConsumer();
         tmp->RegisterConsumerListener(nullptr);
+        pSurface = nullptr;
+        cSurface = nullptr;
+        tmp = nullptr;
         return true;
     }
 } // namespace OHOS

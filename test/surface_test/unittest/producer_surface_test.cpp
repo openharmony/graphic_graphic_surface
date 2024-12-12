@@ -1778,4 +1778,494 @@ HWTEST_F(ProducerSurfaceTest, SetWhitePointBrightnessTest, Function | MediumTest
     ret = surface_->SetSdrWhitePointBrightness(0);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
+
+/*
+ * Function: SetGlobalAlpha
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetGlobalAlpha with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetGlobalAlphaTest, Function | MediumTest | Level2)
+{
+    int32_t alpha = -255;
+    GSError ret = pSurface->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    alpha = 256;
+    ret = pSurface->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    alpha = 255;
+    ret = pSurface->SetGlobalAlpha(alpha);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: IsInHebcWhiletList
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call IsInHebcWhiletList and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletListTest, Function | MediumTest | Level2)
+{
+    bool isInHebcList = pSurface->IsInHebcList();
+    ASSERT_EQ(isInHebcList, false);
+}
+
+/*
+ * Function: RequestBufferConcurrentTest001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrentTest001, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    for (uint32_t i = 0; i < 3; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    auto func = [&pSurfaceTmp](const std::string& FuncName) {
+        usleep(1000);
+        clock_t start = clock();
+        pSurfaceTmp->GetSurfaceSourceType();
+        clock_t end = clock();
+        int32_t time = (end - start) / CLOCKS_PER_SEC;
+        EXPECT_EQ(time < 1, true);
+    };
+    std::thread t1(func, "thread1");
+
+    ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_NO_BUFFER);
+    t1.join();
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+ * Function: RequestBufferConcurrentTest002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrentTest002, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 1000,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+
+    auto func = [&pSurfaceTmp](const std::string& FuncName) {
+        for (uint32_t i = 0; i < 300000; i++) {
+            usleep(5);
+            pSurfaceTmp->SetScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+            pSurfaceTmp->SetSurfaceSourceType(OHSurfaceSource::OH_SURFACE_SOURCE_UI);
+            pSurfaceTmp->GetSurfaceSourceType();
+            pSurfaceTmp->CleanCache(true);
+        }
+    };
+    std::thread t1(func, "thread1");
+    for (uint32_t i = 0; i < 300000; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        if (ret == SURFACE_ERROR_NO_BUFFER) {
+            break;
+        } else {
+            EXPECT_EQ(ret, OHOS::GSERROR_OK);
+        }
+    }
+
+    t1.join();
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+ * Function: RequestBufferConcurrentTest003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrentTest003, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 1000,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+
+    auto func = [&pSurfaceTmp, &cSurfTmp](const std::string& FuncName) {
+        sptr<SurfaceBuffer> buffer;
+        int32_t flushFence;
+        int64_t timestamp;
+        OHOS::Rect damage;
+        GSError ret;
+        for (uint32_t i = 0; i < 100000; i++) {
+            usleep(5);
+            ret = cSurfTmp->AcquireBuffer(buffer, flushFence, timestamp, damage);
+            if (ret != SURFACE_ERROR_NO_BUFFER) {
+                EXPECT_EQ(ret, OHOS::GSERROR_OK);
+                ret = cSurfTmp->ReleaseBuffer(buffer, -1);
+                if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE) {
+                    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+                }
+            }
+            pSurfaceTmp->CleanCache(true);
+        }
+    };
+    std::thread t1(func, "thread1");
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    for (uint32_t i = 0; i < 100000; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        if (ret == SURFACE_ERROR_NO_BUFFER) {
+            break;
+        } else {
+            EXPECT_EQ(ret, OHOS::GSERROR_OK);
+        }
+        ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
+        if (ret == SURFACE_ERROR_BUFFER_NOT_INCACHE) {
+            continue;
+        } else {
+            EXPECT_EQ(ret, OHOS::GSERROR_OK);
+        }
+    }
+
+    t1.join();
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+ * Function: RequestBufferConcurrentTest004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrentTest004, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(10);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 1000,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+
+    auto func = [&pSurfaceTmp, &buffer, &requestConfigTmp, &releaseFence, &flushConfig](const std::string& FuncName) {
+        for (uint32_t i = 0; i < 10000; i++) {
+            GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+            if (ret == OHOS::GSERROR_OK) {
+                ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
+                if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE && ret != SURFACE_ERROR_BUFFER_STATE_INVALID) {
+                    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+                }
+            }
+            pSurfaceTmp->CleanCache(true);
+        }
+    };
+    std::thread t1(func, "thread1");
+    for (uint32_t i = 0; i < 10000; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        if (ret == OHOS::GSERROR_OK) {
+            ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
+            if (ret != SURFACE_ERROR_BUFFER_NOT_INCACHE && ret != SURFACE_ERROR_BUFFER_STATE_INVALID) {
+                EXPECT_EQ(ret, OHOS::GSERROR_OK);
+            }
+        }
+        pSurfaceTmp->CleanCache(true);
+    }
+
+    t1.join();
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+ * Function: RequestBufferNoConsumerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBufferNoConsumerTest, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    cSurfTmp = nullptr;
+    ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_CONSUMER);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+}
+
+/*
+ * Function: RequestBufferNoListenerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBufferNoListenerTest, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
+
+    ret = pSurfaceTmp->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurfaceTmp->Connect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurfaceTmp->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+ * Function: RequestBuffersNoListenerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBuffersNoListenerTest, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+        .transform = GraphicTransformType::GRAPHIC_ROTATE_BUTT,
+    };
+
+    std::vector<sptr<SurfaceBuffer>> sfbuffers;
+    std::vector<sptr<SyncFence>> releaseFences;
+    GSError ret = pSurfaceTmp->RequestBuffers(sfbuffers, releaseFences, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+
+    ret = pSurfaceTmp->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurfaceTmp->Connect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurfaceTmp->Disconnect();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+ * Function: ProducerSurfaceParameterNullTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ProducerSurfuce function and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNullTest, Function | MediumTest | Level2)
+{
+    sptr<IBufferProducer> producer = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ProducerInitInfo info;
+    ASSERT_EQ(pSurfaceTmp->GetProducerInitInfo(info), OHOS::GSERROR_INVALID_ARGUMENTS);
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    BufferRequestConfig config;
+    ASSERT_EQ(pSurfaceTmp->RequestBuffer(buffer, fence, config), OHOS::GSERROR_INVALID_ARGUMENTS);
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    ASSERT_EQ(pSurfaceTmp->RequestBuffers(buffers, fences, config), OHOS::GSERROR_INVALID_ARGUMENTS);
+    BufferFlushConfigWithDamages configWithDamage;
+    ASSERT_EQ(pSurfaceTmp->FlushBuffer(buffer, fence, configWithDamage), OHOS::GSERROR_INVALID_ARGUMENTS);
+    std::vector<BufferFlushConfigWithDamages> configWithDamages;
+    ASSERT_EQ(pSurfaceTmp->FlushBuffers(buffers, fences, configWithDamages), OHOS::GSERROR_INVALID_ARGUMENTS);
+    float matrix[16];
+    bool isUseNewMatrix = false;
+    ASSERT_EQ(pSurfaceTmp->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->CancelBuffer(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(pSurfaceTmp->DetachBufferFromQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    sptr<SurfaceBuffer> bufferTmp;
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(bufferTmp), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(bufferTmp, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AttachBuffer(buffer, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->DetachBuffer(bufferTmp), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->DetachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetQueueSize(), 0);
+    ASSERT_EQ(pSurfaceTmp->SetQueueSize(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp->GetName();
+    ASSERT_EQ(pSurfaceTmp->GetDefaultWidth(), -1);
+    ASSERT_EQ(pSurfaceTmp->GetDefaultHeight(), -1);
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(pSurfaceTmp->SetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetDefaultUsage(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetDefaultUsage(), 0);
+    OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
+    ASSERT_EQ(pSurfaceTmp->SetSurfaceSourceType(sourceType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetSurfaceSourceType(), OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT);
+    std::string appFrameworkType;
+    ASSERT_EQ(pSurfaceTmp->SetSurfaceAppFrameworkType(appFrameworkType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetSurfaceAppFrameworkType(), "");
+    OnReleaseFunc func = nullptr;
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(func), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(OnBufferRelease), OHOS::GSERROR_INVALID_ARGUMENTS);
+    OnReleaseFuncWithFence funcWithFence = nullptr;
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(funcWithFence), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(OnBufferReleaseWithFence), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->UnRegisterReleaseListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->IsRemote(), false);
+    ASSERT_EQ(pSurfaceTmp->CleanCache(true), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp->GetUniqueId();
+    ASSERT_EQ(pSurfaceTmp->SetTransform(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetTransform(), GraphicTransformType::GRAPHIC_ROTATE_BUTT);
+    ASSERT_EQ(pSurfaceTmp->Connect(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->Disconnect(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_FREEZE;
+    ASSERT_EQ(pSurfaceTmp->SetScalingMode(0, scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetScalingMode(scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp->SetBufferHold(false);
+    std::vector<GraphicHDRMetaData> metaData;
+    ASSERT_EQ(pSurfaceTmp->SetMetaData(0, metaData), OHOS::GSERROR_INVALID_ARGUMENTS);
+    GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ;
+    std::vector<uint8_t> metaData1;
+    ASSERT_EQ(pSurfaceTmp->SetMetaDataSet(0, key, metaData1), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetTunnelHandle(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    int64_t time;
+    GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP;
+    ASSERT_EQ(pSurfaceTmp->GetPresentTimestamp(0, type, time), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetWptrNativeWindowToPSurface(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetHdrWhitePointBrightness(0.0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetSdrWhitePointBrightness(0.0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->AcquireLastFlushedBuffer(buffer, fence, matrix, 0, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->ReleaseLastFlushedBuffer(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->ReleaseLastFlushedBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetGlobalAlpha(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    pSurfaceTmp = nullptr;
+}
 }

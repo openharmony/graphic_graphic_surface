@@ -51,24 +51,37 @@ bool HebcWhiteList::Init() noexcept
 
 void HebcWhiteList::GetApplicationName(std::string& name) noexcept
 {
+    if (!appName_.empty()) {
+        name = appName_;
+        return;
+    }
+    
     std::ifstream procfile(PROCESS_NAME);
     if (!procfile.is_open()) {
         return;
     }
     std::getline(procfile, name);
     procfile.close();
-    name = name.substr(0, name.find('\0'));
+    appName_ = name.substr(0, name.find('\0'));
+    name = appName_;
 }
 
 bool HebcWhiteList::ParseJson(std::string const &json) noexcept
 {
     Json::Value root{};
     Json::Reader reader(Json::Features::all());
+    if (json.empty()) {
+        return true;
+    }
+    
     if (!reader.parse(json, root)) {
         BLOGD("parse json failed");
         return false;
     }
 
+    if (!root.isMember("HEBC")) {
+        return true;
+    }
     Json::Value const hebc = root.get("HEBC", Json::Value{});
     Json::Value const appNameJson = hebc.get("AppName", Json::Value{});
     unsigned int jsonSize = std::min(appNameJson.size(), MAX_HEBC_WHITELIST_NUMBER);

@@ -574,7 +574,7 @@ BufferWrapper SurfaceBufferImpl::GetBufferWrapper()
 
 void SurfaceBufferImpl::SetBufferWrapper(BufferWrapper wrapper) {}
 
-GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>& value)
+GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>& value, bool enableCache)
 {
     if (key == 0 || key >= HDI::Display::Graphic::Common::V1_1::ATTRKEY_END) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -589,14 +589,16 @@ GSError SurfaceBufferImpl::SetMetadata(uint32_t key, const std::vector<uint8_t>&
         return GSERROR_NOT_INIT;
     }
 
-    if (MetaDataCachedLocked(key, value)) {
+    if (enableCache && MetaDataCachedLocked(key, value)) {
         return GSERROR_OK;
     }
 
     auto dret = displayBuffer->SetMetadata(*handle_, key, value);
     if (dret == GRAPHIC_DISPLAY_SUCCESS) {
         // cache metaData
-        metaDataCache_[key] = value;
+        if (enableCache) {
+            metaDataCache_[key] = value;
+        }
         return GSERROR_OK;
     }
     BLOGE("SetMetadata Failed with %{public}d", dret);

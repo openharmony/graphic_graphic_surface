@@ -216,9 +216,10 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. produce surface, fill buffer
-*                  2. consume surface and check buffer
-*                  3. call RequestBuffer in this process, check sRet and buffer
+* CaseDescription: 1. preSetup: produce surface flush 3 buffer.
+*                  2. operation: comsumer acquire buffer with Using AutoTimestamp and INT64_MAX expectTimstamp.
+*                  3. result: drop 2 buffer and acquire 1 buffer, and next acquire buffer shouled be failed with return
+*                     GSERROR_NO_BUFFER.
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
 HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)

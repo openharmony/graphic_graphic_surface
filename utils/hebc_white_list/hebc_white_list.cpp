@@ -26,6 +26,7 @@ const std::string CONFIG_FILE_RELATIVE_PATH = "etc/graphics_game/config/graphics
 const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
 static constexpr unsigned int MAX_HEBC_WHITELIST_NUMBER = 10000; // hebcwhiteList size not exceed 10000
+static constexpr int MAX_APP_NAME_SIZE = 100; // appname size not exceed 100
 } // end of anonymous namespace
 
 bool HebcWhiteList::Check(const std::string& appName) noexcept
@@ -51,6 +52,7 @@ bool HebcWhiteList::Init() noexcept
 
 void HebcWhiteList::GetApplicationName(std::string& name) noexcept
 {
+    std::lock_guard<std::mutex> lock(nameMutex_);
     if (!appName_.empty()) {
         name = appName_;
         return;
@@ -62,7 +64,12 @@ void HebcWhiteList::GetApplicationName(std::string& name) noexcept
     }
     std::getline(procfile, name);
     procfile.close();
-    appName_ = name.substr(0, name.find('\0'));
+    size_t pos = name.find('\0');
+    if (pos != std::string::npos) {
+        appName_ = name.substr(0, pos);
+    } else {
+        appName_ = name.substr(0, MAX_APP_NAME_SIZE);
+    }
     name = appName_;
 }
 

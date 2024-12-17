@@ -315,6 +315,10 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         ret = MetadataHelper::SetHDRStaticMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
         OH_NativeBuffer_MetadataType hdrMetadataType = static_cast<OH_NativeBuffer_MetadataType>(*metadata);
+        if (NATIVE_METADATATYPE_TO_HDI_MAP.find(hdrMetadataType) == NATIVE_METADATATYPE_TO_HDI_MAP.end()) {
+            BLOGE("the metadataType is not defined.");
+            return OHOS::SURFACE_ERROR_INVALID_PARAM;
+        }
         ret = MetadataHelper::SetHDRMetadataType(sbuffer, NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
     } else {
         BLOGE("the metadataKey does not support it.");

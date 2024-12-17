@@ -46,7 +46,6 @@ private:
     std::atomic_bool inited_ = false;
     std::vector<std::string> hebcList_;
     std::string appName_;
-    std::mutex nameMutex_;
 };
 
 } // namespace OHOS

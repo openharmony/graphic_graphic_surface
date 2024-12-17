@@ -25,8 +25,9 @@ namespace {
 const std::string CONFIG_FILE_RELATIVE_PATH = "etc/graphics_game/config/graphics_game.json";
 const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
-static constexpr unsigned int MAX_HEBC_WHITELIST_NUMBER = 10000; // hebcwhiteList size not exceed 10000
-static constexpr int MAX_APP_NAME_SIZE = 100; // appname size not exceed 100
+static constexpr uint32_t MAX_HEBC_WHITELIST_NUMBER = 10000; // hebcwhiteList size not exceed 10000
+static constexpr uint32_t MAX_APP_NAME_SIZE = 1024; // appname size not exceed 1024
+static std::once_flag nameFlag_;
 } // end of anonymous namespace
 
 bool HebcWhiteList::Check(const std::string& appName) noexcept
@@ -52,24 +53,20 @@ bool HebcWhiteList::Init() noexcept
 
 void HebcWhiteList::GetApplicationName(std::string& name) noexcept
 {
-    std::lock_guard<std::mutex> lock(nameMutex_);
-    if (!appName_.empty()) {
-        name = appName_;
-        return;
-    }
-    
-    std::ifstream procfile(PROCESS_NAME);
-    if (!procfile.is_open()) {
-        return;
-    }
-    std::getline(procfile, name);
-    procfile.close();
-    size_t pos = name.find('\0');
-    if (pos != std::string::npos) {
-        appName_ = name.substr(0, pos);
-    } else {
-        appName_ = name.substr(0, MAX_APP_NAME_SIZE);
-    }
+    std::call_once(nameFlag_, [this, &name]() {
+        std::ifstream procfile(PROCESS_NAME);
+        if (!procfile.is_open()) {
+            return;
+        }
+        std::getline(procfile, name);
+        procfile.close();
+        size_t pos = name.find('\0');
+        if (pos != std::string::npos) {
+            appName_ = name.substr(0, std::min(pos, static_cast<size_t>(MAX_APP_NAME_SIZE)));
+        } else {
+            appName_ = name.substr(0, MAX_APP_NAME_SIZE);
+        }
+    });
     name = appName_;
 }
 

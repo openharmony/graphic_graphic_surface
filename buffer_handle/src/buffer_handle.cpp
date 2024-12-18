@@ -117,7 +117,8 @@ bool WriteBufferHandle(MessageParcel &parcel, const BufferHandle &handle)
     return true;
 }
 
-BufferHandle *ReadBufferHandle(MessageParcel &parcel)
+BufferHandle *ReadBufferHandle(MessageParcel &parcel,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)> readFdDefaultFunc)> readSafeFdFunc)
 {
     uint32_t reserveFds = 0;
     uint32_t reserveInts = 0;
@@ -146,19 +147,27 @@ BufferHandle *ReadBufferHandle(MessageParcel &parcel)
         FreeBufferHandle(handle);
         return nullptr;
     }
+
+    auto readFdDefaultFunc = [] (Parcel &parcel) -> int {
+        MessageParcel *msgParcel = static_cast<MessageParcel *>(&parcel);
+        return msgParcel->ReadFileDescriptor();
+    };
+
     if (validFd) {
-        handle->fd = parcel.ReadFileDescriptor();
+        handle->fd = readSafeFdFunc ? readSafeFdFunc(parcel, readFdDefaultFunc) : parcel.ReadFileDescriptor();
         if (handle->fd == -1) {
-            UTILS_LOGE("%{public}s ReadFileDescriptor fd failed", __func__);
+            UTILS_LOGE("%{public}s ReadFileDescriptor fd failed, is use readSafeFdFunc:%d",
+                __func__, readSafeFdFunc != nullptr);
             FreeBufferHandle(handle);
             return nullptr;
         }
     }
 
     for (uint32_t i = 0; i < handle->reserveFds; i++) {
-        handle->reserve[i] = parcel.ReadFileDescriptor();
+        handle->reserve[i] = readSafeFdFunc ? readSafeFdFunc(parcel, readFdDefaultFunc) : parcel.ReadFileDescriptor();
         if (handle->reserve[i] == -1) {
-            UTILS_LOGE("%{public}s ReadFileDescriptor reserve failed", __func__);
+            UTILS_LOGE("%{public}s ReadFileDescriptor reserve failed, is use readSafeFdFunc:%d",
+                __func__, readSafeFdFunc != nullptr);
             FreeBufferHandle(handle);
             return nullptr;
         }

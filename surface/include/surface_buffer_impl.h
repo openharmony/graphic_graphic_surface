@@ -67,7 +67,9 @@ public:
 
     void SetBufferHandle(BufferHandle *handle) override;
     GSError WriteToMessageParcel(MessageParcel &parcel) override;
-    GSError ReadFromMessageParcel(MessageParcel &parcel) override;
+    GSError ReadFromMessageParcel(MessageParcel &parcel,
+        std::function<int(MessageParcel &parcel,
+            std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc = nullptr) override;
 
     OH_NativeBuffer* SurfaceBufferToNativeBuffer() override;
 

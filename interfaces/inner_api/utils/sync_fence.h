@@ -67,7 +67,9 @@ public:
     int32_t Get() const;
 
     bool WriteToMessageParcel(MessageParcel &parcel);
-    static sptr<SyncFence> ReadFromMessageParcel(MessageParcel &parcel);
+    static sptr<SyncFence> ReadFromMessageParcel(MessageParcel &parcel,
+        std::function<int(MessageParcel &parcel,
+            std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc = nullptr);
     FenceStatus GetStatus();
     static sptr<SyncFence> InvalidFence();
 private:

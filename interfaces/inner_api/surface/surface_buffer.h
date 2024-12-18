@@ -31,6 +31,7 @@ struct BufferWrapper;
 
 namespace OHOS {
 class MessageParcel;
+class Parcel;
 class SyncFence;
 class SurfaceBuffer : public RefBase {
 public:
@@ -60,7 +61,16 @@ public:
     virtual void SetExtraData(sptr<BufferExtraData> bedata) = 0;
     virtual sptr<BufferExtraData> GetExtraData() const = 0;
     virtual GSError WriteToMessageParcel(MessageParcel &parcel) = 0;
-    virtual GSError ReadFromMessageParcel(MessageParcel &parcel) = 0;
+    /*
+     * @Description: ReadFromMessageParcel
+     * @param parcel: A MessageParcel object
+     * @param readSafeFdFunc：Optional parameter, caller can use this callback function to implement
+     *                        their own way of obtaining Fd from parcel
+     * @return  Returns GSERROR_OK if SetMetadata is successful; returns GErrorCode otherwise.
+     */
+    virtual GSError ReadFromMessageParcel(MessageParcel &parcel,
+        std::function<int(MessageParcel &parcel,
+            std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc = nullptr) = 0;
     virtual void SetBufferHandle(BufferHandle *handle) = 0;
 
     // gralloc

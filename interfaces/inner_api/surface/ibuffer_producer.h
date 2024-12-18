@@ -148,6 +148,24 @@ public:
         (void)alpha;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+        RequestBufferReturnValue& retval)
+    {
+        (void)config;
+        (void)bedata;
+        (void)retval;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap)
+    {
+        (void)buffer;
+        (void)bedata;
+        (void)fence;
+        (void)config;
+        (void)needMap;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -200,6 +218,8 @@ protected:
         BUFFER_PRODUCER_SET_GLOBALALPHA,
         BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE,
         BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE,
+        BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER,
+        BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER,
     };
 };
 } // namespace OHOS

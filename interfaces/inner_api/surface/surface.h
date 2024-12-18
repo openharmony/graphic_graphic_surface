@@ -419,6 +419,31 @@ public:
     {
         return false;
     }
+    /**
+     * @brief Merge RequestBuffer and DetachBufferFromQueue function to reduce once ipc.
+     */
+    virtual GSError RequestAndDetachBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
+                                           BufferRequestConfig& config)
+    {
+        (void)buffer;
+        (void)fence;
+        (void)config;
+        return GSERROR_NOT_SUPPORT;
+    }
+    
+    /**
+     * @brief Merge AttachBufferToQueue And FlushBuffer function to reduce once ipc.
+     */
+    virtual GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
+                                         BufferFlushConfig& config, bool needMap)
+    {
+        (void)buffer;
+        (void)fence;
+        (void)config;
+        (void)needMap;
+        return GSERROR_NOT_SUPPORT;
+    }
+
 protected:
     Surface() = default;
 };

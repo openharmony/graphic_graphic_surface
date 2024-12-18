@@ -175,26 +175,19 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
     return ret;
 }
 
-GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
+void ProducerSurface::SetBufferConfigLocked(sptr<BufferExtraData>& bedataimpl,
     IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
 {
-    // add cache
-    if (retval.buffer != nullptr) {
-        bufferProducerCache_[retval.sequence] = retval.buffer;
-    } else {
-        auto it = bufferProducerCache_.find(retval.sequence);
-        if (it == bufferProducerCache_.end()) {
-            BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
-            return SURFACE_ERROR_UNKOWN;
-        } else {
-            retval.buffer = it->second;
-        }
-    }
     if (retval.buffer != nullptr) {
         retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
         retval.buffer->SetSurfaceBufferTransform(config.transform);
         retval.buffer->SetExtraData(bedataimpl);
     }
+}
+
+void ProducerSurface::DeleteCacheBufferLocked(sptr<BufferExtraData>& bedataimpl,
+    IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
+{
     for (auto it = retval.deletingBuffers.begin(); it != retval.deletingBuffers.end(); it++) {
         uint32_t seqNum = static_cast<uint32_t>(*it);
         bufferProducerCache_.erase(seqNum);
@@ -208,6 +201,26 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
             }
         }
     }
+}
+
+GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
+    IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
+{
+    // add cache
+    if (retval.buffer != nullptr) {
+        bufferProducerCache_[retval.sequence] = retval.buffer;
+    } else {
+        auto it = bufferProducerCache_.find(retval.sequence);
+        if (it == bufferProducerCache_.end()) {
+            DeleteCacheBufferLocked(bedataimpl, retval, config);
+            BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
+            return SURFACE_ERROR_UNKOWN;
+        } else {
+            retval.buffer = it->second;
+        }
+    }
+    SetBufferConfigLocked(bedataimpl, retval, config);
+    DeleteCacheBufferLocked(bedataimpl, retval, config);
     return SURFACE_ERROR_OK;
 }
 
@@ -1020,5 +1033,93 @@ GSError ProducerSurface::SetGlobalAlpha(int32_t alpha)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetGlobalAlpha(alpha);
+}
+
+GSError ProducerSurface::UpdateCacheLocked(sptr<BufferExtraData>& bedataimpl,
+    IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
+{
+    // add cache
+    if (retval.buffer == nullptr) {
+        auto it = bufferProducerCache_.find(retval.sequence);
+        if (it == bufferProducerCache_.end()) {
+            DeleteCacheBufferLocked(bedataimpl, retval, config);
+            BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
+            return SURFACE_ERROR_UNKOWN;
+        } else {
+            retval.buffer = it->second;
+        }
+    }
+    bufferProducerCache_.erase(retval.sequence);
+    SetBufferConfigLocked(bedataimpl, retval, config);
+    DeleteCacheBufferLocked(bedataimpl, retval, config);
+    return SURFACE_ERROR_OK;
+}
+
+GSError ProducerSurface::RequestAndDetachBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
+                                                BufferRequestConfig& config)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    IBufferProducer::RequestBufferReturnValue retval;
+    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->RequestAndDetachBuffer(config, bedataimpl, retval);
+    if (ret != GSERROR_OK) {
+        if (ret == GSERROR_NO_CONSUMER) {
+            CleanCacheLocked(false);
+        }
+        /**
+         * if server is connected, but result is failed.
+         * client needs to synchronize status.
+         */
+        if (retval.isConnected) {
+            isDisconnected_ = false;
+        }
+        BLOGD("RequestAndDetachBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+        return ret;
+    }
+    isDisconnected_ = false;
+    UpdateCacheLocked(bedataimpl, retval, config);
+    buffer = retval.buffer;
+    fence = retval.fence;
+
+    if (SetMetadataValue(buffer) != GSERROR_OK) {
+        BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
+    }
+    return ret;
+}
+
+GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
+                                              BufferFlushConfig& config, bool needMap)
+{
+    if (buffer == nullptr || fence == nullptr || producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    sptr<BufferExtraData> bedata = buffer->GetExtraData();
+    if (bedata == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    BufferFlushConfigWithDamages configWithDamages;
+    configWithDamages.damages.push_back(config.damage);
+    configWithDamages.timestamp = config.timestamp;
+    configWithDamages.desiredPresentTimestamp = config.desiredPresentTimestamp;
+
+    auto ret = producer_->AttachAndFlushBuffer(buffer, bedata, fence, configWithDamages, needMap);
+    if (ret == GSERROR_OK) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
+            BLOGE("Attach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
+            return SURFACE_ERROR_BUFFER_IS_INCACHE;
+        }
+        bufferProducerCache_[buffer->GetSeqNum()] = buffer;
+    } else if (ret == GSERROR_NO_CONSUMER) {
+        CleanCache();
+        BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+    }
+    return ret;
 }
 } // namespace OHOS

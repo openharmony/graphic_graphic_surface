@@ -200,6 +200,10 @@ public:
     uint32_t GetAvailableBufferCount();
 
     void SetConnectedPid(int32_t connectedPid);
+    GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+        struct IBufferProducer::RequestBufferReturnValue& retval);
+    GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap);
 
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
@@ -220,7 +224,7 @@ private:
     bool CheckProducerCacheListLocked();
     GSError SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock);
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
-    void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer);
+    void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool needMap);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
     void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
     GSError CheckBufferQueueCache(uint32_t sequence);
@@ -245,6 +249,15 @@ private:
     void OnBufferDeleteForRS(uint32_t sequence);
     void DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence);
     void AddDeletingBuffersLocked(std::vector<uint32_t> &deletingBuffers);
+    GSError DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType, std::unique_lock<std::mutex> &lock);
+    GSError AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool needMap);
+    GSError FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExtraData> &bedata,
+        const sptr<SyncFence> &fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
+    GSError CheckBufferQueueCacheLocked(uint32_t sequence);
+    GSError DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
+        sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
+    GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
+        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

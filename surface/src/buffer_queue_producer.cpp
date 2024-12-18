@@ -96,6 +96,8 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER, AcquireLastFlushedBufferRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, ReleaseLastFlushedBufferRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_GLOBALALPHA, SetGlobalAlphaRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER, RequestAndDetachBufferRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, AttachAndFlushBufferRemote),
     };
 }
 
@@ -373,27 +375,37 @@ int32_t BufferQueueProducer::GetLastFlushedBufferRemote(MessageParcel &arguments
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::AttachBufferToQueueReadBuffer(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer)
+{
+    uint32_t sequence;
+    GSError sRet = ReadSurfaceBufferImpl(arguments, sequence, buffer);
+    if (sRet != GSERROR_OK || buffer == nullptr) {
+        if (!reply.WriteInt32(SURFACE_ERROR_UNKOWN)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_DATA;
+    }
+    sRet = buffer->ReadBufferRequestConfig(arguments);
+    if (sRet != GSERROR_OK) {
+        if (!reply.WriteInt32(SURFACE_ERROR_UNKOWN)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_DATA;
+    }
+    return ERR_NONE;
+}
+
 int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
-    uint32_t sequence;
-    GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
-    if (ret != GSERROR_OK || buffer == nullptr) {
-        if (!reply.WriteInt32(SURFACE_ERROR_UNKOWN)) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
-        return ERR_INVALID_DATA;
+    auto ret = AttachBufferToQueueReadBuffer(arguments, reply, option, buffer);
+    if (ret != ERR_NONE) {
+        return ret;
     }
-    ret = buffer->ReadBufferRequestConfig(arguments);
-    if (ret != GSERROR_OK) {
-        if (!reply.WriteInt32(SURFACE_ERROR_UNKOWN)) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
-        return ERR_INVALID_DATA;
-    }
-    ret = AttachBufferToQueue(buffer);
-    if (!reply.WriteInt32(ret)) {
+    GSError sRet = AttachBufferToQueue(buffer);
+    if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -906,6 +918,80 @@ int32_t BufferQueueProducer::SetGlobalAlphaRemote(MessageParcel &arguments, Mess
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    RequestBufferReturnValue retval;
+    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    BufferRequestConfig config = {};
+    ReadRequestConfig(arguments, config);
+
+    GSError sRet = RequestAndDetachBuffer(config, bedataimpl, retval);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    if (sRet == GSERROR_OK &&
+        (WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer) != GSERROR_OK ||
+            bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
+            !reply.WriteUInt32Vector(retval.deletingBuffers))) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    } else if (sRet != GSERROR_OK && !reply.WriteBool(retval.isConnected)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    auto ret = AttachBufferToQueueReadBuffer(arguments, reply, option, buffer);
+    if (ret != ERR_NONE) {
+        return ret;
+    }
+    BufferFlushConfigWithDamages config;
+    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    if (bedataimpl->ReadFromParcel(arguments) != GSERROR_OK) {
+        return ERR_INVALID_REPLY;
+    }
+
+    sptr<SyncFence> fence = SyncFence::ReadFromMessageParcel(arguments);
+    if (ReadFlushConfig(arguments, config) != GSERROR_OK) {
+        return ERR_INVALID_REPLY;
+    }
+    bool needMap = arguments.ReadBool();
+    GSError sRet = AttachAndFlushBuffer(buffer, bedataimpl, fence, config, needMap);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+GSError BufferQueueProducer::RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+    RequestBufferReturnValue& retval)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+
+    retval.isConnected = false;
+    auto ret = Connect();
+    if (ret != SURFACE_ERROR_OK) {
+        return ret;
+    }
+    retval.isConnected = true;
+    return bufferQueue_->RequestAndDetachBuffer(config, bedata, retval);
+}
+
+GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+    const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
 
 GSError BufferQueueProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer,

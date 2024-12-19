@@ -31,10 +31,13 @@ bool WriteBufferHandle(MessageParcel &parcel, const BufferHandle &handle);
 /* *
  * @Description: Read BufferHanedle from MessageParcel
  * @param parcel message parcel which should has a buffer handle
+ * @param readSafeFdFunc optional parameter, caller can use this callback function to implement
+ *                       their own way of obtaining Fd from parcel
  * @return  Returns pointer to buffer handle if the operation is successful; returns <b>nullptr</b> otherwise.
  */
-BufferHandle *ReadBufferHandle(MessageParcel &parcel);
-} // namespace OHO
+BufferHandle *ReadBufferHandle(MessageParcel &parcel,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc = nullptr);
+} // namespace OHOS
 #endif // __cplusplus
 
 #endif // UTILS_INCLUDE_BUFFER_HANDLE_PARCEL_H

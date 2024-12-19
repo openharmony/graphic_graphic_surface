@@ -40,7 +40,7 @@ namespace {
 #define B_CPRINTF(func, fmt, ...) \
     func(LOG_CORE, "<%{public}d>%{public}s: " fmt, \
         __LINE__, __func__, ##__VA_ARGS__)
-        
+
 #define UTILS_LOGD(fmt, ...) B_CPRINTF(HILOG_DEBUG, fmt, ##__VA_ARGS__)
 #define UTILS_LOGI(fmt, ...) B_CPRINTF(HILOG_INFO, fmt, ##__VA_ARGS__)
 #define UTILS_LOGW(fmt, ...) B_CPRINTF(HILOG_WARN, fmt, ##__VA_ARGS__)
@@ -253,15 +253,19 @@ bool SyncFence::IsValid() const
     return fenceFd_ != -1;
 }
 
-sptr<SyncFence> SyncFence::ReadFromMessageParcel(MessageParcel &parcel)
+sptr<SyncFence> SyncFence::ReadFromMessageParcel(MessageParcel &parcel,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc)
 {
     int32_t fence = parcel.ReadInt32();
     if (fence < 0) {
         return INVALID_FENCE;
     }
 
-    fence = parcel.ReadFileDescriptor();
-
+    auto readFdDefaultFunc = [] (Parcel &parcel) -> int {
+        MessageParcel *msgParcel = static_cast<MessageParcel *>(&parcel);
+        return msgParcel->ReadFileDescriptor();
+    };
+    fence = readSafeFdFunc ? readSafeFdFunc(parcel, readFdDefaultFunc) : parcel.ReadFileDescriptor();
     return sptr<SyncFence>(new SyncFence(fence));
 }
 

@@ -545,9 +545,10 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     return GSERROR_OK;
 }
 
-GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel& parcel)
+GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc)
 {
-    auto handle = ReadBufferHandle(parcel);
+    auto handle = ReadBufferHandle(parcel, readSafeFdFunc);
     SetBufferHandle(handle);
     return handle ? GSERROR_OK : GSERROR_API_FAILED;
 }

@@ -1073,4 +1073,41 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function
     producer = nullptr;
     cSurface = nullptr;
 }
+
+/*
+ * CaseDescription: 1. preSetup: create native window
+ *                  2. operation: set native window format is NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT and request buffer
+ *                  3. result: The requested buffer format attribute is NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT,
+ *                     and NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT equal GRAPHIC_PIXEL_FMT_RGBA16_FLOAT
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowSetFormat001, Function | MediumTest | Level2)
+{
+    // preSetup
+    sptr<IConsumerSurface> cSurface = IConsumerSurface::Create("SurfaceB");
+    cSurface->RegisterConsumerListener(new OnBufferAvailableTest());
+    auto producer = cSurface->GetProducer();
+    sptr<Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    EXPECT_NE(pSurface, nullptr);
+    NativeWindow *nativeWindowNew = OH_NativeWindow_CreateNativeWindow(&pSurface);
+    int32_t code = SET_BUFFER_GEOMETRY;
+    int32_t height = 0x100;
+    int32_t width = 0x100;
+    OH_NativeWindow_NativeWindowHandleOpt(nativeWindowNew, code, height, width);
+
+    // operation
+    code = SET_FORMAT;
+    int32_t format = 10;
+    EXPECT_EQ(NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT - GRAPHIC_PIXEL_FMT_RGBA16_FLOAT, 0);
+    OH_NativeWindow_NativeWindowHandleOpt(nativeWindowNew, code, format);
+
+    struct NativeWindowBuffer *nativeWindowBuffer = nullptr;
+    int32_t fenceFd = -1;
+    auto ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindowNew, &nativeWindowBuffer, &fenceFd);
+    
+    // result
+    if (ret == GSERROR_OK) {
+        auto bufferHandle = OH_NativeWindow_GetBufferHandleFromNative(nativeWindowBuffer);
+        EXPECT_EQ(bufferHandle->format, format);
+    }
+}
 }

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef SUPPORT_ACCESS_TOKEN
 #include <chrono>
 #include <thread>
 #include <vector>
@@ -734,3 +735,4 @@ HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, Function | MediumTes
     ASSERT_EQ(bp->SetGlobalAlpha(255), OHOS::GSERROR_OK);
 }
 }
+#endif

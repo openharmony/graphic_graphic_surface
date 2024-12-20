@@ -16,6 +16,11 @@ graphic_surface_root = "//foundation/graphic/graphic_surface"
 declare_args() {
   graphic_2d_ext_delegator = false
   graphic_2d_ext_delegator_gni = ""
+  support_access_token = true
+  if (defined(global_parts_info) &&
+      !define(global_parts_info.security_access_token)) {
+    support_access_token = false;
+  }
 }
 rs_common_define = []
 

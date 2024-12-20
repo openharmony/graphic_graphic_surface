@@ -319,6 +319,7 @@ ohos_static_library("surface_test_common") {
     "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
+  defines = []
   if (support_access_token) {
     public_external_deps += [
       "access_token:libaccesstoken_sdk",

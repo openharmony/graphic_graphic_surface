@@ -320,7 +320,7 @@ ohos_static_library("surface_test_common") {
     "samgr:samgr_proxy",
   ]
   defines = []
-  if (support_access_token) {
+  if (graphic_surface_support_access_token) {
     public_external_deps += [
       "access_token:libaccesstoken_sdk",
       "access_token:libnativetoken",

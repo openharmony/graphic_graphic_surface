@@ -58,8 +58,8 @@ ohos_unittest("native_window_buffer_test_st") {
     "samgr:samgr_proxy",
   ]
   defines = []
-  if (support_access_token) {
-    public_external_deps += [
+  if (graphic_surface_support_access_token) {
+    external_deps += [
       "access_token:libaccesstoken_sdk",
       "access_token:libnativetoken",
       "access_token:libtoken_setproc",
@@ -125,8 +125,8 @@ ohos_unittest("surface_ipc_test_st") {
     "samgr:samgr_proxy",
   ]
   defines = []
-  if (support_access_token) {
-    public_external_deps += [
+  if (graphic_surface_support_access_token) {
+    external_deps += [
       "access_token:libaccesstoken_sdk",
       "access_token:libnativetoken",
       "access_token:libtoken_setproc",
@@ -164,8 +164,8 @@ ohos_unittest("surface_ipc_with_pts_test_st") {
     "samgr:samgr_proxy",
   ]
   defines = []
-  if (support_access_token) {
-    public_external_deps += [
+  if (graphic_surface_support_access_token) {
+    external_deps += [
       "access_token:libaccesstoken_sdk",
       "access_token:libnativetoken",
       "access_token:libtoken_setproc",
@@ -203,8 +203,8 @@ ohos_unittest("surface_ipc_with_invaild_pts_test_st") {
     "samgr:samgr_proxy",
   ]
   defines = []
-  if (support_access_token) {
-    public_external_deps += [
+  if (graphic_surface_support_access_token) {
+    external_deps += [
       "access_token:libaccesstoken_sdk",
       "access_token:libnativetoken",
       "access_token:libtoken_setproc",
@@ -242,8 +242,8 @@ ohos_unittest("surface_ipc_with_dropframe_test_st") {
     "samgr:samgr_proxy",
   ]
   defines = []
-  if (support_access_token) {
-    public_external_deps += [
+  if (graphic_surface_support_access_token) {
+    external_deps += [
       "access_token:libaccesstoken_sdk",
       "access_token:libnativetoken",
       "access_token:libtoken_setproc",

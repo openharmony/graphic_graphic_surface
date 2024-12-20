@@ -121,6 +121,10 @@ public:
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
+    GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+        RequestBufferReturnValue& retval) override;
+    GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
 
 private:
     GSError CheckConnectLocked();
@@ -178,8 +182,12 @@ private:
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ReleaseLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetGlobalAlphaRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t RequestAndDetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t AttachAndFlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPid(int32_t connectedPid);
+    int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
+        MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
     
     std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;

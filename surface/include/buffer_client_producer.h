@@ -110,12 +110,19 @@ public:
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
     GSError SetGlobalAlpha(int32_t alpha) override;
+    GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+        RequestBufferReturnValue& retval) override;
+    GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);
     GSError CheckRetval(MessageParcel &reply);
     GSError GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, uint32_t command);
+    GSError RequestBufferCommon(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
+        RequestBufferReturnValue &retval, uint32_t command);
+
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     static inline const std::string DEFAULT_NAME = "not init";
     std::string name_ = DEFAULT_NAME;

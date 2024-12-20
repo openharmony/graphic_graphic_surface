@@ -2231,11 +2231,14 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTes
     sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
     BufferRequestConfig config;
     ASSERT_EQ(pSurfaceTmp->RequestBuffer(buffer, fence, config), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->RequestAndDetachBuffer(buffer, fence, config), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
     ASSERT_EQ(pSurfaceTmp->RequestBuffers(buffers, fences, config), OHOS::GSERROR_INVALID_ARGUMENTS);
     BufferFlushConfigWithDamages configWithDamage;
     ASSERT_EQ(pSurfaceTmp->FlushBuffer(buffer, fence, configWithDamage), OHOS::GSERROR_INVALID_ARGUMENTS);
+    BufferFlushConfig flushConfig;
+    ASSERT_EQ(pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<BufferFlushConfigWithDamages> configWithDamages;
     ASSERT_EQ(pSurfaceTmp->FlushBuffers(buffers, fences, configWithDamages), OHOS::GSERROR_INVALID_ARGUMENTS);
     float matrix[16];
@@ -2306,5 +2309,157 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTes
     ASSERT_EQ(pSurfaceTmp->SetGlobalAlpha(0), OHOS::GSERROR_INVALID_ARGUMENTS);
 
     pSurfaceTmp = nullptr;
+}
+
+/*
+* Function: RequestAndDetachBuffer001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestAndDetachBuffer function and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer001, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    GSError ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    ret = pSurfaceTmp->RequestAndDetachBuffer(buffer, fence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    fence = nullptr;
+    ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+}
+
+/*
+* Function: RequestAndDetachBuffer002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestAndDetachBuffer function and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer002, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    GSError ret = pSurfaceTmp->RequestAndDetachBuffer(buffer, fence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_IS_INCACHE);
+
+    int32_t flushFence;
+    sptr<SurfaceBuffer> acquireBuffer = nullptr;
+    ret = cSurfTmp->AcquireBuffer(acquireBuffer, flushFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cSurfTmp->ReleaseBuffer(acquireBuffer, -1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(acquireBuffer->GetSeqNum(), buffer->GetSeqNum());
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+}
+
+/*
+* Function: RequestAndDetachBuffer003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestAndDetachBuffer function and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer003, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    BufferFlushConfig flushConfigFail = {
+        .damage = {
+            .w = -1,
+            .h = -1,
+        },
+    };
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    GSError ret = pSurfaceTmp->RequestAndDetachBuffer(buffer, fence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    cSurfTmp->UnregisterConsumerListener();
+    ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    ret = pSurfaceTmp->FlushBuffer(buffer, fence, flushConfig);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_NOT_INCACHE);
+    ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfigFail, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    cSurfTmp = nullptr;
+    ret = pSurfaceTmp->RequestAndDetachBuffer(buffer, fence, requestConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_CONSUMER);
+    ret = pSurfaceTmp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_CONSUMER);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
 }
 }

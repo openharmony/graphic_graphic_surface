@@ -144,6 +144,10 @@ public:
     {
         return initInfo_.isInHebcList;
     }
+    GSError RequestAndDetachBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
+                                   BufferRequestConfig& config) override;
+    GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
+                                 BufferFlushConfig& config, bool needMap) override;
 private:
     bool IsRemote();
     void CleanAllLocked();
@@ -151,6 +155,12 @@ private:
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
     GSError SetMetadataValue(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
+    void SetBufferConfigLocked(sptr<BufferExtraData>& bedataimpl,
+        IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config);
+    void DeleteCacheBufferLocked(sptr<BufferExtraData>& bedataimpl,
+        IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config);
+    GSError UpdateCacheLocked(sptr<BufferExtraData>& bedataimpl,
+        IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config);
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;

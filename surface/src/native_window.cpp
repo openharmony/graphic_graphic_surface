@@ -462,12 +462,14 @@ static void HandleNativeWindowGetSurfaceAppFrameworkType(OHNativeWindow *window,
     const char **appFrameworkType = va_arg(args, const char**);
     if (appFrameworkType != nullptr) {
         std::string typeStr = window->surface->GetSurfaceAppFrameworkType();
-        if (window->appFrameworkType != nullptr
-            && strcpy_s(window->appFrameworkType, typeStr.size() + 1, typeStr.c_str()) != 0) {
+        std::call_once(window->appFrameworkTypeOnceFlag_, [&]() {
+            window->appFrameworkType_ = new char[MAXIMUM_LENGTH_OF_APP_FRAMEWORK + 1]();
+        });
+        if (strcpy_s(window->appFrameworkType_, typeStr.size() + 1, typeStr.c_str()) != 0) {
             BLOGE("strcpy app framework type name failed.");
             return;
         }
-        *appFrameworkType = window->appFrameworkType;
+        *appFrameworkType = window->appFrameworkType_;
     }
 }
 
@@ -959,7 +961,6 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
 
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
-    appFrameworkType = new char[MAXIMUM_LENGTH_OF_APP_FRAMEWORK + 1];
 }
 
 NativeWindow::~NativeWindow()
@@ -974,9 +975,10 @@ NativeWindow::~NativeWindow()
     }
     surface = nullptr;
     bufferCache_.clear();
-    if (appFrameworkType != nullptr) {
-        delete[] appFrameworkType;
-        appFrameworkType = nullptr;
+    std::call_once(appFrameworkTypeOnceFlag_, [] {});
+    if (appFrameworkType_ != nullptr) {
+        delete[] appFrameworkType_;
+        appFrameworkType_ = nullptr;
     }
 }
 

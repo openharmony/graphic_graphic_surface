@@ -552,6 +552,26 @@ HWTEST_F(NativeWindowTest, HandleOpt013, Function | MediumTest | Level1)
 }
 
 /*
+* Function: OH_NativeWindow_NativeWindowHandleOpt
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt by different param
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, HandleOpt014, Function | MediumTest | Level1)
+{
+    int code = SET_APP_FRAMEWORK_TYPE;
+    const char* typeSet = "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttest";
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, typeSet), OHOS::GSERROR_OK);
+
+    code = GET_APP_FRAMEWORK_TYPE;
+    const char* typeGet;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &typeGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(0, strcmp(typeSet, typeGet));
+}
+
+/*
 * Function: OH_NativeWindow_NativeWindowAttachBuffer
 * Type: Function
 * Rank: Important(2)

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef SUPPORT_ACCESS_TOKEN
 #include <chrono>
 #include <thread>
 #include <unistd.h>
@@ -257,3 +258,4 @@ HWTEST_F(NativeWindowBufferTest, Surface001, Function | MediumTest | Level2)
     waitpid(pid, nullptr, 0);
 }
 }
+#endif

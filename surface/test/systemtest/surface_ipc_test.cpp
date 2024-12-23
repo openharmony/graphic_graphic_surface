@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef SUPPORT_ACCESS_TOKEN
 #include <chrono>
 #include <thread>
 #include <unistd.h>
@@ -265,3 +266,4 @@ HWTEST_F(SurfaceIPCTest, Disconnect001, Function | MediumTest | Level1)
     ASSERT_EQ(sRet, GSERROR_CONSUMER_DISCONNECTED);  // Disconnect cannot be called in two processes
 }
 }
+#endif

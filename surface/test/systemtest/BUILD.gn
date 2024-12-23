@@ -51,15 +51,21 @@ ohos_unittest("native_window_buffer_test_st") {
   ]
 
   external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
     "c_utils:utils",
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
+  defines = []
+  if (graphic_surface_support_access_token) {
+    external_deps += [
+      "access_token:libaccesstoken_sdk",
+      "access_token:libnativetoken",
+      "access_token:libtoken_setproc",
+    ]
+    defines += [ "SUPPORT_ACCESS_TOKEN" ]
+  }
 }
 
 ## SystemTest native_window_buffer_test }}}
@@ -112,15 +118,21 @@ ohos_unittest("surface_ipc_test_st") {
   deps = [ "$graphic_surface_root/surface:surface" ]
 
   external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
     "c_utils:utils",
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
+  defines = []
+  if (graphic_surface_support_access_token) {
+    external_deps += [
+      "access_token:libaccesstoken_sdk",
+      "access_token:libnativetoken",
+      "access_token:libtoken_setproc",
+    ]
+    defines += [ "SUPPORT_ACCESS_TOKEN" ]
+  }
 }
 
 ## SystemTest surface_ipc_test }}}
@@ -145,15 +157,21 @@ ohos_unittest("surface_ipc_with_pts_test_st") {
   ]
 
   external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
     "c_utils:utils",
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
+  defines = []
+  if (graphic_surface_support_access_token) {
+    external_deps += [
+      "access_token:libaccesstoken_sdk",
+      "access_token:libnativetoken",
+      "access_token:libtoken_setproc",
+    ]
+    defines += [ "SUPPORT_ACCESS_TOKEN" ]
+  }
 }
 
 ## SystemTest surface_ipc_with_pts_test_st }}}
@@ -178,15 +196,21 @@ ohos_unittest("surface_ipc_with_invaild_pts_test_st") {
   ]
 
   external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
     "c_utils:utils",
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
+  defines = []
+  if (graphic_surface_support_access_token) {
+    external_deps += [
+      "access_token:libaccesstoken_sdk",
+      "access_token:libnativetoken",
+      "access_token:libtoken_setproc",
+    ]
+    defines += [ "SUPPORT_ACCESS_TOKEN" ]
+  }
 }
 
 ## SystemTest surface_ipc_with_invaild_pts_test_st }}}
@@ -211,14 +235,20 @@ ohos_unittest("surface_ipc_with_dropframe_test_st") {
   ]
 
   external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
     "c_utils:utils",
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
+  defines = []
+  if (graphic_surface_support_access_token) {
+    external_deps += [
+      "access_token:libaccesstoken_sdk",
+      "access_token:libnativetoken",
+      "access_token:libtoken_setproc",
+    ]
+    defines += [ "SUPPORT_ACCESS_TOKEN" ]
+  }
 }
 ## SystemTest surface_ipc_with_dropframe_test_st }}}

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef SUPPORT_ACCESS_TOKEN
 #include <chrono>
 #include <thread>
 #include <unistd.h>
@@ -247,3 +248,4 @@ HWTEST_F(SurfaceIPCWithInvalidPTSTest, BufferIPC001, Function | MediumTest | Lev
     } while (ret == -1 && errno == EINTR);
 }
 }
+#endif

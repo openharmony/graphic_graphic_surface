@@ -120,6 +120,10 @@ public:
     GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(uint32_t sequence) override;
+    GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+        RequestBufferReturnValue& retval) override;
+    GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+        const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
 
 private:
     GSError CheckConnectLocked();

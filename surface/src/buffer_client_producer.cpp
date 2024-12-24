@@ -92,15 +92,15 @@ GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
     return GSERROR_OK;
 }
 
-GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-                                            RequestBufferReturnValue &retval)
+GSError BufferClientProducer::RequestBufferCommon(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
+                                                  RequestBufferReturnValue &retval, uint32_t command)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
     WriteRequestConfig(arguments, config);
 
     retval.isConnected = false;
-    SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFER, arguments, reply, option);
+    SEND_REQUEST(command, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
         reply.ReadBool(retval.isConnected);
@@ -123,6 +123,12 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
     reply.ReadUInt32Vector(&retval.deletingBuffers);
 
     return GSERROR_OK;
+}
+
+GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
+                                            RequestBufferReturnValue &retval)
+{
+    return RequestBufferCommon(config, bedata, retval, BUFFER_PRODUCER_REQUEST_BUFFER);
 }
 
 GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
@@ -723,6 +729,44 @@ GSError BufferClientProducer::ReleaseLastFlushedBuffer(uint32_t sequence)
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     arguments.WriteUint32(sequence);
     SEND_REQUEST(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::RequestAndDetachBuffer(const BufferRequestConfig& config,
+    sptr<BufferExtraData>& bedata, RequestBufferReturnValue& retval)
+{
+    return RequestBufferCommon(config, bedata, retval, BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER);
+}
+
+GSError BufferClientProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
+    const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    GSError ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    if (ret != GSERROR_OK) {
+        BLOGE("WriteBufferRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
+        return ret;
+    }
+
+    ret = bedata->WriteToParcel(arguments);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    if (!fence->WriteToMessageParcel(arguments)) {
+        return GSERROR_BINDER;
+    }
+    ret = WriteFlushConfig(arguments, config);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    if (!arguments.WriteBool(needMap)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
 }
 }; // namespace OHOS

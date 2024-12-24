@@ -618,14 +618,18 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
         return sret;
     }
 
+    bool listenerNullCheck = false;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ == nullptr && listenerClazz_ == nullptr) {
-            SURFACE_TRACE_NAME("listener is nullptr");
-            BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
-            CancelBuffer(sequence, bedata);
-            return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
+            listenerNullCheck = true;
         }
+    }
+    if (listenerNullCheck) {
+        SURFACE_TRACE_NAME("listener is nullptr");
+        BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        CancelBuffer(sequence, bedata);
+        return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
     }
 
     sret = DoFlushBuffer(sequence, bedata, fence, config);
@@ -713,7 +717,7 @@ GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
 }
 
 GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
-    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock)
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         BLOGE("bufferQueueCache not find sequence:%{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
@@ -770,7 +774,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     SURFACE_TRACE_NAME_FMT("DoFlushBuffer name: %s queueId: %" PRIu64 " seq: %u",
         name_.c_str(), uniqueId_, sequence);
     std::unique_lock<std::mutex> lock(mutex_);
-    return DoFlushBufferLocked(sequence, bedata, fence, config, lock);
+    return DoFlushBufferLocked(sequence, bedata, fence, config);
 }
 
 void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
@@ -1193,8 +1197,7 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
     return AttachBufferToQueueLocked(buffer, invokerType, true);
 }
 
-GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType,
-    std::unique_lock<std::mutex> &lock)
+GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType)
 {
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         BLOGE("seq: %{public}u, not find in cache, uniqueId: %{public}" PRIu64 ".",
@@ -1226,7 +1229,7 @@ GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerTy
         name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType);
     std::unique_lock<std::mutex> lock(mutex_);
     uint32_t sequence = buffer->GetSeqNum();
-    auto ret = DetachBufferFromQueueLocked(sequence, invokerType, lock);
+    auto ret = DetachBufferFromQueueLocked(sequence, invokerType);
     if (ret != GSERROR_OK) {
         return ret;
     }
@@ -2039,7 +2042,7 @@ uint32_t BufferQueue::GetAvailableBufferCount()
  * @brief Optimize the original FlushBuffer to reduce segmentation locking.
  */
 GSError BufferQueue::FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExtraData> &bedata,
-    const sptr<SyncFence> &fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock)
+    const sptr<SyncFence> &fence, const BufferFlushConfigWithDamages &config)
 {
     if (!GetStatusLocked()) {
         SURFACE_TRACE_NAME_FMT("status: %d", GetStatusLocked());
@@ -2065,7 +2068,7 @@ GSError BufferQueue::FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExt
         }
     }
 
-    sret = DoFlushBufferLocked(sequence, bedata, fence, config, lock);
+    sret = DoFlushBufferLocked(sequence, bedata, fence, config);
     if (sret != GSERROR_OK) {
         return sret;
     }
@@ -2081,7 +2084,7 @@ GSError BufferQueue::RequestAndDetachBuffer(const BufferRequestConfig& config, s
     if (ret != GSERROR_OK) {
         return ret;
     }
-    return DetachBufferFromQueueLocked(retval.sequence, InvokerType::PRODUCER_INVOKER, lock);
+    return DetachBufferFromQueueLocked(retval.sequence, InvokerType::PRODUCER_INVOKER);
 }
 
 GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
@@ -2096,7 +2099,7 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
             return ret;
         }
         uint32_t sequence = buffer->GetSeqNum();
-        ret = FlushBufferImprovedLocked(sequence, bedata, fence, config, lock);
+        ret = FlushBufferImprovedLocked(sequence, bedata, fence, config);
         if (ret != GSERROR_OK) {
             bufferQueueCache_.erase(sequence);
             return ret;

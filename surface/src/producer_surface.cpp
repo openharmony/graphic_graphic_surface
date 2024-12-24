@@ -196,10 +196,9 @@ void ProducerSurface::DeleteCacheBufferLocked(sptr<BufferExtraData>& bedataimpl,
         auto spNativeWindow = wpNativeWindow_.promote();
         if (spNativeWindow != nullptr) {
             auto& bufferCache = spNativeWindow->bufferCache_;
-            auto iter = bufferCache.find(seqNum);
-            if (iter != bufferCache.end()) {
-                NativeObjectUnreference(iter->second);
-                bufferCache.erase(iter);
+            if (bufferCache.find(seqNum) != bufferCache.end()) {
+                NativeObjectUnreference(bufferCache[seqNum]);
+                bufferCache.erase(seqNum);
             }
         }
     }
@@ -1075,8 +1074,6 @@ GSError ProducerSurface::UpdateCacheLocked(sptr<BufferExtraData>& bedataimpl,
     IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
 {
     // add cache
-
-
     if (retval.buffer == nullptr) {
         auto it = bufferProducerCache_.find(retval.sequence);
         if (it == bufferProducerCache_.end()) {

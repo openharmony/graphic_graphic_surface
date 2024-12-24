@@ -354,9 +354,7 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
         return ret;
     }
     GSError sRet = AttachBufferToQueue(buffer);
-    if (!reply.WriteInt32(sRet)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
+    reply.WriteInt32(sRet);
     return ERR_NONE;
 }
 
@@ -769,13 +767,13 @@ int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &argumen
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sRet == GSERROR_OK &&
-        (WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer) != GSERROR_OK ||
-            bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
-            !reply.WriteUInt32Vector(retval.deletingBuffers))) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    } else if (sRet != GSERROR_OK && !reply.WriteBool(retval.isConnected)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
+    if (sRet == GSERROR_OK {
+        WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
+        bedataimpl->WriteToParcel(reply);
+        retval.fence->WriteToMessageParcel(reply);
+        reply.WriteUInt32Vector(retval.deletingBuffers);
+    } else {
+        reply.WriteBool(retval.isConnected);
     }
     return ERR_NONE;
 }
@@ -790,19 +788,13 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     }
     BufferFlushConfigWithDamages config;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
-    if (bedataimpl->ReadFromParcel(arguments) != GSERROR_OK) {
-        return ERR_INVALID_REPLY;
-    }
+    bedataimpl->ReadFromParcel(arguments);
 
     sptr<SyncFence> fence = SyncFence::ReadFromMessageParcel(arguments);
-    if (ReadFlushConfig(arguments, config) != GSERROR_OK) {
-        return ERR_INVALID_REPLY;
-    }
+    ReadFlushConfig(arguments, config) != GSERROR_OK);
     bool needMap = arguments.ReadBool();
     GSError sRet = AttachAndFlushBuffer(buffer, bedataimpl, fence, config, needMap);
-    if (!reply.WriteInt32(sRet)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
+    reply.WriteInt32(sRet);
     return ERR_NONE;
 }
 

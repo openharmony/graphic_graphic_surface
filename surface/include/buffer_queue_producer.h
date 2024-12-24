@@ -177,6 +177,11 @@ private:
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ReleaseLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t RequestAndDetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t AttachAndFlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+
+    int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
+        MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);

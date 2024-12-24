@@ -742,30 +742,16 @@ GSError BufferClientProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, 
     const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    GSError ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
-    if (ret != GSERROR_OK) {
-        return ret;
-    }
-    ret = buffer->WriteBufferRequestConfig(arguments);
+    WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    auto ret = buffer->WriteBufferRequestConfig(arguments);
     if (ret != GSERROR_OK) {
         BLOGE("WriteBufferRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return ret;
     }
-
-    ret = bedata->WriteToParcel(arguments);
-    if (ret != GSERROR_OK) {
-        return ret;
-    }
-    if (!fence->WriteToMessageParcel(arguments)) {
-        return GSERROR_BINDER;
-    }
-    ret = WriteFlushConfig(arguments, config);
-    if (ret != GSERROR_OK) {
-        return ret;
-    }
-    if (!arguments.WriteBool(needMap)) {
-        return GSERROR_BINDER;
-    }
+    bedata->WriteToParcel(arguments);
+    fence->WriteToMessageParcel(arguments);
+    WriteFlushConfig(arguments, config);
+    arguments.WriteBool(needMap);
     SEND_REQUEST(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
 }

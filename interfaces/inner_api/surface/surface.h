@@ -194,6 +194,7 @@ public:
         (void)needMap;
         return GSERROR_NOT_SUPPORT;
     }
+
 protected:
     Surface() = default;
 };

@@ -137,21 +137,21 @@ GSError WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages con
     if (!parcel.WriteInt64(config.timestamp)) {
         return GSERROR_BINDER;
     }
-    
+
     if (!parcel.WriteInt64(config.desiredPresentTimestamp)) {
         return GSERROR_BINDER;
     }
     return GSERROR_OK;
 }
 
-GSError ReadSurfaceBufferImpl(MessageParcel &parcel,
-                              uint32_t &sequence, sptr<SurfaceBuffer>& buffer)
+GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
 {
     GSError ret = GSERROR_OK;
     sequence = parcel.ReadUint32();
     if (parcel.ReadBool()) {
         buffer = new SurfaceBufferImpl(sequence);
-        ret = buffer->ReadFromMessageParcel(parcel);
+        ret = buffer->ReadFromMessageParcel(parcel, readSafeFdFunc);
     }
     return ret;
 }
@@ -405,7 +405,7 @@ void WriteToFile(std::string prefixPath, std::string pid, void* dest, size_t siz
         free(dest);
         return;
     }
-    
+
     // Write the data to the file
     rawDataFile.write(static_cast<const char *>(dest), size);
     rawDataFile.flush();

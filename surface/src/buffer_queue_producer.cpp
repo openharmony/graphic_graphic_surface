@@ -335,12 +335,12 @@ int32_t BufferQueueProducer::AttachBufferToQueueReadBuffer(MessageParcel &argume
     GSError sRet = ReadSurfaceBufferImpl(arguments, sequence, buffer);
     if (sRet != GSERROR_OK || buffer == nullptr) {
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
-        return 0;
+        return ERR_INVALID_DATA;
     }
     sRet = buffer->ReadBufferRequestConfig(arguments);
     if (sRet != GSERROR_OK) {
         reply.WriteInt32(SURFACE_ERROR_UNKOWN);
-        return 0;
+        return ERR_INVALID_DATA;
     }
     return ERR_NONE;
 }

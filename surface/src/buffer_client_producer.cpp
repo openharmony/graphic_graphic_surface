@@ -748,6 +748,7 @@ GSError BufferClientProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, 
         BLOGE("WriteBufferRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return ret;
     }
+
     bedata->WriteToParcel(arguments);
     fence->WriteToMessageParcel(arguments);
     WriteFlushConfig(arguments, config);

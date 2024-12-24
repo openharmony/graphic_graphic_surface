@@ -333,7 +333,6 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         BLOGE("CheckRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
     ret = PopFromFreeList(buffer, config);
@@ -1161,9 +1160,9 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool
 GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool needMap)
 {
     uint32_t sequence = buffer->GetSeqNum();
-    if (GetUsedSize() >= bufferQueueSize_) {
+    if (GetUsedSize() >= queueSize_) {
         BLOGE("seq: %{public}u, buffer queue size:%{public}u, used size:%{public}u,"
-            "uniqueId: %{public}" PRIu64 ".", sequence, bufferQueueSize_, GetUsedSize(), uniqueId_);
+            "uniqueId: %{public}" PRIu64 ".", sequence, queueSize_, GetUsedSize(), uniqueId_);
         return SURFACE_ERROR_BUFFER_QUEUE_FULL;
     }
     if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
@@ -1191,8 +1190,8 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
 
 GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
 {
-    SURFACE_TRACE_NAME_FMT("AttachBufferToQueue name: %s queueId: %" PRIu64 " sequence: %u invokerType: %u",
-         name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType);
+    SURFACE_TRACE_NAME_FMT("AttachBufferToQueue name: %s queueId: %" PRIu64 " sequence: %u invokerType%u",
+        name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return AttachBufferToQueueLocked(buffer, invokerType, true);
 }
@@ -1218,7 +1217,7 @@ GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType 
                 sequence, bufferQueueCache_[sequence].state, uniqueId_);
             return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
-        DeleteBufferInCache(sequence, lock);
+        DeleteBufferInCache(sequence);
     }
     return GSERROR_OK;
 }

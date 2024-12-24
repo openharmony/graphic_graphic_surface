@@ -767,7 +767,7 @@ int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &argumen
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sRet == GSERROR_OK {
+    if (sRet == GSERROR_OK) {
         WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
         bedataimpl->WriteToParcel(reply);
         retval.fence->WriteToMessageParcel(reply);
@@ -791,7 +791,7 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     bedataimpl->ReadFromParcel(arguments);
 
     sptr<SyncFence> fence = SyncFence::ReadFromMessageParcel(arguments);
-    ReadFlushConfig(arguments, config) != GSERROR_OK);
+    ReadFlushConfig(arguments, config);
     bool needMap = arguments.ReadBool();
     GSError sRet = AttachAndFlushBuffer(buffer, bedataimpl, fence, config, needMap);
     reply.WriteInt32(sRet);

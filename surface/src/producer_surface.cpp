@@ -178,7 +178,7 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
 }
 
 void ProducerSurface::SetBufferConfigLocked(sptr<BufferExtraData>& bedataimpl,
-     IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
+    IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config)
 {
     if (retval.buffer != nullptr) {
         retval.buffer->SetSurfaceBufferColorGamut(config.colorGamut);
@@ -1145,8 +1145,6 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
 
     auto ret = producer_->AttachAndFlushBuffer(buffer, bedata, fence, configWithDamages, needMap);
     if (ret == GSERROR_OK) {
-
-
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
             BLOGE("Attach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);

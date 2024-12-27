@@ -864,7 +864,9 @@ HWTEST_F(ProducerSurfaceTest, transform005, Function | MediumTest | Level1)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
+* CaseDescription: 1. preSetUp: create produce
+*                  2. operation: produce SetScalingMode with invaild sequece number
+*                  3. result: SetScalingMode failed and return GSERROR_NO_ENTRY
  */
 HWTEST_F(ProducerSurfaceTest, scalingMode001, Function | MediumTest | Level2)
 {
@@ -1960,7 +1962,13 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence002, Function | MediumTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RequestBuffer and check ret
+* CaseDescription: 1. preSetUp: main thread create producer client and sub thread as consumer
+*                  2. operation: The main thread loop executes request buffer and flush buffer 100000 times,
+*                     and the concurrent child thread loop executes acquire buffer, release buffer and “CleanCache”
+*                     100000 times.
+*                  3. result: The result of request buffer and acquire buffer can only be SURFACE_ERROR_NO_BUFFER or
+*                     GSERROR_OK. The result of release buffer of flush buffer can only be
+*                     SURFACE_ERROR_BUFFER_NOT_INCACHE or GSERROR_OK.
 */
 HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, Function | MediumTest | Level2)
 {
@@ -2101,7 +2109,9 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RequestBuffer and check ret
+* CaseDescription: 1. preSetUp: create produce and destroy consumer
+*                  2. operation: produce request buffer
+*                  3. result: request buffer failed and return GSERROR_NO_CONSUMER
 */
 HWTEST_F(ProducerSurfaceTest, RequestBufferNoConsumer, Function | MediumTest | Level2)
 {

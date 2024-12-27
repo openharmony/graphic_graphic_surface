@@ -80,6 +80,7 @@ namespace {
     constexpr int32_t INVALID_PARAM = -1;
     constexpr int32_t META_DATA_MAX_SIZE = 3000;
     constexpr int32_t DAMAGES_MAX_SIZE = 1000;
+    constexpr int32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 }
 
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
@@ -452,8 +453,17 @@ static void HandleNativeWindowGetSurfaceSourceType(OHNativeWindow *window, va_li
 static void HandleNativeWindowGetSurfaceAppFrameworkType(OHNativeWindow *window, va_list args)
 {
     const char **appFrameworkType = va_arg(args, const char**);
-    std::string typeStr = window->surface->GetSurfaceAppFrameworkType();
-    *appFrameworkType = typeStr.c_str();
+    if (appFrameworkType != nullptr) {
+        std::string typeStr = window->surface->GetSurfaceAppFrameworkType();
+        std::call_once(window->appFrameworkTypeOnceFlag_, [&]() {
+            window->appFrameworkType_ = new char[MAXIMUM_LENGTH_OF_APP_FRAMEWORK + 1]();
+        });
+        if (strcpy_s(window->appFrameworkType_, typeStr.size() + 1, typeStr.c_str()) != 0) {
+            BLOGE("strcpy app framework type name failed.");
+            return;
+        }
+        *appFrameworkType = window->appFrameworkType_;
+    }
 }
 
 static void HandleNativeWindowSetHdrWhitePointBrightness(OHNativeWindow *window, va_list args)
@@ -959,6 +969,11 @@ NativeWindow::~NativeWindow()
     }
     surface = nullptr;
     bufferCache_.clear();
+    std::call_once(appFrameworkTypeOnceFlag_, [] {});
+    if (appFrameworkType_ != nullptr) {
+        delete[] appFrameworkType_;
+        appFrameworkType_ = nullptr;
+    }
 }
 
 NativeWindowBuffer::~NativeWindowBuffer()

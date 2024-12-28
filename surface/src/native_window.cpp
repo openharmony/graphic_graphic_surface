@@ -210,6 +210,9 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
     int fenceFd, struct Region region)
 {
     if (window == nullptr || buffer == nullptr || window->surface == nullptr) {
+        if (fenceFd >= 0) {
+            close(fenceFd);
+        }
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
 

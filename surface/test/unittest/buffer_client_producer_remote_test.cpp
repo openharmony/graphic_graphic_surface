@@ -754,10 +754,12 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
         .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
         .timeout = 0,
     };
-    BufferFlushConfig flushConfig = {
-        .damage = {
-            .w = 0x100,
-            .h = 0x100,
+    BufferFlushConfigWithDamages flushConfig = {
+        .damages = {
+            {
+                .w = 0x100,
+                .h = 0x100,
+            }
         },
     };
     sptr<SurfaceBuffer> buffer = nullptr;

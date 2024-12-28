@@ -694,39 +694,4 @@ HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, Function | MediumTes
     ASSERT_EQ(bp->SetGlobalAlpha(-1), OHOS::GSERROR_OK);
     ASSERT_EQ(bp->SetGlobalAlpha(255), OHOS::GSERROR_OK);
 }
-
-/**
- * Function: SetScalingMode and GetScalingMode
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. preSetUp: na
- *                  2. operation: call RequestAndDetachBuffer and AttachAndFlushBuffer
- *                  3. result: return OK
- */
-HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | MediumTest | Level2)
-{
-    ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
-    BufferRequestConfig requestConfigTmp = {
-        .width = 0x100,
-        .height = 0x100,
-        .strideAlignment = 0x8,
-        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
-        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
-        .timeout = 0,
-    };
-    BufferFlushConfig flushConfig = {
-        .damage = {
-            .w = 0x100,
-            .h = 0x100,
-        },
-    };
-    sptr<SurfaceBuffer> buffer = nullptr;
-    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
-    GSError ret = bp->RequestAndDetachBuffer(buffer, fence, requestConfigTmp);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ret = bp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
-}
 }

@@ -762,9 +762,11 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
     };
     sptr<SurfaceBuffer> buffer = nullptr;
     sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
-    GSError ret = bp->RequestAndDetachBuffer(buffer, fence, requestConfigTmp);
+    IBufferProducer::RequestBufferReturnValue retvalTmp;
+    sptr<BufferExtraData> bedataTmp = new BufferExtraDataImpl;
+    GSError ret = bp->RequestAndDetachBuffer(requestConfigTmp, bedataTmp, retvalTmp);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ret = bp->AttachAndFlushBuffer(buffer, fence, flushConfig, false);
+    ret = bp->AttachAndFlushBuffer(buffer, bedataTmp, fence, flushConfig, false);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
 }

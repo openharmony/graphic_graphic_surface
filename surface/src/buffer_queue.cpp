@@ -2082,7 +2082,7 @@ GSError BufferQueue::FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExt
     if (listenerNullCheck) {
         SURFACE_TRACE_NAME("listener is nullptr");
         BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
-        CancelBuffer(sequence, bedata);
+        CancelBufferLocked(sequence, bedata);
         return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
     }
 

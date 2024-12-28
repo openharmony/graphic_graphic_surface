@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef SUPPORT_ACCESS_TOKEN
 #include <chrono>
 #include <thread>
 #include <vector>
@@ -770,4 +769,3 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
     ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
 }
 }
-#endif

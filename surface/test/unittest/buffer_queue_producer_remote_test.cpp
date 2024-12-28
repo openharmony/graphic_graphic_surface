@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef SUPPORT_ACCESS_TOKEN
 #include <gtest/gtest.h>
 #include <iservice_registry.h>
 #include <surface.h>
@@ -293,4 +292,3 @@ HWTEST_F(BufferQueueProducerRemoteTest, ReqFlu002, Function | MediumTest | Level
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
 }
-#endif

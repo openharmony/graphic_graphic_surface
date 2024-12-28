@@ -471,12 +471,8 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     return GSERROR_OK;
 }
 
-GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
+GSError BufferQueue::CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
-    SURFACE_TRACE_NAME_FMT("CancelBuffer name: %s queueId: %" PRIu64 " sequence: %u",
-        name_.c_str(), uniqueId_, sequence);
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
@@ -497,6 +493,14 @@ GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedat
     waitAttachCon_.notify_all();
 
     return GSERROR_OK;
+}
+
+GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
+{
+    SURFACE_TRACE_NAME_FMT("CancelBuffer name: %s queueId: %" PRIu64 " sequence: %u",
+        name_.c_str(), uniqueId_, sequence);
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return CancelBufferLocked(sequence, bedata);
 }
 
 GSError BufferQueue::CheckBufferQueueCacheLocked(uint32_t sequence)
@@ -2068,12 +2072,18 @@ GSError BufferQueue::FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExt
         return sret;
     }
 
+    bool listenerNullCheck = false;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ == nullptr && listenerClazz_ == nullptr) {
-            BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
-            return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
+            listenerNullCheck = true;
         }
+    }
+    if (listenerNullCheck) {
+        SURFACE_TRACE_NAME("listener is nullptr");
+        BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        CancelBufferLocked(sequence, bedata);
+        return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
     }
 
     sret = DoFlushBufferLocked(sequence, bedata, fence, config, lock);

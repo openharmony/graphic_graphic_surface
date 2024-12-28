@@ -471,12 +471,8 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     return GSERROR_OK;
 }
 
-GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
+GSError BufferQueue::CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
-    SURFACE_TRACE_NAME_FMT("CancelBuffer name: %s queueId: %" PRIu64 " sequence: %u",
-        name_.c_str(), uniqueId_, sequence);
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
@@ -497,6 +493,14 @@ GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedat
     waitAttachCon_.notify_all();
 
     return GSERROR_OK;
+}
+
+GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata)
+{
+    SURFACE_TRACE_NAME_FMT("CancelBuffer name: %s queueId: %" PRIu64 " sequence: %u",
+        name_.c_str(), uniqueId_, sequence);
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return CancelBufferLocked(sequence, bedata);
 }
 
 GSError BufferQueue::CheckBufferQueueCacheLocked(uint32_t sequence)

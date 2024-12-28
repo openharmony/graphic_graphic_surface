@@ -258,6 +258,7 @@ private:
         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+    GSError CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

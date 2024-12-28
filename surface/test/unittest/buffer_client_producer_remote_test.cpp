@@ -768,7 +768,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
     sptr<BufferExtraData> bedataTmp = new BufferExtraDataImpl;
     GSError ret = bp->RequestAndDetachBuffer(requestConfigTmp, bedataTmp, retvalTmp);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ret = bp->AttachAndFlushBuffer(buffer, bedataTmp, fence, flushConfig, false);
+    ret = bp->AttachAndFlushBuffer(retvalTmp.buffer, bedataTmp, fence, flushConfig, false);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
 }

@@ -312,7 +312,9 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
     }
 
     // check param
-    ret = CheckRequestConfig(config);
+    BufferRequestConfig updateConfig = config;
+    updateConfig.usage |= defaultUsage_;
+    ret = CheckRequestConfig(updateConfig);
     if (ret != GSERROR_OK) {
         BLOGE("CheckRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
@@ -322,9 +324,9 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         name_.c_str(), uniqueId_, bufferQueueSize_);
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
-    ret = PopFromFreeListLocked(buffer, config);
+    ret = PopFromFreeListLocked(buffer, updateConfig);
     if (ret == GSERROR_OK) {
-        return ReuseBuffer(config, bedata, retval, lock);
+        return ReuseBuffer(updateConfig, bedata, retval, lock);
     }
 
     // check queue size
@@ -336,16 +338,16 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
             BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
         }
         // try dequeue from free list again
-        ret = PopFromFreeListLocked(buffer, config);
+        ret = PopFromFreeListLocked(buffer, updateConfig);
         if (ret == GSERROR_OK) {
-            return ReuseBuffer(config, bedata, retval, lock);
+            return ReuseBuffer(updateConfig, bedata, retval, lock);
         } else if (GetUsedSize() >= bufferQueueSize_) {
             RequestBufferDebugInfoLocked();
             return GSERROR_NO_BUFFER;
         }
     }
 
-    ret = AllocBuffer(buffer, config, lock);
+    ret = AllocBuffer(buffer, updateConfig, lock);
     if (ret == GSERROR_OK) {
         AddDeletingBuffersLocked(retval.deletingBuffers);
         SetSurfaceBufferHebcMetaLocked(buffer);
@@ -991,14 +993,11 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     uint32_t sequence = bufferImpl->GetSeqNum();
     SURFACE_TRACE_NAME_FMT("AllocBuffer name: %s queueId: %" PRIu64 ", config width: %d height: %d usage: %llu format:"
         " %d id: %u", name_.c_str(), uniqueId_, config.width, config.height, config.usage, config.format, sequence);
-
-    BufferRequestConfig updateConfig = config;
-    updateConfig.usage |= defaultUsage_;
     ScalingMode scalingMode = scalingMode_;
     int32_t connectedPid = connectedPid_;
     isAllocatingBuffer_ = true;
     lock.unlock();
-    GSError ret = bufferImpl->Alloc(updateConfig);
+    GSError ret = bufferImpl->Alloc(config);
     lock.lock();
     isAllocatingBuffer_ = false;
     isAllocatingBufferCon_.notify_all();

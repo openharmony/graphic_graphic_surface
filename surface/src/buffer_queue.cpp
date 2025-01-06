@@ -2071,20 +2071,13 @@ GSError BufferQueue::FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExt
         return sret;
     }
 
-    bool listenerNullCheck = false;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         if (listener_ == nullptr && listenerClazz_ == nullptr) {
-            listenerNullCheck = true;
+            BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+            return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
         }
     }
-    if (listenerNullCheck) {
-        SURFACE_TRACE_NAME("listener is nullptr");
-        BLOGE("listener is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
-        CancelBufferLocked(sequence, bedata);
-        return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
-    }
-
     sret = DoFlushBufferLocked(sequence, bedata, fence, config, lock);
     if (sret != GSERROR_OK) {
         return sret;

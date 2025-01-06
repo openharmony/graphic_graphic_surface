@@ -614,7 +614,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     std::vector<BufferVerifyAllocInfo> infos;
     uint64_t uniqueId;
     EXPECT_EQ(bqpTmp->GetNameAndUniqueId(name, uniqueId), OHOS::GSERROR_INVALID_ARGUMENTS);
-    EXPECT_EQ(bqpTmp->Disconnect(), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->Disconnect(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetScalingMode(0, ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetScalingMode(ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> meta;
@@ -645,7 +645,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->SetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
-    EXPECT_EQ(bqpTmp->CleanCache(true), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->CleanCache(true, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetDefaultUsage(0), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->AttachBufferToQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->DetachBufferFromQueue(nullptr), OHOS::SURFACE_ERROR_UNKOWN);

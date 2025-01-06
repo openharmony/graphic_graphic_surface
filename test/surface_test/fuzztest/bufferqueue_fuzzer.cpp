@@ -197,7 +197,7 @@ namespace OHOS {
         std::string name = GetStringFromData(STR_LEN);
         sptr<BufferQueue> bufferqueue = new BufferQueue(name);
         bool cleanAll = GetData<bool>();
-        bufferqueue->CleanCache(cleanAll);
+        bufferqueue->CleanCache(cleanAll, nullptr);
         bufferqueue->GetHdrWhitePointBrightness();
         bufferqueue->GetUniqueId();
         bufferqueue->GoBackground();

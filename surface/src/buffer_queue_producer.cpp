@@ -174,8 +174,9 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
     }
     if (sRet == GSERROR_OK &&
         (WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer) != GSERROR_OK ||
-            bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
-            !reply.WriteUInt32Vector(retval.deletingBuffers))) {
+        (retval.buffer != nullptr && !reply.WriteUint64(retval.buffer->GetBufferRequestConfig().usage)) ||
+        bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
+        !reply.WriteUInt32Vector(retval.deletingBuffers))) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     } else if (sRet != GSERROR_OK && !reply.WriteBool(retval.isConnected)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -220,6 +221,8 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
         }
         for (uint32_t i = 0; i < num; ++i) {
             if (WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer) != GSERROR_OK ||
+                (retvalues[i].buffer != nullptr &&
+                    !reply.WriteUint64(retvalues[i].buffer->GetBufferRequestConfig().usage)) ||
                 bedataimpls[i]->WriteToParcel(reply) != GSERROR_OK ||
                 !retvalues[i].fence->WriteToMessageParcel(reply) ||
                 !reply.WriteUInt32Vector(retvalues[i].deletingBuffers)) {
@@ -934,8 +937,9 @@ int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &argumen
     }
     if (sRet == GSERROR_OK &&
         (WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer) != GSERROR_OK ||
-            bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
-            !reply.WriteUInt32Vector(retval.deletingBuffers))) {
+        (retval.buffer != nullptr && !reply.WriteUint64(retval.buffer->GetBufferRequestConfig().usage)) ||
+        bedataimpl->WriteToParcel(reply) != GSERROR_OK || !retval.fence->WriteToMessageParcel(reply) ||
+        !reply.WriteUInt32Vector(retval.deletingBuffers))) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     } else if (sRet != GSERROR_OK && !reply.WriteBool(retval.isConnected)) {
         return IPC_STUB_WRITE_PARCEL_ERR;

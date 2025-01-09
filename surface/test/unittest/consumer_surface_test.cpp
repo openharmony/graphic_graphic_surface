@@ -713,12 +713,12 @@ HWTEST_F(ConsumerSurfaceTest, RegisterConsumerListener001, Function | MediumTest
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     listener->OnTunnelHandleChange();
     listener->OnGoBackground();
-    listener->OnCleanCache();
+    listener->OnCleanCache(nullptr);
     listener->OnTransformChange();
     TestConsumerListenerClazz* listenerClazz = new TestConsumerListenerClazz();
     listenerClazz->OnTunnelHandleChange();
     listenerClazz->OnGoBackground();
-    listenerClazz->OnCleanCache();
+    listenerClazz->OnCleanCache(nullptr);
     listenerClazz->OnTransformChange();
     delete listenerClazz;
 }

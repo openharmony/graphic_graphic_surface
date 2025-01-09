@@ -74,9 +74,9 @@ public:
     GSError UnRegisterReleaseListenerWithFence() override;
 
     // Call carefully. This interface will empty all caches of the current process
-    GSError CleanCache(bool cleanAll) override;
+    GSError CleanCache(bool cleanAll, uint32_t *bufSeqNum) override;
     GSError Connect() override;
-    GSError Disconnect() override;
+    GSError Disconnect(uint32_t *bufSeqNum) override;
     GSError GoBackground() override;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;

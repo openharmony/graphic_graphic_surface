@@ -108,7 +108,7 @@ namespace OHOS {
         bqp->GetNativeSurface();
         bqp->GetStatus();
         bool cleanAll = GetData<bool>();
-        bqp->CleanCache(cleanAll);
+        bqp->CleanCache(cleanAll, nullptr);
         sptr<OHOS::SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
         sptr<OHOS::SurfaceBuffer> buffer = SurfaceBuffer::Create();
         int32_t timeOut = 0;

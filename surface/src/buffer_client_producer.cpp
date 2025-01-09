@@ -570,7 +570,7 @@ uint64_t BufferClientProducer::GetDefaultUsage()
     return reply.ReadUint64();
 }
 
-GSError BufferClientProducer::CleanCache(bool cleanAll)
+GSError BufferClientProducer::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
@@ -578,7 +578,11 @@ GSError BufferClientProducer::CleanCache(bool cleanAll)
         return GSERROR_BINDER;
     }
     SEND_REQUEST(BUFFER_PRODUCER_CLEAN_CACHE, arguments, reply, option);
-    return CheckRetval(reply);
+    GSError ret = CheckRetval(reply);
+    if (ret == GSERROR_OK && bufSeqNum != nullptr) {
+        *bufSeqNum = reply.ReadUint32();
+    }
+    return ret;
 }
 
 GSError BufferClientProducer::GoBackground()
@@ -626,12 +630,16 @@ GSError BufferClientProducer::Connect()
     return CheckRetval(reply);
 }
 
-GSError BufferClientProducer::Disconnect()
+GSError BufferClientProducer::Disconnect(uint32_t *bufSeqNum)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
     SEND_REQUEST(BUFFER_PRODUCER_DISCONNECT, arguments, reply, option);
-    return CheckRetval(reply);
+    GSError ret = CheckRetval(reply);
+    if (ret == GSERROR_OK && bufSeqNum != nullptr) {
+        *bufSeqNum = reply.ReadUint32();
+    }
+    return ret;
 }
 
 GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)

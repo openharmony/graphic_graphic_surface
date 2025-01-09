@@ -79,7 +79,7 @@ public:
     virtual GSError SetDefaultUsage(uint64_t usage) = 0;
     virtual uint64_t GetDefaultUsage() = 0;
 
-    virtual GSError CleanCache(bool cleanAll = false) = 0;
+    virtual GSError CleanCache(bool cleanAll = false, uint32_t *bufSeqNum = nullptr) = 0;
     virtual GSError GoBackground() = 0;
 
     virtual GSError RegisterReleaseListener(sptr<IProducerListener> listener) = 0;
@@ -92,7 +92,7 @@ public:
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
 
     virtual GSError Connect() = 0;
-    virtual GSError Disconnect() = 0;
+    virtual GSError Disconnect(uint32_t *bufSeqNum = nullptr) = 0;
 
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
     virtual GSError SetBufferHold(bool hold) = 0;

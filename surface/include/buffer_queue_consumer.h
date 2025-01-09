@@ -83,6 +83,8 @@ public:
     float GetSdrWhitePointBrightness() const;
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache);
     uint32_t GetAvailableBufferCount() const;
+    GSError GetBufferTimeStamp(int64_t &bufferTimeStamp) const;
+    GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const;
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

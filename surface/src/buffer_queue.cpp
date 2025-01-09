@@ -48,6 +48,7 @@ constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
 constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 constexpr uint32_t INVALID_SEQUENCE = 0xFFFFFFFF;
 constexpr uint32_t ONE_SECOND_TIMESTAMP = 1e9;
+constexpr const char* BUFFER_SUPPORT_FASTCOMPOSE = "SupportFastCompose";
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -711,6 +712,9 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
+    lastFlushedTimeStamp_ = config.timestamp;
+    lastFlushedSupportFastCompose_ = 0;
+    bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(BUFFER_SUPPORT_FASTCOMPOSE, lastFlushedSupportFastCompose_);
     bufferQueueCache_[sequence].buffer->SetSurfaceBufferTransform(transform_);
 
     uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
@@ -2117,5 +2121,19 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
     }
     CallConsumerListener();
     return ret;
+}
+
+GSError BufferQueue::GetBufferTimeStamp(int64_t &bufferTimeStamp)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    bufferTimeStamp = lastFlushedTimeStamp_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    bufferSupportFastCompose = lastFlushedSupportFastCompose_;
+    return GSERROR_OK;
 }
 }; // namespace OHOS

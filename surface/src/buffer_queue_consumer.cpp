@@ -306,4 +306,20 @@ uint32_t BufferQueueConsumer::GetAvailableBufferCount() const
     }
     return bufferQueue_->GetAvailableBufferCount();
 }
+
+GSError BufferQueueConsumer::GetBufferTimeStamp(int64_t &bufferTimeStamp) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetBufferTimeStamp(bufferTimeStamp);
+}
+
+GSError BufferQueueConsumer::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetBufferSupportFastCompose(bufferSupportFastCompose);
+}
 } // namespace OHOS

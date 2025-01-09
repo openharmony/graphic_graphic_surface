@@ -123,6 +123,14 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError GetBufferTimeStamp(int64_t &bufferTimeStamp) const
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
+    virtual GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
 protected:
     IConsumerSurface() = default;
 };

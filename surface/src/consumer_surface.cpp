@@ -650,4 +650,20 @@ uint32_t ConsumerSurface::GetAvailableBufferCount() const
     }
     return consumer_->GetAvailableBufferCount();
 }
+
+GSError ConsumerSurface::GetBufferTimeStamp(int64_t &bufferTimeStamp) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetBufferTimeStamp(bufferTimeStamp);
+}
+
+GSError ConsumerSurface::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);
+}
 } // namespace OHOS

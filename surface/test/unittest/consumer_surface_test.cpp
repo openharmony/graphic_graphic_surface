@@ -2156,4 +2156,30 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest 
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }
+
+/*
+* Function: GetBufferTimeStamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetBufferTimeStamp and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetBufferTimeStamp001, Function | MediumTest | Level2)
+{
+    int64_t bufferTimeStamp = -1;
+    ASSERT_EQ(cs->GetBufferTimeStamp(bufferTimeStamp), GSERROR_OK);
+}
+
+/*
+* Function: GetBufferSupportFastCompose
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetBufferSupportFastCompose and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetBufferSupportFastCompose001, Function | MediumTest | Level2)
+{
+    int32_t supportFastCompose = -1;
+    ASSERT_EQ(cs->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
+}
 }

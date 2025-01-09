@@ -131,6 +131,8 @@ public:
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) override;
     GSError GetGlobalAlpha(int32_t &alpha) override;
     uint32_t GetAvailableBufferCount() const override;
+    GSError GetBufferTimeStamp(int64_t &bufferTimeStamp) const override;
+    GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

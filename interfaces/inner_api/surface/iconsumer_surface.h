@@ -123,11 +123,11 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-    virtual GSError GetBufferTimeStamp(int64_t &bufferTimeStamp) const
+    virtual GSError GetBufferTimeStamp([[maybe_unused]] int64_t &bufferTimeStamp) const
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-    virtual GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
+    virtual GSError GetBufferSupportFastCompose([[maybe_unused]] int32_t &bufferSupportFastCompose) const
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };

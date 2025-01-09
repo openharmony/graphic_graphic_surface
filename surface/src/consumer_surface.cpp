@@ -653,7 +653,7 @@ uint32_t ConsumerSurface::GetAvailableBufferCount() const
 
 GSError ConsumerSurface::GetBufferTimeStamp(int64_t &bufferTimeStamp) const
 {
-    if (bufferQueue_ == nullptr) {
+    if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
     return consumer_->GetBufferTimeStamp(bufferTimeStamp);
@@ -661,7 +661,7 @@ GSError ConsumerSurface::GetBufferTimeStamp(int64_t &bufferTimeStamp) const
 
 GSError ConsumerSurface::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
 {
-    if (bufferQueue_ == nullptr) {
+    if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
     return consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);

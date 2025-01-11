@@ -26,7 +26,7 @@ public:
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
     virtual void OnGoBackground() {};
-    virtual void OnCleanCache(uint32_t *bufSeqNum)
+    virtual void OnCleanCache(uint32_t *bufSeqNum = nullptr)
     {
         (void)bufSeqNum;
     }
@@ -39,7 +39,7 @@ public:
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
     virtual void OnGoBackground() {};
-    virtual void OnCleanCache(uint32_t *bufSeqNum)
+    virtual void OnCleanCache(uint32_t *bufSeqNum = nullptr)
     {
         (void)bufSeqNum;
     }

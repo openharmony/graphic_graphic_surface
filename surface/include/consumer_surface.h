@@ -131,7 +131,7 @@ public:
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) override;
     GSError GetGlobalAlpha(int32_t &alpha) override;
     uint32_t GetAvailableBufferCount() const override;
-    GSError GetBufferTimeStamp(int64_t &bufferTimeStamp) const override;
+    GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
     GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const override;
 private:
     std::map<std::string, std::string> userData_;
@@ -143,6 +143,8 @@ private:
     uint64_t uniqueId_ = 0;
     std::atomic<bool> hasRegistercallBackForRT_ = false;
     std::atomic<bool> hasRegistercallBackForRedraw_ = false;
+    int32_t fastComposeFlag = 0;
+    int32_t fastComposeUpdateTimes = 0;
 };
 } // namespace OHOS
 

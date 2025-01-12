@@ -651,12 +651,12 @@ uint32_t ConsumerSurface::GetAvailableBufferCount() const
     return consumer_->GetAvailableBufferCount();
 }
 
-GSError ConsumerSurface::GetBufferTimeStamp(int64_t &bufferTimeStamp) const
+GSError ConsumerSurface::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const
 {
     if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return consumer_->GetBufferTimeStamp(bufferTimeStamp);
+    return consumer_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
 }
 
 GSError ConsumerSurface::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
@@ -664,6 +664,16 @@ GSError ConsumerSurface::GetBufferSupportFastCompose(int32_t &bufferSupportFastC
     if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);
+    if (fastComposeFlag == 0 && fastComposeUpdateTimes < 10)
+    {
+        int ret = consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);
+        fastComposeFlag = bufferSupportFastCompose;
+        fastComposeUpdateTimes ++;
+        return ret;
+    } else {
+        bufferSupportFastCompose = fastComposeFlag;
+        return GSERROR_OK;
+    }
+    
 }
 } // namespace OHOS

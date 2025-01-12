@@ -712,8 +712,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
-    lastFlushedTimeStamp_ = config.timestamp;
-    lastFlushedSupportFastCompose_ = 0;
+    lastFlushedDesiredPresentTimeStamp_ = config.timestamp;
     bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(
         BUFFER_SUPPORT_FASTCOMPOSE, lastFlushedSupportFastCompose_);
     bufferQueueCache_[sequence].buffer->SetSurfaceBufferTransform(transform_);
@@ -2124,10 +2123,10 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
     return ret;
 }
 
-GSError BufferQueue::GetBufferTimeStamp(int64_t &bufferTimeStamp)
+GSError BufferQueue::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    bufferTimeStamp = lastFlushedTimeStamp_;
+    lastFlushedDesiredPresentTimeStamp = lastFlushedDesiredPresentTimeStamp_;
     return GSERROR_OK;
 }
 

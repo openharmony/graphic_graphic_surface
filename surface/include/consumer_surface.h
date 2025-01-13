@@ -143,8 +143,8 @@ private:
     uint64_t uniqueId_ = 0;
     std::atomic<bool> hasRegistercallBackForRT_ = false;
     std::atomic<bool> hasRegistercallBackForRedraw_ = false;
-    std::atomic<bool> isfirstBuffer = true;
-    std::atomic<bool> supportFastCompose = false;
+    std::atomic<bool> isfirstBuffer_ = true;
+    std::atomic<bool> supportFastCompose_ = false;
 };
 } // namespace OHOS
 

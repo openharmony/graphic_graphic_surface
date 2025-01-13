@@ -205,7 +205,7 @@ public:
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap);
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp);
-    GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose);
+    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);

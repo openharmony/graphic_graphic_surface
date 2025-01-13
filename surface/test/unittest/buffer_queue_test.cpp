@@ -856,18 +856,18 @@ HWTEST_F(BufferQueueTest, SetGlobalAlpha001, Function | MediumTest | Level2)
 }
 
 /*
-* Function: GetBufferTimeStamp
+* Function: GetLastFlushedDesiredPresentTimeStamp
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call GetBufferTimeStamp and check value
+* CaseDescription: 1. call GetLastFlushedDesiredPresentTimeStamp and check value
 */
-HWTEST_F(BufferQueueTest, GetBufferTimeStamp001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetLastFlushedDesiredPresentTimeStamp001, Function | MediumTest | Level2)
 {
     int64_t timeStampValue = 100000;
-    bq->lastFlushedTimeStamp_ = timeStampValue;
+    bq->lastFlushedDesiredPresentTimeStamp_ = timeStampValue;
     int64_t result = 0;
-    GSError ret = bq->GetBufferTimeStamp(result);
+    GSError ret = bq->GetLastFlushedDesiredPresentTimeStamp(result);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(result, timeStampValue);
 }
@@ -881,8 +881,8 @@ HWTEST_F(BufferQueueTest, GetBufferTimeStamp001, Function | MediumTest | Level2)
 */
 HWTEST_F(BufferQueueTest, GetBufferSupportFastCompose001, Function | MediumTest | Level2)
 {
-    int32_t supportFastCompose = 1;
-    bq->lastFlushedSupportFastCompose_ = supportFastCompose;
+    bool supportFastCompose = true;
+    bq->bufferSupportFastCompose_ = supportFastCompose;
     int32_t result = 0;
     GSError ret = bq->GetBufferSupportFastCompose(result);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

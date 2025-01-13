@@ -172,6 +172,7 @@ HWTEST_F(FrameSchedTest, Init001, Function | MediumTest | Level2)
     auto frameSched = new Rosen::FrameSched();
     frameSched->initFunc_ = nullptr;
     frameSched->Init();
+    EXPECT_NE(frameSched->initFunc_, nullptr);
     delete frameSched;
 }
 }

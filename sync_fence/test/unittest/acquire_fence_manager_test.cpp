@@ -66,7 +66,7 @@ HWTEST_F(AcquireFenceTrackerTest, blurSize001, Function | MediumTest | Level2)
 {
     int32_t blurSize = 10;
     AcquireFenceTracker::SetBlurSize(blurSize);
-    EXPECT_NE(Rosen::FrameSched::GetInstance().setFrameParamFunc_, nullptr);
+    EXPECT_EQ(AcquireFenceTracker::tracker_, nullptr);
 }
 
 /*

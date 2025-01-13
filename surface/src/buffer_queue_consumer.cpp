@@ -315,7 +315,7 @@ GSError BufferQueueConsumer::GetLastFlushedDesiredPresentTimeStamp(int64_t &last
     return bufferQueue_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
 }
 
-GSError BufferQueueConsumer::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
+GSError BufferQueueConsumer::GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;

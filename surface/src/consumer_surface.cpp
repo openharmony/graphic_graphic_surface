@@ -659,19 +659,18 @@ GSError ConsumerSurface::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlus
     return consumer_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
 }
 
-GSError ConsumerSurface::GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const
+GSError ConsumerSurface::GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const
 {
     if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    if (fastComposeFlag == 0 && fastComposeUpdateTimes < 10)
-    {
+    if (isfirstBuffer.load()) {
         int ret = consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);
-        fastComposeFlag = bufferSupportFastCompose;
-        fastComposeUpdateTimes ++;
+        supportFastCompose.store(bufferSupportFastCompose);
+        isfirstBuffer.store(false)
         return ret;
     } else {
-        bufferSupportFastCompose = fastComposeFlag;
+        bufferSupportFastCompose = supportFastCompose.load();
         return GSERROR_OK;
     }
     

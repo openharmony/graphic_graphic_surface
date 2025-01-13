@@ -132,7 +132,7 @@ public:
     GSError GetGlobalAlpha(int32_t &alpha) override;
     uint32_t GetAvailableBufferCount() const override;
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
-    GSError GetBufferSupportFastCompose(int32_t &bufferSupportFastCompose) const override;
+    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;
@@ -143,8 +143,8 @@ private:
     uint64_t uniqueId_ = 0;
     std::atomic<bool> hasRegistercallBackForRT_ = false;
     std::atomic<bool> hasRegistercallBackForRedraw_ = false;
-    int32_t fastComposeFlag = 0;
-    int32_t fastComposeUpdateTimes = 0;
+    std::atomic<bool> isfirstBuffer = true;
+    std::atomic<bool> supportFastCompose = false;
 };
 } // namespace OHOS
 

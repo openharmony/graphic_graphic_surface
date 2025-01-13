@@ -714,7 +714,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlushedTransform_ = transform_;
     lastFlushedDesiredPresentTimeStamp_ = config.timestamp;
     bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(
-        BUFFER_SUPPORT_FASTCOMPOSE, lastFlushedSupportFastCompose_);
+        BUFFER_SUPPORT_FASTCOMPOSE, bufferSupportFastCompose_);
     bufferQueueCache_[sequence].buffer->SetSurfaceBufferTransform(transform_);
 
     uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);

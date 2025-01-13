@@ -312,7 +312,7 @@ private:
     bool isAllocatingBuffer_ = false;
     std::condition_variable isAllocatingBufferCon_;
     int64_t lastFlushedDesiredPresentTimeStamp_ = 0;
-    int32_t lastFlushedSupportFastCompose_ = 0;
+    bool bufferSupportFastCompose_ = false;
 };
 }; // namespace OHOS
 

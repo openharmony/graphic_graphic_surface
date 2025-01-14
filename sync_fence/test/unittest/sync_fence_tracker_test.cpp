@@ -48,13 +48,24 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2
     auto tracker = new SyncFenceTracker("TrackFenceTest001");
     sptr<SyncFence> fence = new SyncFence(0);
     tracker->TrackFence(nullptr, true);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 0);
+   
     tracker->TrackFence(fence, true);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 1);
+
     tracker->isGpuFence_ = true;
     tracker->TrackFence(fence, true);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 2);
+
     tracker->TrackFence(fence, false);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 2);
+
     tracker->isGpuFence_ = false;
     tracker->TrackFence(fence, true);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 3);
+
     tracker->TrackFence(fence, false);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 4);
     delete tracker;
 }
 

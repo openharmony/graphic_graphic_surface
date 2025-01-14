@@ -50,6 +50,7 @@ HWTEST_F(AcquireFenceTrackerTest, TrackFence001, Function | MediumTest | Level2)
     sptr<SyncFence> syncFence = new SyncFence(fd);
     bool traceTag = true;
     AcquireFenceTracker::TrackFence((const sptr<SyncFence>&)syncFence, traceTag);
+    EXPECT_EQ(AcquireFenceTracker::tracker_->fencesQueued_.load(), 1);
 }
 
 /*
@@ -64,6 +65,7 @@ HWTEST_F(AcquireFenceTrackerTest, blurSize001, Function | MediumTest | Level2)
 {
     int32_t blurSize = 10;
     AcquireFenceTracker::SetBlurSize(blurSize);
+    EXPECT_NE(AcquireFenceTracker::tracker_, nullptr);
 }
 
 /*
@@ -101,6 +103,7 @@ HWTEST_F(AcquireFenceTrackerTest, AcquireFenceTracker001, Function | MediumTest 
     AcquireFenceTracker::SetBlurSize(blurSize);
     int containerNodeNum = 1000;
     AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
+    EXPECT_EQ(AcquireFenceTracker::tracker_->processedNodeNum_, 0);
 }
 
 /*

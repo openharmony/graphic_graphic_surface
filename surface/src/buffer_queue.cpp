@@ -2135,7 +2135,7 @@ GSError BufferQueue::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedD
 GSError BufferQueue::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    bufferSupportFastCompose = lastFlushedSupportFastCompose_;
+    bufferSupportFastCompose = bufferSupportFastCompose_;
     return GSERROR_OK;
 }
 }; // namespace OHOS

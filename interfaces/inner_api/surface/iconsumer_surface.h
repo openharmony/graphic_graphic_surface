@@ -127,7 +127,7 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-    virtual GSError GetBufferSupportFastCompose([[maybe_unused]] bool &bufferSupportFastCompose) const
+    virtual GSError GetBufferSupportFastCompose([[maybe_unused]] bool &bufferSupportFastCompose)
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };

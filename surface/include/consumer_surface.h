@@ -132,7 +132,7 @@ public:
     GSError GetGlobalAlpha(int32_t &alpha) override;
     uint32_t GetAvailableBufferCount() const override;
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
-    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const override;
+    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

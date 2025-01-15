@@ -712,7 +712,6 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
-    lastFlushedDesiredPresentTimeStamp_ = config.timestamp;
     int32_t supportFastCompose = 0;
     bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(
         BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
@@ -730,6 +729,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         }
     }
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
+    lastFlushedDesiredPresentTimeStamp_ = bufferQueueCache_[sequence].desiredPresentTimestamp;
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
     if (isLocalRender_) {
         AcquireFenceTracker::TrackFence(fence, traceTag);

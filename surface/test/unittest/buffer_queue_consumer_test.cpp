@@ -257,7 +257,8 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->IsSurfaceBufferInCache(0, isInCache), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetGlobalAlpha(alpha), OHOS::SURFACE_ERROR_UNKOWN);
-    ASSERT_EQ(consumer->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetLastFlushedDesiredPresentTimeStamp(
+        lastFlushedDesiredPresentTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetBufferSupportFastCompose(bufferSupportFastCompose), OHOS::SURFACE_ERROR_UNKOWN);
 }
 }

@@ -675,6 +675,5 @@ GSError ConsumerSurface::GetBufferSupportFastCompose(bool &bufferSupportFastComp
         bufferSupportFastCompose = supportFastCompose_.load();
         return GSERROR_OK;
     }
-    
 }
 } // namespace OHOS

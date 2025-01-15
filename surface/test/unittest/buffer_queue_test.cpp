@@ -883,7 +883,7 @@ HWTEST_F(BufferQueueTest, GetBufferSupportFastCompose001, Function | MediumTest 
 {
     bool supportFastCompose = true;
     bq->bufferSupportFastCompose_ = supportFastCompose;
-    int32_t result = 0;
+    bool result = false;
     GSError ret = bq->GetBufferSupportFastCompose(result);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(result, supportFastCompose);

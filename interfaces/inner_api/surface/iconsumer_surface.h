@@ -123,7 +123,8 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
-    virtual GSError GetBufferTimeStamp([[maybe_unused]] int64_t &bufferTimeStamp) const
+    virtual GSError GetLastFlushedDesiredPresentTimeStamp(
+        [[maybe_unused]] int64_t &lastFlushedDesiredPresentTimeStamp) const
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };

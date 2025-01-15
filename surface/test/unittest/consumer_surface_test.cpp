@@ -2181,6 +2181,8 @@ HWTEST_F(ConsumerSurfaceTest, GetBufferSupportFastCompose001, Function | MediumT
 {
     bool supportFastCompose = false;
     bool supportFastComposeStoreValue = false;
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
     surface_->isFirstBuffer_.store(true);
     ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
     ASSERT_EQ(surface_->isFirstBuffer_.load(), false);

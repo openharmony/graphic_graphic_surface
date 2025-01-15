@@ -184,7 +184,7 @@ typedef enum NativeWindowOperation {
     /**
      * get native window buffer colorGamut,
      * variable parameter in function is
-     * [out int32_t *colorGamut].
+     * [out] int32_t *colorGamut.
      */
     GET_COLOR_GAMUT,
     /**

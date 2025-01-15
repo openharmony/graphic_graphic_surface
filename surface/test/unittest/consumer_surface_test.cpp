@@ -2158,13 +2158,13 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest 
 }
 
 /*
-* Function: GetBufferTimeStamp
+* Function: GetLastFlushedDesiredPresentTimeStamp
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call GetBufferTimeStamp and check ret
+* CaseDescription: 1. call GetLastFlushedDesiredPresentTimeStamp and check ret
 */
-HWTEST_F(ConsumerSurfaceTest, GetLastFlushedDesiredPresentTimeStamp, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceTest, GetLastFlushedDesiredPresentTimeStamp001, Function | MediumTest | Level2)
 {
     int64_t lastFlushedDesiredPresentTimeStamp = -1;
     ASSERT_EQ(cs->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp), GSERROR_OK);
@@ -2181,11 +2181,11 @@ HWTEST_F(ConsumerSurfaceTest, GetBufferSupportFastCompose001, Function | MediumT
 {
     bool supportFastCompose = false;
     bool supportFastComposeStoreValue = false;
-    cs->isfirstBuffer_.store(true);
-    ASSERT_EQ(cs->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
-    ASSERT_EQ(cs->isfirstBuffer_.load(), false);
-    cs->supportFastCompose_.store(supportFastComposeStoreValue);
-    ASSERT_EQ(cs->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
+    surface_->isFirstBuffer_.store(true);
+    ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
+    ASSERT_EQ(surface_->isFirstBuffer_.load(), false);
+    surface_->supportFastCompose_.store(supportFastComposeStoreValue);
+    ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
     ASSERT_EQ(supportFastCompose, supportFastComposeStoreValue);
 }
 }

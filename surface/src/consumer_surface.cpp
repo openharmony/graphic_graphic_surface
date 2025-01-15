@@ -664,11 +664,11 @@ GSError ConsumerSurface::GetBufferSupportFastCompose(bool &bufferSupportFastComp
     if (consumer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    if (isfirstBuffer_.load()) {
+    if (isFirstBuffer_.load()) {
         GSError ret = consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);
         if (ret == GSERROR_OK) {
             supportFastCompose_.store(bufferSupportFastCompose);
-            isfirstBuffer_.store(false);
+            isFirstBuffer_.store(false);
         }
         return ret;
     } else {

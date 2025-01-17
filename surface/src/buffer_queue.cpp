@@ -48,6 +48,7 @@ constexpr uint32_t BUFFER_MEMSIZE_FORMAT = 2;
 constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 constexpr uint32_t INVALID_SEQUENCE = 0xFFFFFFFF;
 constexpr uint32_t ONE_SECOND_TIMESTAMP = 1e9;
+constexpr const char* BUFFER_SUPPORT_FASTCOMPOSE = "SupportFastCompose";
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -711,6 +712,10 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
+    int32_t supportFastCompose = 0;
+    bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(
+        BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
+    bufferSupportFastCompose_ = (bool)supportFastCompose;
     bufferQueueCache_[sequence].buffer->SetSurfaceBufferTransform(transform_);
 
     uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
@@ -724,6 +729,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         }
     }
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
+    lastFlushedDesiredPresentTimeStamp_ = bufferQueueCache_[sequence].desiredPresentTimestamp;
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
     if (isLocalRender_) {
         AcquireFenceTracker::TrackFence(fence, traceTag);
@@ -2117,5 +2123,19 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
     }
     CallConsumerListener();
     return ret;
+}
+
+GSError BufferQueue::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    lastFlushedDesiredPresentTimeStamp = lastFlushedDesiredPresentTimeStamp_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    bufferSupportFastCompose = bufferSupportFastCompose_;
+    return GSERROR_OK;
 }
 }; // namespace OHOS

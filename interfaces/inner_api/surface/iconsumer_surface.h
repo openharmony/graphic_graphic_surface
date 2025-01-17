@@ -123,6 +123,15 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError GetLastFlushedDesiredPresentTimeStamp(
+        [[maybe_unused]] int64_t &lastFlushedDesiredPresentTimeStamp) const
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
+    virtual GSError GetBufferSupportFastCompose([[maybe_unused]] bool &bufferSupportFastCompose)
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
 protected:
     IConsumerSurface() = default;
 };

@@ -306,4 +306,20 @@ uint32_t BufferQueueConsumer::GetAvailableBufferCount() const
     }
     return bufferQueue_->GetAvailableBufferCount();
 }
+
+GSError BufferQueueConsumer::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
+}
+
+GSError BufferQueueConsumer::GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetBufferSupportFastCompose(bufferSupportFastCompose);
+}
 } // namespace OHOS

@@ -650,4 +650,30 @@ uint32_t ConsumerSurface::GetAvailableBufferCount() const
     }
     return consumer_->GetAvailableBufferCount();
 }
+
+GSError ConsumerSurface::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
+}
+
+GSError ConsumerSurface::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    if (isFirstBuffer_.load()) {
+        GSError ret = consumer_->GetBufferSupportFastCompose(bufferSupportFastCompose);
+        if (ret == GSERROR_OK) {
+            supportFastCompose_.store(bufferSupportFastCompose);
+            isFirstBuffer_.store(false);
+        }
+        return ret;
+    } else {
+        bufferSupportFastCompose = supportFastCompose_.load();
+        return GSERROR_OK;
+    }
+}
 } // namespace OHOS

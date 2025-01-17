@@ -204,7 +204,8 @@ public:
         struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap);
-
+    GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp);
+    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
@@ -310,6 +311,8 @@ private:
     int32_t connectedPid_ = 0;
     bool isAllocatingBuffer_ = false;
     std::condition_variable isAllocatingBufferCon_;
+    int64_t lastFlushedDesiredPresentTimeStamp_ = 0;
+    bool bufferSupportFastCompose_ = false;
 };
 }; // namespace OHOS
 

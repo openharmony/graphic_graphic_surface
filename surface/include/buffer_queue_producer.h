@@ -73,7 +73,7 @@ public:
     GSError SetDefaultUsage(uint64_t usage) override;
     uint64_t GetDefaultUsage() override;
 
-    GSError CleanCache(bool cleanAll) override;
+    GSError CleanCache(bool cleanAll, uint32_t *bufSeqNum) override;
     GSError GoBackground() override;
 
     GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;
@@ -85,7 +85,7 @@ public:
     GSError IsSupportedAlloc(const std::vector<BufferVerifyAllocInfo> &infos, std::vector<bool> &supporteds) override;
 
     GSError Connect() override;
-    GSError Disconnect() override;
+    GSError Disconnect(uint32_t *bufSeqNum) override;
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
     GSError SetBufferHold(bool hold) override;

@@ -473,7 +473,14 @@ int32_t BufferQueueProducer::GetUniqueIdRemote(MessageParcel &arguments, Message
 int32_t BufferQueueProducer::CleanCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     bool cleanAll = arguments.ReadBool();
-    reply.WriteInt32(CleanCache(cleanAll));
+    uint32_t bufSeqNum = 0;
+    GSError result = CleanCache(cleanAll, &bufSeqNum);
+    if (!reply.WriteInt32(result)) {
+        return 0;
+    }
+    if (result == GSERROR_OK && !reply.WriteUint32(bufSeqNum)) {
+        return 0;
+    }
     return 0;
 }
 
@@ -538,8 +545,15 @@ int32_t BufferQueueProducer::ConnectRemote(MessageParcel &arguments, MessageParc
 
 int32_t BufferQueueProducer::DisconnectRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    GSError sret = Disconnect();
-    reply.WriteInt32(sret);
+    uint32_t bufSeqNum = 0;
+    GSError sRet = Disconnect(&bufSeqNum);
+    if (!reply.WriteInt32(sRet)) {
+        return 0;
+    }
+
+    if (sRet == GSERROR_OK && !reply.WriteUint32(bufSeqNum)) {
+        return 0;
+    }
     return 0;
 }
 
@@ -1040,7 +1054,7 @@ uint64_t BufferQueueProducer::GetUniqueId()
     return bufferQueue_->GetUniqueId();
 }
 
-GSError BufferQueueProducer::CleanCache(bool cleanAll)
+GSError BufferQueueProducer::CleanCache(bool cleanAll, uint32_t* bufSeqNum)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -1054,7 +1068,7 @@ GSError BufferQueueProducer::CleanCache(bool cleanAll)
         }
     }
 
-    return bufferQueue_->CleanCache(cleanAll);
+    return bufferQueue_->CleanCache(cleanAll, bufSeqNum);
 }
 
 GSError BufferQueueProducer::GoBackground()
@@ -1229,7 +1243,7 @@ GSError BufferQueueProducer::Connect()
     return SURFACE_ERROR_OK;
 }
 
-GSError BufferQueueProducer::Disconnect()
+GSError BufferQueueProducer::Disconnect(uint32_t* bufSeqNum)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
@@ -1243,7 +1257,7 @@ GSError BufferQueueProducer::Disconnect()
         }
         connectedPid_ = 0;
     }
-    return bufferQueue_->CleanCache(false);
+    return bufferQueue_->CleanCache(false, bufSeqNum);
 }
 
 GSError BufferQueueProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
@@ -1349,7 +1363,7 @@ void BufferQueueProducer::OnBufferProducerRemoteDied()
         }
         connectedPid_ = 0;
     }
-    bufferQueue_->CleanCache(false);
+    bufferQueue_->CleanCache(false, nullptr);
 }
 
 BufferQueueProducer::ProducerSurfaceDeathRecipient::ProducerSurfaceDeathRecipient(

@@ -608,7 +608,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer006, Function | MediumTest | Level2)
  */
 HWTEST_F(BufferQueueTest, QueryIfBufferAvailable001, Function | MediumTest | Level2)
 {
-    bq->CleanCache(false);
+    bq->CleanCache(false, nullptr);
     bool ret = bq->QueryIfBufferAvailable();
     ASSERT_EQ(ret, true);
 
@@ -718,7 +718,7 @@ HWTEST_F(BufferQueueTest, SetDefaultUsage001, Function | MediumTest | Level2)
  */
 HWTEST_F(BufferQueueTest, CleanCache001, Function | MediumTest | Level2)
 {
-    GSError ret = bq->CleanCache(false);
+    GSError ret = bq->CleanCache(false, nullptr);
     ASSERT_EQ(ret, GSERROR_OK);
 }
 /*
@@ -747,7 +747,7 @@ HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, Function | MediumTest | Leve
  */
 HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, Function | MediumTest | Level2)
 {
-    bq->CleanCache(false);
+    bq->CleanCache(false, nullptr);
     int32_t timeOut = 6;
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bq->AttachBuffer(retval.buffer, timeOut);
@@ -769,7 +769,7 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, Function | MediumTest 
  */
 HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, Function | MediumTest | Level2)
 {
-    bq->CleanCache(false);
+    bq->CleanCache(false, nullptr);
     int32_t timeOut = 6;
     EXPECT_EQ(bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();

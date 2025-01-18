@@ -133,6 +133,7 @@ public:
     uint32_t GetAvailableBufferCount() const override;
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) override;
+    GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

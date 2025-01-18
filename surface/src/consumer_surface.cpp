@@ -676,4 +676,15 @@ GSError ConsumerSurface::GetBufferSupportFastCompose(bool &bufferSupportFastComp
         return GSERROR_OK;
     }
 }
+
+GSError ConsumerSurface::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+{
+    if (buffer == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetBufferCacheConfig(buffer, config);
+}
 } // namespace OHOS

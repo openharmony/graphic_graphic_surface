@@ -443,6 +443,15 @@ public:
         (void)needMap;
         return GSERROR_NOT_SUPPORT;
     }
+    /**
+     * @brief Avoidance plan, which can be deleted later.
+     */
+    virtual GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+    {
+        (void)buffer;
+        (void)config;
+        return GSERROR_NOT_SUPPORT;
+    }
 
 protected:
     Surface() = default;

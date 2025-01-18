@@ -206,6 +206,8 @@ public:
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap);
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp);
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose);
+    GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);

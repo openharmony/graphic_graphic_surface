@@ -2138,4 +2138,15 @@ GSError BufferQueue::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
     bufferSupportFastCompose = bufferSupportFastCompose_;
     return GSERROR_OK;
 }
+
+GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    auto iter = bufferQueueCache_.find(buffer->GetSeqNum());
+    if (iter == bufferQueueCache_.end()) {
+        return GSERROR_BUFFER_NOT_INCACHE;
+    }
+    config = iter->second.config;
+    return GSERROR_OK;
+}
 }; // namespace OHOS

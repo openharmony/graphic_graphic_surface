@@ -322,4 +322,12 @@ GSError BufferQueueConsumer::GetBufferSupportFastCompose(bool &bufferSupportFast
     }
     return bufferQueue_->GetBufferSupportFastCompose(bufferSupportFastCompose);
 }
+
+GSError BufferQueueConsumer::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetBufferCacheConfig(buffer, config);
+}
 } // namespace OHOS

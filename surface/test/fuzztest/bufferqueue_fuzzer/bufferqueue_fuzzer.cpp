@@ -164,7 +164,7 @@ namespace OHOS {
         bool isShared = GetData<bool>();
         sptr<BufferQueue> bufferqueue = new BufferQueue(name, isShared);
         bool cleanAll = GetData<bool>();
-        bufferqueue->CleanCache(cleanAll);
+        bufferqueue->CleanCache(cleanAll, nullptr);
         bufferqueue->GetHdrWhitePointBrightness();
         bufferqueue->GetUniqueId();
         bufferqueue->GoBackground();

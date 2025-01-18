@@ -163,11 +163,12 @@ public:
     GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
 private:
     bool IsRemote();
-    void CleanAllLocked();
+    void CleanAllLocked(uint32_t *bufSeqNum);
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
     GSError SetMetadataValue(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
+    void ReleasePreCacheBuffer(int bufferCacheSize);
     
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;
@@ -189,6 +190,7 @@ private:
     GraphicTransformType lastSetTransformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BufferRequestConfig windowConfig_ = {0};
     ProducerInitInfo initInfo_ = {0};
+    sptr<SurfaceBuffer> preCacheBuffer_ = nullptr;
 };
 } // namespace OHOS
 

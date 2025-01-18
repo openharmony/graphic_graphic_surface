@@ -1497,7 +1497,7 @@ GSError BufferQueue::GoBackground()
     return GSERROR_OK;
 }
 
-GSError BufferQueue::CleanCache(bool cleanAll)
+GSError BufferQueue::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
 {
     sptr<IBufferConsumerListener> listener;
     IBufferConsumerListenerClazz *listenerClazz;
@@ -1517,10 +1517,10 @@ GSError BufferQueue::CleanCache(bool cleanAll)
     } else {
         if (listener != nullptr) {
             SURFACE_TRACE_NAME_FMT("OnCleanCache name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
-            listener->OnCleanCache();
+            listener->OnCleanCache(bufSeqNum);
         } else if (listenerClazz != nullptr) {
             SURFACE_TRACE_NAME_FMT("OnCleanCache name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
-            listenerClazz->OnCleanCache();
+            listenerClazz->OnCleanCache(bufSeqNum);
         }
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);

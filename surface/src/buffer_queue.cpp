@@ -704,18 +704,10 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         return GSERROR_OK;
     }
 
-    bufferQueueCache_[sequence].state = BUFFER_STATE_FLUSHED;
-    dirtyList_.push_back(sequence);
     bufferQueueCache_[sequence].buffer->SetExtraData(bedata);
-    bufferQueueCache_[sequence].fence = fence;
-    bufferQueueCache_[sequence].damages = config.damages;
-    lastFlusedSequence_ = sequence;
-    lastFlusedFence_ = fence;
-    lastFlushedTransform_ = transform_;
     int32_t supportFastCompose = 0;
     bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(
         BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
-    bufferSupportFastCompose_ = (bool)supportFastCompose;
     bufferQueueCache_[sequence].buffer->SetSurfaceBufferTransform(transform_);
 
     uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
@@ -728,6 +720,16 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
             return sret;
         }
     }
+    // if failed, avoid to state rollback
+    bufferQueueCache_[sequence].state = BUFFER_STATE_FLUSHED;
+    bufferQueueCache_[sequence].fence = fence;
+    bufferQueueCache_[sequence].damages = config.damages;
+    dirtyList_.push_back(sequence);
+    lastFlusedSequence_ = sequence;
+    lastFlusedFence_ = fence;
+    lastFlushedTransform_ = transform_;
+    bufferSupportFastCompose_ = (bool)supportFastCompose;
+
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
     lastFlushedDesiredPresentTimeStamp_ = bufferQueueCache_[sequence].desiredPresentTimestamp;
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
@@ -2117,6 +2119,12 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
         uint32_t sequence = buffer->GetSeqNum();
         ret = FlushBufferImprovedLocked(sequence, bedata, fence, config, lock);
         if (ret != GSERROR_OK) {
+            for (auto it = dirtyList_.begin(); it != dirtyList_.end; it++) {
+                if (*it == sequence) {
+                    dirtyList_.erase(it);
+                    break;
+                }
+            }
             bufferQueueCache_.erase(sequence);
             return ret;
         }

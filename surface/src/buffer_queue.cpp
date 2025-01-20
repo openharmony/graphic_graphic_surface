@@ -2119,7 +2119,7 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
         uint32_t sequence = buffer->GetSeqNum();
         ret = FlushBufferImprovedLocked(sequence, bedata, fence, config, lock);
         if (ret != GSERROR_OK) {
-            for (auto it = dirtyList_.begin(); it != dirtyList_.end; it++) {
+            for (auto it = dirtyList_.begin(); it != dirtyList_.end(); it++) {
                 if (*it == sequence) {
                     dirtyList_.erase(it);
                     break;

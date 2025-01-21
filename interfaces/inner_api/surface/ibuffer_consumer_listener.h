@@ -26,7 +26,10 @@ public:
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
     virtual void OnGoBackground() {};
-    virtual void OnCleanCache() {};
+    virtual void OnCleanCache(uint32_t *bufSeqNum)
+    {
+        (void)bufSeqNum;
+    }
     virtual void OnTransformChange() {};
 };
 
@@ -36,7 +39,10 @@ public:
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
     virtual void OnGoBackground() {};
-    virtual void OnCleanCache() {};
+    virtual void OnCleanCache(uint32_t *bufSeqNum)
+    {
+        (void)bufSeqNum;
+    }
     virtual void OnTransformChange() {};
 };
 } // namespace OHOS

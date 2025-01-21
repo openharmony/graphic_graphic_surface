@@ -210,6 +210,7 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     // add cache
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
+        ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
     } else {
         auto it = bufferProducerCache_.find(retval.sequence);
         if (it == bufferProducerCache_.end()) {
@@ -395,6 +396,7 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
+        ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
     }
     return ret;
 }
@@ -757,8 +759,11 @@ bool ProducerSurface::IsRemote()
     return producer_->AsObject()->IsProxyObject();
 }
 
-void ProducerSurface::CleanAllLocked()
+void ProducerSurface::CleanAllLocked(uint32_t *bufSeqNum)
 {
+    if (bufSeqNum && bufferProducerCache_.find(*bufSeqNum) != bufferProducerCache_.end()) {
+        preCacheBuffer_ = bufferProducerCache_[*bufSeqNum];
+    }
     bufferProducerCache_.clear();
     auto spNativeWindow = wpNativeWindow_.promote();
     if (spNativeWindow != nullptr) {
@@ -773,8 +778,16 @@ void ProducerSurface::CleanAllLocked()
 GSError ProducerSurface::CleanCacheLocked(bool cleanAll)
 {
     BLOGD("CleanCacheLocked, uniqueId: %{public}" PRIu64 ".", queueId_);
-    CleanAllLocked();
-    return producer_->CleanCache(cleanAll);
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    uint32_t bufSeqNum = 0;
+    GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
+    CleanAllLocked(&bufSeqNum);
+    if (cleanAll) {
+        preCacheBuffer_ = nullptr;
+    }
+    return ret;
 }
 
 GSError ProducerSurface::CleanCache(bool cleanAll)
@@ -783,11 +796,14 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
         return GSERROR_INVALID_ARGUMENTS;
     }
     BLOGD("CleanCache, uniqueId: %{public}" PRIu64 ".", queueId_);
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        CleanAllLocked();
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    uint32_t bufSeqNum = 0;
+    GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
+    CleanAllLocked(&bufSeqNum);
+    if (cleanAll) {
+        preCacheBuffer_ = nullptr;
     }
-    return producer_->CleanCache(cleanAll);
+    return ret;
 }
 
 GSError ProducerSurface::GoBackground()
@@ -798,7 +814,7 @@ GSError ProducerSurface::GoBackground()
     BLOGD("GoBackground, uniqueId: %{public}" PRIu64 ".", queueId_);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        CleanAllLocked();
+        CleanAllLocked(nullptr);
     }
     return producer_->GoBackground();
 }
@@ -870,11 +886,12 @@ GSError ProducerSurface::Disconnect()
         return SURFACE_ERROR_CONSUMER_DISCONNECTED;
     }
     BLOGD("Disconnect, uniqueId: %{public}" PRIu64 ".", queueId_);
-    CleanAllLocked();
-    GSError ret = producer_->Disconnect();
+    uint32_t bufSeqNum = 0;
+    GSError ret = producer_->Disconnect(&bufSeqNum);
     if (ret == GSERROR_OK) {
         isDisconnected_ = true;
     }
+    CleanAllLocked(&bufSeqNum);
     return ret;
 }
 
@@ -1156,5 +1173,15 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
         BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
     }
     return ret;
+}
+
+void ProducerSurface::ReleasePreCacheBuffer(int bufferCacheSize)
+{
+    // client must have more than two buffer, otherwise RS can not delete the prebuffer.
+    // Because RS has two buffer(pre and cur).
+    const int deletePreCacheBufferThreshold = 2; // 2 is delete threshold.
+    if (bufferCacheSize >= deletePreCacheBufferThreshold) {
+        preCacheBuffer_ = nullptr;
+    }
 }
 } // namespace OHOS

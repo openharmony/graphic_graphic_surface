@@ -132,6 +132,11 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError SetBufferName(const std::string &name)
+    {
+        (void)name;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

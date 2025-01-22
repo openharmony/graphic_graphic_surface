@@ -26,7 +26,10 @@
 #include "sync_fence.h"
 #include "native_window.h"
 #include "surface_utils.h"
+#include "surface_trace.h"
 #include "metadata_helper.h"
+
+#define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
 
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
@@ -88,6 +91,7 @@ GSError ProducerSurface::Init()
     }
     name_ = initInfo_.name;
     queueId_ = initInfo_.uniqueId;
+    bufferName_ = initInfo_.bufferName;
     inited_.store(true);
     return GSERROR_OK;
 }
@@ -213,6 +217,12 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
         ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
+        if (bufferName_ != "") {
+            int fd = retval.buffer->GetFileDescriptor();
+            if (fd > 0) {
+                ioctl(fd, DMA_BUF_SET_TYPE, bufferName_.c_str());
+            }
+        }
     } else {
         auto it = bufferProducerCache_.find(retval.sequence);
         if (it == bufferProducerCache_.end()) {
@@ -928,6 +938,13 @@ GSError ProducerSurface::SetWptrNativeWindowToPSurface(void* nativeWindow)
     NativeWindow *nw = reinterpret_cast<NativeWindow *>(nativeWindow);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     wpNativeWindow_ = nw;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::SetBufferName(const std::string &name)
+{
+    bufferName_ = name;
+    producer_->SetBufferName(name);
     return GSERROR_OK;
 }
 

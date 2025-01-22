@@ -84,6 +84,7 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORMHINT, GetTransformHintRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORMHINT, SetTransformHintRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_BUFFER_HOLD, SetBufferHoldRemote),
+        BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_BUFFER_NAME, SetBufferNameRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SCALING_MODEV2, SetScalingModeV2Remote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SOURCE_TYPE, SetSurfaceSourceTypeRemote),
         BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_SOURCE_TYPE, GetSurfaceSourceTypeRemote),
@@ -248,7 +249,7 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     }
     (void)GetProducerInitInfo(info);
     if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
-        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList)) {
+        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList) || !reply.WriteString(info.bufferName)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
@@ -688,6 +689,16 @@ int32_t BufferQueueProducer::SetBufferHoldRemote(MessageParcel &arguments, Messa
 {
     bool hold = arguments.ReadBool();
     GSError sRet = SetBufferHold(hold);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetBufferNameRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::string bufferName = arguments.ReadString();
+    GSError sRet = SetBufferName(bufferName);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1459,6 +1470,14 @@ GSError BufferQueueProducer::SetBufferHold(bool hold)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->SetBufferHold(hold);
+}
+
+GSError BufferQueueProducer::SetBufferName(const std::string &bufferName)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetBufferName(bufferName);
 }
 
 GSError BufferQueueProducer::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)

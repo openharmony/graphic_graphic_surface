@@ -16,6 +16,9 @@
 #include "producer_surface.h"
 
 #include <cinttypes>
+#include <sys/ioctl.h>
+ 
+#include <linux/dma-buf.h>
 
 #include "buffer_log.h"
 #include "buffer_extra_data_impl.h"

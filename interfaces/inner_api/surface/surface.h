@@ -326,6 +326,11 @@ public:
 
     virtual GraphicTransformType GetTransformHint() const = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+    virtual GSError SetBufferName(const std::string &name)
+    {
+        (void)name;
+        return GSERROR_NOT_SUPPORT;
+    }
 
     virtual void SetRequestWidthAndHeight(int32_t width, int32_t height)
     {

@@ -253,7 +253,7 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
         return GSERROR_BINDER;
     }
     uniqueId_ = info.uniqueId;
-    if (!reply.ReadString(info.name) || !reply.ReadBool(info.isInHebcList)) {
+    if (!reply.ReadString(info.name) || !reply.ReadBool(info.isInHebcList) || !reply.ReadString(info.bufferName)) {
         return GSERROR_BINDER;
     }
     return CheckRetval(reply);
@@ -669,6 +669,16 @@ GSError BufferClientProducer::SetBufferHold(bool hold)
         return GSERROR_BINDER;
     }
     SEND_REQUEST(BUFFER_PRODUCER_SET_BUFFER_HOLD, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::SetBufferName(const std::string &bufferName)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteString(bufferName)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_BUFFER_NAME, arguments, reply, option);
     return CheckRetval(reply);
 }
 

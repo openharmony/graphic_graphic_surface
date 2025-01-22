@@ -172,6 +172,7 @@ private:
     int32_t SetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetTransformHintRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetBufferHoldRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetBufferNameRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetSurfaceSourceTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

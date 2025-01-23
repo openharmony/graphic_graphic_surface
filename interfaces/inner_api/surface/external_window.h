@@ -139,12 +139,16 @@ typedef enum NativeWindowOperation {
      * set native window buffer stride in bytes,
      * variable parameter in function is
      * [in] int32_t stride, in bytes.
+     * @deprecated since 16
      */
     SET_STRIDE,
     /**
      * get native window buffer stride in bytes,
      * variable parameter in function is
      * [out] int32_t *stride, in bytes.
+     * @deprecated since 16
+     * @useinstead Use OH_NativeWindow_GetBufferHandleFromNative to get a BufferHandleand from a buffer
+     * and then retrieve the stride from the BufferHandle.
      */
     GET_STRIDE,
     /**

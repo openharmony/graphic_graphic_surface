@@ -22,6 +22,11 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Buffer handle used to transfer and obtain information about the buffer. The handle includes the buffer's
+ * file descriptor, size, format, usage, virtual address, shared memory key, physical address and reserved data.
+ * @since 8
+ */
 typedef struct {
     int32_t fd;           /**< buffer fd, -1 if not supported */
     int32_t width;        /**< the width of memory */

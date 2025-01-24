@@ -60,6 +60,7 @@ public:
     };
     static inline sptr<IRemoteObject> robj = nullptr;
     static inline sptr<IBufferProducer> bp = nullptr;
+    static inline sptr<BufferQueueProducer> bqp = nullptr;
     static inline std::vector<uint32_t> deletingBuffers;
     static inline pid_t pid = 0;
     static inline int pipeFd[2] = {};
@@ -108,7 +109,7 @@ void BufferClientProducerRemoteTest::SetUpTestCase()
         InitNativeTokenInfo();
         sptr<BufferQueue> bq = new BufferQueue("test");
         ASSERT_NE(bq, nullptr);
-        sptr<BufferQueueProducer> bqp = new BufferQueueProducer(bq);
+        bqp = new BufferQueueProducer(bq);
         ASSERT_NE(bqp, nullptr);
         sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
         bq->RegisterConsumerListener(listener);
@@ -771,5 +772,23 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
     ret = bp->AttachAndFlushBuffer(retvalTmp.buffer, bedataTmp, fence, flushConfig, false);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
+}
+
+/**
+ * Function: CheckIsAliveTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: na
+ *                  2. operation: call RequestAndDetachBuffer and AttachAndFlushBuffer
+ *                  3. result: return OK
+ */
+HWTEST_F(BufferClientProducerRemoteTest, CheckIsAliveTest, Function | MediumTest | Level2)
+{
+    bqp->magicNum_ = 0;
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, ERR_NULL_OBJECT);
+    bqp->magicNum_ = BufferQueueProducer::MAGIC_INIT;
 }
 }

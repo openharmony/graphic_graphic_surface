@@ -254,6 +254,7 @@ public:
     static inline float brightness = 0.0f;
     static inline uint32_t matrixSize = 0;
     static inline int32_t alpha = 0;
+    static inline std::string bufferName = "";
 };
 
 /*
@@ -295,6 +296,7 @@ HWTEST_F(SurfaceTest, SurfaceTest001, Function | MediumTest | Level2)
     EXPECT_EQ(surface->SetDefaultFormat(format), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetDefaultColorGamut(), 0);
     EXPECT_EQ(surface->SetDefaultColorGamut(colorGamut), GSERROR_NOT_SUPPORT);
+    EXPECT_EQ(surface->SetBufferName(bufferName), GSERROR_NOT_SUPPORT);
 }
 
 /*

@@ -191,7 +191,7 @@ private:
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
     
-    std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
+    static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
 
     class ProducerSurfaceDeathRecipient : public IRemoteObject::DeathRecipient {

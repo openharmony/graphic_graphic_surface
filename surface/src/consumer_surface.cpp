@@ -559,11 +559,6 @@ GSError ConsumerSurface::SetTransformHint(GraphicTransformType transformHint)
     return producer_->SetTransformHint(transformHint);
 }
 
-GSError ConsumerSurface::SetBufferName(const std::string &name)
-{
-    return GSERROR_NOT_SUPPORT;
-}
-
 GSError ConsumerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)
 {
     if (producer_ == nullptr) {

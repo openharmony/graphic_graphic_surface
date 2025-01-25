@@ -188,8 +188,8 @@ private:
     void SetConnectedPid(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
-    inline bool CheckIsAlive();
-    
+    bool CheckIsAlive();
+
     static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
 

@@ -1596,7 +1596,7 @@ void BufferQueueProducer::SetConnectedPid(int32_t connectedPid)
     }
 }
 
-inline bool BufferQueueProducer::CheckIsAlive()
+bool BufferQueueProducer::CheckIsAlive()
 {
     static const bool isBeta = system::GetParameter("const.logsystem.versiontype", "") == "beta";
     if (magicNum_ != MAGIC_INIT) {

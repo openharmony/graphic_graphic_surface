@@ -96,6 +96,11 @@ public:
 
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
     virtual GSError SetBufferHold(bool hold) = 0;
+    virtual GSError SetBufferName(const std::string &bufferName)
+    {
+        (void)bufferName;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                    const std::vector<uint8_t> &metaData) = 0;
@@ -220,6 +225,7 @@ protected:
         BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE,
         BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER,
         BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER,
+        BUFFER_PRODUCER_SET_BUFFER_NAME,
     };
 };
 } // namespace OHOS

@@ -81,6 +81,8 @@ public:
 
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) override;
     GSError SetBufferHold(bool hold) override;
+    GSError SetBufferName(const std::string &bufferName) override;
+
     GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) override;
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;

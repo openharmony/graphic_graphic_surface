@@ -114,6 +114,7 @@ public:
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
+    GSError SetBufferName(const std::string &name) override;
 
     void SetRequestWidthAndHeight(int32_t width, int32_t height) override;
     int32_t GetRequestWidth() override;
@@ -179,6 +180,7 @@ private:
     std::mutex delegatorMutex_;
     std::map<std::string, OnUserDataChangeFunc> onUserDataChange_;
     std::mutex lockMutex_;
+    std::string bufferName_ = "";
     int32_t requestWidth_ = 0;
     int32_t requestHeight_ = 0;
     GraphicTransformType lastSetTransformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;

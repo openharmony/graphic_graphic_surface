@@ -115,6 +115,7 @@ GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
     info.height = defaultHeight_;
     info.uniqueId = uniqueId_;
     info.isInHebcList = HebcWhiteList::GetInstance().Check(info.appName);
+    info.bufferName = bufferName_;
     return GSERROR_OK;
 }
 
@@ -1683,6 +1684,13 @@ GSError BufferQueue::SetBufferHold(bool hold)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     isBufferHold_ = hold;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetBufferName(const std::string &bufferName)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    bufferName_ = bufferName;
     return GSERROR_OK;
 }
 

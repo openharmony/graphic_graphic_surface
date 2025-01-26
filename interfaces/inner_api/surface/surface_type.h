@@ -149,6 +149,7 @@ using ProducerInitInfo = struct {
     std::string name;
     std::string appName;
     bool isInHebcList;
+    std::string bufferName;
 };
 
 using GraphicLayerInfo = struct {

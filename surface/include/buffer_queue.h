@@ -143,6 +143,7 @@ public:
     GraphicTransformType GetTransform() const;
 
     GSError SetBufferHold(bool hold);
+    GSError SetBufferName(const std::string &bufferName);
     inline bool IsBufferHold()
     {
         return isBufferHold_;
@@ -282,6 +283,7 @@ private:
     std::mutex listenerMutex_;
     std::mutex producerListenerMutex_;
     const uint64_t uniqueId_;
+    std::string bufferName_ = "";
     OnReleaseFunc onBufferRelease_ = nullptr;
     std::mutex onBufferReleaseMutex_;
     sptr<IProducerListener> producerListener_ = nullptr;

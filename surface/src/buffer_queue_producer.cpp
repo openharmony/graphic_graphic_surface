@@ -18,12 +18,15 @@
 #include <cinttypes>
 #include <mutex>
 #include <set>
+#include <csignal>
 
 #include "buffer_extra_data_impl.h"
 #include "buffer_log.h"
 #include "buffer_producer_listener.h"
 #include "buffer_utils.h"
 #include "frame_report.h"
+#include <parameter.h>
+#include <parameters.h>
 #include "sync_fence.h"
 
 #define BUFFER_PRODUCER_API_FUNC_PAIR(apiSequenceNum, func) \
@@ -105,6 +108,8 @@ BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
 
 BufferQueueProducer::~BufferQueueProducer()
 {
+    (void)CheckIsAlive();
+    magicNum_ = 0;
     if (token_ && producerSurfaceDeathRecipient_) {
         token_->RemoveDeathRecipient(producerSurfaceDeathRecipient_);
         token_ = nullptr;
@@ -129,6 +134,9 @@ GSError BufferQueueProducer::CheckConnectLocked()
 int32_t BufferQueueProducer::OnRemoteRequest(uint32_t code, MessageParcel &arguments,
                                              MessageParcel &reply, MessageOption &option)
 {
+    if (!CheckIsAlive()) {
+        return ERR_NULL_OBJECT;
+    }
     auto it = memberFuncMap_.find(code);
     if (it == memberFuncMap_.end()) {
         BLOGE("cannot process %{public}u", code);
@@ -1586,5 +1594,18 @@ void BufferQueueProducer::SetConnectedPid(int32_t connectedPid)
     if (bufferQueue_) {
         bufferQueue_->SetConnectedPid(connectedPid_);
     }
+}
+
+bool BufferQueueProducer::CheckIsAlive()
+{
+    static const bool isBeta = system::GetParameter("const.logsystem.versiontype", "") == "beta";
+    if (magicNum_ != MAGIC_INIT) {
+        BLOGE("report to HiViewOcean magicNum %{public}d", magicNum_);
+        if (isBeta) {
+            raise(42);  // 42 : report to HiViewOcean
+        }
+        return false;
+    }
+    return true;
 }
 }; // namespace OHOS

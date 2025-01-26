@@ -188,7 +188,8 @@ private:
     void SetConnectedPid(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
-    
+    bool CheckIsAlive();
+
     static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
 
@@ -210,6 +211,8 @@ private:
     std::string name_ = "not init";
     std::mutex mutex_;
     uint64_t uniqueId_ = 0;
+    static const uint32_t MAGIC_INIT = 0x16273849;
+    uint32_t magicNum_ = MAGIC_INIT;
 };
 }; // namespace OHOS
 

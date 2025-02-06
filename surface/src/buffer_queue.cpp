@@ -2165,4 +2165,27 @@ GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, Buf
     config = iter->second.config;
     return GSERROR_OK;
 }
+
+GSError BufferQueue::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (rotatingBufferNumber_ == 0) {
+        cycleBuffersNumber = bufferQueueSize_;
+    } else {
+        cycleBuffersNumber = rotatingBufferNumber_;
+    }
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
+{
+    // 2 : two times of the max queue size
+    if (cycleBuffersNumber == 0 || cycleBuffersNumber > SURFACE_MAX_QUEUE_SIZE * 2) {
+        BLOGE("Set rotating buffers number : %{public}u failed", cycleBuffersNumber);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    rotatingBufferNumber_ = cycleBuffersNumber;
+    return GSERROR_OK;
+}
 }; // namespace OHOS

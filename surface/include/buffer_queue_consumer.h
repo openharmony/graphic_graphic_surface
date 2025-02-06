@@ -86,6 +86,7 @@ public:
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const;
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const;
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

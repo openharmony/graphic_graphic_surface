@@ -913,4 +913,26 @@ GSError BufferClientProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, 
     SEND_REQUEST(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, arguments, reply, option);
     return CheckRetval(reply);
 }
+
+GSError BufferClientProducer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    cycleBuffersNumber = reply.ReadUint32();
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteUint32(cycleBuffersNumber)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, arguments, reply, option);
+    return CheckRetval(reply);
+}
 }; // namespace OHOS

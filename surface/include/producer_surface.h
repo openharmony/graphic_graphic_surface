@@ -149,6 +149,8 @@ public:
                                    BufferRequestConfig& config) override;
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
                                  BufferFlushConfig& config, bool needMap) override;
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
+    GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
 private:
     bool IsRemote();
     void CleanAllLocked(uint32_t *bufSeqNum);

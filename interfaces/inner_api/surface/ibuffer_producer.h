@@ -83,7 +83,7 @@ public:
     virtual GSError GoBackground() = 0;
 
     virtual GSError RegisterReleaseListener(sptr<IProducerListener> listener) = 0;
-    virtual GSError RegisterReleaseListenerWithFence(sptr<IProducerListener> listener)
+    virtual GSError RegisterReleaseListenerBackup(sptr<IProducerListener> listener)
     {
         (void)listener;
         return GSERROR_OK;
@@ -109,7 +109,7 @@ public:
 
     virtual sptr<NativeSurface> GetNativeSurface() = 0;
     virtual GSError UnRegisterReleaseListener() = 0;
-    virtual GSError UnRegisterReleaseListenerWithFence()
+    virtual GSError UnRegisterReleaseListenerBackup()
     {
         return GSERROR_OK;
     }
@@ -221,8 +221,8 @@ protected:
         BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_SET_GLOBALALPHA,
-        BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE,
-        BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE,
+        BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_BACKUP,
+        BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_BACKUP,
         BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER,
         BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER,
         BUFFER_PRODUCER_SET_BUFFER_NAME,

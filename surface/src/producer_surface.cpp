@@ -474,7 +474,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         int error = surfaceDelegator->ReleaseBuffer(buffer, fence);
         return static_cast<GSError>(error);
     };
-    RegisterReleaseListenerWithFence(releaseBufferCallBack);
+    RegisterReleaseListenerBackup(releaseBufferCallBack);
     return GSERROR_OK;
 }
 
@@ -658,7 +658,7 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     return producer_->RegisterReleaseListener(listener);
 }
 
-GSError ProducerSurface::RegisterReleaseListenerWithFence(OnReleaseFuncWithFence funcWithFence)
+GSError ProducerSurface::RegisterReleaseListenerBackup(OnReleaseFuncWithFence funcWithFence)
 {
     if (funcWithFence == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -666,10 +666,10 @@ GSError ProducerSurface::RegisterReleaseListenerWithFence(OnReleaseFuncWithFence
     sptr<IProducerListener> listener;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        listenerWithFence_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
-        listener = listenerWithFence_;
+        listenerBackup_ = new BufferReleaseProducerListener(nullptr, funcWithFence);
+        listener = listenerBackup_;
     }
-    return producer_->RegisterReleaseListenerWithFence(listener);
+    return producer_->RegisterReleaseListenerBackup(listener);
 }
 
 GSError ProducerSurface::UnRegisterReleaseListener()
@@ -686,7 +686,7 @@ GSError ProducerSurface::UnRegisterReleaseListener()
     return producer_->UnRegisterReleaseListener();
 }
 
-GSError ProducerSurface::UnRegisterReleaseListenerWithFence()
+GSError ProducerSurface::UnRegisterReleaseListenerBackup()
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -697,11 +697,11 @@ GSError ProducerSurface::UnRegisterReleaseListenerWithFence()
     }
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (listenerWithFence_ != nullptr) {
-            listenerWithFence_->ResetReleaseFunc();
+        if (listenerBackup_ != nullptr) {
+            listenerBackup_->ResetReleaseFunc();
         }
     }
-    return producer_->UnRegisterReleaseListenerWithFence();
+    return producer_->UnRegisterReleaseListenerBackup();
 }
 
 GSError ProducerSurface::RegisterUserDataChangeListener(const std::string& funcName, OnUserDataChangeFunc func)

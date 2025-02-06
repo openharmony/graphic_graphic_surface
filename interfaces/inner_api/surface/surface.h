@@ -291,7 +291,7 @@ public:
     {
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError UnRegisterReleaseListenerWithFence()
+    virtual GSError UnRegisterReleaseListenerBackup()
     {
         return GSERROR_NOT_SUPPORT;
     }
@@ -312,7 +312,7 @@ public:
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) = 0;
     virtual GSError RegisterReleaseListener(OnReleaseFuncWithFence func) = 0;
-    virtual GSError RegisterReleaseListenerWithFence(OnReleaseFuncWithFence func)
+    virtual GSError RegisterReleaseListenerBackup(OnReleaseFuncWithFence func)
     {
         (void)func;
         return GSERROR_NOT_SUPPORT;

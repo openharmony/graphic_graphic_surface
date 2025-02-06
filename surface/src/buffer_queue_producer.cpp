@@ -58,7 +58,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_CACHE, CleanCacheRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, RegisterReleaseListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(
-        BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE, RegisterReleaseListenerWithFenceRemote),
+        BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_BACKUP, RegisterReleaseListenerBackupRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TRANSFORM, SetTransformRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_NAMEANDUNIQUEDID, GetNameAndUniqueIdRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT, DisconnectRemote),
@@ -71,7 +71,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_PRESENT_TIMESTAMP, GetPresentTimestampRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER, UnRegisterReleaseListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(
-        BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE, UnRegisterReleaseListenerWithFenceRemote),
+        BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_BACKUP, UnRegisterReleaseListenerBackupRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_LAST_FLUSHED_BUFFER, GetLastFlushedBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_TRANSFORM, GetTransformRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_BUFFER_TO_QUEUE, AttachBufferToQueueRemote),
@@ -602,7 +602,7 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
     return ERR_NONE;
 }
 
-int32_t BufferQueueProducer::RegisterReleaseListenerWithFenceRemote(MessageParcel &arguments,
+int32_t BufferQueueProducer::RegisterReleaseListenerBackupRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
@@ -613,7 +613,7 @@ int32_t BufferQueueProducer::RegisterReleaseListenerWithFenceRemote(MessageParce
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    GSError sRet = RegisterReleaseListenerWithFence(listener);
+    GSError sRet = RegisterReleaseListenerBackup(listener);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -630,10 +630,10 @@ int32_t BufferQueueProducer::UnRegisterReleaseListenerRemote(MessageParcel &argu
     return ERR_NONE;
 }
 
-int32_t BufferQueueProducer::UnRegisterReleaseListenerWithFenceRemote(MessageParcel &arguments,
+int32_t BufferQueueProducer::UnRegisterReleaseListenerBackupRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    GSError sRet = UnRegisterReleaseListenerWithFence();
+    GSError sRet = UnRegisterReleaseListenerBackup();
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1287,12 +1287,12 @@ GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> lis
     return bufferQueue_->RegisterProducerReleaseListener(listener);
 }
 
-GSError BufferQueueProducer::RegisterReleaseListenerWithFence(sptr<IProducerListener> listener)
+GSError BufferQueueProducer::RegisterReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->RegisterProducerReleaseListenerWithFence(listener);
+    return bufferQueue_->RegisterProducerReleaseListenerBackup(listener);
 }
 
 GSError BufferQueueProducer::UnRegisterReleaseListener()
@@ -1303,12 +1303,12 @@ GSError BufferQueueProducer::UnRegisterReleaseListener()
     return bufferQueue_->UnRegisterProducerReleaseListener();
 }
 
-GSError BufferQueueProducer::UnRegisterReleaseListenerWithFence()
+GSError BufferQueueProducer::UnRegisterReleaseListenerBackup()
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->UnRegisterProducerReleaseListenerWithFence();
+    return bufferQueue_->UnRegisterProducerReleaseListenerBackup();
 }
 
 bool BufferQueueProducer::HandleDeathRecipient(sptr<IRemoteObject> token)

@@ -922,11 +922,11 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
     }
 
     sptr<IProducerListener> listener;
-    sptr<IProducerListener> listenerWithFence;
+    sptr<IProducerListener> listenerBackup;
     {
         std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
         listener = producerListener_;
-        listenerWithFence = producerListenerWithFence_;
+        listenerBackup = producerListenerBackup_;
     }
 
     if (listener != nullptr) {
@@ -937,9 +937,9 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
         }
     }
 
-    if (listenerWithFence != nullptr) {
-        SURFACE_TRACE_NAME_FMT("onBufferReleasedWithFenceForProducer sequence: %u", buffer->GetSeqNum());
-        if (listenerWithFence->OnBufferReleasedWithFence(buffer, fence) != GSERROR_OK) {
+    if (listenerBackup != nullptr) {
+        SURFACE_TRACE_NAME_FMT("onBufferReleasedBackupForProducer sequence: %u", buffer->GetSeqNum());
+        if (listenerBackup->OnBufferReleasedWithFence(buffer, fence) != GSERROR_OK) {
             BLOGE("seq: %{public}u, OnBufferReleasedWithFence failed, uniqueId: %{public}" PRIu64 ".",
                 buffer->GetSeqNum(), uniqueId_);
         }
@@ -1404,10 +1404,10 @@ GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> lis
     return GSERROR_OK;
 }
 
-GSError BufferQueue::RegisterProducerReleaseListenerWithFence(sptr<IProducerListener> listener)
+GSError BufferQueue::RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
-    producerListenerWithFence_ = listener;
+    producerListenerBackup_ = listener;
     return GSERROR_OK;
 }
 
@@ -1418,10 +1418,10 @@ GSError BufferQueue::UnRegisterProducerReleaseListener()
     return GSERROR_OK;
 }
 
-GSError BufferQueue::UnRegisterProducerReleaseListenerWithFence()
+GSError BufferQueue::UnRegisterProducerReleaseListenerBackup()
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
-    producerListenerWithFence_ = nullptr;
+    producerListenerBackup_ = nullptr;
     return GSERROR_OK;
 }
 

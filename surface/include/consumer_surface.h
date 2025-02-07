@@ -134,6 +134,12 @@ public:
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) override;
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config) override;
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
+    GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override
+    {
+        (void)cycleBuffersNumber;
+        return GSERROR_NOT_SUPPORT;
+    }
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

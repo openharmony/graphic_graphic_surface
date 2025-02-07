@@ -457,6 +457,20 @@ public:
         (void)config;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+    {
+        (void)cycleBuffersNumber;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    /**
+     * @brief Set the Rotating Buffers Number object for hdi create layer max cache count.
+     * @param cycleBuffersNumber scope : (0, 2 * maxQueueSize], and it should be actual number of cycle buffers.
+     */
+    virtual GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
+    {
+        (void)cycleBuffersNumber;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 
 protected:
     Surface() = default;

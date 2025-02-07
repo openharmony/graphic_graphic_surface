@@ -208,6 +208,8 @@ public:
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp);
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose);
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
+    GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
 
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
@@ -317,6 +319,7 @@ private:
     std::condition_variable isAllocatingBufferCon_;
     int64_t lastFlushedDesiredPresentTimeStamp_ = 0;
     bool bufferSupportFastCompose_ = false;
+    uint32_t rotatingBufferNumber_ = 0;
 };
 }; // namespace OHOS
 

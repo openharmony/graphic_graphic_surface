@@ -687,4 +687,12 @@ GSError ConsumerSurface::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer,
     }
     return consumer_->GetBufferCacheConfig(buffer, config);
 }
+
+GSError ConsumerSurface::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetCycleBuffersNumber(cycleBuffersNumber);
+}
 } // namespace OHOS

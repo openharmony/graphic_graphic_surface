@@ -2472,4 +2472,33 @@ HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer003, Function | MediumTest |
     pSurfaceTmp = nullptr;
     producerTmp = nullptr;
 }
+
+/*
+* Function: GetAndSetRotatingBuffersNumber001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetCycleBuffersNumber and SetCycleBuffersNumber function and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, GetAndSetRotatingBuffersNumber001, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    uint32_t cycleBuffersNumber = 0;
+    ASSERT_EQ(pSurfaceTmp->GetCycleBuffersNumber(cycleBuffersNumber), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, cSurfTmp->GetQueueSize());
+    ASSERT_EQ(pSurfaceTmp->SetCycleBuffersNumber(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetCycleBuffersNumber(129), OHOS::GSERROR_INVALID_ARGUMENTS); // 129 : error num
+    ASSERT_EQ(pSurfaceTmp->SetCycleBuffersNumber(128), OHOS::GSERROR_OK); // 128 : normal num
+    ASSERT_EQ(pSurfaceTmp->GetCycleBuffersNumber(cycleBuffersNumber), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, 128); // 128 : normal num
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
 }

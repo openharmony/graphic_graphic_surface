@@ -1169,4 +1169,20 @@ void ProducerSurface::ReleasePreCacheBuffer(int bufferCacheSize)
         preCacheBuffer_ = nullptr;
     }
 }
+
+GSError ProducerSurface::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    if (producer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return producer_->GetCycleBuffersNumber(cycleBuffersNumber);
+}
+
+GSError ProducerSurface::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
+{
+    if (producer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return producer_->SetCycleBuffersNumber(cycleBuffersNumber);
+}
 } // namespace OHOS

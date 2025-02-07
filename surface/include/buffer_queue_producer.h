@@ -126,6 +126,8 @@ public:
         RequestBufferReturnValue& retval) override;
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
+    GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
 
 private:
     GSError CheckConnectLocked();
@@ -186,6 +188,8 @@ private:
     int32_t SetGlobalAlphaRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestAndDetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AttachAndFlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t GetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPid(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,

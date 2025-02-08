@@ -192,12 +192,12 @@ typedef enum OH_NativeBuffer_Format {
     NATIVEBUFFER_PIXEL_FMT_RAW10,
     /**
      * BLOB format
-     * @since 16
+     * @since 15
      */
     NATIVEBUFFER_PIXEL_FMT_BLOB,
     /**
      * RGBA16 float format
-     * @since 16
+     * @since 15
      */
     NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT,
     /**

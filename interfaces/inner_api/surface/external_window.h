@@ -758,6 +758,20 @@ int32_t OH_NativeWindow_ReadFromParcel(OHIPCParcel *parcel, OHNativeWindow **win
 int32_t OH_NativeWindow_GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **buffer,
     int *fenceFd, float matrix[16]);
 
+/**
+ * @brief Clean all <b>OHNativeWindowBuffer</b> caches of this <b>OHNativeWindow</b>
+ * This interface is a non-thread-safe type interface.\n
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     40001000 - window is NULL.
+ *     41211000 - the consumer is disconnected.
+ *     50401000 - ipc send failed.
+ * @since 16
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_CleanCache(OHNativeWindow *window);
 #ifdef __cplusplus
 }
 #endif

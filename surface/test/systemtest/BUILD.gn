@@ -21,6 +21,7 @@ group("unittest") {
 
   deps = [
     ":native_window_buffer_test_st",
+    ":native_window_clean_cache_test_st",
     ":native_window_test_st",
     ":surface_ipc_test_st",
     "attach_and_detach_buffer_test:systemtest",
@@ -121,4 +122,39 @@ ohos_unittest("surface_ipc_test_st") {
     "samgr:samgr_proxy",
   ]
 }
+
 ## SystemTest surface_ipc_test }}}
+
+## SystemTest native_window_clean_cache_test {{{
+ohos_unittest("native_window_clean_cache_test_st") {
+  module_out_path = module_out_path
+
+  sources = [ "native_window_clean_cache_test.cpp" ]
+
+  include_dirs = [ "$graphic_surface_root/surface/include" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-g3",
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
+
+  deps = [
+    "$graphic_surface_root/buffer_handle:buffer_handle",
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/sync_fence:sync_fence",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
+  ]
+}

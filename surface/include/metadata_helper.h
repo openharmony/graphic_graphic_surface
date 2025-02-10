@@ -24,6 +24,7 @@
 #include "surface_buffer.h"
 #include "v1_0/cm_color_space.h"
 #include "v1_0/hdr_static_metadata.h"
+#include "v1_0/buffer_handle_meta_key_type.h"
 
 namespace OHOS {
 class MetadataHelper {
@@ -85,6 +86,8 @@ public:
     static GSError SetHDRStaticMetadata(sptr<SurfaceBuffer>& buffer, const std::vector<uint8_t>& hdrStaticMetadata);
     static GSError GetHDRStaticMetadata(const sptr<SurfaceBuffer>& buffer, std::vector<uint8_t>& hdrStaticMetadata);
 
+    static GSError GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer,
+        HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion& crop);
 private:
     static constexpr uint32_t PRIMARIES_MASK =
         static_cast<uint32_t>(HDI::Display::Graphic::Common::V1_0::CM_PRIMARIES_MASK);

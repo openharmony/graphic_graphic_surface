@@ -92,6 +92,9 @@ public:
     virtual GSError ListMetadataKeys(std::vector<uint32_t>& keys) = 0;
     virtual GSError EraseMetadataKey(uint32_t key) = 0;
 
+    virtual void SetCropMetadata(const Rect& crop) = 0;
+    virtual bool GetCropMetadata(Rect& crop) = 0;
+
     static SurfaceBuffer* NativeBufferToSurfaceBuffer(OH_NativeBuffer* buffer)
     {
         return reinterpret_cast<SurfaceBuffer *>(buffer);

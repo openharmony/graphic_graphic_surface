@@ -33,9 +33,11 @@ public:
     SurfaceError Remove(uint64_t uniqueId);
     // Compute transform matrix
     void ComputeTransformMatrix(float matrix[16], uint32_t matrixSize,
-        sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop);
+        sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop);
     void ComputeTransformMatrixV2(float matrix[16], uint32_t matrixSize,
-        sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop);
+        sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop);
+    void ComputeBufferMatrix(float matrix[16], uint32_t matrixSize,
+        sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop);
 
     void* GetNativeWindow(uint64_t uniqueId);
     SurfaceError AddNativeWindow(uint64_t uniqueId, void *nativeWidow);
@@ -45,12 +47,12 @@ private:
     SurfaceUtils() = default;
     virtual ~SurfaceUtils();
     std::array<float, 16> MatrixProduct(const std::array<float, 16>& lMat, const std::array<float, 16>& rMat);
-    static constexpr int32_t TRANSFORM_MATRIX_ELE_COUNT = 16;
+    static constexpr uint32_t TRANSFORM_MATRIX_ELE_COUNT = 16;
     void ComputeTransformByMatrix(GraphicTransformType& transform,
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
     void ComputeTransformByMatrixV2(GraphicTransformType& transform,
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
-    
+
     std::unordered_map<uint64_t, wptr<Surface>> surfaceCache_;
     std::mutex mutex_;
     std::unordered_map<uint64_t, void*> nativeWindowCache_;

@@ -158,7 +158,7 @@ void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
 }
 
 void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
-    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
+    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
     if (buffer == nullptr) {
         return;
@@ -245,8 +245,43 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
     }
 }
 
+/*
+ * Computes a transformation matrix for buffer rendering with crop and coordinate system conversion.
+ *
+ * The transformation process involves texture coordinate translation, coordinate system
+ * conversion, and scaling operations to achieve proper buffer rendering.
+ *
+ * Texture Coordinate Translation involves converting device coordinates to normalized
+ * texture coordinates [0,1], where:
+ * - tx = crop.x / bufferWidth represents X-axis translation ratio
+ * - ty = (bufferHeight - crop.y - crop.h) / bufferHeight handles Y-axis translation with flip
+ *
+ * Coordinate System Conversion handles the following:
+ * - Device coordinates with origin at top-left and Y-axis down
+ * - OpenGL coordinates with origin at bottom-left and Y-axis up
+ * The Y-axis calculation requires:
+ * - Moving origin from top to bottom using bufferHeight - crop.y
+ * - Accounting for crop region height by subtracting crop.h
+ * - Normalizing to [0,1] range by dividing with bufferHeight
+ *
+ * Scale calculation uses the following factors:
+ * - sx = crop.w / bufferWidth for X-axis scaling
+ * - sy = crop.h / bufferHeight for Y-axis scaling
+ *
+ * The final transformation matrix has the structure:
+ * | sx  0   0   0 |  (X-axis scaling)
+ * | 0   sy  0   0 |  (Y-axis scaling)
+ * | 0   0   1   0 |  (Z-axis unchanged)
+ * | tx  ty  0   1 |  (Translation)
+ *
+ * @param matrix [out] Output array where the transformation matrix will be stored
+ * @param matrixSize Size of the provided matrix array
+ * @param buffer Source surface buffer containing the image data
+ * @param transform Rotation transformation type to be applied
+ * @param crop Rectangle defining the region of interest for cropping
+ */
 void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
-    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, Rect& crop)
+    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
     if (buffer == nullptr) {
         return;
@@ -277,7 +312,7 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
         changeFlag = true;
     }
     if (crop.h < bufferHeight && bufferHeight != 0) {
-        ty = (float(bufferHeight - crop.y) / bufferHeight);
+        ty = (float(bufferHeight - crop.y - crop.h) / bufferHeight);
         sy = (float(crop.h) / bufferHeight);
         changeFlag = true;
     }
@@ -294,6 +329,12 @@ void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uin
     if (ret != EOK) {
         BLOGE("memcpy_s failed, ret: %{public}d", ret);
     }
+}
+
+void SurfaceUtils::ComputeBufferMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
+    sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
+{
+    ComputeTransformMatrixV2(matrix, matrixSize, buffer, transform, crop);
 }
 
 void* SurfaceUtils::GetNativeWindow(uint64_t uniqueId)

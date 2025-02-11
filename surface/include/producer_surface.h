@@ -151,6 +151,8 @@ public:
                                  BufferFlushConfig& config, bool needMap) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
+    GSError EnableAutoConnectOnRequest() override;
+    GSError DisableAutoConnectOnRequest() override;
 private:
     bool IsRemote();
     void CleanAllLocked(uint32_t *bufSeqNum);
@@ -174,6 +176,7 @@ private:
     std::string name_ = "not init";
     uint64_t queueId_ = 0;
     bool isDisconnected_ = true;
+    bool autoConnectOnRequest_ = true;
     sptr<IProducerListener> listener_;
     sptr<IProducerListener> listenerWithFence_;
     std::mutex listenerMutex_;

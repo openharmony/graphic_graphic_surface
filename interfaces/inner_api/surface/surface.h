@@ -472,6 +472,22 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
+    /**
+     * @brief Enable automatic connection to consumers when the producer request buffer
+     */
+    virtual GSError EnableAutoConnectOnRequest()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
+    /**
+     * @brief Disable automatic connection to consumers when the producer request buffer.
+     * The producer will fail to request the buffer and return an error code when it is in the disconnected state.
+     */
+    virtual GSError DisableAutoConnectOnRequest()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
 };

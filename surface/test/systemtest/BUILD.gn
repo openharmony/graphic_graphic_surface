@@ -23,7 +23,9 @@ group("unittest") {
     ":native_window_buffer_test_st",
     ":native_window_clean_cache_test_st",
     ":native_window_test_st",
+    ":surface_batch_opt_with_connect_strictly_test_st",
     ":surface_ipc_test_st",
+    ":surface_ipc_with_connect_strictly_test_st",
     "attach_and_detach_buffer_test:systemtest",
     "buffer_with_present_timestamp_test:systemtest",
   ]
@@ -35,31 +37,7 @@ ohos_unittest("native_window_buffer_test_st") {
 
   sources = [ "native_window_buffer_test.cpp" ]
 
-  include_dirs = [ "$graphic_surface_root/surface/include" ]
-
-  cflags = [
-    "-Wall",
-    "-Werror",
-    "-g3",
-    "-Dprivate=public",
-    "-Dprotected=public",
-  ]
-
-  deps = [
-    "$graphic_surface_root/buffer_handle:buffer_handle",
-    "$graphic_surface_root/surface:surface",
-  ]
-
-  external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
-    "c_utils:utils",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "ipc:ipc_core",
-    "samgr:samgr_proxy",
-  ]
+  deps = [ ":surface_system_test_common" ]
 }
 
 ## SystemTest native_window_buffer_test }}}
@@ -70,27 +48,7 @@ ohos_unittest("native_window_test_st") {
 
   sources = [ "native_window_test.cpp" ]
 
-  include_dirs = [ "$graphic_surface_root/surface/include" ]
-
-  cflags = [
-    "-Wall",
-    "-Werror",
-    "-g3",
-    "-Dprivate=public",
-    "-Dprotected=public",
-  ]
-
-  deps = [
-    "$graphic_surface_root/buffer_handle:buffer_handle",
-    "$graphic_surface_root/surface:surface",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "ipc:ipc_core",
-  ]
+  deps = [ ":surface_system_test_common" ]
 }
 
 ## SystemTest native_window_test }}}
@@ -101,26 +59,7 @@ ohos_unittest("surface_ipc_test_st") {
 
   sources = [ "surface_ipc_test.cpp" ]
 
-  include_dirs = [ "$graphic_surface_root/surface/include" ]
-
-  cflags = [
-    "-Wall",
-    "-Werror",
-    "-g3",
-  ]
-
-  deps = [ "$graphic_surface_root/surface:surface" ]
-
-  external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
-    "c_utils:utils",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "ipc:ipc_core",
-    "samgr:samgr_proxy",
-  ]
+  deps = [ ":surface_system_test_common" ]
 }
 
 ## SystemTest surface_ipc_test }}}
@@ -129,8 +68,32 @@ ohos_unittest("surface_ipc_test_st") {
 ohos_unittest("native_window_clean_cache_test_st") {
   module_out_path = module_out_path
 
-  sources = [ "native_window_clean_cache_test.cpp" ]
+  sources = [ "clean_cache_test/native_window_clean_cache_test.cpp" ]
+  deps = [ ":surface_system_test_common" ]
+}
 
+## SystemTest surface_ipc_with_connect_strictly_test_st {{{
+ohos_unittest("surface_ipc_with_connect_strictly_test_st") {
+  module_out_path = module_out_path
+  sources = [
+    "connect_and_disconnect_test/surface_ipc_with_connect_strictly_test.cpp",
+  ]
+  deps = [ ":surface_system_test_common" ]
+}
+
+## SystemTest surface_ipc_with_connect_strictly_test_st }}}
+
+## SystemTest surface_ipc_with_connect_strictly_test_st {{{
+ohos_unittest("surface_batch_opt_with_connect_strictly_test_st") {
+  module_out_path = module_out_path
+  sources = [ "connect_and_disconnect_test/surface_batch_opt_with_connect_strictly_test.cpp" ]
+  deps = [ ":surface_system_test_common" ]
+}
+
+## SystemTest surface_ipc_with_connect_strictly_test_st }}}
+
+## Build surface_system_test_common.a {{{
+config("surface_system_test_common_public_config") {
   include_dirs = [ "$graphic_surface_root/surface/include" ]
 
   cflags = [
@@ -140,21 +103,32 @@ ohos_unittest("native_window_clean_cache_test_st") {
     "-Dprivate=public",
     "-Dprotected=public",
   ]
+}
 
-  deps = [
+ohos_static_library("surface_system_test_common") {
+  visibility = [ ":*" ]
+  testonly = true
+
+  public_configs = [ ":surface_system_test_common_public_config" ]
+
+  public_deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle",
     "$graphic_surface_root/surface:surface",
     "$graphic_surface_root/sync_fence:sync_fence",
+    "$graphic_surface_root/test_header:test_header",
   ]
 
-  external_deps = [
+  public_external_deps = [
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "c_utils:utils",
-    "googletest:gtest_main",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
+
+  subsystem_name = "graphic"
+  part_name = "graphic_surface"
 }
+## Build surface_system_test_common.a }}}

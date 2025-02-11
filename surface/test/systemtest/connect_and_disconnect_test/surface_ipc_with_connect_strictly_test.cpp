@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,19 +22,15 @@
 #include "iconsumer_surface.h"
 #include "nativetoken_kit.h"
 #include "token_setproc.h"
-#include "sync_fence.h"
-#include "external_window.h"
-#include "native_window.h"
 
 using namespace testing;
 using namespace testing::ext;
 
 namespace OHOS::Rosen {
-class NativeWindowCleanCacheTest : public testing::Test, public IBufferConsumerListenerClazz {
+class SurfaceIPCWithConnectStrictlyTest : public testing::Test, public IBufferConsumerListenerClazz {
 public:
     static void SetUpTestCase();
     void OnBufferAvailable() override;
-    OHOS::GSError SetData(sptr<SurfaceBuffer> &buffer, sptr<Surface> &pSurface);
     bool GetData(sptr<SurfaceBuffer> &buffer);
     pid_t ChildProcessMain();
     sptr<OHOS::Surface> CreateSurface();
@@ -44,11 +40,9 @@ public:
     static inline int32_t ipcSystemAbilityID = 34156;
     static inline BufferRequestConfig requestConfig = {};
     static inline BufferFlushConfig flushConfig = {};
-
-    static constexpr const int32_t WAIT_SYSTEM_ABILITY_GET_PRODUCER_TIMES = 1000;
 };
 
-void NativeWindowCleanCacheTest::SetUpTestCase()
+void SurfaceIPCWithConnectStrictlyTest::SetUpTestCase()
 {
     GTEST_LOG_(INFO) << getpid();
     requestConfig = {
@@ -59,16 +53,13 @@ void NativeWindowCleanCacheTest::SetUpTestCase()
         .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
         .timeout = 0,
     };
-
-    flushConfig = {
-        .damage = {
-            .w = 0x100,
-            .h = 0x100,
-        }
-    };
+    flushConfig = { .damage = {
+        .w = 0x100,
+        .h = 0x100,
+    } };
 }
 
-void NativeWindowCleanCacheTest::OnBufferAvailable()
+void SurfaceIPCWithConnectStrictlyTest::OnBufferAvailable()
 {
 }
 
@@ -77,24 +68,23 @@ static inline GSError OnBufferRelease(sptr<SurfaceBuffer> &buffer)
     return GSERROR_OK;
 }
 
-sptr<OHOS::Surface> NativeWindowCleanCacheTest::CreateSurface()
+sptr<OHOS::Surface> SurfaceIPCWithConnectStrictlyTest::CreateSurface()
 {
     sptr<IRemoteObject> robj = nullptr;
-    int i = 0;
-    while (i++ < WAIT_SYSTEM_ABILITY_GET_PRODUCER_TIMES) {
+    while (true) {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         robj = sam->GetSystemAbility(ipcSystemAbilityID);
         if (robj != nullptr) {
             break;
         }
-        usleep(1);
+        sleep(0);
     }
 
     auto producer = iface_cast<IBufferProducer>(robj);
     return Surface::CreateSurfaceAsProducer(producer);
 }
 
-pid_t NativeWindowCleanCacheTest::ChildProcessMain()
+pid_t SurfaceIPCWithConnectStrictlyTest::ChildProcessMain()
 {
     pipe(pipeFd);
     pid_t pid = fork();
@@ -103,48 +93,50 @@ pid_t NativeWindowCleanCacheTest::ChildProcessMain()
     }
 
     int64_t data;
-    int64_t bufferNum;
-    read(pipeFd[0], &bufferNum, sizeof(bufferNum));
+    read(pipeFd[0], &data, sizeof(data));
 
     auto pSurface = CreateSurface();
-    auto nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
-    int32_t code = SET_BUFFER_GEOMETRY;
-    int32_t height = 0x100;
-    int32_t weight = 0x100;
-    OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, height, weight);
-    code = SET_FORMAT;
-    int32_t format = GRAPHIC_PIXEL_FMT_RGBA_8888;
-    OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, format);
     pSurface->RegisterReleaseListener(OnBufferRelease);
+    int releaseFence = -1;
 
-    struct NativeWindowBuffer *nativeWindowBuffer = nullptr;
-    int32_t sRet;
-    int fenceFd = -1;
-    for (int i = 0; i < bufferNum; i++) {
-        sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
-        if (sRet != OHOS::GSERROR_OK) {
-            std::cout<<"OH_NativeWindow_NativeWindowRequestBuffer ret:"<<sRet<<std::endl;
-            data = sRet;
-            write(pipeFd[1], &data, sizeof(data));
-            exit(0);
-        }
-        struct Region *region = new Region();
-        struct Region::Rect *rect = new Region::Rect();
-        rect->w = 0x100;
-        rect->h = 0x100;
-        region->rects = rect;
-        region->rectNumber = 1;
-        sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, -1, *region);
-        if (sRet != OHOS::GSERROR_OK) {
-            std::cout<<"OH_NativeWindow_NativeWindowFlushBuffer ret:"<<sRet<<std::endl;
-            data = sRet;
-            write(pipeFd[1], &data, sizeof(data));
-            exit(0);
-        }
-    }
-    sRet = OH_NativeWindow_CleanCache(nativeWindow);
-    
+    // Branch1: producer Surface Request Buffer failed with GSERROR_CONSUMER_DISCONNECTED after disconnect strictly,
+    //          but producer Surface Request Buffer success after enable connect strictly.
+    pSurface->DisconnectStrictly();
+    pSurface->Disconnect();
+    sptr<SurfaceBuffer> buffer1 = nullptr;
+    auto sRet = pSurface->RequestBuffer(buffer1, releaseFence, requestConfig);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    pSurface->ConnectStrictly();
+    sRet = pSurface->RequestBuffer(buffer1, releaseFence, requestConfig);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = pSurface->FlushBuffer(buffer1, -1, flushConfig);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
     data = sRet;
+    write(pipeFd[1], &data, sizeof(data));
+    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+    read(pipeFd[0], &data, sizeof(data));
+    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+
+    // Branch2: producer request buffer success when ConnectStricyly(), flush buffer failed with
+    //          GSERROR_CONSUMER_DISCONNECTED after disconnect strictly, but producer flush buffer success after
+    //          connect strictly.
+
+    sptr<SurfaceBuffer> buffer2 = nullptr;
+    pSurface->ConnectStrictly();
+    sRet = pSurface->RequestBuffer(buffer2, releaseFence, requestConfig);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    pSurface->DisconnectStrictly();
+    sRet = pSurface->FlushBuffer(buffer2, -1, flushConfig);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    pSurface->ConnectStrictly();
+    sRet = pSurface->FlushBuffer(buffer2, -1, flushConfig);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    data = sRet;
+    write(pipeFd[1], &data, sizeof(data));
+    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+    read(pipeFd[0], &data, sizeof(data));
+    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+
     write(pipeFd[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     read(pipeFd[0], &data, sizeof(data));
@@ -157,17 +149,20 @@ pid_t NativeWindowCleanCacheTest::ChildProcessMain()
 }
 
 /*
-* Function: NativeWindowCleanCache
+* Function: produce and consumer surface by IPC
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. preSetUp: native window flush 2 buffer
-*                  2. operation: native window clean cache success
-*                  3. result: consumer surface acquire buffer failed and no buffer in cache
- */
-HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Level2)
+* Case1Description:
+*         Branch1： 1. PreSet: create producer surface and disconnect strictly
+*                   2. Operation: the producer failed to request buffer with error code GSERROR_CONSUMER_DISCONNECTED,
+*                                 but succeeded after being connected strictly.
+*         Branch2:  1. PreSet: producer connect strictly on request buffer and disconnect strictly to flush buffer
+*                   2. Operation: the producer failed to flush buffer with error code GSERROR_CONSUMER_DISCONNECTED,
+*                                 but succeeded after being connected strictly.
+*/
+HWTEST_F(SurfaceIPCWithConnectStrictlyTest, BufferIPC001, Function | MediumTest | Level2)
 {
-    //生产者生产buffer
     auto pid = ChildProcessMain();
     ASSERT_GE(pid, 0);
 
@@ -195,21 +190,26 @@ HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Leve
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
-    int64_t data = 2;
+    int64_t data = 0;
     write(pipeFd[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     read(pipeFd[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
-    //消费者消费buffer
-    IConsumerSurface::AcquireBufferReturnValue returnValue = {
-        .buffer =nullptr,
-        .fence = new SyncFence(-1),
-    };
-    //Branch1 - No buffer after clean cache
-    auto sRet = cSurface->AcquireBuffer(returnValue, 0, false);
-    EXPECT_EQ(sRet, GSERROR_NO_BUFFER);
-
+    // requested 3 buffer in 3 branch
+    for (int i = 0 ; i < 2 ; i++) {
+        sptr<SurfaceBuffer> buffer = nullptr;
+        int32_t fence = -1;
+        int64_t timestamp;
+        Rect damage;
+        auto sRet = cSurface->AcquireBuffer(buffer, fence, timestamp, damage);
+        EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+        EXPECT_NE(buffer, nullptr);
+        write(pipeFd[1], &data, sizeof(data));
+        usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+        read(pipeFd[0], &data, sizeof(data));
+        EXPECT_EQ(data, OHOS::GSERROR_OK);
+    }
 
     //close resource
     write(pipeFd[1], &data, sizeof(data));
@@ -220,27 +220,5 @@ HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Leve
     do {
         waitpid(pid, nullptr, 0);
     } while (ret == -1 && errno == EINTR);
-}
-
-/*
-* Function: NativeWindowCleanCache
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: native window has no connect to comsumer
-*                  2. operation: native window clean cache failed 
-*                  3. result: failed and return error code GSERROR_CONSUMER_DISCONNECTED
- */
-HWTEST_F(NativeWindowCleanCacheTest, CleanCache002, Function | MediumTest | Level2)
-{
-    auto cSurface = IConsumerSurface::Create("test");
-    cSurface->RegisterConsumerListener(this);
-    auto producer = cSurface->GetProducer();
-    auto pSurface = Surface::CreateSurfaceAsProducer(producer);
-    NativeWindow* nativeWindow = nullptr;
-    auto ret = OH_NativeWindow_CreateNativeWindowFromSurfaceId(pSurface->GetUniqueId(), &nativeWindow);
-    ret = OH_NativeWindow_CleanCache(nativeWindow);
-    
-    ASSERT_EQ(ret, OHOS::GSERROR_CONSUMER_DISCONNECTED);
 }
 }

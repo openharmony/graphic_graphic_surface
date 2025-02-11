@@ -112,15 +112,10 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (!autoConnectOnRequest_ && isDisconnected_) {
-        return GSERROR_CONSUMER_DISCONNECTED;
-    }
-
     IBufferProducer::RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
 
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = producer_->RequestBuffer(config, bedataimpl, retval);
 #ifdef HIPERF_TRACE_ENABLE
     BLOGW("hiperf_surface RequestBuffer %{public}lx %{public}u %{public}u %{public}u",
@@ -257,9 +252,6 @@ GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffer
         bedataimpls.emplace_back(bedataimpl);
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (!autoConnectOnRequest_ && isDisconnected_) {
-        return GSERROR_CONSUMER_DISCONNECTED;
-    }
     GSError ret = producer_->RequestBuffers(config, bedataimpls, retvalues);
     if (ret != GSERROR_NO_BUFFER && ret != GSERROR_OK) {
         /**
@@ -876,6 +868,26 @@ GSError ProducerSurface::Disconnect()
     return ret;
 }
 
+GSError ProducerSurface::ConnectStrictly()
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->ConnectStrictly();
+    return ret;
+}
+
+GSError ProducerSurface::DisconnectStrictly()
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->DisconnectStrictly();
+    return ret;
+}
+
 GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     if (producer_ == nullptr || scalingMode < ScalingMode::SCALING_MODE_FREEZE ||
@@ -1110,9 +1122,6 @@ GSError ProducerSurface::RequestAndDetachBuffer(sptr<SurfaceBuffer>& buffer, spt
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
 
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (!autoConnectOnRequest_ && isDisconnected_) {
-        return GSERROR_CONSUMER_DISCONNECTED;
-    }
     GSError ret = producer_->RequestAndDetachBuffer(config, bedataimpl, retval);
     if (ret != GSERROR_OK) {
         if (ret == GSERROR_NO_CONSUMER) {
@@ -1195,19 +1204,5 @@ GSError ProducerSurface::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
         return SURFACE_ERROR_UNKOWN;
     }
     return producer_->SetCycleBuffersNumber(cycleBuffersNumber);
-}
-
-GSError ProducerSurface::EnableAutoConnectOnRequest()
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    autoConnectOnRequest_ = true;
-    return GSERROR_OK;
-}
-
-GSError ProducerSurface::DisableAutoConnectOnRequest()
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    autoConnectOnRequest_ = false;
-    return GSERROR_OK;
 }
 } // namespace OHOS

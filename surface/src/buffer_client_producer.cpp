@@ -642,6 +642,22 @@ GSError BufferClientProducer::Disconnect(uint32_t *bufSeqNum)
     return ret;
 }
 
+GSError BufferClientProducer::ConnectStrictly()
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+
+    SEND_REQUEST(BUFFER_PRODUCER_CONNECT_STRICTLY, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::DisconnectStrictly()
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+
+    SEND_REQUEST(BUFFER_PRODUCER_DISCONNECT_STRICTLY, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
 GSError BufferClientProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);

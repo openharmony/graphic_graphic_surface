@@ -765,9 +765,9 @@ int32_t OH_NativeWindow_GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeW
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
- *     40001000 - window is NULL.
- *     41211000 - the consumer is disconnected.
- *     50401000 - ipc send failed.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - window is NULL.
+ *     {@link NATIVE_ERROR_CONSUMER_DISCONNECTED} 41211000 - the consumer is disconnected.
+ *     {@link NATIVE_ERROR_BINDER_ERROR} 50401000 - ipc send failed.
  * @since 16
  * @version 1.0
  */

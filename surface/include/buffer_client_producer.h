@@ -118,6 +118,8 @@ public:
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
+    GSError ConnectStrictly() override;
+    GSError DisconnectStrictly() override;
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);

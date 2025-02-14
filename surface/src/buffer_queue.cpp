@@ -1178,12 +1178,12 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
         ele.state = BUFFER_STATE_REQUESTED;
     } else {
         ele.state = BUFFER_STATE_ACQUIRED;
+        if (detachReserveSlotNum_ > 0) {
+            detachReserveSlotNum_--;
+        }
     }
     AttachBufferUpdateBufferInfo(buffer, needMap);
     bufferQueueCache_[sequence] = ele;
-    if (detachReserveSlotNum_ > 0) {
-        detachReserveSlotNum_--;
-    }
     return GSERROR_OK;
 }
 
@@ -1218,9 +1218,9 @@ GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType 
             return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
         DeleteBufferInCache(sequence, lock);
-    }
-    if (isReserveSlot) {
-        detachReserveSlotNum_++;
+        if (isReserveSlot) {
+            detachReserveSlotNum_++;
+        }
     }
     return GSERROR_OK;
 }

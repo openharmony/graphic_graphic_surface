@@ -391,8 +391,9 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     return ret;
 }
 
-GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
+GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot)
 {
+    (void)isReserveSlot;
     if (buffer == nullptr || producer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }

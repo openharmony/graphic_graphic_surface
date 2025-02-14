@@ -62,12 +62,12 @@ GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::CONSUMER_INVOKER);
 }
 
-GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
+GSError BufferQueueConsumer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::CONSUMER_INVOKER);
+    return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::CONSUMER_INVOKER, isReserveSlot);
 }
 
 GSError BufferQueueConsumer::AttachBuffer(sptr<SurfaceBuffer>& buffer)

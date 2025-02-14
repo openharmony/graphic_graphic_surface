@@ -134,7 +134,7 @@ GSError BufferQueue::PopFromFreeListLocked(sptr<SurfaceBuffer> &buffer,
         }
     }
 
-    if (freeList_.empty() || GetUsedSize() < bufferQueueSize_ ||
+    if (freeList_.empty() || GetUsedSize() < bufferQueueSize_ - detachReserveSlotNum_ ||
         (freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) {
         buffer = nullptr;
         return GSERROR_NO_BUFFER;
@@ -283,12 +283,13 @@ GSError BufferQueue::RequestBufferCheckStatus()
 bool BufferQueue::WaitForCondition()
 {
     return (!freeList_.empty() && !(freeList_.size() == 1 && freeList_.front() == acquireLastFlushedBufSequence_)) ||
-        (GetUsedSize() < bufferQueueSize_) || !GetStatusLocked();
+        (GetUsedSize() < bufferQueueSize_ - detachReserveSlotNum_) || !GetStatusLocked();
 }
 
 void BufferQueue::RequestBufferDebugInfoLocked()
 {
-    SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u", acquireLastFlushedBufSequence_);
+    SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u， reserveSlotNum: %u",
+        acquireLastFlushedBufSequence_, detachReserveSlotNum_);
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %u state: %u", id, ele.state);
@@ -322,8 +323,8 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         return SURFACE_ERROR_UNKOWN;
     }
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
-    SURFACE_TRACE_NAME_FMT("RequestBuffer name: %s queueId: %" PRIu64 " queueSize: %u",
-        name_.c_str(), uniqueId_, bufferQueueSize_);
+    SURFACE_TRACE_NAME_FMT("RequestBuffer name: %s queueId: %" PRIu64 " queueSize: %u reserveSlotNum: %u",
+        name_.c_str(), uniqueId_, bufferQueueSize_, detachReserveSlotNum_);
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
     ret = PopFromFreeListLocked(buffer, updateConfig);
@@ -332,7 +333,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
     }
 
     // check queue size
-    if (GetUsedSize() >= bufferQueueSize_) {
+    if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
         waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
             [this]() { return WaitForCondition(); });
         if (!GetStatusLocked() && !isBatch_) {
@@ -343,7 +344,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         ret = PopFromFreeListLocked(buffer, updateConfig);
         if (ret == GSERROR_OK) {
             return ReuseBuffer(updateConfig, bedata, retval, lock);
-        } else if (GetUsedSize() >= bufferQueueSize_) {
+        } else if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
             RequestBufferDebugInfoLocked();
             return GSERROR_NO_BUFFER;
         }
@@ -1180,6 +1181,9 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
     }
     AttachBufferUpdateBufferInfo(buffer, needMap);
     bufferQueueCache_[sequence] = ele;
+    if (detachReserveSlotNum_ > 0) {
+        detachReserveSlotNum_--;
+    }
     return GSERROR_OK;
 }
 
@@ -1192,7 +1196,7 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
 }
 
 GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType,
-    std::unique_lock<std::mutex> &lock)
+    std::unique_lock<std::mutex> &lock, bool isReserveSlot)
 {
     if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
         BLOGE("seq: %{public}u, not find in cache, uniqueId: %{public}" PRIu64 ".",
@@ -1215,16 +1219,20 @@ GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType 
         }
         DeleteBufferInCache(sequence, lock);
     }
+    if (isReserveSlot) {
+        detachReserveSlotNum_++;
+    }
     return GSERROR_OK;
 }
 
-GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType)
+GSError BufferQueue::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool isReserveSlot)
 {
-    SURFACE_TRACE_NAME_FMT("DetachBufferFromQueue name: %s queueId: %" PRIu64 " sequence: %u invokerType%u",
-        name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType);
+    SURFACE_TRACE_NAME_FMT("DetachBufferFromQueue name: %s queueId: %" PRIu64 ""
+        "sequence: %u invokerType: %u isReserveSlot: %u",
+        name_.c_str(), uniqueId_, buffer->GetSeqNum(), invokerType, isReserveSlot);
     std::unique_lock<std::mutex> lock(mutex_);
     uint32_t sequence = buffer->GetSeqNum();
-    auto ret = DetachBufferFromQueueLocked(sequence, invokerType, lock);
+    auto ret = DetachBufferFromQueueLocked(sequence, invokerType, lock, isReserveSlot);
     if (ret != GSERROR_OK) {
         return ret;
     }
@@ -1348,6 +1356,11 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
     }
 
     std::unique_lock<std::mutex> lock(mutex_);
+    if (queueSize < detachReserveSlotNum_) {
+        BLOGW("invalid queueSize: %{public}u, reserveSlotNum: %{public}u, uniqueId: %{public}" PRIu64 ".",
+            queueSize, detachReserveSlotNum_, uniqueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     if (bufferQueueSize_ > queueSize) {
         DeleteBuffersLocked(bufferQueueSize_ - queueSize, lock);
     }
@@ -2110,7 +2123,7 @@ GSError BufferQueue::RequestAndDetachBuffer(const BufferRequestConfig& config, s
     if (ret != GSERROR_OK) {
         return ret;
     }
-    return DetachBufferFromQueueLocked(retval.sequence, InvokerType::PRODUCER_INVOKER, lock);
+    return DetachBufferFromQueueLocked(retval.sequence, InvokerType::PRODUCER_INVOKER, lock, false);
 }
 
 GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,

@@ -2274,4 +2274,209 @@ HWTEST_F(ConsumerSurfaceTest, GetAndSetRotatingBuffersNumber001, Function | Medi
     pSurface = nullptr;
     cSurface = nullptr;
 }
+
+/*
+* Function: DetachBufferFromQueueIsReserveSlot001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferToQueue and DetachBufferFromQueue set isReserveSlot true function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, DetachBufferFromQueueIsReserveSlot001, Function | MediumTest | Level2)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    GSError ret = cSurface->SetQueueSize(5);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    BufferFlushConfig flushConfigTmp = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_CPU_HW_BOTH,
+        .timeout = 0,
+    };
+    int64_t timestampTmp = 0;
+    Rect damageTmp = {};
+    sptr<OHOS::SyncFence> fence;
+
+    ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+    ret = pSurface->FlushBuffer(buffer, -1, flushConfigTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cSurface->AcquireBuffer(buffer, fence, timestampTmp, damageTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cSurface->DetachBufferFromQueue(buffer, true);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    for (uint32_t i = 0; i < 4; i++) {
+        ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+
+    ret = pSurface->RequestBuffer(buffer, releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_NO_BUFFER);
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
+
+/*
+* Function: DetachBufferFromQueueIsReserveSlot002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferToQueue and DetachBufferFromQueue set isReserveSlot true function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, DetachBufferFromQueueIsReserveSlot002, Function | MediumTest | Level2)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    GSError ret = cSurface->SetQueueSize(5);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer[6];
+    int releaseFence = -1;
+    BufferFlushConfig flushConfigTmp = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_CPU_HW_BOTH,
+        .timeout = 0,
+    };
+    int64_t timestampTmp = 0;
+    Rect damageTmp = {};
+    sptr<OHOS::SyncFence> fence;
+
+    for (uint32_t i = 0; i < 5; i++) {
+        ret = pSurface->RequestBuffer(buffer[i], releaseFence, config);
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_NE(buffer[i], nullptr);
+        ret = pSurface->FlushBuffer(buffer[i], -1, flushConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    ret = pSurface->RequestBuffer(buffer[5], releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_NO_BUFFER);
+
+    sptr<SurfaceBuffer> acquireBuffer;
+    ret = cSurface->AcquireBuffer(acquireBuffer, fence, timestampTmp, damageTmp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cSurface->DetachBufferFromQueue(acquireBuffer, true);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->RequestBuffer(buffer[5], releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_NO_BUFFER);
+
+    ret = cSurface->AttachBufferToQueue(acquireBuffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->RequestBuffer(buffer[5], releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_NO_BUFFER);
+
+    ret = cSurface->ReleaseBuffer(acquireBuffer, fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->RequestBuffer(buffer[5], releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
+
+/*
+* Function: DetachBufferFromQueueIsReserveSlot003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferToQueue and DetachBufferFromQueue set isReserveSlot true function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, DetachBufferFromQueueIsReserveSlot003, Function | MediumTest | Level2)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    GSError ret = cSurface->SetQueueSize(5);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer[6];
+    int releaseFence = -1;
+    BufferFlushConfig flushConfigTmp = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_CPU_HW_BOTH,
+        .timeout = 0,
+    };
+    int64_t timestampTmp = 0;
+    Rect damageTmp = {};
+    sptr<OHOS::SyncFence> fence;
+
+    for (uint32_t i = 0; i < 5; i++) {
+        ret = pSurface->RequestBuffer(buffer[i], releaseFence, config);
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_NE(buffer[i], nullptr);
+        ret = pSurface->FlushBuffer(buffer[i], -1, flushConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    ret = pSurface->RequestBuffer(buffer[5], releaseFence, config);
+    ASSERT_EQ(ret, GSERROR_NO_BUFFER);
+
+    sptr<SurfaceBuffer> acquireBuffer[6];
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        ret = cSurface->AcquireBuffer(acquireBuffer[i], fence, timestampTmp, damageTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        ret = cSurface->DetachBufferFromQueue(acquireBuffer, true);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    ret = cSurface->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    
+    ret = cSurface->SetQueueSize(4);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
 }

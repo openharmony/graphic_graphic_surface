@@ -108,7 +108,7 @@ public:
     GSError ClearUserDataChangeListener() override;
     void ConsumerRequestCpuAccess(bool on) override;
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     inline bool IsBufferHold() override

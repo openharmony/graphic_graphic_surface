@@ -174,7 +174,7 @@ public:
     }
 
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType);
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType);
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool isReserveSlot);
 
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;
@@ -255,7 +255,8 @@ private:
     void OnBufferDeleteForRS(uint32_t sequence);
     void DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence);
     void AddDeletingBuffersLocked(std::vector<uint32_t> &deletingBuffers);
-    GSError DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType, std::unique_lock<std::mutex> &lock);
+    GSError DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType,
+        std::unique_lock<std::mutex> &lock, bool isReserveSlot);
     GSError AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool needMap);
     GSError FlushBufferImprovedLocked(uint32_t sequence, sptr<BufferExtraData> &bedata,
         const sptr<SyncFence> &fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
@@ -320,6 +321,7 @@ private:
     int64_t lastFlushedDesiredPresentTimeStamp_ = 0;
     bool bufferSupportFastCompose_ = false;
     uint32_t rotatingBufferNumber_ = 0;
+    uint32_t detachReserveSlotNum_ = 0;
 };
 }; // namespace OHOS
 

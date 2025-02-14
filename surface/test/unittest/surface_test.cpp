@@ -166,7 +166,7 @@ public:
         (void)buffer;
         return GSERROR_NOT_SUPPORT;
     }
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) override
     {
         (void)buffer;
         return GSERROR_NOT_SUPPORT;

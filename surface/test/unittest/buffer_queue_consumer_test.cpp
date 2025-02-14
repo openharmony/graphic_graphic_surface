@@ -230,7 +230,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->AcquireBuffer(buffer, fence, timestamp, damages), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->ReleaseBuffer(buffer, fence), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
-    ASSERT_EQ(consumer->DetachBufferFromQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->DetachBufferFromQueue(buffer, false), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->AttachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->DetachBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->RegisterSurfaceDelegator(client, cSurface), OHOS::GSERROR_INVALID_ARGUMENTS);

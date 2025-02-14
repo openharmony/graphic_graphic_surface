@@ -2467,7 +2467,7 @@ HWTEST_F(ConsumerSurfaceTest, DetachBufferFromQueueIsReserveSlot003, Function | 
         ret = cSurface->AcquireBuffer(acquireBuffer[i], fence, timestampTmp, damageTmp);
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
-        ret = cSurface->DetachBufferFromQueue(acquireBuffer, true);
+        ret = cSurface->DetachBufferFromQueue(acquireBuffer[i], true);
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
     }
     ret = cSurface->SetQueueSize(3);

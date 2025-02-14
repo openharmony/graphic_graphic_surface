@@ -115,7 +115,7 @@ public:
      * @brief if isReserveSlot is true, a slot in the bufferqueue will be kept
      * empty until attachbuffer is used to fill the slot.
      */
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot) override;
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     GSError SetBufferName(const std::string &name) override;

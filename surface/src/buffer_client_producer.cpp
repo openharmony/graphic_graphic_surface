@@ -112,7 +112,9 @@ GSError BufferClientProducer::RequestBufferCommon(const BufferRequestConfig &con
         return SURFACE_ERROR_UNKOWN;
     }
     if (retval.buffer != nullptr) {
-        retval.buffer->SetBufferRequestConfig(config);
+        BufferRequestConfig updateConfig = config;
+        updateConfig.usage = reply.ReadUint64();  // consumer may change input usgae by defaultUsage
+        retval.buffer->SetBufferRequestConfig(updateConfig);
     }
 
     ret = bedata->ReadFromParcel(reply);
@@ -162,7 +164,9 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
             return SURFACE_ERROR_UNKOWN;
         }
         if (retval.buffer != nullptr) {
-            retval.buffer->SetBufferRequestConfig(config);
+            BufferRequestConfig updateConfig = config;
+            updateConfig.usage = reply.ReadUint64();  // consumer may change input usgae by defaultUsage
+            retval.buffer->SetBufferRequestConfig(updateConfig);
         }
         ret = bedata[i]->ReadFromParcel(reply);
         if (ret != GSERROR_OK) {

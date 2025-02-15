@@ -186,8 +186,10 @@ private:
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);
-    std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
+    static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
+
+    bool CheckIsAlive();
 
     class ProducerSurfaceDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
@@ -207,6 +209,8 @@ private:
     std::string name_ = "not init";
     std::mutex mutex_;
     uint64_t uniqueId_ = 0;
+    static const uint32_t MAGIC_INIT = 0x16273849;
+    uint32_t magicNum_ = MAGIC_INIT;
 };
 }; // namespace OHOS
 

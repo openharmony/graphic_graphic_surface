@@ -663,4 +663,19 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     bqTmp = nullptr;
     bqpTmp = nullptr;
 }
+
+/*
+* Function: CheckIsAliveTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: CheckIsAliveTest member function test
+ */
+HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Level2)
+{
+    bqp_->magicNum_ = 0;
+    EXPECT_EQ(bqp_->CheckIsAlive(), false);
+    bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
+    EXPECT_EQ(bqp_->CheckIsAlive(), true);
+}
 }

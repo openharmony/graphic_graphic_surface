@@ -404,7 +404,7 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
     return CheckRetval(reply);
 }
 
-GSError BufferClientProducer::RegisterReleaseListenerWithFence(sptr<IProducerListener> listener)
+GSError BufferClientProducer::RegisterReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
@@ -416,7 +416,7 @@ GSError BufferClientProducer::RegisterReleaseListenerWithFence(sptr<IProducerLis
         return GSERROR_BINDER;
     }
 
-    SEND_REQUEST(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_WITH_FENCE, arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_BACKUP, arguments, reply, option);
     return CheckRetval(reply);
 }
 
@@ -427,10 +427,10 @@ GSError BufferClientProducer::UnRegisterReleaseListener()
     return CheckRetval(reply);
 }
 
-GSError BufferClientProducer::UnRegisterReleaseListenerWithFence()
+GSError BufferClientProducer::UnRegisterReleaseListenerBackup()
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_WITH_FENCE, arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_BACKUP, arguments, reply, option);
     return CheckRetval(reply);
 }
 

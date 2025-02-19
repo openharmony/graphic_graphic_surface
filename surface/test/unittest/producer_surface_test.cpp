@@ -1608,19 +1608,19 @@ HWTEST_F(ProducerSurfaceTest, ReleaseListener001, Function | MediumTest | Level2
 }
 
 /*
-* Function: RegisterReleaseListenerWithFence and UnRegisterReleaseListenerWithFence
+* Function: RegisterReleaseListenerBackup and UnRegisterReleaseListenerBackup
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RegisterReleaseListenerWithFence with producer_ is nullptr and check ret
-*                  2. call UnRegisterReleaseListenerWithFence with producer_ is nullptr and check ret
+* CaseDescription: 1. call RegisterReleaseListenerBackup with producer_ is nullptr and check ret
+*                  2. call UnRegisterReleaseListenerBackup with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ReleaseListenerWithFence001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReleaseListenerBackup001, Function | MediumTest | Level2)
 {
     OnReleaseFuncWithFence releaseFuncWithFence;
-    GSError ret = surface_->RegisterReleaseListenerWithFence(releaseFuncWithFence);
+    GSError ret = surface_->RegisterReleaseListenerBackup(releaseFuncWithFence);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    ret = surface_->UnRegisterReleaseListenerWithFence();
+    ret = surface_->UnRegisterReleaseListenerBackup();
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 

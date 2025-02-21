@@ -70,7 +70,7 @@ public:
     }
 
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer);
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer);
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot);
     void SetBufferHold(bool hold);
     inline bool IsBufferHold()
     {

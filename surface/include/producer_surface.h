@@ -111,7 +111,7 @@ public:
     GSError UnRegisterUserDataChangeListener(const std::string &funcName) override;
     GSError ClearUserDataChangeListener() override;
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
-    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
+    GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) override;
     GraphicTransformType GetTransformHint() const override;
     GSError SetTransformHint(GraphicTransformType transformHint) override;
     GSError SetBufferName(const std::string &name) override;

@@ -105,7 +105,7 @@ public:
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) = 0;
     virtual void ConsumerRequestCpuAccess(bool on) = 0;
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
-    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
+    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) = 0;
     virtual bool IsBufferHold() = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
     virtual float GetHdrWhitePointBrightness() const = 0;

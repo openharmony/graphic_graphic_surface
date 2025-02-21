@@ -153,13 +153,13 @@ GSError ConsumerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     return consumer_->AttachBufferToQueue(buffer);
 }
 
-GSError ConsumerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
+GSError ConsumerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot)
 {
     if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     buffer->SetConsumerAttachBufferFlag(false);
-    return consumer_->DetachBufferFromQueue(buffer);
+    return consumer_->DetachBufferFromQueue(buffer, isReserveSlot);
 }
 
 GSError ConsumerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer)

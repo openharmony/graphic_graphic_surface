@@ -1189,7 +1189,7 @@ GSError BufferQueueProducer::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer)
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::PRODUCER_INVOKER);
+    return bufferQueue_->DetachBufferFromQueue(buffer, InvokerType::PRODUCER_INVOKER, false);
 }
 
 GSError BufferQueueProducer::AttachBuffer(sptr<SurfaceBuffer>& buffer)

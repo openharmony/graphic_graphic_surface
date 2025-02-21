@@ -672,13 +672,11 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
 
 void SurfaceBufferImpl::SetCropMetadata(const Rect& crop)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     crop_ = crop;
 }
 
 bool SurfaceBufferImpl::GetCropMetadata(Rect& crop)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (crop_.w <= 0 || crop_.h <= 0) {
         return false;
     }

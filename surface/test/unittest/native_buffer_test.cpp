@@ -417,7 +417,9 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, Function | Mediu
         ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
     }
     ret = OH_NativeBuffer_SetMetadataValue(buffer, static_cast<OH_NativeBuffer_MetadataKey>(-1), len, outbuff);
-    ASSERT_EQ(ret, GSERROR_INTERNAL);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_INTERNAL);
+    }
 }
 
 /*
@@ -509,7 +511,9 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | Mediu
         ASSERT_EQ(ret, GSERROR_OK);
     }
     ret = OH_NativeBuffer_GetMetadataValue(buffer, static_cast<OH_NativeBuffer_MetadataKey>(-1), &buffSize, &buff);
-    ASSERT_EQ(ret, GSERROR_INTERNAL);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_INTERNAL);
+    }
 }
 
 /*

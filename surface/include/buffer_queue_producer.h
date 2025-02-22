@@ -183,13 +183,12 @@ private:
 
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
+    bool CheckIsAlive();
 
     using BufferQueueProducerFunc = int32_t (BufferQueueProducer::*)(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option);
     static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
-
-    bool CheckIsAlive();
 
     class ProducerSurfaceDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

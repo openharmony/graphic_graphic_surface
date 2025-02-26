@@ -151,6 +151,18 @@ public:
                                  BufferFlushConfig& config, bool needMap) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
+    /**
+    * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
+    *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
+    *        suitable for stricter connection management scenarios.
+    */
+    GSError ConnectStrictly() override;
+    /**
+    * @brief After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
+    *        In this state, any attempt by the producer (client) to request buffer will fail and return the error code
+    *        GSERROR_CONSUMER_DISCONNECTED.
+    */
+    GSError DisconnectStrictly() override;
 private:
     bool IsRemote();
     void CleanAllLocked(uint32_t *bufSeqNum);

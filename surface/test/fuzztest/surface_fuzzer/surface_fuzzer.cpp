@@ -121,6 +121,7 @@ namespace OHOS {
         std::vector<sptr<SurfaceBuffer>> buffers;
         std::vector<sptr<SyncFence>> fences;
         BufferRequestConfig config = GetData<BufferRequestConfig>();
+        config.timeout %= 3000;
         pSurface->RequestBuffers(buffers, fences, config);
         BufferFlushConfigWithDamages flushConfig;
         std::vector<Rect> rects{GetData<Rect>()};

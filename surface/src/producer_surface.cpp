@@ -869,6 +869,26 @@ GSError ProducerSurface::Disconnect()
     return ret;
 }
 
+GSError ProducerSurface::ConnectStrictly()
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->ConnectStrictly();
+    return ret;
+}
+
+GSError ProducerSurface::DisconnectStrictly()
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    GSError ret = producer_->DisconnectStrictly();
+    return ret;
+}
+
 GSError ProducerSurface::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     if (producer_ == nullptr || scalingMode < ScalingMode::SCALING_MODE_FREEZE ||

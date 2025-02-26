@@ -472,6 +472,25 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
+    /**
+    * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
+    *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
+    *        suitable for stricter connection management scenarios.
+    */
+    virtual GSError ConnectStrictly()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
+    /**
+    * @brief After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
+    *        In this state, any attempt by the producer (client) to request buffer will fail and return the error code
+    *        GSERROR_CONSUMER_DISCONNECTED.
+    */
+    virtual GSError DisconnectStrictly()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
 };

@@ -97,6 +97,8 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, AttachAndFlushBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER, GetRotatingBuffersNumberRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, SetRotatingBuffersNumberRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT_STRICTLY, DisconnectStrictlyRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT_STRICTLY, ConnectStrictlyRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -675,6 +677,26 @@ int32_t BufferQueueProducer::DisconnectRemote(MessageParcel &arguments, MessageP
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::ConnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                   MessageOption &option)
+{
+    GSError sRet = ConnectStrictly();
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::DisconnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                      MessageOption &option)
+{
+    GSError sRet = DisconnectStrictly();
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
 int32_t BufferQueueProducer::SetScalingModeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
     uint32_t sequence = arguments.ReadUint32();
@@ -1059,6 +1081,11 @@ GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, s
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    if (isDisconnectStrictly_) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
+    }
     return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
 
@@ -1145,6 +1172,11 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    if (isDisconnectStrictly_) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
+    }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
 }
 
@@ -1155,6 +1187,11 @@ GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
+    }
+    if (isDisconnectStrictly_) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
     }
     GSError ret;
     for (size_t i = 0; i < sequences.size(); ++i) {
@@ -1470,6 +1507,11 @@ GSError BufferQueueProducer::Connect()
             connectedPid_, callingPid, uniqueId_);
         return SURFACE_ERROR_CONSUMER_IS_CONNECTED;
     }
+    if (isDisconnectStrictly_) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
+    }
     SetConnectedPid(callingPid);
     return SURFACE_ERROR_OK;
 }
@@ -1489,6 +1531,20 @@ GSError BufferQueueProducer::Disconnect(uint32_t* bufSeqNum)
         SetConnectedPid(0);
     }
     return bufferQueue_->CleanCache(false, bufSeqNum);
+}
+
+GSError BufferQueueProducer::ConnectStrictly()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    isDisconnectStrictly_ = false;
+    return SURFACE_ERROR_OK;
+}
+
+GSError BufferQueueProducer::DisconnectStrictly()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    isDisconnectStrictly_ = true;
+    return SURFACE_ERROR_OK;
 }
 
 GSError BufferQueueProducer::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)

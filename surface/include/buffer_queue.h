@@ -210,7 +210,8 @@ public:
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
-
+    GSError ConnectStrictly();
+    GSError DisconnectStrictly();
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);

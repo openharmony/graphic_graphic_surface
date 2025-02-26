@@ -129,6 +129,8 @@ public:
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
 
+    GSError ConnectStrictly() override;
+    GSError DisconnectStrictly() override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -190,6 +192,8 @@ private:
     int32_t AttachAndFlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t DisconnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t ConnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPid(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
@@ -213,6 +217,7 @@ private:
     sptr<IRemoteObject> token_ = nullptr;
 
     int32_t connectedPid_ = 0;
+    bool isDisconnectStrictly_ = false;
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";
     std::mutex mutex_;

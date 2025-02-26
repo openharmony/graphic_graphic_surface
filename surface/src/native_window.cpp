@@ -962,6 +962,19 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     return OHOS::SURFACE_ERROR_OK;
 }
 
+int32_t NativeWindowCleanCache(OHNativeWindow *window)
+{
+    if (window == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<OHOS::Surface> windowSurface = window->surface;
+    if (windowSurface == nullptr) {
+        BLOGE("windowSurface is nullptr");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    return windowSurface->CleanCache();
+}
+
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
 }
@@ -1021,3 +1034,4 @@ WEAK_ALIAS(NativeWindowSetBufferHold, OH_NativeWindow_SetBufferHold);
 WEAK_ALIAS(NativeWindowWriteToParcel, OH_NativeWindow_WriteToParcel);
 WEAK_ALIAS(NativeWindowReadFromParcel, OH_NativeWindow_ReadFromParcel);
 WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
+WEAK_ALIAS(NativeWindowCleanCache, OH_NativeWindow_CleanCache);

@@ -1053,6 +1053,10 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
 
 void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
 {
+    auto buffer = bufferQueueCache_[sequence].buffer;
+    if (buffer) {
+        buffer->SetBufferDeleteFromCacheFlag(true);
+    }
     if (onBufferDeleteForRSMainThread_ != nullptr) {
         onBufferDeleteForRSMainThread_(sequence);
     }

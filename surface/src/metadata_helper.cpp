@@ -16,7 +16,7 @@
 #include "metadata_helper.h"
 #include "buffer_log.h"
 
-#include "v1_0/buffer_handle_meta_key_type.h"
+#include "v2_1/buffer_handle_meta_key_type.h"
 
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 
@@ -211,5 +211,27 @@ GSError MetadataHelper::GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer, B
         return ret;
     }
     return ConvertVecToMetadata(cropRect, crop);
+}
+
+GSError MetadataHelper::SetAdaptiveFOVMetadata(sptr<SurfaceBuffer>& buffer,
+    const std::vector<uint8_t>& adaptiveFOVMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+
+    return buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V2_1::ATTRKEY_ADAPTIVE_FOV_METADATA,
+        adaptiveFOVMetadata);
+}
+
+GSError MetadataHelper::GetAdaptiveFOVMetadata(const sptr<SurfaceBuffer>& buffer,
+    std::vector<uint8_t>& adaptiveFOVMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+
+    return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_1::ATTRKEY_ADAPTIVE_FOV_METADATA,
+        adaptiveFOVMetadata);
 }
 } // namespace OHOS

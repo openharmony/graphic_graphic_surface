@@ -357,6 +357,6 @@ HWTEST_F(MetadataManagerTest, AdaptiveFOVMetadataTest, Function | SmallTest | Le
     }
 
     ASSERT_EQ(MetadataHelper::SetAdaptiveFOVMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);
-    ASSERT_EQ(MetadataHelper::GGetAdaptiveFOVMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
+    ASSERT_EQ(MetadataHelper::GetAdaptiveFOVMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
 }
 }

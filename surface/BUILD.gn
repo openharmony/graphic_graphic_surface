@@ -109,6 +109,7 @@ ohos_shared_library("surface") {
     "drivers_interface_display:libdisplay_commontype_proxy_1.0",
     "drivers_interface_display:libdisplay_commontype_proxy_1.1",
     "drivers_interface_display:libdisplay_commontype_proxy_2.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_2.1",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hitrace:hitrace_meter",

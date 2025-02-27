@@ -329,4 +329,34 @@ HWTEST_F(MetadataManagerTest, HDRStaticMetadataVecTest, Function | SmallTest | L
     ASSERT_EQ(MetadataHelper::SetHDRStaticMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);
     ASSERT_EQ(MetadataHelper::GetHDRStaticMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
 }
+
+/*
+* Function: MetadataManagerTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test SetAdaptiveFOVMetadata and GetAdaptiveFOVMetadata
+*/
+HWTEST_F(MetadataManagerTest, AdaptiveFOVMetadataTest, Function | SmallTest | Level2)
+{
+    std::vector<uint8_t> metadataSet{1, 18, 119, 33, 196, 253, 112, 171, 74, 230, 99, 23, 0, 244, 82,
+        138, 13, 158, 100, 41, 50, 189, 111, 144, 3, 153, 75, 210, 243, 237, 19, 12, 128};
+
+    auto retSet = MetadataHelper::SetAdaptiveFOVMetadata(buffer_, metadataSet);
+    ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
+
+    std::vector<uint8_t> metadataGet;
+    auto retGet = MetadataHelper::GetAdaptiveFOVMetadata(buffer_, metadataGet);
+    ASSERT_TRUE(retGet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
+
+    if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
+        ASSERT_EQ(metadataSet.size(), metadataGet.size());
+        for (uint32_t i = 0; i < metadataSet.size(); i++) {
+            ASSERT_EQ(metadataSet[i], metadataGet[i]);
+        }
+    }
+
+    ASSERT_EQ(MetadataHelper::SetAdaptiveFOVMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);
+    ASSERT_EQ(MetadataHelper::GGetAdaptiveFOVMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
+}
 }

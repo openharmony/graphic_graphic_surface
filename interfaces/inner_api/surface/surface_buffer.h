@@ -148,6 +148,14 @@ public:
     {
         return SCALING_MODE_SCALE_TO_WINDOW;
     }
+    virtual void SetBufferDeleteFromCacheFlag(const bool &flag)
+    {
+        (void) flag;
+    }
+    virtual bool GetBufferDeleteFromCacheFlag() const
+    {
+        return false;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

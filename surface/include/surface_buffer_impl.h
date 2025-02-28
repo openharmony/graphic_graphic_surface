@@ -94,6 +94,8 @@ public:
     GSError GetPlanesInfo(void **planesInfo) override;
     void SetSurfaceBufferScalingMode(const ScalingMode &scalingMode) override;
     ScalingMode GetSurfaceBufferScalingMode() const override;
+    void SetBufferDeleteFromCacheFlag(const bool &flag) override;
+    bool GetBufferDeleteFromCacheFlag() const  override;
 
 private:
     void FreeBufferHandleLocked();
@@ -115,6 +117,7 @@ private:
     bool isConsumerAttachBufferFlag_ = false;
     std::map<uint32_t, std::vector<uint8_t>> metaDataCache_;
     Rect crop_ = {0, 0, 0, 0};
+    std::atomic<bool> isBufferDeleteFromCache = false;
 };
 } // namespace OHOS
 

@@ -725,4 +725,15 @@ ScalingMode SurfaceBufferImpl::GetSurfaceBufferScalingMode() const
     std::lock_guard<std::mutex> lock(mutex_);
     return scalingMode_;
 }
+
+void SurfaceBufferImpl::SetBufferDeleteFromCacheFlag(const bool &flag)
+{
+    isBufferDeleteFromCache = flag;
+}
+
+bool SurfaceBufferImpl::GetBufferDeleteFromCacheFlag() const
+{
+    return isBufferDeleteFromCache;
+}
+
 } // namespace OHOS

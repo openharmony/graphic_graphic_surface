@@ -175,6 +175,12 @@ public:
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix) override;
     GSError ReleaseLastFlushedBuffer(sptr<SurfaceBuffer> buffer) override;
     uint32_t GetAvailableBufferCount() const override;
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
+    GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override
+    {
+        (void)cycleBuffersNumber;
+        return GSERROR_NOT_SUPPORT;
+    }
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

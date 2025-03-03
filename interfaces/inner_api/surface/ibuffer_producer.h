@@ -155,6 +155,16 @@ public:
         (void)needMap;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+    {
+        (void)cycleBuffersNumber;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
+    {
+        (void)cycleBuffersNumber;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -207,6 +217,8 @@ protected:
         BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER,
         BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER,
+        BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER,
+        BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER,
     };
 };
 } // namespace OHOS

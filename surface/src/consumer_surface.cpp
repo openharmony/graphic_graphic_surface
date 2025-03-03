@@ -811,4 +811,12 @@ uint32_t ConsumerSurface::GetAvailableBufferCount() const
     }
     return consumer_->GetAvailableBufferCount();
 }
+
+GSError ConsumerSurface::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetCycleBuffersNumber(cycleBuffersNumber);
+}
 } // namespace OHOS

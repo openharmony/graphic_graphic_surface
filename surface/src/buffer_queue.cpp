@@ -2119,7 +2119,7 @@ GSError BufferQueue::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (rotatingBufferNumber_ == 0) {
-        cycleBuffersNumber = bufferQueueSize_;
+        cycleBuffersNumber = queueSize_;
     } else {
         cycleBuffersNumber = rotatingBufferNumber_;
     }

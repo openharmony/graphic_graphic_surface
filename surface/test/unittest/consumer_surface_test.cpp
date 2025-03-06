@@ -2142,4 +2142,30 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, Function | MediumTest 
         ASSERT_EQ(ret, GSERROR_OK);
     }
 }
+
+/*
+* Function: GetAndSetRotatingBuffersNumber001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetCycleBuffersNumber and SetCycleBuffersNumber function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetAndSetRotatingBuffersNumber001, Function | MediumTest | Level2)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    uint32_t cycleBuffersNumber = 0;
+    ASSERT_EQ(cSurface->GetCycleBuffersNumber(cycleBuffersNumber), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, cSurface->GetQueueSize());
+    ASSERT_EQ(pSurface->SetCycleBuffersNumber(128), OHOS::GSERROR_OK); // 128 : normal num
+    ASSERT_EQ(cSurface->GetCycleBuffersNumber(cycleBuffersNumber), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, 128); // 128 : normal num
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
 }

@@ -90,6 +90,8 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, ReleaseLastFlushedBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER, RequestAndDetachBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, AttachAndFlushBufferRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER, GetRotatingBuffersNumberRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, SetRotatingBuffersNumberRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -831,6 +833,37 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::GetRotatingBuffersNumberRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    uint32_t cycleBuffersNumber = 0;
+    auto ret = GetCycleBuffersNumber(cycleBuffersNumber);
+    if (ret != GSERROR_OK) {
+        if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_REPLY;
+    }
+
+    if (!reply.WriteInt32(GSERROR_OK) || !reply.WriteUint32(cycleBuffersNumber)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetRotatingBuffersNumberRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    uint32_t cycleBuffersNumber = arguments.ReadUint32();
+    auto ret = SetCycleBuffersNumber(cycleBuffersNumber);
+    if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+
+    return ERR_NONE;
+}
+
 GSError BufferQueueProducer::RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
     RequestBufferReturnValue& retval)
 {
@@ -1423,5 +1456,21 @@ bool BufferQueueProducer::CheckIsAlive()
         return false;
     }
     return true;
+}
+
+GSError BufferQueueProducer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetCycleBuffersNumber(cycleBuffersNumber);
+}
+
+GSError BufferQueueProducer::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetCycleBuffersNumber(cycleBuffersNumber);
 }
 }; // namespace OHOS

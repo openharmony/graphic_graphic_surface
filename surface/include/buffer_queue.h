@@ -202,6 +202,8 @@ public:
         struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap);
+    GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
+    GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
 
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config);
@@ -298,6 +300,7 @@ private:
     uint32_t acquireLastFlushedBufSequence_;
     std::string requestBufferStateStr_;
     std::string acquireBufferStateStr_;
+    uint32_t rotatingBufferNumber_ = 0;
 };
 }; // namespace OHOS
 

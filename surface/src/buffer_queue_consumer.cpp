@@ -293,4 +293,12 @@ uint32_t BufferQueueConsumer::GetAvailableBufferCount() const
     }
     return bufferQueue_->GetAvailableBufferCount();
 }
+
+GSError BufferQueueConsumer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetCycleBuffersNumber(cycleBuffersNumber);
+}
 } // namespace OHOS

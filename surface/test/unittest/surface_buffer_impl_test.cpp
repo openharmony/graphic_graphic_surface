@@ -337,4 +337,24 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, Function | MediumTe
     buffer->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_NO_SCALE_CROP);
     ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
 }
+
+/*
+* Function: SetBufferDeleteFromCacheFlag&GetBufferDeleteFromCacheFlag
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call GetBufferDeleteFromCacheFlag and check default is false
+*                  3. call SetBufferDeleteFromCacheFlag and GetBufferDeleteFromCacheFlag and check ret
+*                  4. repeatly call SetBufferDeleteFromCacheFlag and GetBufferDeleteFromCacheFlag and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, BufferDeleteFromCacheFlag001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), false);
+    buffer->SetBufferDeleteFromCacheFlag(true);
+    ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), true);
+    buffer->SetBufferDeleteFromCacheFlag(false);
+    ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), false);
+}
 }

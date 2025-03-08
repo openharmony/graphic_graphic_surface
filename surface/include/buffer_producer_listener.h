@@ -77,15 +77,15 @@ public:
         MessageOption option;
         MessageParcel arguments;
         MessageParcel reply;
-        if(!arguments.WriteInterfaceToken(IProducerListener::GetDescriptor())){
+        if (!arguments.WriteInterfaceToken(IProducerListener::GetDescriptor())) {
             BLOGE("write interface token failed");
             return GSERROR_BINDER;
         }
 
-        WriteSurfaceProperty(arguments,property);
+        WriteSurfaceProperty(arguments, property);
         option.SetFlags(MessageOption::TF_ASYNC);
         int32_t ret = Remote()->SendRequest(IProducerListener::ON_PROPERTY_CHANGE, arguments， reply, option);
-        if(ret != ERR_NONE){
+        if (ret != ERR_NONE) {
             return GSERROR_BINDER;
         }
         return GSERROR_OK;
@@ -125,7 +125,7 @@ public:
                 auto sret = OnPropertyChangeRemote(arguments);
                 reply.WriteInt32(sret);
                 break;
-            } 
+            }
             default: {
                 ret = ERR_UNKNOWN_TRANSACTION;
                 break;
@@ -154,7 +154,7 @@ private:
     {
         SurfaceProperty property;
         GSError ret = ReadSurfaceProperty(arguments, property);
-        if(ret = GSERROR_OK){
+        if (ret = GSERROR_OK) {
             OnPropertyChange(property);
         }
         return ret;
@@ -208,7 +208,7 @@ private:
     std::mutex mutex_;
 };
 
-class PropertyChangeProducerListener : public ProducerListenerStub{
+class PropertyChangeProducerListener : public ProducerListenerStub {
 public:
     PropertyChangeProducerListener(OnPropertyChangeFunc func = nullptr)
         : func_(func){};
@@ -226,11 +226,11 @@ public:
         OnPropertyChangeFunc func = nullptr;
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            if(func_ != nullptr) {
+            if (func_ != nullptr) {
                 func = func_;
             }
         }
-        if(func != nullptr) {
+        if (func != nullptr) {
             return func(property);
         }
         return GSERROR_OK;
@@ -245,7 +245,6 @@ public:
 private:
     OnPropertyChangeFunc func_;
     std::mutex mutex_;
-
 }
 } // namespace OHOS
 

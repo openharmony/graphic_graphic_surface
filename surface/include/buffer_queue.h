@@ -298,7 +298,7 @@ private:
     sptr<IProducerListener> producerListener_ = nullptr;
     sptr<IProducerListener> producerListenerBackup_ = nullptr;
     const size_t propertyChangeListenerMutex_ = 50; // 50 : limit producer num
-    std::map<uint64_t,sptr<IProducerListener>> propertyChangeListeners_;
+    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_;
     OnDeleteBufferFunc onBufferDeleteForRSMainThread_;
     OnDeleteBufferFunc onBufferDeleteForRSHardwareThread_;
     std::condition_variable waitReqCon_;

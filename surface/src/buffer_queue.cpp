@@ -1427,11 +1427,11 @@ GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> lis
 GSError BufferQueue::RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t produceId)
 {
     std::lock_guard<std::mutex> lockGuard(properChangeMutex_);
-    if(propertyChangeListeners_.size() > propertyChangeListenerMaxNum_) {
+    if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum_) {
         return GSERROR_API_FAILED;
     }
 
-    if(propertyChangeListeners_.find(producerId) == propertyChangeListeners_.end()) {
+    if (propertyChangeListeners_.find(producerId) == propertyChangeListeners_.end()) {
         propertyChangeListeners_[producerId] = listener;
     }
     return GSERROR_OK;
@@ -1653,7 +1653,7 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64
 {
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        if(transformHint_ != transformHint) {
+        if (transformHint_ != transformHint) {
             transformHint_ = transformHint;
         } else {
             return GSERROR_OK;
@@ -1663,7 +1663,7 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64
     std::map<uint64_t, sptr<IProducerListener>> propertyListeners;
     {
         std::lock_guard<std::mutex> lockGuard(properChangeMutex_);
-        if(propertyChangeListeners_.empty()) {
+        if (propertyChangeListeners_.empty()) {
             return GSERROR_OK;
         }
         propertyListeners = propertyChangeListeners_;
@@ -1671,14 +1671,14 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64
     SurfaceProperty property = {
         .transformHint = transformHint;
     };
-    for(auto& item: propertyListeners) {
-        SURFACE_TRACE_NAME_FMT("propertyListeners %u, val %d",item.first, (int)property.transformHint);
-        if(producerId == item.first) {
+    for (auto& item: propertyListeners) {
+        SURFACE_TRACE_NAME_FMT("propertyListeners %u, val %d", item.first, (int)property.transformHint);
+        if (producerId == item.first) {
             SURFACE_TRACE_NAME_FMT("propertyListeners skip fromId");
             continue;
         }
-        if(item.second->OnPropertyChange(property) != GSERROR_OK) {
-            BLOGE("OnPropertyChange failed, uniqueId: %{public}",PRIu64".", uniqueId_);
+        if (item.second->OnPropertyChange(property) != GSERROR_OK) {
+            BLOGE("OnPropertyChange failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         }
     }
     return GSERROR_OK;

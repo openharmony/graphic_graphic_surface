@@ -98,7 +98,7 @@ public:
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
-    GSError SetTransformHint(GraphicTransformType transformHint,uint64_t fromId) override;
+    GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;

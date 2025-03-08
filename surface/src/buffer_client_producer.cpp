@@ -409,10 +409,10 @@ GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> l
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    if(!arguments.WriteRemoteObject(listener->AsObject())) {
+    if (!arguments.WriteRemoteObject(listener->AsObject())) {
         return GSERROR_BINDER;
     }
-    if(!arguments.WriteUint64(producerId)) {
+    if (!arguments.WriteUint64(producerId)) {
         return GSERROR_BINDER;
     }
 
@@ -424,7 +424,7 @@ GSError BufferClientProducer::UnRegisterPropertyListener(uint64_t produceId)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
-    if(!arguments.WriteUint64(producerId)) {
+    if (!arguments.WriteUint64(producerId)) {
         return GSERROR_BINDER;
     }
 
@@ -821,7 +821,7 @@ GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHin
         return GSERROR_BINDER;
     }
 
-    if(!arguments.WriteUint64(fromId)) {
+    if (!arguments.WriteUint64(fromId)) {
         return GSERROR_BINDER;
     }
 

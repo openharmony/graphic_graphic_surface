@@ -936,6 +936,6 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, Function | MediumTest | Level2)
     uint64_t producerId = 0;
     EXPECT_EQ(bq->SetTransformHint(transformHint, producerId), GSERROR_OK);
     transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    ASSERT_EQ(bq->SetTransformHint(transformHint,producerId), OHOS::GSERROR_OK);
+    ASSERT_EQ(bq->SetTransformHint(transformHint, producerId), OHOS::GSERROR_OK);
 }
 }

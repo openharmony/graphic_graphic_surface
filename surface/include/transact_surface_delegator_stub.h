@@ -40,6 +40,7 @@ protected:
     NativeHandleT *ReadNativeHandle(MessageParcel &input);
     NativeHandleT *ReadNativeHandleWithoutVersion(MessageParcel &input);
     int32_t SendMessage(int32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
+    void CloseNativeHandle(NativeHandleT* handle);
     sptr<Surface> surface_ = nullptr;
 
 private:

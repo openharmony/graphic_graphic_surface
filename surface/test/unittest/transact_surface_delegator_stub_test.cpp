@@ -91,4 +91,21 @@ HWTEST_F(TransactSurfaceDelegatorStubTest, ReadNativeHandle001, Function | Mediu
     NativeHandleT* buffer = tsd->ReadNativeHandle(input);
     EXPECT_EQ(buffer, nullptr);
 }
+
+/*
+* Function: CloseNativeHandle
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call CloseNativeHandle
+*                  2. check ret
+ */
+HWTEST_F(TransactSurfaceDelegatorStubTest, CloseNativeHandle001, Function | MediumTest | Level2)
+{
+    ASSERT_NO_FATAL_FAILURE{
+        {
+            tsd->CloseNativeHandle(nullptr);
+        }
+    };
+}
 } // namespace OHOS::Rosen

@@ -173,4 +173,18 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest
     int ret = consumerDelegator->OnRemoteRequest(code, dataQueue, reply, option);
     ASSERT_EQ(ret, ERR_NONE);
 }
+
+/*
+* Function: GetSurfaceBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetSurfaceBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, GetSurfaceBuffer001, Function | MediumTest | Level2)
+{
+    GSError ret = consumerDelegator->GetSurfaceBuffer(nullptr, nullptr);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
 }

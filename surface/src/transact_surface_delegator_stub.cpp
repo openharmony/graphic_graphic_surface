@@ -50,4 +50,9 @@ NativeHandleT *TransactSurfaceDelegatorStub::ReadNativeHandleWithoutVersion(Mess
 {
     return nullptr;
 }
+
+void TransactSurfaceDelegatorStub::CloseNativeHandle(NativeHandleT* handle)
+{
+    return;
+}
 } // namespace OHOS

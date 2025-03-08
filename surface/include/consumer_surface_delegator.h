@@ -33,7 +33,7 @@ public:
     bool SetBufferQueue(BufferQueue* bufferQueue);
     int OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
 protected:
-    GSError GetSurfaceBuffer(NativeHanldeT* handle, sptr<SurfaceBuffer>& buffer);
+    GSError GetSurfaceBuffer(NativeHandleT* handle, sptr<SurfaceBuffer>& buffer);
 
 private:
     ConsumerSurfaceDelegator() = default;

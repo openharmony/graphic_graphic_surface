@@ -254,7 +254,7 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
     }
     uniqueId_ = info.uniqueId;
     if (!reply.ReadString(info.name) || !reply.ReadBool(info.isInHebcList) || !reply.ReadString(info.bufferName) ||
-        !reply.ReadUint64(info.produceId) || !reply.ReadInt32(info.transformHint)) {
+        !reply.ReadUint64(info.producerId) || !reply.ReadInt32(info.transformHint)) {
         return GSERROR_BINDER;
     }
     return CheckRetval(reply);
@@ -405,7 +405,7 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
     return CheckRetval(reply);
 }
 
-GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t produceId)
+GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
@@ -420,7 +420,7 @@ GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> l
     return CheckRetval(reply);
 }
 
-GSError BufferClientProducer::UnRegisterPropertyListener(uint64_t produceId)
+GSError BufferClientProducer::UnRegisterPropertyListener(uint64_t producerId)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 

@@ -608,8 +608,10 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     sptr<IProducerListener> listener = nullptr;
     EXPECT_EQ(bqpTmp->RegisterReleaseListener(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->RegisterReleaseListenerBackup(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->RegisterPropertyListener(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->UnRegisterReleaseListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->UnRegisterReleaseListenerBackup(), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->UnRegisterPropertyListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetTransform(GraphicTransformType::GRAPHIC_FLIP_H), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<BufferVerifyAllocInfo> infos;
     uint64_t uniqueId;
@@ -642,7 +644,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     EXPECT_EQ(bqpTmp->SetSurfaceSourceType(sourceType), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GetSurfaceSourceType(sourceType), OHOS::GSERROR_INVALID_ARGUMENTS);
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
-    EXPECT_EQ(bqpTmp->SetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->SetTransformHint(transform, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GetTransformHint(transform), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->CleanCache(true, nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -677,5 +679,39 @@ HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Leve
     EXPECT_EQ(bqp_->CheckIsAlive(), false);
     bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
     EXPECT_EQ(bqp_->CheckIsAlive(), true);
+}
+
+/*
+* Function: RegisterPropertyListenerRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: RegisterPropertyListenerRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RegisterPropertyListenerRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
+* Function: UnRegisterPropertyListenerRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: UnRegisterPropertyListenerRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteInt64(0);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->UnRegisterPropertyListenerRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 }

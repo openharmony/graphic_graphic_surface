@@ -220,4 +220,38 @@ HWTEST_F(BufferUtilsTest, SizeLimitTest001, Function | MediumTest | Level2)
     EXPECT_TRUE(parcel.WriteUint32(size));
     EXPECT_EQ(ReadExtDataHandle(parcel, tunnelHandle), GSERROR_BINDER);
 }
+
+/*
+* Function: ReadSurfaceProperty
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ReadSurfaceProperty
+*                  2. check ret
+ */
+HWTEST_F(BufferUtilsTest, ReadSurfacePropertyTest001, Function | MediumTest | Level2)
+{
+    MessageParcel parcel;
+    SurfaceProperty surfaceProperty;
+    uint32_t size = GraphicTransformType::GRAPHIC_ROTATE_BUTT + 1;
+    EXPECT_TRUE(parcel.WriteUint32(size));
+    ASSERT_NE(ReadSurfaceProperty(parcel, surfaceProperty), OHOS::GSERROR_BINDER);
+}
+
+/*
+* Function: WriteSurfaceProperty
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call WriteSurfaceProperty
+*                  2. check ret
+ */
+HWTEST_F(BufferUtilsTest, WriteSurfacePropertyTest001, Function | MediumTest | Level2)
+{
+    MessageParcel parcel;
+    SurfaceProperty surfaceProperty;
+    uint32_t size = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
+    EXPECT_TRUE(parcel.WriteUint32(size));
+    ASSERT_NE(ReadSurfaceProperty(parcel, surfaceProperty), OHOS::GSERROR_BINDER);
+}
 }

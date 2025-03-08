@@ -72,6 +72,8 @@ public:
     GSError RegisterReleaseListenerBackup(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
     GSError UnRegisterReleaseListenerBackup() override;
+    GSError UnRegisterPropertyListener(uint64_t producerId) override;
+    GSError RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId) override;
 
     // Call carefully. This interface will empty all caches of the current process
     GSError CleanCache(bool cleanAll, uint32_t *bufSeqNum) override;
@@ -96,7 +98,7 @@ public:
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
 
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
-    GSError SetTransformHint(GraphicTransformType transformHint) override;
+    GSError SetTransformHint(GraphicTransformType transformHint,uint64_t fromId) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;

@@ -253,7 +253,8 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
         return GSERROR_BINDER;
     }
     uniqueId_ = info.uniqueId;
-    if (!reply.ReadString(info.name) || !reply.ReadBool(info.isInHebcList) || !reply.ReadString(info.bufferName)) {
+    if (!reply.ReadString(info.name) || !reply.ReadBool(info.isInHebcList) || !reply.ReadString(info.bufferName) ||
+        !reply.ReadUint64(info.produceId) || !reply.ReadInt32(info.transformHint)) {
         return GSERROR_BINDER;
     }
     return CheckRetval(reply);
@@ -401,6 +402,31 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
     }
 
     SEND_REQUEST(BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t produceId){
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+
+    if(!arguments.WriteRemoteObject(listener->AsObject())){
+        return GSERROR_BINDER;
+    }
+    if(!arguments.WriteUint64(producerId)){
+        return GSERROR_BINDER;
+    }
+
+    SEND_REQUEST(BUFFER_PRODUCER_PROPERTY_LISTENER, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::UnRegisterPropertyListener(uint64_t produceId){
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+
+    if(!arguments.WriteUint64(producerId)){
+        return GSERROR_BINDER;
+    }
+
+    SEND_REQUEST(BUFFER_PRODUCER_UNPROPERTY_LISTENER, arguments, reply, option);
     return CheckRetval(reply);
 }
 
@@ -785,11 +811,15 @@ GSError BufferClientProducer::GetTransformHint(GraphicTransformType &transformHi
     return GSERROR_NOT_SUPPORT;
 }
 
-GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHint)
+GSError BufferClientProducer::SetTransformHint(GraphicTransformType transformHint, uint64_t fromId)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
     if (!arguments.WriteUint32(static_cast<uint32_t>(transformHint))) {
+        return GSERROR_BINDER;
+    }
+
+    if(!arguments.WriteUint64(fromId)){
         return GSERROR_BINDER;
     }
 

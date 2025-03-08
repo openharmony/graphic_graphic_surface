@@ -888,4 +888,54 @@ HWTEST_F(BufferQueueTest, GetBufferSupportFastCompose001, Function | MediumTest 
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(result, supportFastCompose);
 }
+
+/*
+* Function: RegisterProducerPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterProducerPropertyListener and check value
+*/
+HWTEST_F(BufferQueueTest, RegisterProducerPropertyListener001, Function | MediumTest | Level2)
+{
+    bool producerId = 6;
+    OnReleaseFunc onBufferRelease = nullptr;
+    sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
+    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_ = {{producerId, listener}};
+    GSError ret = bq->RegisterProducerPropertyListener(listener, producerId);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: UnRegisterProducerPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call UnRegisterProducerPropertyListener and check value
+*/
+HWTEST_F(BufferQueueTest, UnRegisterProducerPropertyListener001, Function | MediumTest | Level2)
+{
+    bool producerId = 6;
+    OnReleaseFunc onBufferRelease = nullptr;
+    sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
+    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_ = {{producerId, listener}};
+    GSError ret = bq->UnRegisterProducerPropertyListener(producerId);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SetTransformHint
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTransformHint and check value
+*/
+HWTEST_F(BufferQueueTest, SetTransformHint001, Function | MediumTest | Level2)
+{
+    GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_90;
+    uint64_t producerId = 0;
+    EXPECT_EQ(bq->SetTransformHint(transformHint, producerId), GSERROR_OK);
+    transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ASSERT_EQ(bq->SetTransformHint(transformHint,producerId), OHOS::GSERROR_OK);
+}
 }

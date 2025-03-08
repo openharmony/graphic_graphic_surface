@@ -72,6 +72,25 @@ public:
         return GSERROR_OK;
     }
 
+    GSError OnPropertyChange(SurfaceProperty property) override
+    {
+        MessageOption option;
+        MessageParcel arguments;
+        MessageParcel reply;
+        if(!arguments.WriteInterfaceToken(IProducerListener::GetDescriptor())){
+            BLOGE("write interface token failed");
+            return GSERROR_BINDER;
+        }
+
+        WriteSurfaceProperty(arguments,property);
+        option.SetFlags(MessageOption::TF_ASYNC);
+        int32_t ret = Remote()->SendRequest(IProducerListener::ON_PROPERTY_CHANGE, arguments， reply, option);
+        if(ret != ERR_NONE){
+            return GSERROR_BINDER;
+        }
+        return GSERROR_OK;
+    }
+
     void ResetReleaseFunc() override {}
 private:
     static inline BrokerDelegator<ProducerListenerProxy> delegator_;
@@ -102,6 +121,11 @@ public:
                 reply.WriteInt32(sret);
                 break;
             }
+            case ON_PROPERTY_CHANGE: {
+                auto sret = OnPropertyChangeRemote(arguments);
+                reply.WriteInt32(sret);
+                break;
+            } 
             default: {
                 ret = ERR_UNKNOWN_TRANSACTION;
                 break;
@@ -124,6 +148,15 @@ private:
             fence = SyncFence::ReadFromMessageParcel(arguments);
         }
         ret = OnBufferReleasedWithFence(buffer, fence);
+        return ret;
+    }
+    GSError OnPropertyChangeRemote(MessageParcel& arguments)
+    {
+        SurfaceProperty property;
+        GSError ret = ReadSurfaceProperty(arguments, property);
+        if(ret = GSERROR_OK){
+            OnPropertyChange(property);
+        }
         return ret;
     }
 };
@@ -162,6 +195,7 @@ public:
         }
         return GSERROR_INTERNAL;
     }
+    GSError OnPropertyChange(const SurfaceProperty& property) override {return GSERROR_NOT_SUPPORT; }
     void ResetReleaseFunc() override
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -173,6 +207,46 @@ private:
     OnReleaseFuncWithFence funcWithFence_;
     std::mutex mutex_;
 };
+
+class PropertyChangeProducerListener : public ProducerListenerStub{
+public:
+    PropertyChangeProducerListener(OnPropertyChangeFunc func = nullptr)
+    : func_(func){};
+    ~PropertyChangeProducerListener() override {};
+    GSError OnBufferReleased() override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+    GSError OnBufferReleasedWithFence(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+    GSError OnPropertyChange(const SurfaceProperty& property) override
+    {
+        OnPropertyChangeFunc func = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if(func_ != nullptr){
+                func = func_;
+            }
+        }
+        if(func != nullptr){
+            return func(property);
+        }
+        return GSERROR_OK;
+    }
+
+    void ResetReleaseFunc() override
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        func_ = nullptr;
+    }
+
+private:
+    OnPropertyChangeFunc func_;
+    std::mutex mutex_;
+
+}
 } // namespace OHOS
 
 #endif // INTERFACES_INNERKITS_SURFACE_BUFFER_PRODUCER_LISTENER_H

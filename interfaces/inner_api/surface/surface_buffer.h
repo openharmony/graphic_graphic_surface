@@ -163,10 +163,15 @@ protected:
     virtual ~SurfaceBuffer() {}
 };
 
+ struct SurfaceProperty{
+    GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+ }
+
 using OnReleaseFunc = std::function<GSError(sptr<SurfaceBuffer> &)>;
 using OnDeleteBufferFunc = std::function<void(int32_t)>;
 using OnReleaseFuncWithFence = std::function<GSError(const sptr<SurfaceBuffer>&, const sptr<SyncFence>&)>;
 using OnUserDataChangeFunc = std::function<void(const std::string& key, const std::string& value)>;
+using OnPropertyChangeFunc = std::function<GSError(SurfaceProperty)>;
 } // namespace OHOS
 
 #endif // INTERFACES_INNERKITS_SURFACE_SURFACE_BUFFER_H

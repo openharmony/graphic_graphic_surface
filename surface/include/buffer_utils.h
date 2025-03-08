@@ -49,6 +49,9 @@ GSError WriteHDRMetaDataSet(MessageParcel &parcel, const std::vector<uint8_t> &m
 GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &handle);
 GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle);
 
+GSError ReadSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property);
+GSError WriteSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property);
+
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer);
 } // namespace OHOS
 

@@ -125,7 +125,8 @@ namespace OHOS {
         GraphicTransformType transformType = GetData<GraphicTransformType>();
         bqp->SetTransform(transformType);
         bqp->GetTransform(transformType);
-        bqp->SetTransformHint(transformType);
+        uint64_t fromId = GetData<uint64_t>();
+        bqp->SetTransformHint(transformType, fromId);
         bqp->GetTransformHint(transformType);
         uint64_t uniqueId = 0;
         std::string name = "";

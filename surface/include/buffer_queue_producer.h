@@ -80,6 +80,8 @@ public:
     GSError RegisterReleaseListenerBackup(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
     GSError UnRegisterReleaseListenerBackup() override;
+    GSError RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId) override;
+    GSError UnRegisterPropertyListener(uint64_t producerId) override;
 
     GSError SetTransform(GraphicTransformType transform) override;
     GSError GetTransform(GraphicTransformType &transform) override;
@@ -106,7 +108,7 @@ public:
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) override;
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) override;
 
-    GSError SetTransformHint(GraphicTransformType transformHint) override;
+    GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) override;
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
 
@@ -194,6 +196,8 @@ private:
     int32_t SetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DisconnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ConnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t RegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t UnRegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPid(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,

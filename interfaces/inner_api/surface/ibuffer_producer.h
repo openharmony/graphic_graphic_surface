@@ -125,7 +125,7 @@ public:
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
-    virtual GSError SetTransformHint(GraphicTransformType transformHint， uint64_t fromId) = 0;
+    virtual GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;

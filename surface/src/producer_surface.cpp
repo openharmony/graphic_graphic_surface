@@ -67,9 +67,8 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
         " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
-    RequestPropertyListenerInner([this](SurfaceProperty property) {
-        return PropertyChangeCallback(property); 
-    },initInfo_.producerId);
+    RequestPropertyListenerInner([this](SurfaceProperty property) { return PropertyChangeCallback(property); },
+        initInfo_.producerId);
 }
 
 ProducerSurface::~ProducerSurface()

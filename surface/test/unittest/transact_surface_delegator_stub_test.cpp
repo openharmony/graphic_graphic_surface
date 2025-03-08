@@ -102,10 +102,6 @@ HWTEST_F(TransactSurfaceDelegatorStubTest, ReadNativeHandle001, Function | Mediu
  */
 HWTEST_F(TransactSurfaceDelegatorStubTest, CloseNativeHandle001, Function | MediumTest | Level2)
 {
-    ASSERT_NO_FATAL_FAILURE{
-        {
-            tsd->CloseNativeHandle(nullptr);
-        }
-    };
+    ASSERT_NO_FATAL_FAILURE(tsd->CloseNativeHandle(nullptr));
 }
 } // namespace OHOS::Rosen

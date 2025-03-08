@@ -184,7 +184,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest
  */
 HWTEST_F(ConsumerSurfaceDelegatorTest, GetSurfaceBuffer001, Function | MediumTest | Level2)
 {
-    GSError ret = consumerDelegator->GetSurfaceBuffer(nullptr, nullptr);
+    GSError ret = consumerDelegator->GetSurfaceBuffer(nullptr, buffer);
     ASSERT_EQ(ret, GSERROR_OK);
 }
 }

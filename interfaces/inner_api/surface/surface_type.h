@@ -150,7 +150,7 @@ using ProducerInitInfo = struct {
     std::string appName;
     bool isInHebcList;
     std::string bufferName;
-    uint64_t PproducerId;
+    uint64_t producerId;
     int32_t transformHint;
 };
 

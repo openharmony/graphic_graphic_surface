@@ -17,7 +17,6 @@
 
 #include <cinttypes>
 #include <sys/ioctl.h>
-#include <parameters.h>
  
 #include <linux/dma-buf.h>
 
@@ -68,7 +67,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
         " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
-    RequestPropertyListenerInner([this](SurfaceProperty property){return PropertyChangeCallback(property);},
+    RequestPropertyListenerInner([this](SurfaceProperty property){ return PropertyChangeCallback(property); },
         initInfo_.producerId);
 }
 
@@ -537,7 +536,7 @@ GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
     }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        if(lastSetTransformHint_ == transformHint){
+        if(lastSetTransformHint_ == transformHint) {
             return GSERROR_OK;
         }
     }
@@ -670,7 +669,8 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     return producer_->RegisterReleaseListener(listener);
 }
 
-GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property){
+GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
+{
     std::lock_guard<std::mutex> lockGuard(mutex_);
     lastSetTransformHint_ = property.transformHint;
     return GSERROR_OK;
@@ -678,7 +678,7 @@ GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
 
 GSError ProducerSurface::RegisterPropertyListenerInner(OnPropertyChangeFunc func, uint64_t producerId)
 {
-    if(func == nullptr || producer_ == nullptr){
+    if(func == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     sptr<IProducerListener> listener;
@@ -691,12 +691,12 @@ GSError ProducerSurface::RegisterPropertyListenerInner(OnPropertyChangeFunc func
 }
 
 GSError ProducerSurface::UnRegisterPropertyListenerInner(uint64_t producerId){
-    if(producer_ == nullptr){
+    if(producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if(propertyListener_ != nullptr){
+        if(propertyListener_ != nullptr) {
             propertyListener_->ResetReleaseFunc();
         }
     }

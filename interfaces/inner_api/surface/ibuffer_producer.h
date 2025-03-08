@@ -90,7 +90,7 @@ public:
     }
 
     virtual GSError RegisterPropertyLisytener(sptr<IProducerListener> listener, uint64_t producerId) =0;
-    virtual GSError UnRegisterPropertyListener(uint64_t producerId) =0;
+    virtual GSError UnRegisterPropertyListener(uint64_t producerId) = 0;
 
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
 

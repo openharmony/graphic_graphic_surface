@@ -171,20 +171,20 @@ GSError WriteSurfaceBufferImpl(MessageParcel &parcel,
     return GSERROR_OK;
 }
 
-GSError ReadSufaceProperty(MessageParcel &parcel, SurfaceProperty& property)
+GSError ReadSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property)
 {
     uint32_t val = parcel.ReadUint32();
-    if(val > GraphicTransformType::GRAPHIC_ROTATE_BUTT){
+    if(val > GraphicTransformType::GRAPHIC_ROTATE_BUTT) {
         return GSERROR_BINDER;
     }
     property.transformHint = static_cast<GraphicTransformType>(val);
     return GSERROR_OK; 
 }
 
-SError WriteSufaceProperty(MessageParcel &parcel, SurfaceProperty& property)
+SError WriteSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property)
 {
     uint32_t tmp = static_cast<uint32_t>(property.transformHint);
-    if(!parcel.WriteUint32(tmp)){
+    if(!parcel.WriteUint32(tmp)) {
         return GSERROR_BINDER;
     }
     return GSERROR_OK;

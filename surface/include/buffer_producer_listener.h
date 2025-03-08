@@ -211,7 +211,7 @@ private:
 class PropertyChangeProducerListener : public ProducerListenerStub{
 public:
     PropertyChangeProducerListener(OnPropertyChangeFunc func = nullptr)
-    : func_(func){};
+        : func_(func){};
     ~PropertyChangeProducerListener() override {};
     GSError OnBufferReleased() override
     {
@@ -226,11 +226,11 @@ public:
         OnPropertyChangeFunc func = nullptr;
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            if(func_ != nullptr){
+            if(func_ != nullptr) {
                 func = func_;
             }
         }
-        if(func != nullptr){
+        if(func != nullptr) {
             return func(property);
         }
         return GSERROR_OK;

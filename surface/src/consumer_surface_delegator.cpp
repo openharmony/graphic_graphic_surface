@@ -65,6 +65,6 @@ int ConsumerSurfaceDelegator::OnRemoteRequest(uint32_t code,
 
 GSError ConsumerSurfaceDelegator::GetSurfaceBuffer(NativeHandleT* handle, sptr<SurfaceBuffer>& buffer)
 {
-	return GSERROR_OK;
+    return GSERROR_OK;
 }
 } // namespace OHOS

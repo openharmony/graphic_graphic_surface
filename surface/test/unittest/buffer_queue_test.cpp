@@ -17,6 +17,7 @@
 #include <surface.h>
 #include <buffer_extra_data_impl.h>
 #include <buffer_queue.h>
+#include <buffer_producer_listener.h>
 #include "buffer_consumer_listener.h"
 #include "sync_fence.h"
 #include "consumer_surface.h"

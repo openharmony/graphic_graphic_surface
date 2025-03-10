@@ -784,7 +784,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, Function |
 {
     OnReleaseFunc onBufferRelease = nullptr;
     sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
-    GSError ret = bp->RegisterPropertyListener(listener);
+    GSError ret = bp->RegisterPropertyListener(listener, 0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 

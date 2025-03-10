@@ -416,7 +416,7 @@ GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> l
         return GSERROR_BINDER;
     }
 
-    SEND_REQUEST(BUFFER_PRODUCER_PROPERTY_LISTENER, arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER, arguments, reply, option);
     return CheckRetval(reply);
 }
 
@@ -428,7 +428,7 @@ GSError BufferClientProducer::UnRegisterPropertyListener(uint64_t producerId)
         return GSERROR_BINDER;
     }
 
-    SEND_REQUEST(BUFFER_PRODUCER_UNPROPERTY_LISTENER, arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER, arguments, reply, option);
     return CheckRetval(reply);
 }
 

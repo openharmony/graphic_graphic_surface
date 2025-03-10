@@ -181,7 +181,7 @@ GSError ReadSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property)
     return GSERROR_OK;
 }
 
-SError WriteSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property)
+GSError WriteSurfaceProperty(MessageParcel &parcel, const SurfaceProperty& property)
 {
     uint32_t tmp = static_cast<uint32_t>(property.transformHint);
     if (!parcel.WriteUint32(tmp)) {

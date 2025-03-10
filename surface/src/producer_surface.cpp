@@ -67,7 +67,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
         " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
-    RequestPropertyListenerInner([this](SurfaceProperty property) { return PropertyChangeCallback(property); },
+    RegesterPropertyListenerInner([this](SurfaceProperty property) { return PropertyChangeCallback(property); },
         initInfo_.producerId);
 }
 
@@ -685,7 +685,7 @@ GSError ProducerSurface::RegisterPropertyListenerInner(OnPropertyChangeFunc func
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
         propertyListener_ = new PropertyChangeProducerListener(func);
-        listener = producerListener_;
+        listener = propertyListener_;
     }
     return producer_->RegisterPropertyListener(listener, producerId);
 }

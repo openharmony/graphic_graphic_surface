@@ -28,11 +28,11 @@ public:
     virtual GSError OnBufferReleased() = 0;
     virtual GSError OnBufferReleasedWithFence(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) = 0;
     virtual void ResetReleaseFunc() = 0;
-    virtual GSError OnPropertyChange(SurfaceProperty property) = 0;
+    virtual GSError OnPropertyChange(const SurfaceProperty& property) = 0;
     enum {
         ON_BUFFER_RELEASED = 0,
         ON_BUFFER_RELEASED_WITH_FENCE = 1,
-        On_PROPERTY_CHANGE = 2,
+        ON_PROPERTY_CHANGE = 2,
     };
 };
 } // namespace OHOS

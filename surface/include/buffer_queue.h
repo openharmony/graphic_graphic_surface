@@ -297,7 +297,7 @@ private:
     std::mutex onBufferReleaseMutex_;
     sptr<IProducerListener> producerListener_ = nullptr;
     sptr<IProducerListener> producerListenerBackup_ = nullptr;
-    const size_t propertyChangeListenerMutex_ = 50; // 50 : limit producer num
+    const size_t propertyChangeListenerMaxNum_ = 50; // 50 : limit producer num
     std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_;
     OnDeleteBufferFunc onBufferDeleteForRSMainThread_;
     OnDeleteBufferFunc onBufferDeleteForRSHardwareThread_;

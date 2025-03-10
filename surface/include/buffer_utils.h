@@ -50,7 +50,7 @@ GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &hand
 GSError WriteExtDataHandle(MessageParcel &parcel, const GraphicExtDataHandle *handle);
 
 GSError ReadSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property);
-GSError WriteSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property);
+GSError WriteSurfaceProperty(MessageParcel &parcel, const SurfaceProperty& property);
 
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer);
 } // namespace OHOS

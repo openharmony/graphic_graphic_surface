@@ -72,7 +72,7 @@ public:
         return GSERROR_OK;
     }
 
-    GSError OnPropertyChange(SurfaceProperty property) override
+    GSError OnPropertyChange(const SurfaceProperty& property) override
     {
         MessageOption option;
         MessageParcel arguments;
@@ -84,7 +84,7 @@ public:
 
         WriteSurfaceProperty(arguments, property);
         option.SetFlags(MessageOption::TF_ASYNC);
-        int32_t ret = Remote()->SendRequest(IProducerListener::ON_PROPERTY_CHANGE, arguments， reply, option);
+        int32_t ret = Remote()->SendRequest(IProducerListener::ON_PROPERTY_CHANGE, arguments, reply, option);
         if (ret != ERR_NONE) {
             return GSERROR_BINDER;
         }
@@ -154,7 +154,7 @@ private:
     {
         SurfaceProperty property;
         GSError ret = ReadSurfaceProperty(arguments, property);
-        if (ret = GSERROR_OK) {
+        if (ret == GSERROR_OK) {
             OnPropertyChange(property);
         }
         return ret;
@@ -245,7 +245,8 @@ public:
 private:
     OnPropertyChangeFunc func_;
     std::mutex mutex_;
-}
+};
+
 } // namespace OHOS
 
 #endif // INTERFACES_INNERKITS_SURFACE_BUFFER_PRODUCER_LISTENER_H

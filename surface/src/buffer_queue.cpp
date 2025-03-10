@@ -118,7 +118,7 @@ GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
     info.isInHebcList = HebcWhiteList::GetInstance().Check(info.appName);
     info.bufferName = bufferName_;
     info.producerId = producerId++;
-    info.transformHint_ = transformHint_;
+    info.transformHint = transformHint_;
     return GSERROR_OK;
 }
 
@@ -1424,9 +1424,9 @@ GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> lis
     return GSERROR_OK;
 }
 
-GSError BufferQueue::RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t produceId)
+GSError BufferQueue::RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t producerId)
 {
-    std::lock_guard<std::mutex> lockGuard(properChangeMutex_);
+    std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
     if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum_) {
         return GSERROR_API_FAILED;
     }
@@ -1437,9 +1437,9 @@ GSError BufferQueue::RegisterProducerPropertyListener(sptr<IProducerListener> li
     return GSERROR_OK;
 }
 
-GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t produceId)
+GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t producerId)
 {
-    std::lock_guard<std::mutex> lockGuard(properChangeMutex_);
+    std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
     propertyChangeListeners_.erase(producerId);
     return GSERROR_OK;
 }
@@ -1649,7 +1649,7 @@ GraphicTransformType BufferQueue::GetTransform() const
     return transform_;
 }
 
-GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64_t produceId)
+GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64_t producerId)
 {
     {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -1662,14 +1662,14 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64
 
     std::map<uint64_t, sptr<IProducerListener>> propertyListeners;
     {
-        std::lock_guard<std::mutex> lockGuard(properChangeMutex_);
+        std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
         if (propertyChangeListeners_.empty()) {
             return GSERROR_OK;
         }
         propertyListeners = propertyChangeListeners_;
     }
     SurfaceProperty property = {
-        .transformHint = transformHint;
+        .transformHint = transformHint,
     };
     for (auto& item: propertyListeners) {
         SURFACE_TRACE_NAME_FMT("propertyListeners %u, val %d", item.first, (int)property.transformHint);

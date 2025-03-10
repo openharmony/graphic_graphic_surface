@@ -1387,7 +1387,7 @@ GSError BufferQueueProducer::RegisterPropertyListener(sptr<IProducerListener> li
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->RegisterProducerPropertyListener(listener);
+    return bufferQueue_->RegisterProducerPropertyListener(listener, producerId);
 }
 
 GSError BufferQueueProducer::UnRegisterPropertyListener(uint64_t producerId)
@@ -1395,7 +1395,7 @@ GSError BufferQueueProducer::UnRegisterPropertyListener(uint64_t producerId)
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->UnRegisterProducerPropertyListener(listener);
+    return bufferQueue_->UnRegisterProducerPropertyListener(producerId);
 }
 
 GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> listener)

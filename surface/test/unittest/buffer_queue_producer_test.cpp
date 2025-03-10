@@ -608,10 +608,8 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
     sptr<IProducerListener> listener = nullptr;
     EXPECT_EQ(bqpTmp->RegisterReleaseListener(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->RegisterReleaseListenerBackup(listener), OHOS::GSERROR_INVALID_ARGUMENTS);
-    EXPECT_EQ(bqpTmp->RegisterPropertyListener(listener, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->UnRegisterReleaseListener(), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->UnRegisterReleaseListenerBackup(), OHOS::GSERROR_INVALID_ARGUMENTS);
-    EXPECT_EQ(bqpTmp->UnRegisterPropertyListener(0), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetTransform(GraphicTransformType::GRAPHIC_FLIP_H), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<BufferVerifyAllocInfo> infos;
     uint64_t uniqueId;
@@ -679,6 +677,31 @@ HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Leve
     EXPECT_EQ(bqp_->CheckIsAlive(), false);
     bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
     EXPECT_EQ(bqp_->CheckIsAlive(), true);
+}
+
+/*
+* Function: UnRegisterPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: UnRegisterPropertyListener member function test
+ */
+HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | MediumTest | Level2)
+{
+    EXPECT_EQ(bqp_->UnRegisterPropertyListener(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: RegisterPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: RegisterPropertyListener member function test
+ */
+HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerTest, Function | MediumTest | Level2)
+{
+    sptr<IProducerListener> listener = nullptr;
+    EXPECT_EQ(bqp_->RegisterPropertyListener(listener, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*

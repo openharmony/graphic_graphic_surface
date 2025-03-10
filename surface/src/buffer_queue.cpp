@@ -905,13 +905,7 @@ void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
 
 bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp)
 {
-    if (desiredPresentTimestamp <= expectPresentTimestamp) {
-        return true;
-    }
-    if (desiredPresentTimestamp - ONE_SECOND_TIMESTAMP > expectPresentTimestamp) {
-        return true;
-    }
-    return false;
+    return isBufferUtilPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
 }
 
 void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence)
@@ -1427,21 +1421,13 @@ GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> lis
 GSError BufferQueue::RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t producerId)
 {
     std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
-    if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum_) {
-        return GSERROR_API_FAILED;
-    }
-
-    if (propertyChangeListeners_.find(producerId) == propertyChangeListeners_.end()) {
-        propertyChangeListeners_[producerId] = listener;
-    }
-    return GSERROR_OK;
+    return BufferUtilRegisterPropertyListener(listener, producerId, propertyChangeListeners_);
 }
 
 GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t producerId)
 {
     std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
-    propertyChangeListeners_.erase(producerId);
-    return GSERROR_OK;
+    return BufferUtilUnRegisterPropertyListener(producerId, propertyChangeListeners_);
 }
 
 GSError BufferQueue::RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener)
@@ -2237,12 +2223,7 @@ GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, Buf
 GSError BufferQueue::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (rotatingBufferNumber_ == 0) {
-        cycleBuffersNumber = bufferQueueSize_;
-    } else {
-        cycleBuffersNumber = rotatingBufferNumber_;
-    }
-    return GSERROR_OK;
+    return BufferUtilGetCycleBuffersNumber(cycleBuffersNumber, rotatingBufferNumber_, bufferQueueSize_)
 }
 
 GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)

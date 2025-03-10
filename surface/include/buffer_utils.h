@@ -53,6 +53,12 @@ GSError ReadSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property);
 GSError WriteSurfaceProperty(MessageParcel &parcel, const SurfaceProperty& property);
 
 GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer);
+GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId, 
+    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_);
+GSError BufferUtilUnRegisterPropertyListener(uint64_t producerId, std::map<uint64_t,
+ sptr<IProducerListener>>propertyChangeListeners_);
+bool isBufferUtilPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
+GSError BufferUtilGetCycleBuffersNumber(uint32& cycleBuffersNumber, uint32_t rotatingBufferNumber_, uint32_t bufferQueueSize_);
 } // namespace OHOS
 
 #endif // FRAMEWORKS_SURFACE_INCLUDE_BUFFER_UTILS_H

@@ -863,10 +863,14 @@ int32_t BufferQueueProducer::GetTransformRemote(
 int32_t BufferQueueProducer::SetTransformHintRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
+    uint32_t index = -1;
+    if (arguments.ReadUint32(index)) {
+        return ERR_INVALID_REPLY;
+    }
     GraphicTransformType transformHint = static_cast<GraphicTransformType>(arguments.ReadUint32());
-    int64_t pid = -1;
+    uint64_t pid = -1;
     if (!arguments.ReadUint64(pid)) {
-        eturn ERR_INVALID_REPLY;
+        return ERR_INVALID_REPLY;
     }
     auto id = arguments.ReadUint64(pid);
     GSError sRet = SetTransformHint(transformHint, id);

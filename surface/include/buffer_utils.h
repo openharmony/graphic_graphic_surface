@@ -89,23 +89,23 @@ static inline GSError WriteSurfaceProperty(MessageParcel &parcel, const SurfaceP
 }
 
 static inline GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener,
-    uint64_t producerId, std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
+    uint64_t producerId, std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners)
 {
     const size_t propertyChangeListenerMaxNum = 50;
-    if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum) {
+    if (propertyChangeListeners.size() > propertyChangeListenerMaxNum) {
         return GSERROR_API_FAILED;
     }
 
-    if (propertyChangeListeners_.find(producerId) == propertyChangeListeners_.end()) {
-        propertyChangeListeners_[producerId] = listener;
+    if (propertyChangeListeners.find(producerId) == propertyChangeListeners.end()) {
+        propertyChangeListeners[producerId] = listener;
     }
     return GSERROR_OK;
 }
 
 static inline GSError BufferUtilUnRegisterPropertyListener(uint64_t producerId,
-    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
+    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners)
 {
-    propertyChangeListeners_.erase(producerId);
+    propertyChangeListeners.erase(producerId);
     return GSERROR_OK;
 }
 
@@ -123,12 +123,12 @@ static inline bool isBufferUtilPresentTimestampReady(int64_t desiredPresentTimes
 }
 
 static inline GSError BufferUtilGetCycleBuffersNumber(uint32_t& cycleBuffersNumber,
-    uint32_t rotatingBufferNumber_, uint32_t bufferQueueSize_)
+    uint32_t rotatingBufferNumber, uint32_t bufferQueueSize)
 {
-    if (rotatingBufferNumber_ == 0) {
-        cycleBuffersNumber = bufferQueueSize_;
+    if (rotatingBufferNumber == 0) {
+        cycleBuffersNumber = bufferQueueSize;
     } else {
-        cycleBuffersNumber = rotatingBufferNumber_;
+        cycleBuffersNumber = rotatingBufferNumber;
     }
     return GSERROR_OK;
 }

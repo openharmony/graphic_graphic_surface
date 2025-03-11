@@ -32,6 +32,9 @@ public:
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer);
     bool SetBufferQueue(BufferQueue* bufferQueue);
     int OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
+protected:
+    GSError GetSurfaceBuffer(NativeHandleT* handle, sptr<SurfaceBuffer>& buffer);
+
 private:
     ConsumerSurfaceDelegator() = default;
     std::map<int32_t, sptr<SurfaceBuffer>> slotBufferMap_;

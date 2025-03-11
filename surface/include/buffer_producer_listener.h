@@ -123,7 +123,7 @@ public:
             }
             case ON_PROPERTY_CHANGE: {
                 auto sret = OnPropertyChangeRemote(arguments);
-                return reply.WriteInt32(sret) ? ERR_NONE : ERR_INVALID_REPLAY;
+                return reply.WriteInt32(sret) ? ERR_NONE : ERR_INVALID_REPLY;
             }
             default: {
                 ret = ERR_UNKNOWN_TRANSACTION;

@@ -24,7 +24,6 @@
 #include "surface_buffer.h"
 
 namespace OHOS {
-namespace {
 inline void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
 {
     fd = parcel.ReadInt32();
@@ -88,6 +87,7 @@ static inline GSError WriteSurfaceProperty(MessageParcel &parcel, const SurfaceP
     }
     return GSERROR_OK;
 }
+
 static inline GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener,
     uint64_t producerId, std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
 {

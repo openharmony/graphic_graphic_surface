@@ -440,18 +440,4 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
 
     return GSERROR_OK;
 }
-
-GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener,
-    uint64_t producerId, std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
-{
-    const size_t propertyChangeListenerMaxNum = 50;
-    if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum) {
-        return GSERROR_API_FAILED;
-    }
-
-    if (propertyChangeListeners_.find(producerId) == propertyChangeListeners_.end()) {
-        propertyChangeListeners_[producerId] = listener;
-    }
-    return GSERROR_OK;
-}
 } // namespace OHOS

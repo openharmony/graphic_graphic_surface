@@ -235,12 +235,7 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
     } else {
         OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
         config.damages.reserve(1);
-        OHOS::Rect damage = {
-            .x = 0,
-            .y = 0,
-            .w = windowConfig.width,
-            .h = windowConfig.height,
-        };
+        OHOS::Rect damage = {.x = 0, .y = 0, .w = windowConfig.width, .h = windowConfig.height};
         config.damages.emplace_back(damage);
         config.timestamp = buffer->uiTimestamp;
     }

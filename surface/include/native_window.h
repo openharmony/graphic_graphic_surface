@@ -23,6 +23,7 @@
 #include <surface_buffer.h>
 #include <unordered_map>
 #include <atomic>
+#include <mutex>
 
 struct SURFACE_HIDDEN NativeWindowMagic : public OHOS::RefBase {
     NativeWindowMagic(NativeObjectMagic m) : magic(m) {}
@@ -40,6 +41,7 @@ struct NativeWindow : public NativeWindowMagic {
     std::atomic<int64_t> desiredPresentTimestamp{0};
     char* appFrameworkType_ = nullptr;
     std::once_flag appFrameworkTypeOnceFlag_;
+    std::mutex mutex_;
 };
 
 struct NativeWindowBuffer : public NativeWindowMagic {

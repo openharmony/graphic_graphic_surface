@@ -200,6 +200,7 @@ void ProducerSurface::DeleteCacheBufferLocked(sptr<BufferExtraData>& bedataimpl,
         bufferProducerCache_.erase(seqNum);
         auto spNativeWindow = wpNativeWindow_.promote();
         if (spNativeWindow != nullptr) {
+            std::lock_guard<std::mutex> lockGuard(spNativeWindow->mutex_);
             auto& bufferCache = spNativeWindow->bufferCache_;
             auto iter = bufferCache.find(seqNum);
             if (iter != bufferCache.end()) {
@@ -755,6 +756,7 @@ void ProducerSurface::CleanAllLocked(uint32_t *bufSeqNum)
     bufferProducerCache_.clear();
     auto spNativeWindow = wpNativeWindow_.promote();
     if (spNativeWindow != nullptr) {
+        std::lock_guard<std::mutex> lockGuard(spNativeWindow->mutex_);
         auto& bufferCache = spNativeWindow->bufferCache_;
         for (auto& [seqNum, buffer] : bufferCache) {
             NativeObjectUnreference(buffer);

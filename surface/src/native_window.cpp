@@ -993,7 +993,7 @@ NativeWindow::~NativeWindow()
     }
 
     {
-        std::lock_guard<std::mutex> lockGuard(window->mutex_);
+        std::lock_guard<std::mutex> lockGuard(mutex_);
         for (auto &[seqNum, buffer] : bufferCache_) {
             NativeObjectUnreference(buffer);
         }

@@ -122,7 +122,20 @@ GSError WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages con
     return GSERROR_OK;
 }
 
-GSError WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer)
+GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
+{
+    GSError ret = GSERROR_OK;
+    sequence = parcel.ReadUint32();
+    if (parcel.ReadBool()) {
+        buffer = new SurfaceBufferImpl(sequence);
+        ret = buffer->ReadFromMessageParcel(parcel, readSafeFdFunc);
+    }
+    return ret;
+}
+
+GSError WriteSurfaceBufferImpl(MessageParcel &parcel,
+    uint32_t sequence, const sptr<SurfaceBuffer> &buffer)
 {
     if (!parcel.WriteUint32(sequence)) {
         return GSERROR_BINDER;
@@ -134,18 +147,6 @@ GSError WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const s
         return buffer->WriteToMessageParcel(parcel);
     }
     return GSERROR_OK;
-}
-
-GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
-    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
-{
-    GSError ret = GSERROR_OK;
-    sequence = parcel.ReadUint32();
-    if (parcel.ReadBool()) {
-        buffer = new SurfaceBufferImpl(sequence);
-        ret = buffer->ReadFromMessageParcel(parcel, readSafeFdFunc);
-    }
-    return ret;
 }
 
 void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInfo> &infos)
@@ -359,8 +360,8 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     }
 }
 
-void WriteToFile(std::string prefixPath, std::string pid, void* dest,
-    size_t size, int32_t format, int32_t width, int32_t height, const std::string name)
+void WriteToFile(std::string prefixPath, std::string pid, void* dest,size_t size, int32_t format, int32_t width,
+    int32_t height, const std::string name)
 {
     if (dest == nullptr) {
         BLOGE("dest is nulltr");

@@ -619,7 +619,11 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    auto pid = static_cast<pid_t>(arguments.ReadInt64());
+    int64_t id = -1;
+    if (!arguments.ReadInt64(id)) {
+        return ERR_INVALID_REPLY;
+    }
+    auto pid = static_cast<pid_t>(arguments.ReadInt64(id));
     GSError sRet = RegisterPropertyListener(listener, pid);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -630,7 +634,11 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
 int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    auto id = static_cast<pid_t>(arguments.ReadInt64());
+    int64_t pid = -1;
+    if (!arguments.ReadInt64(pid)) {
+        return ERR_INVALID_REPLY;
+    }
+    auto id = static_cast<pid_t>(arguments.ReadInt64(pid));
     GSError sRet = UnRegisterPropertyListener(id);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -856,7 +864,11 @@ int32_t BufferQueueProducer::SetTransformHintRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     GraphicTransformType transformHint = static_cast<GraphicTransformType>(arguments.ReadUint32());
-    auto id = arguments.ReadUint64();
+    int64_t pid = -1;
+    if (!arguments.ReadUint64(pid)) {
+        eturn ERR_INVALID_REPLY;
+    }
+    auto id = arguments.ReadUint64(pid);
     GSError sRet = SetTransformHint(transformHint, id);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;

@@ -1660,7 +1660,6 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64
     for (auto& item: propertyListeners) {
         SURFACE_TRACE_NAME_FMT("propertyListeners %u, val %d", item.first, (int)property.transformHint);
         if (producerId == item.first) {
-            SURFACE_TRACE_NAME_FMT("propertyListeners skip fromId");
             continue;
         }
         if (item.second->OnPropertyChange(property) != GSERROR_OK) {

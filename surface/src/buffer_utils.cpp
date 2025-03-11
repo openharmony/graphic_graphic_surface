@@ -483,7 +483,7 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
     return GSERROR_OK;
 }
 
-GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId, 
+GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId,
     std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
 {
     if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum_) {
@@ -496,7 +496,7 @@ GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener, uin
     return GSERROR_OK;
 }
 
-GSError BufferUtilUnRegisterPropertyListener(uint64_t producerId, 
+GSError BufferUtilUnRegisterPropertyListener(uint64_t producerId,
     std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
 {
     propertyChangeListeners_.erase(producerId);
@@ -513,7 +513,9 @@ bool isBufferUtilPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t 
     }
     return false;
 }
-GSError BufferUtilGetCycleBuffersNumber(uint32& cycleBuffersNumber, uint32_t rotatingBufferNumber_, uint32_t bufferQueueSize_)
+
+GSError BufferUtilGetCycleBuffersNumber(uint32& cycleBuffersNumber, uint32_t rotatingBufferNumber_,
+    uint32_t bufferQueueSize_)
 {
     if (rotatingBufferNumber_ == 0) {
         cycleBuffersNumber = bufferQueueSize_;
@@ -522,6 +524,4 @@ GSError BufferUtilGetCycleBuffersNumber(uint32& cycleBuffersNumber, uint32_t rot
     }
     return GSERROR_OK;
 }
-} // namespace OHOS
-
 } // namespace OHOS

@@ -189,18 +189,21 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
         return ret;
     }
     uint32_t seqNum = sfbuffer->GetSeqNum();
-    auto iter = window->bufferCache_.find(seqNum);
-    if (iter == window->bufferCache_.end()) {
-        OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
-        nwBuffer->sfbuffer = sfbuffer;
-        nwBuffer->uiTimestamp = window->uiTimestamp;
-        *buffer = nwBuffer;
-        // Add to cache
-        NativeObjectReference(nwBuffer);
-        window->bufferCache_[seqNum] = nwBuffer;
-    } else {
-        *buffer = iter->second;
-        (*buffer)->uiTimestamp = window->uiTimestamp;
+    {
+        std::lock_guard<std::mutex> lockGuard(window->mutex_);
+        auto iter = window->bufferCache_.find(seqNum);
+        if (iter == window->bufferCache_.end()) {
+            OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
+            nwBuffer->sfbuffer = sfbuffer;
+            nwBuffer->uiTimestamp = window->uiTimestamp;
+            *buffer = nwBuffer;
+            // Add to cache
+            NativeObjectReference(nwBuffer);
+            window->bufferCache_[seqNum] = nwBuffer;
+        } else {
+            *buffer = iter->second;
+            (*buffer)->uiTimestamp = window->uiTimestamp;
+        }
     }
     *fenceFd = releaseFence->Dup();
     return OHOS::SURFACE_ERROR_OK;
@@ -250,12 +253,15 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         return ret;
     }
 
-    auto it = std::find_if(window->bufferCache_.begin(), window->bufferCache_.end(),
-        [buffer](const std::pair<uint32_t, NativeWindowBuffer*>& element) {
-            return element.second == buffer;
-        });
-    if (it != window->bufferCache_.end()) {
-        window->lastBufferSeqNum = it->first;
+    {
+        std::lock_guard<std::mutex> lockGuard(window->mutex_);
+        auto it = std::find_if(window->bufferCache_.begin(), window->bufferCache_.end(),
+            [buffer](const std::pair<uint32_t, NativeWindowBuffer*>& element) {
+                return element.second == buffer;
+            });
+        if (it != window->bufferCache_.end()) {
+            window->lastBufferSeqNum = it->first;
+        }
     }
 
     return OHOS::SURFACE_ERROR_OK;
@@ -986,11 +992,14 @@ NativeWindow::~NativeWindow()
         utils->RemoveNativeWindow(surface->GetUniqueId());
     }
 
-    for (auto &[seqNum, buffer] : bufferCache_) {
-        NativeObjectUnreference(buffer);
+    {
+        std::lock_guard<std::mutex> lockGuard(window->mutex_);
+        for (auto &[seqNum, buffer] : bufferCache_) {
+            NativeObjectUnreference(buffer);
+        }
+        surface = nullptr;
+        bufferCache_.clear();
     }
-    surface = nullptr;
-    bufferCache_.clear();
     std::call_once(appFrameworkTypeOnceFlag_, [] {});
     if (appFrameworkType_ != nullptr) {
         delete[] appFrameworkType_;

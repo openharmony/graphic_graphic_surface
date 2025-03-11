@@ -2222,7 +2222,7 @@ GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, Buf
 GSError BufferQueue::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    return BufferUtilGetCycleBuffersNumber(cycleBuffersNumber, rotatingBufferNumber_, bufferQueueSize_)
+    return BufferUtilGetCycleBuffersNumber(cycleBuffersNumber, rotatingBufferNumber_, bufferQueueSize_);
 }
 
 GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)

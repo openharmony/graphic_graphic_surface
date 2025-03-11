@@ -486,7 +486,8 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
 GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId,
     std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_)
 {
-    if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum_) {
+    const size_t propertyChangeListenerMaxNum = 50;
+    if (propertyChangeListeners_.size() > propertyChangeListenerMaxNum) {
         return GSERROR_API_FAILED;
     }
 
@@ -508,13 +509,14 @@ bool isBufferUtilPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t 
     if (desiredPresentTimestamp <= expectPresentTimestamp) {
         return true;
     }
-    if (desiredPresentTimestamp - ONE_SECOND_TIMESTAMP > expectPresentTimestamp) {
+    uint32_t oneSecondTimestamp = 1e9;
+    if (desiredPresentTimestamp - oneSecondTimestamp > expectPresentTimestamp) {
         return true;
     }
     return false;
 }
 
-GSError BufferUtilGetCycleBuffersNumber(uint32& cycleBuffersNumber, uint32_t rotatingBufferNumber_,
+GSError BufferUtilGetCycleBuffersNumber(uint32_t& cycleBuffersNumber, uint32_t rotatingBufferNumber_,
     uint32_t bufferQueueSize_)
 {
     if (rotatingBufferNumber_ == 0) {

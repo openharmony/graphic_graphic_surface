@@ -20,6 +20,7 @@
 #include <message_parcel.h>
 #include "surface_type.h"
 #include <surface_tunnel_handle.h>
+#include <ibuffer_producer.h>
 
 #include "surface_buffer.h"
 

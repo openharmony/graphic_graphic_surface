@@ -164,7 +164,7 @@ protected:
 };
 
 struct SurfaceProperty {
-        GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
 };
 
 using OnReleaseFunc = std::function<GSError(sptr<SurfaceBuffer> &)>;

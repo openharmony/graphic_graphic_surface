@@ -360,7 +360,7 @@ void CloneBuffer(uint8_t* dest, const uint8_t* src, size_t totalSize)
     }
 }
 
-void WriteToFile(std::string prefixPath, std::string pid, void* dest,size_t size, int32_t format, int32_t width,
+void WriteToFile(std::string prefixPath, std::string pid, void* dest, size_t size, int32_t format, int32_t width,
     int32_t height, const std::string name)
 {
     if (dest == nullptr) {

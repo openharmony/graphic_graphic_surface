@@ -120,7 +120,8 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer001(sptr<IBufferProd
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess001(int32_t *pipeRead, int32_t *pipeWrite, sptr<IBufferProducer> producer)
+int32_t NativeWindowTest::ThreadNativeWindowProcess001(int32_t *pipeRead, int32_t *pipeWrite,
+    sptr<IBufferProducer> producer)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
@@ -242,7 +243,8 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer002(sptr<IBufferProd
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess002(int32_t *pipeRead, int32_t *pipeWrite, sptr<IBufferProducer> producer)
+int32_t NativeWindowTest::ThreadNativeWindowProcess002(int32_t *pipeRead, int32_t *pipeWrite,
+    sptr<IBufferProducer> producer)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;

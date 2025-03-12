@@ -49,11 +49,11 @@ static inline GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestCon
 }
 
 GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config);
-GSError WriteFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages const & config);
+GSError WriteFlushConfig(MessageParcel &parcel, const BufferFlushConfigWithDamages & config);
 
-GSError WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer);
 GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr);
+GSError WriteSurfaceBufferImpl(MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer);
 
 void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInfo> &infos);
 GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos);

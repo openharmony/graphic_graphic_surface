@@ -265,7 +265,8 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     }
     (void)GetProducerInitInfo(info);
     if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
-        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList) || !reply.WriteString(info.bufferName)) {
+        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList) || !reply.WriteString(info.bufferName) ||
+        !reply.WriteUint64(info.producerId) || !reply.WriteInt32(info.transformHint)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 

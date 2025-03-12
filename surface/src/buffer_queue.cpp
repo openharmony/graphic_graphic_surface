@@ -109,6 +109,7 @@ uint32_t BufferQueue::GetUsedSize()
 
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
+    static uint64_t producerId = 1; // producerId start from 1; 0 resvered for comsumer
     std::lock_guard<std::mutex> lockGuard(mutex_);
     info.name = name_;
     info.width = defaultWidth_;
@@ -116,6 +117,8 @@ GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
     info.uniqueId = uniqueId_;
     info.isInHebcList = HebcWhiteList::GetInstance().Check(info.appName);
     info.bufferName = bufferName_;
+    info.producerId = producerId++;
+    info.transformHint = transformHint_;
     return GSERROR_OK;
 }
 
@@ -902,13 +905,7 @@ void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
 
 bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp)
 {
-    if (desiredPresentTimestamp <= expectPresentTimestamp) {
-        return true;
-    }
-    if (desiredPresentTimestamp - ONE_SECOND_TIMESTAMP > expectPresentTimestamp) {
-        return true;
-    }
-    return false;
+    return isBufferUtilPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
 }
 
 void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence)
@@ -1421,6 +1418,18 @@ GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> lis
     return GSERROR_OK;
 }
 
+GSError BufferQueue::RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t producerId)
+{
+    std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
+    return BufferUtilRegisterPropertyListener(listener, producerId, propertyChangeListeners_);
+}
+
+GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t producerId)
+{
+    std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
+    return BufferUtilUnRegisterPropertyListener(producerId, propertyChangeListeners_);
+}
+
 GSError BufferQueue::RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
@@ -1626,10 +1635,37 @@ GraphicTransformType BufferQueue::GetTransform() const
     return transform_;
 }
 
-GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint)
+GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64_t producerId)
 {
-    std::unique_lock<std::mutex> lock(mutex_);
-    transformHint_ = transformHint;
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (transformHint_ != transformHint) {
+            transformHint_ = transformHint;
+        } else {
+            return GSERROR_OK;
+        }
+    }
+
+    std::map<uint64_t, sptr<IProducerListener>> propertyListeners;
+    {
+        std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
+        if (propertyChangeListeners_.empty()) {
+            return GSERROR_OK;
+        }
+        propertyListeners = propertyChangeListeners_;
+    }
+    SurfaceProperty property = {
+        .transformHint = transformHint,
+    };
+    for (const auto& item: propertyListeners) {
+        SURFACE_TRACE_NAME_FMT("propertyListeners %u, val %d", item.first, (int)property.transformHint);
+        if (producerId == item.first) {
+            continue;
+        }
+        if (item.second->OnPropertyChange(property) != GSERROR_OK) {
+            BLOGE("OnPropertyChange failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        }
+    }
     return GSERROR_OK;
 }
 
@@ -2186,12 +2222,7 @@ GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, Buf
 GSError BufferQueue::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (rotatingBufferNumber_ == 0) {
-        cycleBuffersNumber = bufferQueueSize_;
-    } else {
-        cycleBuffersNumber = rotatingBufferNumber_;
-    }
-    return GSERROR_OK;
+    return BufferUtilGetCycleBuffersNumber(cycleBuffersNumber, rotatingBufferNumber_, bufferQueueSize_);
 }
 
 GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)

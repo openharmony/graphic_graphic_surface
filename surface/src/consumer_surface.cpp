@@ -556,7 +556,7 @@ GSError ConsumerSurface::SetTransformHint(GraphicTransformType transformHint)
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return producer_->SetTransformHint(transformHint);
+    return producer_->SetTransformHint(transformHint, 0); // broadcast to all producerSurfaces
 }
 
 GSError ConsumerSurface::SetSurfaceSourceType(OHSurfaceSource sourceType)

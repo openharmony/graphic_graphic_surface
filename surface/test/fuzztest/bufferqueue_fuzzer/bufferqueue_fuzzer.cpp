@@ -146,7 +146,7 @@ namespace OHOS {
         GraphicTransformType transformType = GetData<GraphicTransformType>();
         bufferqueue->SetTransform(transformType);
         bufferqueue->GetTransform();
-        bufferqueue->SetTransformHint(transformType);
+        bufferqueue->SetTransformHint(transformType, GetData<uint64_t>());
         bufferqueue->GetSurfaceSourceType();
         float brightness = GetData<float>();
         bufferqueue->SetHdrWhitePointBrightness(brightness);

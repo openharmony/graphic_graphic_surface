@@ -99,6 +99,8 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, SetRotatingBuffersNumberRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT_STRICTLY, DisconnectStrictlyRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT_STRICTLY, ConnectStrictlyRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER, RegisterPropertyListenerRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER, UnRegisterPropertyListenerRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -263,7 +265,8 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     }
     (void)GetProducerInitInfo(info);
     if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
-        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList) || !reply.WriteString(info.bufferName)) {
+        !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList) || !reply.WriteString(info.bufferName) ||
+        !reply.WriteUint64(info.producerId) || !reply.WriteInt32(info.transformHint)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
@@ -606,6 +609,44 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
+    if (listenerObject == nullptr) {
+        if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_REPLY;
+    }
+    sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    int64_t id = -1;
+    if (!arguments.ReadInt64(id)) {
+        return ERR_INVALID_REPLY;
+    }
+    auto pid = static_cast<pid_t>(id);
+    GSError sRet = RegisterPropertyListener(listener, pid);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    int64_t pid = -1;
+    if (!arguments.ReadInt64(pid)) {
+        return ERR_INVALID_REPLY;
+    }
+    auto id = static_cast<pid_t>(pid);
+    GSError sRet = UnRegisterPropertyListener(id);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
 int32_t BufferQueueProducer::RegisterReleaseListenerBackupRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
@@ -823,8 +864,16 @@ int32_t BufferQueueProducer::GetTransformRemote(
 int32_t BufferQueueProducer::SetTransformHintRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    GraphicTransformType transformHint = static_cast<GraphicTransformType>(arguments.ReadUint32());
-    GSError sRet = SetTransformHint(transformHint);
+    uint32_t transformId = -1;
+    if (!arguments.ReadUint32(transformId)) {
+        return ERR_INVALID_REPLY;
+    }
+    GraphicTransformType transformHint = static_cast<GraphicTransformType>(transformId);
+    uint64_t id = -1;
+    if (!arguments.ReadUint64(id)) {
+        return ERR_INVALID_REPLY;
+    }
+    GSError sRet = SetTransformHint(transformHint, id);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1349,6 +1398,22 @@ GSError BufferQueueProducer::GoBackground()
     return bufferQueue_->SetProducerCacheCleanFlag(true);
 }
 
+GSError BufferQueueProducer::RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->RegisterProducerPropertyListener(listener, producerId);
+}
+
+GSError BufferQueueProducer::UnRegisterPropertyListener(uint64_t producerId)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->UnRegisterProducerPropertyListener(producerId);
+}
+
 GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> listener)
 {
     if (bufferQueue_ == nullptr) {
@@ -1411,13 +1476,13 @@ GSError BufferQueueProducer::GetTransform(GraphicTransformType &transform)
     return GSERROR_OK;
 }
 
-GSError BufferQueueProducer::SetTransformHint(GraphicTransformType transformHint)
+GSError BufferQueueProducer::SetTransformHint(GraphicTransformType transformHint, uint64_t fromId)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->SetTransformHint(transformHint);
+    return bufferQueue_->SetTransformHint(transformHint, fromId);
 }
 
 GSError BufferQueueProducer::GetTransformHint(GraphicTransformType &transformHint)

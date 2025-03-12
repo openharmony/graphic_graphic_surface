@@ -14,7 +14,6 @@
  */
 
 #include "buffer_utils.h"
-
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -30,15 +29,6 @@
 namespace OHOS {
 namespace {
 constexpr size_t BLOCK_SIZE = 1024 * 1024; // 1 MB block size
-}
-void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
-{
-    fd = parcel.ReadInt32();
-    if (fd < 0) {
-        return;
-    }
-
-    fd = parcel.ReadFileDescriptor();
 }
 
 GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
@@ -77,18 +67,6 @@ void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
     if (config.transform < GRAPHIC_ROTATE_NONE || config.transform > GRAPHIC_ROTATE_BUTT) {
         config.transform = GRAPHIC_ROTATE_BUTT;
     }
-}
-
-GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const & config)
-{
-    if (!parcel.WriteInt32(config.width) || !parcel.WriteInt32(config.height) ||
-        !parcel.WriteInt32(config.strideAlignment) || !parcel.WriteInt32(config.format) ||
-        !parcel.WriteUint64(config.usage) || !parcel.WriteInt32(config.timeout) ||
-        !parcel.WriteInt32(static_cast<int32_t>(config.colorGamut)) ||
-        !parcel.WriteInt32(static_cast<int32_t>(config.transform))) {
-        return GSERROR_BINDER;
-    }
-    return GSERROR_OK;
 }
 
 GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config)

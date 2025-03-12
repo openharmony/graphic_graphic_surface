@@ -124,6 +124,8 @@ public:
     GSError UnRegisterProducerReleaseListenerBackup();
     GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false);
     GSError UnregisterConsumerListener();
+    GSError RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t producerId);
+    GSError UnRegisterProducerPropertyListener(uint64_t producerId);
 
     GSError SetDefaultWidthAndHeight(int32_t width, int32_t height);
     int32_t GetDefaultWidth();
@@ -176,6 +178,7 @@ public:
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType);
     GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool isReserveSlot);
 
+    GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId);
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;
     GSError SetScalingMode(ScalingMode scalingMode);
@@ -267,6 +270,7 @@ private:
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
     GSError CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata);
+    void DumpPropertyListener();
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
@@ -286,12 +290,15 @@ private:
     mutable std::mutex mutex_;
     std::mutex listenerMutex_;
     std::mutex producerListenerMutex_;
+    std::mutex propertyChangeMutex_;
     const uint64_t uniqueId_;
     std::string bufferName_ = "";
     OnReleaseFunc onBufferRelease_ = nullptr;
     std::mutex onBufferReleaseMutex_;
     sptr<IProducerListener> producerListener_ = nullptr;
     sptr<IProducerListener> producerListenerBackup_ = nullptr;
+    const size_t propertyChangeListenerMaxNum_ = 50; // 50 : limit producer num
+    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners_;
     OnDeleteBufferFunc onBufferDeleteForRSMainThread_;
     OnDeleteBufferFunc onBufferDeleteForRSHardwareThread_;
     std::condition_variable waitReqCon_;

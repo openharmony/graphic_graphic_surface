@@ -56,6 +56,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
     producer_ = producer;
     GetProducerInitInfo(initInfo_);
+    lastSetTransformHint_ = static_cast<GraphicTransformType>(initInfo_.transformHint);
     windowConfig_.width = initInfo_.width;
     windowConfig_.height = initInfo_.height;
     windowConfig_.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
@@ -66,11 +67,14 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
         " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
+    RegisterPropertyListenerInner([this](SurfaceProperty property) { return PropertyChangeCallback(property); },
+        initInfo_.producerId);
 }
 
 ProducerSurface::~ProducerSurface()
 {
     BLOGD("~ProducerSurface dtor, name: %{public}s, uniqueId: %{public}" PRIu64 ".", name_.c_str(), queueId_);
+    UnRegisterPropertyListenerInner(initInfo_.producerId);
     Disconnect();
     auto utils = SurfaceUtils::GetInstance();
     utils->Remove(GetUniqueId());
@@ -531,7 +535,13 @@ GSError ProducerSurface::SetTransformHint(GraphicTransformType transformHint)
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    GSError err = producer_->SetTransformHint(transformHint);
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (lastSetTransformHint_ == transformHint) {
+            return GSERROR_OK;
+        }
+    }
+    GSError err = producer_->SetTransformHint(transformHint, initInfo_.producerId);
     if (err == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         lastSetTransformHint_ = transformHint;
@@ -658,6 +668,41 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
         listener = listener_;
     }
     return producer_->RegisterReleaseListener(listener);
+}
+
+GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    lastSetTransformHint_ = property.transformHint;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::RegisterPropertyListenerInner(OnPropertyChangeFunc func, uint64_t producerId)
+{
+    if (func == nullptr || producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sptr<IProducerListener> listener;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        propertyListener_ = new PropertyChangeProducerListener(func);
+        listener = propertyListener_;
+    }
+    return producer_->RegisterPropertyListener(listener, producerId);
+}
+
+GSError ProducerSurface::UnRegisterPropertyListenerInner(uint64_t producerId)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        if (propertyListener_ != nullptr) {
+            propertyListener_->ResetReleaseFunc();
+        }
+    }
+    return producer_->UnRegisterPropertyListener(producerId);
 }
 
 GSError ProducerSurface::RegisterReleaseListenerBackup(OnReleaseFuncWithFence funcWithFence)

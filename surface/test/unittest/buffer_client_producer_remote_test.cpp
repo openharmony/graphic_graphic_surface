@@ -772,4 +772,33 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
 }
+
+/*
+* Function: RegisterPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterPropertyListener
+*/
+HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, Function | MediumTest | Level2)
+{
+    OnReleaseFunc onBufferRelease = nullptr;
+    sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
+    GSError ret = bp->RegisterPropertyListener(listener, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+
+/*
+* Function: UnRegisterPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call UnRegisterPropertyListener
+*/
+HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, Function | MediumTest | Level2)
+{
+    GSError ret = bp->UnRegisterPropertyListener(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
 }

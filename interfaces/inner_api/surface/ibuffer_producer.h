@@ -89,6 +89,9 @@ public:
         return GSERROR_OK;
     }
 
+    virtual GSError RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId) =0;
+    virtual GSError UnRegisterPropertyListener(uint64_t producerId) = 0;
+
     virtual GSError SetTransform(GraphicTransformType transform) = 0;
 
     virtual GSError Connect() = 0;
@@ -122,7 +125,7 @@ public:
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
-    virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+    virtual GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
 
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
@@ -260,6 +263,8 @@ protected:
         BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER,
         BUFFER_PRODUCER_CONNECT_STRICTLY,
         BUFFER_PRODUCER_DISCONNECT_STRICTLY,
+        BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER,
+        BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER,
     };
 };
 } // namespace OHOS

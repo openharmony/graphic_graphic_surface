@@ -164,6 +164,9 @@ public:
     */
     GSError DisconnectStrictly() override;
 private:
+    GSError PropertyChangeCallback(const SurfaceProperty& property);
+    GSError RegisterPropertyListenerInner(OnPropertyChangeFunc func, uint64_t producerId);
+    GSError UnRegisterPropertyListenerInner(uint64_t producerId);
     bool IsRemote();
     void CleanAllLocked(uint32_t *bufSeqNum);
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
@@ -187,6 +190,7 @@ private:
     uint64_t queueId_ = 0;
     bool isDisconnected_ = true;
     sptr<IProducerListener> listener_;
+    sptr<IProducerListener> propertyListener_;
     sptr<IProducerListener> listenerBackup_;
     std::mutex listenerMutex_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;

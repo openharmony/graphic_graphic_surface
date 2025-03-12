@@ -865,7 +865,7 @@ int32_t BufferQueueProducer::SetTransformHintRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     uint32_t transformId = -1;
-    if (arguments.ReadUint32(transformId)) {
+    if (!arguments.ReadUint32(transformId)) {
         return ERR_INVALID_REPLY;
     }
     GraphicTransformType transformHint = static_cast<GraphicTransformType>(transformId);

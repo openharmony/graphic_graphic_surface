@@ -35,35 +35,36 @@ public:
     bool GetData(sptr<SurfaceBuffer> &buffer);
 
     // OH_NativeWindow_CreateNativeWindow001
-    int32_t ThreadNativeWindowProcess001(int32_t *pipeFd, sptr<IBufferProducer> producer);
+    int32_t ThreadNativeWindowProcess001(int32_t *pipeRead, int32_t *pipeWrite, sptr<IBufferProducer> producer);
     int32_t CreateNativeWindowAndRequestBuffer001(sptr<IBufferProducer> producer, NativeWindow **nativeWindow);
 
     // OH_NativeWindow_CreateNativeWindow002
-    int32_t ThreadNativeWindowProcess002(int32_t *pipeFd, sptr<IBufferProducer> producer);
+    int32_t ThreadNativeWindowProcess002(int32_t *pipeRead, int32_t *pipeWrite, sptr<IBufferProducer> producer);
     int32_t CreateNativeWindowAndRequestBuffer002(sptr<IBufferProducer> producer, NativeWindow **nativeWindow);
 
     // OH_NativeWindow_CreateNativeWindowFromSurfaceId001
-    int32_t ThreadNativeWindowProcess003(int32_t *pipeFd, uint64_t uniqueId);
+    int32_t ThreadNativeWindowProcess003(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId);
     int32_t CreateNativeWindowAndRequestBuffer003(uint64_t uniqueId, NativeWindow **nativeWindow);
 
     // OH_NativeWindow_CreateNativeWindowFromSurfaceId002
-    int32_t ThreadNativeWindowProcess004(int32_t *pipeFd, uint64_t uniqueId);
+    int32_t ThreadNativeWindowProcess004(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId);
     int32_t CreateNativeWindowAndRequestBuffer004(uint64_t uniqueId, NativeWindow **nativeWindow);
     int32_t RequestBuffer001(NativeWindow *nativeWindow);
 
     // OH_NativeWindow_GetLastFlushedBufferV2001
-    int32_t ThreadNativeWindowProcess005(int32_t *pipeFd, uint64_t uniqueId);
+    int32_t ThreadNativeWindowProcess005(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId);
     int32_t CreateNativeWindowAndRequestBuffer005(uint64_t uniqueId, NativeWindow **nativeWindow);
 
     // OH_NativeWindow_NativeObjectReference001
-    int32_t ThreadNativeWindowProcess006(int32_t *pipeFd, uint64_t uniqueId);
+    int32_t ThreadNativeWindowProcess006(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId);
 
     // OH_NativeWindow_GetSurfaceId001
-    int32_t ThreadNativeWindowProcess007(int32_t *pipeFd, sptr<IBufferProducer> producer, uint64_t *uniqueId);
+    int32_t ThreadNativeWindowProcess007(int32_t *pipeRead, int32_t *pipeWrite,
+        sptr<IBufferProducer> producer, uint64_t *uniqueId);
     int32_t CreateNativeWindowAndRequestBuffer007(sptr<IBufferProducer> producer, NativeWindow **nativeWindow);
 
     // OH_NativeWindow_NativeWindowAttachBuffer001
-    int32_t ThreadNativeWindowProcess008(int32_t *pipeFd, uint64_t uniqueId);
+    int32_t ThreadNativeWindowProcess008(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId);
     int32_t CreateNativeWindowAndRequestBuffer008(uint64_t uniqueId, NativeWindow **nativeWindow);
     int32_t CreateNativeWindowAndAttachBuffer001(NativeWindow *nativeWindow);
 
@@ -119,41 +120,42 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer001(sptr<IBufferProd
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess001(int32_t *pipeFd, sptr<IBufferProducer> producer)
+int32_t NativeWindowTest::ThreadNativeWindowProcess001(int32_t *pipeRead, int32_t *pipeWrite, sptr<IBufferProducer> producer)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer001(producer, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     return 0;
 }
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindow001");
     cSurface->RegisterConsumerListener(this);
     auto producer = cSurface->GetProducer();
 
-    std::thread thread([this, pipeFd, producer]() {
-        int32_t ret = this->ThreadNativeWindowProcess001((int32_t*)(pipeFd), producer);
+    std::thread thread([this, pipeRead, pipeWrite, producer]() {
+        int32_t ret = this->ThreadNativeWindowProcess001((int32_t*)pipeRead, (int32_t*)pipeWrite, producer);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -167,12 +169,14 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, Function | Med
     ret = cSurface->ReleaseBuffer(buffer, -1);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -238,41 +242,42 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer002(sptr<IBufferProd
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess002(int32_t *pipeFd, sptr<IBufferProducer> producer)
+int32_t NativeWindowTest::ThreadNativeWindowProcess002(int32_t *pipeRead, int32_t *pipeWrite, sptr<IBufferProducer> producer)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer002(producer, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     return 0;
 }
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindow002");
     cSurface->RegisterConsumerListener(this);
     auto producer = cSurface->GetProducer();
 
-    std::thread thread([this, pipeFd, producer]() {
-        int32_t ret = this->ThreadNativeWindowProcess002((int32_t*)(pipeFd), producer);
+    std::thread thread([this, pipeRead, pipeWrite, producer]() {
+        int32_t ret = this->ThreadNativeWindowProcess002((int32_t*)pipeRead, (int32_t*)pipeWrite, producer);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -287,12 +292,14 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, Function | Med
     ret = cSurface->ReleaseBuffer(buffer, -1);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -341,29 +348,30 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer003(uint64_t uniqueI
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess003(int32_t *pipeFd, uint64_t uniqueId)
+int32_t NativeWindowTest::ThreadNativeWindowProcess003(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer003(uniqueId, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     return 0;
 }
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId001, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface =
         IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindowFromSurfaceId001");
@@ -374,13 +382,13 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId001, F
     EXPECT_EQ(cSurface->SetQueueSize(QUEUE_SIZE), OHOS::GSERROR_OK);
 
     uint64_t uniqueId = cSurface->GetUniqueId();
-    std::thread thread([this, pipeFd, uniqueId]() {
-        int32_t ret = this->ThreadNativeWindowProcess003((int32_t*)(pipeFd), uniqueId);
+    std::thread thread([this, pipeRead, pipeWrite, uniqueId]() {
+        int32_t ret = this->ThreadNativeWindowProcess003((int32_t*)pipeRead, (int32_t*)pipeWrite, uniqueId);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -400,12 +408,14 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId001, F
     }
 
     g_onBufferAvailable_ = 0;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -486,37 +496,38 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer004(uint64_t uniqueI
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess004(int32_t *pipeFd, uint64_t uniqueId)
+int32_t NativeWindowTest::ThreadNativeWindowProcess004(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer004(uniqueId, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     ret = RequestBuffer001(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     return 0;
 }
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId002, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface =
         IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindowFromSurfaceId002");
@@ -527,13 +538,13 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId002, F
     EXPECT_EQ(cSurface->SetQueueSize(QUEUE_SIZE), OHOS::GSERROR_OK);
 
     uint64_t uniqueId = cSurface->GetUniqueId();
-    std::thread thread([this, pipeFd, uniqueId]() {
-        int32_t ret = this->ThreadNativeWindowProcess004((int32_t*)(pipeFd), uniqueId);
+    std::thread thread([this, pipeRead, pipeWrite, uniqueId]() {
+        int32_t ret = this->ThreadNativeWindowProcess004((int32_t*)pipeRead, (int32_t*)pipeWrite, uniqueId);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -552,17 +563,18 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId002, F
         g_onBufferAvailable_--;
     }
 
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -625,37 +637,38 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer005(uint64_t uniqueI
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess005(int32_t *pipeFd, uint64_t uniqueId)
+int32_t NativeWindowTest::ThreadNativeWindowProcess005(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer005(uniqueId, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     ret = RequestBuffer001(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     return 0;
 }
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_GetLastFlushedBufferV2001, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create("OH_NativeWindow_GetLastFlushedBufferV2001");
     cSurface->RegisterConsumerListener(this);
@@ -665,13 +678,13 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetLastFlushedBufferV2001, Function |
     EXPECT_EQ(cSurface->SetQueueSize(QUEUE_SIZE), OHOS::GSERROR_OK);
 
     uint64_t uniqueId = cSurface->GetUniqueId();
-    std::thread thread([this, pipeFd, uniqueId]() {
-        int32_t ret = this->ThreadNativeWindowProcess005((int32_t*)(pipeFd), uniqueId);
+    std::thread thread([this, pipeRead, pipeWrite, uniqueId]() {
+        int32_t ret = this->ThreadNativeWindowProcess005((int32_t*)pipeRead, (int32_t*)pipeWrite, uniqueId);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -690,51 +703,51 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetLastFlushedBufferV2001, Function |
         g_onBufferAvailable_--;
     }
 
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess006(int32_t *pipeFd, uint64_t uniqueId)
+int32_t NativeWindowTest::ThreadNativeWindowProcess006(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer005(uniqueId, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     ret = OH_NativeWindow_NativeObjectReference(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     ret = RequestBuffer001(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
     ret = OH_NativeWindow_NativeObjectUnreference(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         return -1;
@@ -744,8 +757,10 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess006(int32_t *pipeFd, uint64_t
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeObjectReference001, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create("OH_NativeWindow_NativeObjectReference001");
     cSurface->RegisterConsumerListener(this);
@@ -755,13 +770,13 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeObjectReference001, Function | 
     EXPECT_EQ(cSurface->SetQueueSize(QUEUE_SIZE), OHOS::GSERROR_OK);
 
     uint64_t uniqueId = cSurface->GetUniqueId();
-    std::thread thread([this, pipeFd, uniqueId]() {
-        int32_t ret = this->ThreadNativeWindowProcess006((int32_t*)(pipeFd), uniqueId);
+    std::thread thread([this, pipeRead, pipeWrite, uniqueId]() {
+        int32_t ret = this->ThreadNativeWindowProcess006((int32_t*)pipeRead, (int32_t*)pipeWrite, uniqueId);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -780,17 +795,18 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeObjectReference001, Function | 
         g_onBufferAvailable_--;
     }
 
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -834,7 +850,7 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer007(sptr<IBufferProd
     return OHOS::GSERROR_OK;
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess007(int32_t *pipeFd,
+int32_t NativeWindowTest::ThreadNativeWindowProcess007(int32_t *pipeRead, int32_t *pipeWrite,
     sptr<IBufferProducer> producer, uint64_t *uniqueId)
 {
     int64_t data;
@@ -842,43 +858,44 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess007(int32_t *pipeFd,
     int32_t ret = CreateNativeWindowAndRequestBuffer007(producer, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     ret = OH_NativeWindow_GetSurfaceId(nativeWindow, uniqueId);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     return 0;
 }
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_GetSurfaceId001, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create("OH_NativeWindow_CreateNativeWindow002");
     cSurface->RegisterConsumerListener(this);
     auto producer = cSurface->GetProducer();
     uint64_t cUniqueId = cSurface->GetUniqueId();
 
-    std::thread thread([this, pipeFd, producer, cUniqueId]() {
+    std::thread thread([this, pipeRead, pipeWrite, producer, cUniqueId]() {
         uint64_t uniqueId = 0;
-        int32_t ret = this->ThreadNativeWindowProcess007((int32_t*)(pipeFd), producer, &uniqueId);
+        int32_t ret = this->ThreadNativeWindowProcess007((int32_t*)pipeRead, (int32_t*)pipeWrite, producer, &uniqueId);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
         EXPECT_EQ(uniqueId, cUniqueId);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -893,12 +910,14 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetSurfaceId001, Function | MediumTes
     ret = cSurface->ReleaseBuffer(buffer, -1);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }
@@ -984,36 +1003,35 @@ int32_t NativeWindowTest::CreateNativeWindowAndRequestBuffer008(uint64_t uniqueI
     return CreateNativeWindowAndAttachBuffer001(*nativeWindow);
 }
 
-int32_t NativeWindowTest::ThreadNativeWindowProcess008(int32_t *pipeFd, uint64_t uniqueId)
+int32_t NativeWindowTest::ThreadNativeWindowProcess008(int32_t *pipeRead, int32_t *pipeWrite, uint64_t uniqueId)
 {
     int64_t data;
     NativeWindow *nativeWindow = nullptr;
     int32_t ret = CreateNativeWindowAndRequestBuffer008(uniqueId, &nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     ret = OH_NativeWindow_NativeObjectReference(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     ret = RequestBuffer001(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeWrite[1], &data, sizeof(data));
         return -1;
     }
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
     ret = OH_NativeWindow_NativeObjectUnreference(nativeWindow);
     if (ret != OHOS::GSERROR_OK) {
         return -1;
@@ -1023,8 +1041,10 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess008(int32_t *pipeFd, uint64_t
 
 HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function | MediumTest | Level2)
 {
-    int32_t pipeFd[2] = {};
-    pipe(pipeFd);
+    int32_t pipeRead[2] = {};
+    int32_t pipeWrite[2] = {};
+    pipe(pipeRead);
+    pipe(pipeWrite);
 
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create("OH_NativeWindow_NativeWindowAttachBuffer001");
     cSurface->RegisterConsumerListener(this);
@@ -1034,13 +1054,13 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function
     EXPECT_EQ(cSurface->SetQueueSize(QUEUE_SIZE), OHOS::GSERROR_OK);
 
     uint64_t uniqueId = cSurface->GetUniqueId();
-    std::thread thread([this, pipeFd, uniqueId]() {
-        int32_t ret = this->ThreadNativeWindowProcess008((int32_t*)(pipeFd), uniqueId);
+    std::thread thread([this, pipeRead, pipeWrite, uniqueId]() {
+        int32_t ret = this->ThreadNativeWindowProcess008((int32_t*)pipeRead, (int32_t*)pipeWrite, uniqueId);
         EXPECT_EQ(ret, OHOS::GSERROR_OK);
     });
 
     int64_t data = 0;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -1059,17 +1079,18 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function
         g_onBufferAvailable_--;
     }
 
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
     EXPECT_EQ(g_onBufferAvailable_, QUEUE_SIZE);
     g_onBufferAvailable_ = 0;
     if (thread.joinable()) {
         thread.join();
     }
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     producer = nullptr;
     cSurface = nullptr;
 }

@@ -1657,7 +1657,7 @@ GSError BufferQueue::SetTransformHint(GraphicTransformType transformHint, uint64
     SurfaceProperty property = {
         .transformHint = transformHint,
     };
-    for (auto& item: propertyListeners) {
+    for (const auto& item: propertyListeners) {
         SURFACE_TRACE_NAME_FMT("propertyListeners %u, val %d", item.first, (int)property.transformHint);
         if (producerId == item.first) {
             continue;

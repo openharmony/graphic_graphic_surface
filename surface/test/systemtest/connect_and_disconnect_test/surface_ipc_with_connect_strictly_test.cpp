@@ -36,7 +36,8 @@ public:
     sptr<OHOS::Surface> CreateSurface();
 
     static inline sptr<IConsumerSurface> cSurface = nullptr;
-    static inline int32_t pipeFd[2] = {};
+    static inline int32_t pipeRead[2] = {};
+    static inline int32_t pipeWrite[2] = {};
     static inline int32_t ipcSystemAbilityID = 34156;
     static inline BufferRequestConfig requestConfig = {};
     static inline BufferFlushConfig flushConfig = {};
@@ -86,14 +87,15 @@ sptr<OHOS::Surface> SurfaceIPCWithConnectStrictlyTest::CreateSurface()
 
 pid_t SurfaceIPCWithConnectStrictlyTest::ChildProcessMain()
 {
-    pipe(pipeFd);
+    pipe(pipeRead);
+    pipe(pipeWrite);
     pid_t pid = fork();
     if (pid != 0) {
         return pid;
     }
 
     int64_t data;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
 
     auto pSurface = CreateSurface();
     pSurface->RegisterReleaseListener(OnBufferRelease);
@@ -112,10 +114,8 @@ pid_t SurfaceIPCWithConnectStrictlyTest::ChildProcessMain()
     sRet = pSurface->FlushBuffer(buffer1, -1, flushConfig);
     EXPECT_EQ(sRet, OHOS::GSERROR_OK);
     data = sRet;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
 
     // Branch2: producer request buffer success when ConnectStricyly(), flush buffer failed with
     //          GSERROR_CONSUMER_DISCONNECTED after disconnect strictly, but producer flush buffer success after
@@ -132,18 +132,18 @@ pid_t SurfaceIPCWithConnectStrictlyTest::ChildProcessMain()
     sRet = pSurface->FlushBuffer(buffer2, -1, flushConfig);
     EXPECT_EQ(sRet, OHOS::GSERROR_OK);
     data = sRet;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
+    write(pipeWrite[1], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
 
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeWrite[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeRead[0], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     pSurface->UnRegisterReleaseListener();
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     exit(0);
     return 0;
 }
@@ -191,9 +191,8 @@ HWTEST_F(SurfaceIPCWithConnectStrictlyTest, BufferIPC001, Function | MediumTest 
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 0;
-    write(pipeFd[1], &data, sizeof(data));
-    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    write(pipeRead[1], &data, sizeof(data));
+    read(pipeWrite[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     // requested 3 buffer in 3 branch
@@ -205,16 +204,17 @@ HWTEST_F(SurfaceIPCWithConnectStrictlyTest, BufferIPC001, Function | MediumTest 
         auto sRet = cSurface->AcquireBuffer(buffer, fence, timestamp, damage);
         EXPECT_EQ(sRet, OHOS::GSERROR_OK);
         EXPECT_NE(buffer, nullptr);
-        write(pipeFd[1], &data, sizeof(data));
-        usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-        read(pipeFd[0], &data, sizeof(data));
+        write(pipeRead[1], &data, sizeof(data));
+        read(pipeWrite[0], &data, sizeof(data));
         EXPECT_EQ(data, OHOS::GSERROR_OK);
     }
 
     //close resource
-    write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    write(pipeRead[1], &data, sizeof(data));
+    close(pipeRead[0]);
+    close(pipeRead[1]);
+    close(pipeWrite[0]);
+    close(pipeWrite[1]);
     sam->RemoveSystemAbility(ipcSystemAbilityID);
     int32_t ret = 0;
     do {

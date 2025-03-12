@@ -23,6 +23,7 @@
 #include <cinttypes>
 #include <unistd.h>
 #include <parameters.h>
+#include <sys/prctl.h>
 
 #include "acquire_fence_manager.h"
 #include "buffer_utils.h"
@@ -81,8 +82,16 @@ static bool IsLocalRender()
     return result;
 }
 
+static bool IsUniRender()
+{
+    char name[32];
+    prctl(PR_GET_NAME, name);
+    return strcmp(name, "RSUniRenderThre") == 0;
+}
+
 BufferQueue::BufferQueue(const std::string &name)
-    : name_(name), uniqueId_(GetUniqueIdImpl()), isLocalRender_(IsLocalRender())
+    : name_(name), uniqueId_(GetUniqueIdImpl()), isLocalRender_(IsLocalRender()),
+    isUniRender_(IsUniRender())
 {
     BLOGD("BufferQueue ctor, uniqueId: %{public}" PRIu64 ".", uniqueId_);
     acquireLastFlushedBufSequence_ = INVALID_SEQUENCE;
@@ -472,7 +481,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     }
 
     SURFACE_TRACE_NAME_FMT("%s:%u", name_.c_str(), retval.sequence);
-    if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isLocalRender_) {
+    if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isUniRender_) {
         static SyncFenceTracker releaseFenceThread("Release Fence");
         releaseFenceThread.TrackFence(retval.fence);
     }
@@ -738,7 +747,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
     lastFlushedDesiredPresentTimeStamp_ = bufferQueueCache_[sequence].desiredPresentTimestamp;
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
-    if (isLocalRender_) {
+    if (isUniRender_) {
         AcquireFenceTracker::TrackFence(fence, traceTag);
     }
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1

@@ -89,9 +89,9 @@ static inline GSError WriteSurfaceProperty(MessageParcel &parcel, const SurfaceP
 }
 
 static inline GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener> listener,
-    uint64_t producerId, std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners)
+    uint64_t producerId, std::map<uint64_t, sptr<IProducerListener>>& propertyChangeListeners)
 {
-    const size_t propertyChangeListenerMaxNum = 50;
+    const size_t propertyChangeListenerMaxNum = 50; // 50 : limit producer num
     if (propertyChangeListeners.size() > propertyChangeListenerMaxNum) {
         return GSERROR_API_FAILED;
     }
@@ -103,7 +103,7 @@ static inline GSError BufferUtilRegisterPropertyListener(sptr<IProducerListener>
 }
 
 static inline GSError BufferUtilUnRegisterPropertyListener(uint64_t producerId,
-    std::map<uint64_t, sptr<IProducerListener>> propertyChangeListeners)
+    std::map<uint64_t, sptr<IProducerListener>>& propertyChangeListeners)
 {
     propertyChangeListeners.erase(producerId);
     return GSERROR_OK;

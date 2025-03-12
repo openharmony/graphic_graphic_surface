@@ -36,7 +36,7 @@ inline void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
 GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd);
 
 void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config);
-static inline GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const & config)
+static inline GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const &config)
 {
     if (!parcel.WriteInt32(config.width) || !parcel.WriteInt32(config.height) ||
         !parcel.WriteInt32(config.strideAlignment) || !parcel.WriteInt32(config.format) ||
@@ -49,7 +49,7 @@ static inline GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestCon
 }
 
 GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config);
-GSError WriteFlushConfig(MessageParcel &parcel, const BufferFlushConfigWithDamages & config);
+GSError WriteFlushConfig(MessageParcel &parcel, const BufferFlushConfigWithDamages &config);
 
 GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr);

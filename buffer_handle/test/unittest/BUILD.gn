@@ -13,7 +13,7 @@
 
 import("//build/test.gni")
 
-module_out_path = "graphic_surface/utils"
+module_out_path = "graphic_surface/graphic_surface/utils"
 
 group("unittest") {
   testonly = true

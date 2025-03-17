@@ -14,7 +14,7 @@
 import("//build/test.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
-module_out_path = "graphic_surface/sync_fence"
+module_out_path = "graphic_surface/graphic_surface/sync_fence"
 
 group("unittest") {
   testonly = true

@@ -307,6 +307,7 @@ private:
     bool isValidStatus_ = true;
     bool producerCacheClean_ = false;
     const bool isLocalRender_;
+    const bool isUniRender_;
     uint32_t lastFlusedSequence_ = 0;
     sptr<SyncFence> lastFlusedFence_;
     wptr<ConsumerSurfaceDelegator> wpCSurfaceDelegator_;

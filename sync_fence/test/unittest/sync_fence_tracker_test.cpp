@@ -185,8 +185,9 @@ HWTEST_F(SyncFenceTrackerTest, WaitFence001, Function | MediumTest | Level2)
 HWTEST_F(SyncFenceTrackerTest, SetBlurSize001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("SetBlurSize001");
+    EXPECT_NE(tracker->handler_, nullptr);
+    tracker->SetBlurSize(0);
     tracker->handler_ = nullptr;
-    ASSERT_EQ(tracker->handler_, nullptr);
     tracker->SetBlurSize(0);
     delete tracker;
 }

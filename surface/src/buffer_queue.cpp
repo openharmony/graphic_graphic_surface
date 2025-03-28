@@ -39,6 +39,8 @@
 #include "surface_trace.h"
 #include "v2_0/buffer_handle_meta_key_type.h"
 
+#define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
+
 namespace OHOS {
 namespace {
 constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
@@ -1581,6 +1583,9 @@ GSError BufferQueue::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
         }
     }
     std::unique_lock<std::mutex> lock(mutex_);
+    if (!cleanAll && bufSeqNum != nullptr) {
+        MarkBufferReclaimableByIdLocked(*bufSeqNum);
+    }
     ClearLocked(lock);
     waitReqCon_.notify_all();
     return GSERROR_OK;
@@ -2244,5 +2249,20 @@ GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     std::lock_guard<std::mutex> lockGuard(mutex_);
     rotatingBufferNumber_ = cycleBuffersNumber;
     return GSERROR_OK;
+}
+
+void BufferQueue::MarkBufferReclaimableByIdLocked(uint32_t sequence)
+{
+    auto it = bufferQueueCache_.find(sequence);
+    if (it != bufferQueueCache_.end()) {
+        auto buffer = bufferQueueCache_[sequence].buffer;
+        if (buffer != nullptr) {
+            SURFACE_TRACE_NAME_FMT("MarkBufferReclaimableByIdLocked name: %s, queueId: %" PRIu64 " fd: %d size: %u",
+                name_.c_str(), uniqueId_, buffer->GetFileDescriptor(), buffer->GetSize());
+            int32_t ret = ioctl(buffer->GetFileDescriptor(), DMA_BUF_SET_TYPE, "last_buffer");
+            BLOGI("MarkBufferReclaimable fd=%{public}d, type=last_buffer, ret=%{public}d",
+                buffer->GetFileDescriptor(), ret);
+        }
+    }
 }
 }; // namespace OHOS

@@ -97,10 +97,15 @@ public:
     void SetBufferDeleteFromCacheFlag(const bool &flag) override;
     bool GetBufferDeleteFromCacheFlag() const  override;
 
+    GSError TryReclaim() override;
+    GSError TryResumeIfNeeded() override;
+    bool IsReclaimed() override;
+
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
     GSError GetImageLayout(void *layout);
+    static void InitMemMgrMembers();
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;
@@ -118,6 +123,13 @@ private:
     std::map<uint32_t, std::vector<uint8_t>> metaDataCache_;
     Rect crop_ = {0, 0, 0, 0};
     std::atomic<bool> isBufferDeleteFromCache = false;
+    std::atomic<bool> isReclaimed_ = false;
+    using MemMgrFunctionPtr = int32_t(*)(int32_t, int32_t);
+    static inline void *libMemMgrClientHandle_ = nullptr;
+    static inline MemMgrFunctionPtr reclaimFunc_ = nullptr;
+    static inline MemMgrFunctionPtr resumeFunc_ = nullptr;
+    static inline int32_t ownPid_ = -1;
+    static inline std::atomic<bool> initMemMgrSucceed_ = false;
 };
 } // namespace OHOS
 

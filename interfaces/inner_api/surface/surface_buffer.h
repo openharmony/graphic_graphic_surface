@@ -156,6 +156,18 @@ public:
     {
         return false;
     }
+    virtual GSError TryReclaim()
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError TryResumeIfNeeded()
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual bool IsReclaimed()
+    {
+        return false;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

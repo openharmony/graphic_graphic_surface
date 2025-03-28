@@ -15,6 +15,7 @@
 
 #include "surface_buffer_impl.h"
 
+#include <dlfcn.h>
 #include <mutex>
 
 #include <message_parcel.h>
@@ -74,6 +75,7 @@ constexpr int32_t INVALID_ARGUMENT = -1;
 constexpr uint64_t INVALID_PHYADDR = 0;
 constexpr uint32_t INVALID_SIZE = 0;
 constexpr uint64_t INVALID_USAGE = std::numeric_limits<std::uint64_t>::max();
+const std::string MEMMGR_SO = "libmemmgrclient.z.so";
 }
 
 sptr<SurfaceBuffer> SurfaceBuffer::Create()
@@ -98,7 +100,46 @@ SurfaceBufferImpl::SurfaceBufferImpl()
     }
     metaDataCache_.clear();
     bedata_ = new BufferExtraDataImpl;
+    InitMemMgrMembers();
+
     BLOGD("SurfaceBufferImpl ctor, seq: %{public}u", sequenceNumber_);
+}
+
+void SurfaceBufferImpl::InitMemMgrMembers()
+{
+    if (initMemMgrSucceed_.load()) {
+        return;
+    }
+    libMemMgrClientHandle_ = dlopen(MEMMGR_SO.c_str(), RTLD_NOW);
+    if (!libMemMgrClientHandle_) {
+        BLOGE("dlopen libmemmgrclient failed, error:%{public}s", dlerror());
+        return;
+    }
+    void *reclaim = dlsym(libMemMgrClientHandle_, "reclaim");
+    if (!reclaim) {
+        BLOGE("dlsym reclaim failed, error:%{public}s", dlerror());
+        dlclose(libMemMgrClientHandle_);
+        libMemMgrClientHandle_ = nullptr;
+        return;
+    }
+    reclaimFunc_ = reinterpret_cast<MemMgrFunctionPtr>(reclaim);
+    void *resume = dlsym(libMemMgrClientHandle_, "resume");
+    if (!resume) {
+        BLOGE("dlsym resume failed, error:%{public}s", dlerror());
+        dlclose(libMemMgrClientHandle_);
+        libMemMgrClientHandle_ = nullptr;
+        return;
+    }
+    resumeFunc_ = reinterpret_cast<MemMgrFunctionPtr>(resume);
+    ownPid_ = getpid();
+    if (ownPid_ < 0) {
+        BLOGE("ownPid_(%{public}d) is invaid", ownPid_);
+        dlclose(libMemMgrClientHandle_);
+        libMemMgrClientHandle_ = nullptr;
+        return;
+    }
+    initMemMgrSucceed_ = true;
+    BLOGI("InitMemMgrMembers %{public}s", initMemMgrSucceed_.load() ? "succeed" : "failed");
 }
 
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
@@ -736,4 +777,62 @@ bool SurfaceBufferImpl::GetBufferDeleteFromCacheFlag() const
     return isBufferDeleteFromCache;
 }
 
+GSError SurfaceBufferImpl::TryReclaim()
+{
+    if (!initMemMgrSucceed_.load()) {
+        BLOGE("init memmgr members failed");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (isReclaimed_.load()) {
+        return GSERROR_INVALID_OPERATING;
+    }
+
+    int32_t fd = -1;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (handle_ == nullptr) {
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        fd = handle_->fd;
+    }
+    if (fd < 0) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    int32_t ret = reclaimFunc_(ownPid_, fd);
+    isReclaimed_ = (ret == 0 ? true : false);
+    return (ret == 0 ? GSERROR_OK : GSERROR_API_FAILED);
+}
+
+GSError SurfaceBufferImpl::TryResumeIfNeeded()
+{
+    if (!initMemMgrSucceed_.load()) {
+        BLOGE("init memmgr members failed");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (!isReclaimed_.load()) {
+        return GSERROR_INVALID_OPERATING;
+    }
+
+    int32_t fd = -1;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (handle_ == nullptr) {
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        fd = handle_->fd;
+    }
+    if (fd < 0) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    int32_t ret = resumeFunc_(ownPid_, fd);
+    isReclaimed_ = (ret == 0 ? false : true);
+    return (ret == 0 ? GSERROR_OK : GSERROR_API_FAILED);
+}
+
+bool SurfaceBufferImpl::IsReclaimed()
+{
+    return isReclaimed_.load();
+}
 } // namespace OHOS

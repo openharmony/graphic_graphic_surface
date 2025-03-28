@@ -939,4 +939,20 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, Function | MediumTest | Level2)
     transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     ASSERT_EQ(bq->SetTransformHint(transformHint, producerId), OHOS::GSERROR_OK);
 }
+
+/*
+* Function: MarkBufferReclaimableByIdLocked
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call MarkBufferReclaimableByIdLocked and check value
+*/
+HWTEST_F(BufferQueueTest, MarkBufferReclaimableByIdLocked001, Function | MediumTest | Level2)
+{
+    for (const auto &[id, ele] : bq->bufferQueueCache_) {
+        printf("seq: %u\n", id);
+        bq->MarkBufferReclaimableByIdLocked(id);
+        ASSERT_GT(bq->bufferQueueCache_.size(), 0);
+    }
+}
 }

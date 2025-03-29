@@ -2545,4 +2545,283 @@ HWTEST_F(ProducerSurfaceTest, UnRegisterPropertyListenerInner001, Function | Med
     GSError ret = surface_->UnRegisterPropertyListenerInner(0);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
+
+/*
+* Function: PreAllocBuffersTest1
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+*                  2. operation: producer sends valid config to bufferQueue then RequestBuffer
+*                  3. result: bufferQueue return GSERROR_OK
+*/
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    uint32_t allocBufferCount = 3;
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    for (uint32_t i = 0; i < allocBufferCount; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffersTest2
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+*                  2. operation: producer sends valid config to bufferQueue
+*                  3. result: bufferQueue return GSERROR_OK
+*/
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 4;
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffersTest3
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: calls RequestBuffer with max queue size, then calls PreAllocBuffers and check the ret
+*                  2. operation: producer sends non-zero allocBufferCount config to bufferQueue then RequestBuffer
+*                  3. result: calls RequestBuffer return ok, calls RequestBuffer return buffer queue full
+*/
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    for (uint32_t i = 0; i < allocBufferCount; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_QUEUE_FULL);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffersTest4
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call PreAllocBuffers and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_PROTECTED,
+    };
+    uint32_t allocBufferCount = 3;
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    for (uint32_t i = 0; i < allocBufferCount; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffersTest5
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: calls PreAllocBuffers and check the ret
+*                  2. operation: calls PreAllocBuffers, then calls PreAllocBuffers with new valid config
+*                  3. result: calls PreAllocBuffers return ok, calls RequestBuffer return ok
+*/
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    requestConfigTmp = {
+        .width = 0x200,
+        .height = 0x200,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    for (uint32_t i = 0; i < allocBufferCount; i++) {
+        ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfigTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffersTest6
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: calls PreAllocBuffers and check the ret
+*                  2. operation: calls PreAllocBuffers with invalid allocBufferCount/width/height/format config
+*                  3. result: calls PreAllocBuffers return ok, calls RequestBuffer return ok
+*/
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest6, Function | MediumTest | Level2)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
+    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    GSError ret = pSurfaceTmp->SetQueueSize(3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    requestConfigTmp = {
+        .width = 0x0,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, 3);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x0,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, 3);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_BUTT,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    ret = pSurfaceTmp->PreAllocBuffers(requestConfigTmp, 3);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    pSurfaceTmp = nullptr;
+    producerTmp = nullptr;
+    cSurfTmp = nullptr;
+}
 }

@@ -461,7 +461,8 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     auto &dbs = retval.deletingBuffers;
     AddDeletingBuffersLocked(dbs);
 
-    if (needRealloc || producerCacheClean_ || retval.buffer->GetConsumerAttachBufferFlag()) {
+    if (needRealloc || producerCacheClean_ || retval.buffer->GetConsumerAttachBufferFlag() ||
+        bufferQueueCache_[retval.sequence].isPreAllocBuffer) {
         if (producerCacheClean_) {
             producerCacheList_.push_back(retval.sequence);
             if (CheckProducerCacheListLocked()) {
@@ -469,6 +470,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
             }
         }
         retval.buffer->SetConsumerAttachBufferFlag(false);
+        bufferQueueCache_[retval.sequence].isPreAllocBuffer = false;
     } else {
         retval.buffer = nullptr;
     }
@@ -1056,12 +1058,28 @@ void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
     }
 }
 
+void BufferQueue::DeleteFreeListCacheLocked(uint32_t sequence)
+{
+    for (auto iter = freeList_.begin(); iter != freeList_.end(); ++iter) {
+        if (sequence == *iter) {
+            freeList_.erase(iter);
+            break;
+        }
+    }
+}
+
 void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
 {
     auto it = bufferQueueCache_.find(sequence);
     if (it != bufferQueueCache_.end()) {
+        BLOGD("DeleteBufferInCache seq: %{public}d, %{public}u, uniqueId: %{public}" PRIu64 ".",
+            it->second.isPreAllocBuffer, sequence, uniqueId_);
+        if (it->second.isPreAllocBuffer) {
+            bufferQueueCache_.erase(it);
+            DeleteFreeListCacheLocked(sequence);
+            return;
+        }
         OnBufferDeleteForRS(sequence);
-        BLOGD("DeleteBufferInCache seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         bufferQueueCache_.erase(it);
         deletingList_.push_back(sequence);
     }
@@ -1130,12 +1148,7 @@ GSError BufferQueue::AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock
         }
     }
 
-    for (auto iter = freeList_.begin(); iter != freeList_.end(); iter++) {
-        if (sequence == *iter) {
-            freeList_.erase(iter);
-            break;
-        }
-    }
+    DeleteFreeListCacheLocked(sequence);
     return GSERROR_OK;
 }
 
@@ -2231,6 +2244,71 @@ GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     rotatingBufferNumber_ = cycleBuffersNumber;
+    return GSERROR_OK;
+}
+
+void BufferQueue::AllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount,
+    std::map<uint32_t, sptr<SurfaceBuffer>> &surfaceBufferCache)
+{
+    SURFACE_TRACE_NAME_FMT("AllocBuffers allocBufferCount %u width %d height %d format %d usage %d",
+        allocBufferCount, config.width, config.height, config.format, config.usage);
+    for (uint32_t i = 0; i < allocBufferCount; i++) {
+        sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
+        uint32_t sequence = bufferImpl->GetSeqNum();
+        BufferRequestConfig updateConfig = config;
+        updateConfig.usage |= defaultUsage_;
+
+        GSError ret = bufferImpl->Alloc(updateConfig);
+        if (ret != GSERROR_OK) {
+            BLOGE("Alloc failed, sequence:%{public}u, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
+                sequence, ret, uniqueId_);
+            continue;
+        }
+        surfaceBufferCache[sequence] = bufferImpl;
+    }
+}
+
+GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
+{
+    SURFACE_TRACE_NAME_FMT("PreAllocBuffers bufferQueueSize %u cacheSize %u allocBufferCount %u",
+        bufferQueueSize_, bufferQueueCache_.size(), allocBufferCount);
+    if (config.width <=0 || config.height <= 0 || config.format < GraphicPixelFormat::GRAPHIC_PIXEL_FMT_CLUT8 ||
+        config.format >= GraphicPixelFormat::GRAPHIC_PIXEL_FMT_BUTT || allocBufferCount == 0) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (allocBufferCount > bufferQueueSize_ - bufferQueueCache_.size()) {
+            allocBufferCount = bufferQueueSize_ - bufferQueueCache_.size();
+        }
+    }
+    if (allocBufferCount == 0) {
+        return SURFACE_ERROR_BUFFER_QUEUE_FULL;
+    }
+
+    std::map<uint32_t, sptr<SurfaceBuffer>> surfaceBufferCache;
+    AllocBuffers(config, allocBufferCount, surfaceBufferCache);
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        for (auto iter = surfaceBufferCache.begin(); iter != surfaceBufferCache.end(); ++iter) {
+            if (bufferQueueCache_.size() >= bufferQueueSize_) {
+                BLOGW("CacheSize: %{public}zu, QueueSize: %{public}d, allocBufferCount: %{public}zu,"
+                   " queId: %{public}" PRIu64, bufferQueueCache_.size(), bufferQueueSize_,
+                   surfaceBufferCache.size(), uniqueId_);
+                return SURFACE_ERROR_OUT_OF_RANGE;
+            }
+            BufferElement ele = {
+                .buffer = iter->second,
+                .state = BUFFER_STATE_REQUESTED,
+                .isDeleting = false,
+                .config = config,
+                .fence = SyncFence::InvalidFence(),
+                .isPreAllocBuffer = true,
+            };
+            bufferQueueCache_[iter->first] = ele;
+            freeList_.push_back(iter->first);
+        }
+    }
     return GSERROR_OK;
 }
 

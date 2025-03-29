@@ -137,6 +137,12 @@ public:
         (void)name;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
+    {
+        (void)config;
+        (void)allocBufferCount;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

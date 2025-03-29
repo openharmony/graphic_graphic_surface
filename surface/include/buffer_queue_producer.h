@@ -133,6 +133,7 @@ public:
 
     GSError ConnectStrictly() override;
     GSError DisconnectStrictly() override;
+    GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -203,6 +204,7 @@ private:
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
     bool CheckIsAlive();
+    int32_t PreAllocBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;

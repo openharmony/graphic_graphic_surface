@@ -1262,4 +1262,12 @@ GSError ProducerSurface::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     }
     return producer_->SetCycleBuffersNumber(cycleBuffersNumber);
 }
+
+GSError ProducerSurface::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->PreAllocBuffers(config, allocBufferCount);
+}
 } // namespace OHOS

@@ -204,6 +204,12 @@ public:
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
+    {
+        (void)config;
+        (void)allocBufferCount;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -265,6 +271,7 @@ protected:
         BUFFER_PRODUCER_DISCONNECT_STRICTLY,
         BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER,
         BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER,
+        BUFFER_PRODUCER_PRE_ALLOC_BUFFERS,
     };
 };
 } // namespace OHOS

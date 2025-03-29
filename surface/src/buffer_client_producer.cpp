@@ -983,4 +983,19 @@ GSError BufferClientProducer::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     SEND_REQUEST(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, arguments, reply, option);
     return CheckRetval(reply);
 }
+
+GSError BufferClientProducer::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    GSError ret = WriteRequestConfig(arguments, config);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    if (!arguments.WriteUint32(allocBufferCount)) {
+        return GSERROR_BINDER;
+    }
+    option.SetFlags(MessageOption::TF_ASYNC);
+    SEND_REQUEST(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, arguments, reply, option);
+    return GSERROR_OK;
+}
 }; // namespace OHOS

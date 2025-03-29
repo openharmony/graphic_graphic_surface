@@ -68,6 +68,7 @@ using BufferElement = struct BufferElement {
      * The desiredPresentTimestamp is manually set by the producer, isAutoTimestamp is false.
      */
     bool isAutoTimestamp;
+    bool isPreAllocBuffer = false;
 };
 
 using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
@@ -215,6 +216,7 @@ public:
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
     GSError ConnectStrictly();
     GSError DisconnectStrictly();
+    GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
@@ -271,6 +273,9 @@ private:
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
     GSError CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata);
     void DumpPropertyListener();
+    void AllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount,
+        std::map<uint32_t, sptr<SurfaceBuffer>> &surfaceBufferCache);
+    void DeleteFreeListCacheLocked(uint32_t sequence);
 
     void MarkBufferReclaimableByIdLocked(uint32_t sequence);
 

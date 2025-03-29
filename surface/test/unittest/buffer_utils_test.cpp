@@ -235,7 +235,7 @@ HWTEST_F(BufferUtilsTest, ReadSurfacePropertyTest001, Function | MediumTest | Le
     SurfaceProperty surfaceProperty;
     uint32_t size = GraphicTransformType::GRAPHIC_ROTATE_BUTT + 1;
     EXPECT_TRUE(parcel.WriteUint32(size));
-    ASSERT_NE(ReadSurfaceProperty(parcel, surfaceProperty), OHOS::GSERROR_BINDER);
+    EXPECT_EQ(ReadSurfaceProperty(parcel, surfaceProperty), OHOS::GSERROR_BINDER);
 }
 
 /*

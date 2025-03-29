@@ -689,7 +689,7 @@ HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Leve
 HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | MediumTest | Level2)
 {
     sptr<BufferQueue> bqtmp = nullptr;
-    sptr<BufferQueueProducer> bqptmp_ = new BufferQueueProducer(bqTmp);
+    sptr<BufferQueueProducer> bqptmp_ = new BufferQueueProducer(bqtmp);
     EXPECT_EQ(bqptmp_->UnRegisterPropertyListener(0), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
@@ -703,7 +703,7 @@ HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | Med
 HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerTest, Function | MediumTest | Level2)
 {
     sptr<BufferQueue> bqtmp = nullptr;
-    sptr<BufferQueueProducer> bqptmp_ = new BufferQueueProducer(bqTmp);
+    sptr<BufferQueueProducer> bqptmp_ = new BufferQueueProducer(bqtmp);
     EXPECT_EQ(bqptmp_->RegisterPropertyListener(listener, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 

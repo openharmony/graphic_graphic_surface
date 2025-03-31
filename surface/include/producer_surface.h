@@ -165,8 +165,7 @@ public:
     GSError DisconnectStrictly() override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
-    GSError RegisterPropertyListenerInner(OnPropertyChangeFunc&& func, uint64_t producerId);
-    GSError UnRegisterPropertyListenerInner(uint64_t producerId);
+    GSError ResetRegisterPropertyListenerInner(uint64_t producerId);
     bool IsRemote();
     void CleanAllLocked(uint32_t *bufSeqNum);
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,

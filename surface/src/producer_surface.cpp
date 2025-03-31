@@ -56,7 +56,8 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
     initInfo_.propertyListener = new PropertyChangeProducerListener([this](SurfaceProperty property) {
-        return PropertyChangeCallback(property); });
+        return PropertyChangeCallback(property);
+    });
     producer_ = producer;
     GetProducerInitInfo(initInfo_);
     lastSetTransformHint_ = static_cast<GraphicTransformType>(initInfo_.transformHint);
@@ -75,7 +76,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 ProducerSurface::~ProducerSurface()
 {
     BLOGD("~ProducerSurface dtor, name: %{public}s, uniqueId: %{public}" PRIu64 ".", name_.c_str(), queueId_);
-    UnRegisterPropertyListenerInner(initInfo_.producerId);
+    ResetRegisterPropertyListenerInner(initInfo_.producerId);
     Disconnect();
     auto utils = SurfaceUtils::GetInstance();
     utils->Remove(GetUniqueId());
@@ -686,21 +687,7 @@ GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
     return GSERROR_OK;
 }
 
-GSError ProducerSurface::RegisterPropertyListenerInner(OnPropertyChangeFunc func, uint64_t producerId)
-{
-    if (func == nullptr || producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    sptr<IProducerListener> listener;
-    {
-        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        initInfo_.propertyListener = new PropertyChangeProducerListener(std::move(func));
-        listener = initInfo_.propertyListener;
-    }
-    return producer_->RegisterPropertyListener(listener, producerId);
-}
-
-GSError ProducerSurface::UnRegisterPropertyListenerInner(uint64_t producerId)
+GSError ProducerSurface::ResetRegisterPropertyListenerInner(uint64_t producerId)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

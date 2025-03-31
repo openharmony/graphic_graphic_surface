@@ -741,4 +741,21 @@ HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, Function 
     int32_t ret = bqp_->UnRegisterPropertyListenerRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
 }
+
+/*
+* Function: GetProducerInitInfoRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: GetProducerInitInfoRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->GetProducerInitInfoRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_REPLY);
+}
 }

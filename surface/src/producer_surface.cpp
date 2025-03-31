@@ -55,6 +55,8 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 
 ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
+    initInfo_.propertyListener = new PropertyChangeProducerListener([this](SurfaceProperty property) {
+        return PropertyChangeCallback(property); });
     producer_ = producer;
     GetProducerInitInfo(initInfo_);
     lastSetTransformHint_ = static_cast<GraphicTransformType>(initInfo_.transformHint);
@@ -68,8 +70,6 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
         " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
-    RegisterPropertyListenerInner([this](SurfaceProperty property) { return PropertyChangeCallback(property); },
-        initInfo_.producerId);
 }
 
 ProducerSurface::~ProducerSurface()
@@ -694,8 +694,8 @@ GSError ProducerSurface::RegisterPropertyListenerInner(OnPropertyChangeFunc func
     sptr<IProducerListener> listener;
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        propertyListener_ = new PropertyChangeProducerListener(func);
-        listener = propertyListener_;
+        initInfo_.propertyListener = new PropertyChangeProducerListener(std::move(func));
+        listener = initInfo_.propertyListener;
     }
     return producer_->RegisterPropertyListener(listener, producerId);
 }
@@ -707,8 +707,8 @@ GSError ProducerSurface::UnRegisterPropertyListenerInner(uint64_t producerId)
     }
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);
-        if (propertyListener_ != nullptr) {
-            propertyListener_->ResetReleaseFunc();
+        if (initInfo_.propertyListener != nullptr) {
+            initInfo_.propertyListener->ResetReleaseFunc();
         }
     }
     return producer_->UnRegisterPropertyListener(producerId);

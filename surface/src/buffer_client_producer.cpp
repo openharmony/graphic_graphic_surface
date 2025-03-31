@@ -247,6 +247,9 @@ GSError BufferClientProducer::GetProducerInitInfo(ProducerInitInfo &info)
     if (!arguments.WriteRemoteObject(token_->AsObject()) || !arguments.WriteString(info.appName)) {
         return GSERROR_BINDER;
     }
+    if(info.RegisterPropertyListener && !arguments.WriteRemoteObject(info.propertyListener->AsObject())){
+        return GSERROR_BINDER;
+    }
     SEND_REQUEST(BUFFER_PRODUCER_GET_INIT_INFO, arguments, reply, option);
     if (!reply.ReadInt32(info.width) || !reply.ReadInt32(info.height) ||
         !reply.ReadUint64(info.uniqueId)) {

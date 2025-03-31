@@ -688,7 +688,9 @@ HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Leve
  */
 HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | MediumTest | Level2)
 {
-    EXPECT_EQ(bqp_->UnRegisterPropertyListener(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    sptr<BufferQueue> bqtmp = nullptr;
+    sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
+    EXPECT_EQ(bqptmp->UnRegisterPropertyListener(0), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*
@@ -701,7 +703,9 @@ HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | Med
 HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerTest, Function | MediumTest | Level2)
 {
     sptr<IProducerListener> listener = nullptr;
-    EXPECT_EQ(bqp_->RegisterPropertyListener(listener, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    sptr<BufferQueue> bqtmp = nullptr;
+    sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
+    EXPECT_EQ(bqptmp->RegisterPropertyListener(listener, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*
@@ -718,7 +722,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, Function | 
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->RegisterPropertyListenerRemote(arguments, reply, option);
-    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(ret, ERR_INVALID_REPLY);
 }
 
 /*

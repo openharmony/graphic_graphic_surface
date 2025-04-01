@@ -756,6 +756,26 @@ HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | Mediu
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->GetProducerInitInfoRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_DATA);
+}
+
+/*
+* Function: GetProducerInitInfoRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: GetProducerInitInfoRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | MediumTest | Level2)
+{
+    MessageParcel arguments;
+    sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
+    sptr<IRemoteObject> token = surfaceDelegator->AsObject();
+    arguments.WriteRemoteObject(token);
+    arguments.WriteString("test");
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->GetProducerInitInfoRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_REPLY);
 }
 }

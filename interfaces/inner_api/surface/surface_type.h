@@ -153,7 +153,7 @@ using ProducerInitInfo = struct {
     bool isInHebcList;
     std::string bufferName;
     uint64_t producerId;
-    sptr<IProducerListener> propertyListener; //register callback in ctor
+    sptr<IProducerListener> propertyListener; // register callback in ctor
     int32_t transformHint;
 };
 

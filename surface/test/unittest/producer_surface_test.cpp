@@ -2517,11 +2517,11 @@ HWTEST_F(ProducerSurfaceTest, PropertyChangeCallback001, Function | MediumTest |
 }
 
 /*
-* Function: ResetRPropertyListenerInner
+* Function: ResetPropertyListenerInner
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call ResetRPropertyListenerInner  and check ret
+* CaseDescription: 1. call ResetPropertyListenerInner  and check ret
 */
 HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, Function | MediumTest | Level2)
 {

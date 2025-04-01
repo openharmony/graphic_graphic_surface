@@ -76,7 +76,7 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 ProducerSurface::~ProducerSurface()
 {
     BLOGD("~ProducerSurface dtor, name: %{public}s, uniqueId: %{public}" PRIu64 ".", name_.c_str(), queueId_);
-    ResetRegisterPropertyListenerInner(initInfo_.producerId);
+    ResetPropertyListenerInner(initInfo_.producerId);
     Disconnect();
     auto utils = SurfaceUtils::GetInstance();
     utils->Remove(GetUniqueId());
@@ -687,7 +687,7 @@ GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
     return GSERROR_OK;
 }
 
-GSError ProducerSurface::ResetRegisterPropertyListenerInner(uint64_t producerId)
+GSError ProducerSurface::ResetPropertyListenerInner(uint64_t producerId)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

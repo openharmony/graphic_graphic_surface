@@ -210,7 +210,7 @@ private:
 class PropertyChangeProducerListener : public ProducerListenerStub {
 public:
     PropertyChangeProducerListener(OnPropertyChangeFunc&& func)
-        : func_(std::move(func)){};
+        : func_(std::move(func)) {};
     ~PropertyChangeProducerListener() override {};
     GSError OnBufferReleased() override
     {

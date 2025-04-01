@@ -19,8 +19,8 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include <refbase.h>
 #include <graphic_common.h>
+#include <refbase.h>
 
 namespace OHOS {
 class IProducerListener;

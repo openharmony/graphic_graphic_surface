@@ -265,7 +265,7 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     }
     sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
     if (listenerObject == nullptr) {
-        if(!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
+        if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         return ERR_INVALID_REPLY;

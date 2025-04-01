@@ -766,7 +766,7 @@ HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | Mediu
 * EnvConditions: N/A
 * CaseDescription: GetProducerInitInfoRemote member function test
  */
-HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote002, Function | MediumTest | Level2)
 {
     MessageParcel arguments;
     sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();

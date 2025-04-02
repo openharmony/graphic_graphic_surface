@@ -357,4 +357,164 @@ HWTEST_F(SurfaceBufferImplTest, BufferDeleteFromCacheFlag001, Function | MediumT
     buffer->SetBufferDeleteFromCacheFlag(false);
     ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), false);
 }
+
+/*
+* Function: TryReclaim
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call TryReclaim and check ret
+*                  3. call IsReclaimed and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, TryReclaim001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->TryReclaim(), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(buffer->IsReclaimed(), false);
+}
+
+/*
+* Function: TryReclaim
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call SetBufferHandle and check buffer handle
+*                  3. set fd of handle to -1
+*                  4. call TryReclaim and check ret
+*                  5. set fd of handle to 123
+*                  6. call TryReclaim and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, TryReclaim002, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    BufferHandle *handle = new BufferHandle();
+    buffer->SetBufferHandle(handle);
+    ASSERT_NE(buffer->GetBufferHandle(), nullptr);
+    handle->fd = -1;
+    ASSERT_EQ(buffer->TryReclaim(), GSERROR_INVALID_ARGUMENTS);
+    handle->fd = 123;
+    GSError ret = buffer->TryReclaim();
+    if (buffer->IsReclaimed()) {
+        printf("come into branch: isReclaimed = true\n");
+        ASSERT_EQ(ret, GSERROR_OK);
+    } else {
+        printf("come into branch: isReclaimed = false\n");
+        ASSERT_EQ(ret, GSERROR_API_FAILED);
+    }
+}
+
+/*
+* Function: TryReclaim
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call SetBufferHandle and check buffer handle
+*                  3. set fd of handle to 123
+*                  4. call TryReclaim and check ret
+*                  5. call TryReclaim again and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, TryReclaim003, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    BufferHandle *handle = new BufferHandle();
+    buffer->SetBufferHandle(handle);
+    ASSERT_NE(buffer->GetBufferHandle(), nullptr);
+    handle->fd = 123;
+    GSError ret = buffer->TryReclaim();
+    if (buffer->IsReclaimed()) {
+        printf("come into branch: isReclaimed = true\n");
+        ASSERT_EQ(ret, GSERROR_OK);
+    } else {
+        printf("come into branch: isReclaimed = false\n");
+        ASSERT_EQ(ret, GSERROR_API_FAILED);
+    }
+    if (buffer->IsReclaimed()) {
+        ret = buffer->TryReclaim();
+        ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
+    }
+}
+
+/*
+* Function: TryResumeIfNeeded
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call TryResumeIfNeeded and check ret
+*                  3. call IsReclaimed and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->TryResumeIfNeeded(), GSERROR_INVALID_OPERATING);
+    ASSERT_EQ(buffer->IsReclaimed(), false);
+}
+
+/*
+* Function: TryResumeIfNeeded
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call SetBufferHandle and check buffer handle
+*                  3. set fd of handle to 123
+*                  4. call TryReclaim and check ret
+*                  5. call TryResumeIfNeeded and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded002, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    BufferHandle *handle = new BufferHandle();
+    buffer->SetBufferHandle(handle);
+    ASSERT_NE(buffer->GetBufferHandle(), nullptr);
+    handle->fd = 123;
+    GSError ret = buffer->TryReclaim();
+    if (buffer->IsReclaimed()) {
+        printf("come into branch: isReclaimed = true\n");
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_EQ(buffer->TryResumeIfNeeded(), GSERROR_OK);
+        ASSERT_EQ(buffer->IsReclaimed(), false);
+    } else {
+        printf("come into branch: isReclaimed = false\n");
+        ASSERT_EQ(ret, GSERROR_API_FAILED);
+    }
+}
+
+/*
+* Function: IsReclaimed
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call IsReclaimed and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, IsReclaimed001, Function | MediumTest | Level2)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->IsReclaimed(), false);
+}
+
+/*
+* Function: InitMemMgrMembers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. define a SurfaceBufferImpl object
+*                  2. call InitMemMgrMembers and check value
+*                  3. call InitMemMgrMembers again and check value
+ */
+HWTEST_F(SurfaceBufferImplTest, InitMemMgrMembers001, Function | MediumTest | Level2)
+{
+    SurfaceBufferImpl impl;
+    impl.InitMemMgrMembers();
+    ASSERT_EQ(impl.initMemMgrSucceed_, true);
+    impl.InitMemMgrMembers();
+    ASSERT_EQ(impl.initMemMgrSucceed_, true);
+}
 }

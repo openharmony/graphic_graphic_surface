@@ -272,6 +272,8 @@ private:
     GSError CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata);
     void DumpPropertyListener();
 
+    void MarkBufferReclaimableByIdLocked(uint32_t sequence);
+
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;

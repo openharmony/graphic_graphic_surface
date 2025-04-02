@@ -258,12 +258,12 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     ProducerInitInfo info;
     sptr<IRemoteObject> token = arguments.ReadRemoteObject();
     if (token == nullptr || !arguments.ReadString(info.appName)) {
-        if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
         return ERR_INVALID_DATA;
     }
     sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
+    if (listenerObject == nullptr) {
+        return ERR_INVALID_DATA;
+    }
     (void)GetProducerInitInfo(info);
     if (!reply.WriteInt32(info.width) || !reply.WriteInt32(info.height) || !reply.WriteUint64(info.uniqueId) ||
         !reply.WriteString(info.name) || !reply.WriteBool(info.isInHebcList) || !reply.WriteString(info.bufferName) ||
@@ -274,8 +274,7 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
     GSError sRet = RegisterPropertyListener(listener, info.producerId);
     bool result = HandleDeathRecipient(token);
-    if (!reply.WriteInt32((result && sRet == GSERROR_OK && listenerObject != nullptr) ? GSERROR_OK :
-        SURFACE_ERROR_UNKOWN)) {
+    if (!reply.WriteInt32((result && sRet == GSERROR_OK) ? GSERROR_OK : URFACE_ERROR_UNKOWN)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;

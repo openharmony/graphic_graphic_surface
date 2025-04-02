@@ -274,7 +274,7 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
     GSError sRet = RegisterPropertyListener(listener, info.producerId);
     bool result = HandleDeathRecipient(token);
-    if (!reply.WriteInt32((result && sRet == GSERROR_OK) ? GSERROR_OK : URFACE_ERROR_UNKOWN)) {
+    if (!reply.WriteInt32((result && sRet == GSERROR_OK) ? GSERROR_OK : SURFACE_ERROR_UNKOWN)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;

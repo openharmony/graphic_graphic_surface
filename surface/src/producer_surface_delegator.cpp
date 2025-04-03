@@ -92,7 +92,7 @@ int ProducerSurfaceDelegator::OnDequeueBuffer(MessageParcel &data, MessageParcel
 
 int ProducerSurfaceDelegator::OnSetDataspace(MessageParcel& data, MessageParcel& reply)
 {
-    mAncoDataspace = static_cast<uint32_t>(-1);
+    mAncoDataspace = -1;
     return ERR_NONE;
 }
 

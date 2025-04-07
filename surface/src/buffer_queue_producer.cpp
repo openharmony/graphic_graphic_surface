@@ -258,9 +258,10 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     ProducerInitInfo info;
     sptr<IRemoteObject> token = arguments.ReadRemoteObject();
     if (token == nullptr || !arguments.ReadString(info.appName)) {
-        if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
+        return ERR_INVALID_DATA;
+    }
+    sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
+    if (listenerObject == nullptr) {
         return ERR_INVALID_DATA;
     }
     (void)GetProducerInitInfo(info);
@@ -270,8 +271,10 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
+    sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    GSError sRet = RegisterPropertyListener(listener, info.producerId);
     bool result = HandleDeathRecipient(token);
-    if (!reply.WriteInt32(result ? GSERROR_OK : SURFACE_ERROR_UNKOWN)) {
+    if (!reply.WriteInt32((result && sRet == GSERROR_OK) ? GSERROR_OK : SURFACE_ERROR_UNKOWN)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;

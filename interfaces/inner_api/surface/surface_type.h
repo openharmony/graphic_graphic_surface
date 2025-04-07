@@ -20,8 +20,10 @@
 #include <string>
 #include <vector>
 #include <graphic_common.h>
+#include <refbase.h>
 
 namespace OHOS {
+class IProducerListener;
 #define SURFACE_MAX_USER_DATA_COUNT 1000
 #define SURFACE_MAX_QUEUE_SIZE 64
 #define SURFACE_DEFAULT_QUEUE_SIZE 3
@@ -151,6 +153,7 @@ using ProducerInitInfo = struct {
     bool isInHebcList;
     std::string bufferName;
     uint64_t producerId;
+    sptr<IProducerListener> propertyListener; // register callback in ctor
     int32_t transformHint;
 };
 

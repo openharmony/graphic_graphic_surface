@@ -2517,32 +2517,16 @@ HWTEST_F(ProducerSurfaceTest, PropertyChangeCallback001, Function | MediumTest |
 }
 
 /*
-* Function: RegisterPropertyListenerInner
+* Function: ResetPropertyListenerInner
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RegisterPropertyListenerInner  and check ret
+* CaseDescription: 1. call ResetPropertyListenerInner  and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RegisterPropertyListenerInner001, Function | MediumTest | Level2)
-{
-    OnPropertyChangeFunc func = nullptr;
-    sptr<IBufferProducer> producer_ = nullptr;
-    uint64_t producerId = 0;
-    GSError ret = surface_->RegisterPropertyListenerInner(func, producerId);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-}
-
-/*
-* Function: UnRegisterPropertyListenerInner
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call UnRegisterPropertyListenerInner  and check ret
-*/
-HWTEST_F(ProducerSurfaceTest, UnRegisterPropertyListenerInner001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, Function | MediumTest | Level2)
 {
     sptr<IBufferProducer> producer_ = nullptr;
-    GSError ret = surface_->UnRegisterPropertyListenerInner(0);
+    GSError ret = surface_->ResetPropertyListenerInner(0);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 }

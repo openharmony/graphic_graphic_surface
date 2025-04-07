@@ -18,7 +18,7 @@ if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
   import("${graphic_2d_ext_delegator_gni}")
 }
 
-module_out_path = "graphic_surface/surface"
+module_out_path = "graphic_surface/graphic_surface/surface"
 
 group("unittest") {
   testonly = true

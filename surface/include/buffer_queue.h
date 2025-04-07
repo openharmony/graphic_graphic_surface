@@ -233,7 +233,8 @@ private:
     void ClearLocked(std::unique_lock<std::mutex> &lock);
     bool CheckProducerCacheListLocked();
     GSError SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock);
-    GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
+    GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence,
+        int32_t timeOut, std::map<uint32_t, BufferElement>::iterator &mapIter);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool needMap);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
     void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;

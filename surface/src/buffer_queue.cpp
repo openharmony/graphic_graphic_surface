@@ -453,8 +453,8 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         }
     }
 
-    mapIter->second.state = BUFFER_STATE_REQUESTED;
-    retval.fence = mapIter->second.fence;
+    bufferQueueCache_[retval.sequence].state = BUFFER_STATE_REQUESTED;
+    retval.fence = bufferQueueCache_[retval.sequence].fence;
     bedata = retval.buffer->GetExtraData();
     SetSurfaceBufferHebcMetaLocked(retval.buffer);
     SetSurfaceBufferGlobalAlphaUnlocked(retval.buffer);

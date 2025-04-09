@@ -484,10 +484,6 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     }
 
     SURFACE_TRACE_NAME_FMT("%s:%u", name_.c_str(), retval.sequence);
-    if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP) && isLocalRender_) {
-        static SyncFenceTracker releaseFenceThread("Release Fence");
-        releaseFenceThread.TrackFence(retval.fence);
-    }
     return GSERROR_OK;
 }
 
@@ -742,10 +738,6 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
         }
     }
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
-    bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
-    if (isLocalRender_) {
-        AcquireFenceTracker::TrackFence(fence, traceTag);
-    }
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1
     // and reboot your device
     static bool dumpBufferEnabled = system::GetParameter("persist.dumpbuffer.enabled", "0") != "0";

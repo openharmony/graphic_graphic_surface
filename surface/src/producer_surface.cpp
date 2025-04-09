@@ -21,9 +21,12 @@
 #include "buffer_extra_data_impl.h"
 #include "buffer_producer_listener.h"
 #include "sync_fence.h"
+#include "surface_trace.h"
 #include "native_window.h"
 #include "surface_utils.h"
 #include "metadata_helper.h"
+#include "acquire_fence_manager.h"
+#include "sync_fence_tracker.h"
 
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
@@ -131,6 +134,11 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
     fence = retval.fence;
     if (SetMetadataValue(buffer) != GSERROR_OK) {
         BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
+    }
+
+    if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP)) {
+        static SyncFenceTracker releaseFenceThread("Release Fence");
+        releaseFenceThread.TrackFence(fence);
     }
     return ret;
 }
@@ -267,6 +275,8 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
         return GSERROR_INVALID_ARGUMENTS;
     }
     auto ret = producer_->FlushBuffer(buffer->GetSeqNum(), bedata, fence, config);
+    bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
+    AcquireFenceTracker::TrackFence(fence, traceTag);
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
         BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);

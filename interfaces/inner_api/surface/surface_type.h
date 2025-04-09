@@ -22,7 +22,6 @@
 #include <graphic_common.h>
 
 namespace OHOS {
-
 #define SURFACE_MAX_USER_DATA_COUNT 1000
 #define SURFACE_MAX_QUEUE_SIZE 64
 #define SURFACE_DEFAULT_QUEUE_SIZE 3

@@ -30,12 +30,12 @@
 struct BufferWrapper;
 
 namespace OHOS {
-class IProducerListener;
+class IProducerListener2;
 class MessageParcel;
 class Parcel;
 class SyncFence;
 
-using ProducerInitInfo = struct {
+using ProducerInitInfo2 = struct {
     uint64_t uniqueId;
     int32_t width;
     int32_t height;

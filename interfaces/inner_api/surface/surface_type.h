@@ -20,8 +20,10 @@
 #include <string>
 #include <vector>
 #include <graphic_common.h>
+#include <refbase.h>
 
 namespace OHOS {
+class IProducerListener;
 #define SURFACE_MAX_USER_DATA_COUNT 1000
 #define SURFACE_MAX_QUEUE_SIZE 64
 #define SURFACE_DEFAULT_QUEUE_SIZE 3
@@ -140,6 +142,19 @@ using GraphicLayerType = enum {
     GRAPHIC_LAYER_TYPE_SDIEBAND,        /**< Sideband layer */
     GRAPHIC_LAYER_TYPE_CURSOR,          /**< Cursor Layer */
     GRAPHIC_LAYER_TYPE_BUTT             /**< Empty layer */
+};
+
+using ProducerInitInfo = struct {
+    uint64_t uniqueId;
+    int32_t width;
+    int32_t height;
+    std::string name;
+    std::string appName;
+    bool isInHebcList;
+    std::string bufferName;
+    uint64_t producerId;
+    sptr<IProducerListener> propertyListener; // register callback in ctor
+    int32_t transformHint;
 };
 
 using GraphicLayerInfo = struct {

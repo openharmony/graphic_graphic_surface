@@ -30,10 +30,23 @@
 struct BufferWrapper;
 
 namespace OHOS {
+class IProducerListener;
 class MessageParcel;
 class Parcel;
 class SyncFence;
 
+using ProducerInitInfo = struct {
+    uint64_t uniqueId;
+    int32_t width;
+    int32_t height;
+    std::string name;
+    std::string appName;
+    bool isInHebcList;
+    std::string bufferName;
+    uint64_t producerId;
+    sptr<IProducerListener> propertyListener; // register callback in ctor
+    int32_t transformHint;
+};
 class SurfaceBuffer : public RefBase {
 public:
     virtual BufferHandle *GetBufferHandle() const = 0;
@@ -174,7 +187,6 @@ protected:
     SurfaceBuffer(const SurfaceBuffer&) = delete;
     SurfaceBuffer& operator=(const SurfaceBuffer&) = delete;
     virtual ~SurfaceBuffer() {}
-    int windowId2_ = 0;
 };
 
 struct SurfaceProperty {

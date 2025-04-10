@@ -187,7 +187,6 @@ protected:
     SurfaceBuffer(const SurfaceBuffer&) = delete;
     SurfaceBuffer& operator=(const SurfaceBuffer&) = delete;
     virtual ~SurfaceBuffer() {}
-    int windowId3_ = 0;
 };
 
 struct SurfaceProperty {

@@ -27,6 +27,7 @@
 #include "ipc_inner_object.h"
 #include "external_window.h"
 #include "metadata_helper.h"
+#include "surface_trace.h"
 
 #ifndef WEAK_ALIAS
     #define WEAK_ALIAS(old, new) \
@@ -210,6 +211,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
 int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *buffer,
     int fenceFd, struct Region region)
 {
+    SURFACE_TRACE_NAME_FMT("NativeWindowFlushBuffer");
     if (window == nullptr || buffer == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }

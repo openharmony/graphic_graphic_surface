@@ -435,15 +435,16 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         return SURFACE_ERROR_UNKOWN;
     }
     retval.sequence = retval.buffer->GetSeqNum();
-    if (bufferQueueCache_.find(retval.sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(retval.sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-    auto &cacheConfig = bufferQueueCache_[retval.sequence].config;
+    auto &cacheConfig = mapIter->second.config;
     SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
         cacheConfig.width, cacheConfig.height, cacheConfig.usage, cacheConfig.format, retval.sequence);
 
-    bool needRealloc = (config != bufferQueueCache_[retval.sequence].config);
+    bool needRealloc = (config != mapIter->second.config);
     // config, realloc
     if (needRealloc) {
         auto sret = ReallocBufferLocked(config, retval, lock);
@@ -479,21 +480,21 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
 
 GSError BufferQueue::CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata)
 {
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
 
-    if (bufferQueueCache_[sequence].state != BUFFER_STATE_REQUESTED &&
-        bufferQueueCache_[sequence].state != BUFFER_STATE_ATTACHED) {
+    if (mapIter->second.state != BUFFER_STATE_REQUESTED && mapIter->second.state != BUFFER_STATE_ATTACHED) {
         return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
-    bufferQueueCache_[sequence].state = BUFFER_STATE_RELEASED;
+    mapIter->second.state = BUFFER_STATE_RELEASED;
     freeList_.push_back(sequence);
-    if (bufferQueueCache_[sequence].buffer == nullptr) {
+    if (mapIter->second.buffer == nullptr) {
         BLOGE("cache buffer is nullptr, sequence:%{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-    bufferQueueCache_[sequence].buffer->SetExtraData(bedata);
+    mapIter->second.buffer->SetExtraData(bedata);
 
     waitReqCon_.notify_all();
     waitAttachCon_.notify_all();
@@ -511,12 +512,13 @@ GSError BufferQueue::CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedat
 
 GSError BufferQueue::CheckBufferQueueCacheLocked(uint32_t sequence)
 {
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         BLOGE("no find seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
 
-    auto &state = bufferQueueCache_[sequence].state;
+    auto &state = mapIter->second.state;
     if (state != BUFFER_STATE_REQUESTED && state != BUFFER_STATE_ATTACHED) {
         BLOGE("seq: %{public}u, invalid state %{public}d, uniqueId: %{public}" PRIu64 ".",
             sequence, state, uniqueId_);
@@ -541,11 +543,12 @@ GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fen
     sptr<SurfaceBuffer> buffer = nullptr;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+        auto mapIter = bufferQueueCache_.find(sequence);
+        if (mapIter == bufferQueueCache_.end()) {
             return GSERROR_NO_ENTRY;
         }
-        bufferQueueCache_[sequence].state = BUFFER_STATE_ACQUIRED;
-        buffer = bufferQueueCache_[sequence].buffer;
+        mapIter->second.state = BUFFER_STATE_ACQUIRED;
+        buffer = mapIter->second.buffer;
     }
     GSError ret = consumerDelegator->QueueBuffer(buffer, fence->Get());
     if (ret != GSERROR_OK) {
@@ -634,17 +637,18 @@ GSError BufferQueue::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
             acquireLastFlushedBufSequence_, uniqueId_);
         return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
-    if (bufferQueueCache_.find(lastFlusedSequence_) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(lastFlusedSequence_);
+    if (mapIter == bufferQueueCache_.end()) {
         BLOGE("cache ont find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", lastFlusedSequence_, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-    auto &state = bufferQueueCache_[lastFlusedSequence_].state;
+    auto &state = mapIter->second.state;
     if (state == BUFFER_STATE_REQUESTED) {
         BLOGE("seq: %{public}u, invalid state %{public}d, uniqueId: %{public}" PRIu64 ".",
             lastFlusedSequence_, state, uniqueId_);
         return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
-    buffer = bufferQueueCache_[lastFlusedSequence_].buffer;
+    buffer = mapIter->second.buffer;
     auto usage = buffer->GetUsage();
     if (usage & BUFFER_USAGE_PROTECTED) {
         BLOGE("lastFlusedSeq: %{public}u, usage: %{public}" PRIu64 ", uniqueId: %{public}" PRIu64 ".",
@@ -696,27 +700,28 @@ GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
 GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock)
 {
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         BLOGE("bufferQueueCache not find sequence:%{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
-    if (bufferQueueCache_[sequence].isDeleting) {
+    if (mapIter->second.isDeleting) {
         DeleteBufferInCache(sequence, lock);
         BLOGD("DoFlushBuffer delete seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
         return GSERROR_OK;
     }
 
-    bufferQueueCache_[sequence].buffer->SetExtraData(bedata);
+    mapIter->second.buffer->SetExtraData(bedata);
     int32_t supportFastCompose = 0;
-    bufferQueueCache_[sequence].buffer->GetExtraData()->ExtraGet(
+    mapIter->second.buffer->GetExtraData()->ExtraGet(
         BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
-    bufferQueueCache_[sequence].buffer->SetSurfaceBufferTransform(transform_);
+        mapIter->second.buffer->SetSurfaceBufferTransform(transform_);
 
-    uint64_t usage = static_cast<uint32_t>(bufferQueueCache_[sequence].config.usage);
+    uint64_t usage = static_cast<uint32_t>(mapIter->second.config.usage);
     if (usage & BUFFER_USAGE_CPU_WRITE) {
         // api flush
-        auto sret = bufferQueueCache_[sequence].buffer->FlushCache();
+        auto sret = mapIter->second.buffer->FlushCache();
         if (sret != GSERROR_OK) {
             BLOGE("FlushCache ret: %{public}d, seq: %{public}u, uniqueId: %{public}" PRIu64 ".",
                 sret, sequence, uniqueId_);
@@ -724,9 +729,9 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         }
     }
     // if failed, avoid to state rollback
-    bufferQueueCache_[sequence].state = BUFFER_STATE_FLUSHED;
-    bufferQueueCache_[sequence].fence = fence;
-    bufferQueueCache_[sequence].damages = config.damages;
+    mapIter->second.state = BUFFER_STATE_FLUSHED;
+    mapIter->second.fence = fence;
+    mapIter->second.damages = config.damages;
     dirtyList_.push_back(sequence);
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
@@ -734,14 +739,14 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     bufferSupportFastCompose_ = (bool)supportFastCompose;
 
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
-    lastFlushedDesiredPresentTimeStamp_ = bufferQueueCache_[sequence].desiredPresentTimestamp;
+    lastFlushedDesiredPresentTimeStamp_ = mapIter->second.desiredPresentTimestamp;
     // if you need dump SurfaceBuffer to file, you should execute hdc shell param set persist.dumpbuffer.enabled 1
     // and reboot your device
     static bool dumpBufferEnabled = system::GetParameter("persist.dumpbuffer.enabled", "0") != "0";
     if (dumpBufferEnabled) {
         // Wait for the status of the fence to change to SIGNALED.
         fence->Wait(-1);
-        DumpToFileAsync(GetRealPid(), name_, bufferQueueCache_[sequence].buffer);
+        DumpToFileAsync(GetRealPid(), name_, mapIter->second.buffer);
     }
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
@@ -760,20 +765,21 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
 void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                            uint64_t uiTimestamp)
 {
-    bufferQueueCache_[sequence].isAutoTimestamp = false;
+    auto mapIter = bufferQueueCache_.find(sequence);
+    mapIter->second.isAutoTimestamp = false;
     if (desiredPresentTimestamp <= 0) {
         if (desiredPresentTimestamp == 0 && uiTimestamp != 0
             && uiTimestamp <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
-            bufferQueueCache_[sequence].desiredPresentTimestamp = static_cast<int64_t>(uiTimestamp);
+            mapIter->second.desiredPresentTimestamp = static_cast<int64_t>(uiTimestamp);
         } else {
-            bufferQueueCache_[sequence].desiredPresentTimestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            mapIter->second.desiredPresentTimestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count();
-            bufferQueueCache_[sequence].isAutoTimestamp = true;
+            mapIter->second.isAutoTimestamp = true;
         }
     } else {
-        bufferQueueCache_[sequence].desiredPresentTimestamp = desiredPresentTimestamp;
+        mapIter->second.desiredPresentTimestamp = desiredPresentTimestamp;
     }
-    bufferQueueCache_[sequence].timestamp = static_cast<int64_t>(uiTimestamp);
+    mapIter->second.timestamp = static_cast<int64_t>(uiTimestamp);
 }
 
 void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
@@ -804,14 +810,15 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     GSError ret = PopFromDirtyListLocked(buffer);
     if (ret == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
-        bufferQueueCache_[sequence].state = BUFFER_STATE_ACQUIRED;
+        auto mapIter = bufferQueueCache_.find(sequence);
+        mapIter->second.state = BUFFER_STATE_ACQUIRED;
 
-        fence = bufferQueueCache_[sequence].fence;
-        timestamp = bufferQueueCache_[sequence].timestamp;
-        damages = bufferQueueCache_[sequence].damages;
+        fence = mapIter->second.fence;
+        timestamp = mapIter->second.timestamp;
+        damages = mapIter->second.damages;
         SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u desiredPresentTimestamp: %" PRId64 " isAotuTimestamp: %d",
-            sequence, bufferQueueCache_[sequence].desiredPresentTimestamp,
-            bufferQueueCache_[sequence].isAutoTimestamp);
+            sequence, mapIter->second.desiredPresentTimestamp,
+            mapIter->second.isAutoTimestamp);
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCache();
     }
@@ -836,8 +843,9 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             LogAndTraceAllBufferInBufferQueueCache();
             return GSERROR_NO_BUFFER;
         }
-        int64_t frontDesiredPresentTimestamp = bufferQueueCache_[*frontSequence].desiredPresentTimestamp;
-        bool frontIsAutoTimestamp = bufferQueueCache_[*frontSequence].isAutoTimestamp;
+        auto mapIter = bufferQueueCache_.find(*frontSequence);
+        int64_t frontDesiredPresentTimestamp = mapIter->second.desiredPresentTimestamp;
+        bool frontIsAutoTimestamp = mapIter->second.isAutoTimestamp;
         if (!frontIsAutoTimestamp && frontDesiredPresentTimestamp > expectPresentTimestamp
             && frontDesiredPresentTimestamp - ONE_SECOND_TIMESTAMP <= expectPresentTimestamp) {
             SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
@@ -957,24 +965,25 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+        auto mapIter = bufferQueueCache_.find(sequence);
+        if (mapIter == bufferQueueCache_.end()) {
             SURFACE_TRACE_NAME_FMT("buffer not found in cache");
             BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
             OnBufferDeleteCbForHardwareThreadLocked(buffer);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
 
-        const auto &state = bufferQueueCache_[sequence].state;
+        const auto &state = mapIter->second.state;
         if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
             SURFACE_TRACE_NAME_FMT("invalid state: %u", state);
             BLOGD("invalid state: %{public}d, uniqueId: %{public}" PRIu64 ".", state, uniqueId_);
             return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
 
-        bufferQueueCache_[sequence].state = BUFFER_STATE_RELEASED;
-        bufferQueueCache_[sequence].fence = fence;
+        mapIter->second.state = BUFFER_STATE_RELEASED;
+        mapIter->second.fence = fence;
 
-        if (bufferQueueCache_[sequence].isDeleting) {
+        if (mapIter->second.isDeleting) {
             DeleteBufferInCache(sequence, lock);
         } else {
             freeList_.push_back(sequence);
@@ -1115,16 +1124,17 @@ void BufferQueue::DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex
     }
 }
 
-GSError BufferQueue::AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut)
+GSError BufferQueue::AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence,
+    int32_t timeOut, std::map<uint32_t, BufferElement>::iterator &mapIter)
 {
-    BufferState state = bufferQueueCache_[sequence].state;
+    BufferState state = mapIter->second.state;
     if (state == BUFFER_STATE_RELEASED) {
-        bufferQueueCache_[sequence].state = BUFFER_STATE_ATTACHED;
+        mapIter->second.state = BUFFER_STATE_ATTACHED;
     } else {
         waitAttachCon_.wait_for(lock, std::chrono::milliseconds(timeOut),
-            [this, sequence]() { return (bufferQueueCache_[sequence].state == BUFFER_STATE_RELEASED); });
-        if (bufferQueueCache_[sequence].state == BUFFER_STATE_RELEASED) {
-            bufferQueueCache_[sequence].state = BUFFER_STATE_ATTACHED;
+            [&mapIter]() { return (mapIter->second.state == BUFFER_STATE_RELEASED); });
+        if (mapIter->second.state == BUFFER_STATE_RELEASED) {
+            mapIter->second.state = BUFFER_STATE_ATTACHED;
         } else {
             BLOGN_FAILURE_RET(SURFACE_ERROR_BUFFER_STATE_INVALID);
         }
@@ -1156,7 +1166,8 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
             "uniqueId: %{public}" PRIu64 ".", sequence, bufferQueueSize_, GetUsedSize(), uniqueId_);
         return SURFACE_ERROR_BUFFER_QUEUE_FULL;
     }
-    if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter != bufferQueueCache_.end()) {
         BLOGE("seq: %{public}u, buffer is already in cache, uniqueId: %{public}" PRIu64 ".",
             sequence, uniqueId_);
         return SURFACE_ERROR_BUFFER_IS_INCACHE;
@@ -1193,23 +1204,24 @@ GSError BufferQueue::AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType
 GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType invokerType,
     std::unique_lock<std::mutex> &lock, bool isReserveSlot)
 {
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         BLOGE("seq: %{public}u, not find in cache, uniqueId: %{public}" PRIu64 ".",
             sequence, uniqueId_);
         return SURFACE_ERROR_BUFFER_NOT_INCACHE;
     }
     if (invokerType == InvokerType::PRODUCER_INVOKER) {
-        if (bufferQueueCache_[sequence].state != BUFFER_STATE_REQUESTED) {
+        if (mapIter->second.state != BUFFER_STATE_REQUESTED) {
             BLOGE("seq: %{public}u, state: %{public}d, uniqueId: %{public}" PRIu64 ".",
-                sequence, bufferQueueCache_[sequence].state, uniqueId_);
+                sequence, mapIter->second.state, uniqueId_);
             return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(sequence);
     } else {
-        if (bufferQueueCache_[sequence].state != BUFFER_STATE_ACQUIRED) {
+        if (mapIter->second.state != BUFFER_STATE_ACQUIRED) {
             BLOGE("seq: %{public}u, state: %{public}d, uniqueId: %{public}" PRIu64 ".",
-                sequence, bufferQueueCache_[sequence].state, uniqueId_);
+                sequence, mapIter->second.state, uniqueId_);
             return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
         DeleteBufferInCache(sequence, lock);
@@ -1257,8 +1269,9 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
 
     uint32_t sequence = buffer->GetSeqNum();
     std::unique_lock<std::mutex> lock(mutex_);
-    if (bufferQueueCache_.find(sequence) != bufferQueueCache_.end()) {
-        return AttachBufferUpdateStatus(lock, sequence, timeOut);
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter != bufferQueueCache_.end()) {
+        return AttachBufferUpdateStatus(lock, sequence, timeOut, mapIter);
     }
 
     buffer->SetSurfaceBufferScalingMode(scalingMode_);
@@ -1298,17 +1311,18 @@ GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)
 
     std::lock_guard<std::mutex> lockGuard(mutex_);
     uint32_t sequence = buffer->GetSeqNum();
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
 
-    if (bufferQueueCache_[sequence].state == BUFFER_STATE_REQUESTED) {
+    if (mapIter->second.state == BUFFER_STATE_REQUESTED) {
         BLOGD("DetachBuffer requested seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
-    } else if (bufferQueueCache_[sequence].state == BUFFER_STATE_ACQUIRED) {
+    } else if (mapIter->second.state == BUFFER_STATE_ACQUIRED) {
         BLOGD("DetachBuffer acquired seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
     } else {
         BLOGE("DetachBuffer invalid state: %{public}d, seq: %{public}u, uniqueId: %{public}" PRIu64 ".",
-            bufferQueueCache_[sequence].state, sequence, uniqueId_);
+            mapIter->second.state, sequence, uniqueId_);
         return GSERROR_NO_ENTRY;
     }
     OnBufferDeleteForRS(sequence);
@@ -1747,10 +1761,11 @@ GSError BufferQueue::SetBufferName(const std::string &bufferName)
 GSError BufferQueue::SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    bufferQueueCache_[sequence].buffer->SetSurfaceBufferScalingMode(scalingMode);
+    mapIter->second.buffer->SetSurfaceBufferScalingMode(scalingMode);
     return GSERROR_OK;
 }
 
@@ -1767,10 +1782,11 @@ GSError BufferQueue::SetScalingMode(ScalingMode scalingMode)
 GSError BufferQueue::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    scalingMode = bufferQueueCache_.at(sequence).buffer->GetSurfaceBufferScalingMode();
+    scalingMode = mapIter->second.buffer->GetSurfaceBufferScalingMode();
     return GSERROR_OK;
 }
 
@@ -1781,12 +1797,13 @@ GSError BufferQueue::SetMetaData(uint32_t sequence, const std::vector<GraphicHDR
         BLOGW("metaData size is 0, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    bufferQueueCache_[sequence].metaData.clear();
-    bufferQueueCache_[sequence].metaData = metaData;
-    bufferQueueCache_[sequence].hdrMetaDataType = HDRMetaDataType::HDR_META_DATA;
+    mapIter->second.metaData.clear();
+    mapIter->second.metaData = metaData;
+    mapIter->second.hdrMetaDataType = HDRMetaDataType::HDR_META_DATA;
     return GSERROR_OK;
 }
 
@@ -1803,34 +1820,37 @@ GSError BufferQueue::SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key
         BLOGW("metaData size is 0, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    bufferQueueCache_[sequence].metaDataSet.clear();
-    bufferQueueCache_[sequence].key = key;
-    bufferQueueCache_[sequence].metaDataSet = metaData;
-    bufferQueueCache_[sequence].hdrMetaDataType = HDRMetaDataType::HDR_META_DATA_SET;
+    mapIter->second.metaDataSet.clear();
+    mapIter->second.key = key;
+    mapIter->second.metaDataSet = metaData;
+    mapIter->second.hdrMetaDataType = HDRMetaDataType::HDR_META_DATA_SET;
     return GSERROR_OK;
 }
 
 GSError BufferQueue::QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    type = bufferQueueCache_.at(sequence).hdrMetaDataType;
+    type = mapIter->second.hdrMetaDataType;
     return GSERROR_OK;
 }
 
 GSError BufferQueue::GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
     metaData.clear();
-    metaData = bufferQueueCache_.at(sequence).metaData;
+    metaData = mapIter->second.metaData;
     return GSERROR_OK;
 }
 
@@ -1838,12 +1858,13 @@ GSError BufferQueue::GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &ke
                                     std::vector<uint8_t> &metaData)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
     metaData.clear();
-    key = bufferQueueCache_.at(sequence).key;
-    metaData = bufferQueueCache_.at(sequence).metaDataSet;
+    key = mapIter->second.key;
+    metaData = mapIter->second.metaDataSet;
     return GSERROR_OK;
 }
 
@@ -1893,32 +1914,34 @@ sptr<SurfaceTunnelHandle> BufferQueue::GetTunnelHandle()
 GSError BufferQueue::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    bufferQueueCache_[sequence].presentTimestamp = timestamp;
+    mapIter->second.presentTimestamp = timestamp;
     return GSERROR_OK;
 }
 
 GSError BufferQueue::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (bufferQueueCache_.find(sequence) == bufferQueueCache_.end()) {
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
         return GSERROR_NO_ENTRY;
     }
-    if (type != bufferQueueCache_.at(sequence).presentTimestamp.type) {
+    if (type != mapIter->second.presentTimestamp.type) {
         BLOGE("seq: %{public}u, PresentTimestampType [%{public}d] is not supported, the supported type is [%{public}d],"
             "uniqueId: %{public}" PRIu64 ".", sequence, type,
-            bufferQueueCache_.at(sequence).presentTimestamp.type, uniqueId_);
+            mapIter->second.presentTimestamp.type, uniqueId_);
         return GSERROR_NO_ENTRY;
     }
     switch (type) {
         case GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_DELAY: {
-            time = bufferQueueCache_.at(sequence).presentTimestamp.time;
+            time = mapIter->second.presentTimestamp.time;
             return GSERROR_OK;
         }
         case GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP: {
-            time = bufferQueueCache_.at(sequence).presentTimestamp.time - bufferQueueCache_.at(sequence).timestamp;
+            time = mapIter->second.presentTimestamp.time - mapIter->second.timestamp;
             return GSERROR_OK;
         }
         default: {
@@ -2238,7 +2261,7 @@ void BufferQueue::MarkBufferReclaimableByIdLocked(uint32_t sequence)
 {
     auto it = bufferQueueCache_.find(sequence);
     if (it != bufferQueueCache_.end()) {
-        auto buffer = bufferQueueCache_[sequence].buffer;
+        auto buffer = it->second.buffer;
         if (buffer != nullptr) {
             SURFACE_TRACE_NAME_FMT("MarkBufferReclaimableByIdLocked name: %s, queueId: %" PRIu64 " fd: %d size: %u",
                 name_.c_str(), uniqueId_, buffer->GetFileDescriptor(), buffer->GetSize());

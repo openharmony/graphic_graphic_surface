@@ -413,6 +413,22 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, Function | MediumTest | Level2)
 }
 
 /*
+ * Function: GetLastConsumeTime
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetLastConsumeTime
+ *                  2. check lastConsumeTime
+ */
+HWTEST_F(BufferQueueTest, GetLastConsumeTimeTest, Function | MediumTest | Level2)
+{
+    int64_t lastConsumeTime = 0;
+    bq->GetLastConsumeTime(lastConsumeTime);
+    std::cout << "lastConsumeTime = " << lastConsumeTime << std::endl;
+    ASSERT_NE(lastConsumeTime, 0);
+}
+
+/*
 * Function: SetDesiredPresentTimestampAndUiTimestamp
 * Type: Function
 * Rank: Important(2)

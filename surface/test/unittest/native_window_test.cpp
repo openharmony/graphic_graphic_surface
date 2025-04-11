@@ -2152,4 +2152,53 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, Functio
     ASSERT_NE(nativeWindowBuffer, nullptr);
     OH_NativeWindow_DestroyNativeWindowBuffer(nativeWindowBuffer);
 }
+
+/*
+* Function: NativeWindowSetUsageAndFormat
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSet: call SET_USAGE with NATIVEBUFFER_USAGE_MEM_MMZ_CACHE and SET_FORMAT with
+*                             NATIVEBUFFER_PIXEL_FMT_Y8 and NATIVEBUFFER_PIXEL_FMT_Y16.
+*                  2. operation: request buffer and alloc buffer
+*                  3. result: request buffer and alloc buffer success
+ */
+HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, Function | MediumTest | Level1)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+    
+    int code = SET_USAGE;
+    uint64_t usageSet = NATIVEBUFFER_USAGE_MEM_MMZ_CACHE;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, usageSet), OHOS::GSERROR_OK);
+    ASSERT_EQ(usageSet, BUFFER_USAGE_MEM_MMZ_CACHE);
+
+    code = SET_FORMAT;
+    int32_t formatSet = NATIVEBUFFER_PIXEL_FMT_Y8;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, formatSet), OHOS::GSERROR_OK);
+    ASSERT_EQ(formatSet, GRAPHIC_PIXEL_FMT_Y8);
+    
+    NativeWindowBuffer *nativeWindowBuffer1 = nullptr;
+    int fenceFd = -1;
+    int32_t ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindowTmp, &nativeWindowBuffer1, &fenceFd);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(nativeWindowBuffer1, nullptr);
+
+    code = SET_FORMAT;
+    formatSet = NATIVEBUFFER_PIXEL_FMT_Y16;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, formatSet), OHOS::GSERROR_OK);
+    ASSERT_EQ(formatSet, GRAPHIC_PIXEL_FMT_Y16);
+
+    NativeWindowBuffer *nativeWindowBuffer2 = nullptr;
+    ret = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindowTmp, &nativeWindowBuffer2, &fenceFd);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(nativeWindowBuffer2, nullptr);
+}
 }

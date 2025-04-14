@@ -506,6 +506,22 @@ HWTEST_F(ConsumerSurfaceTest, ReqCanFluAcqRel003, Function | MediumTest | Level2
 }
 
 /*
+ * Function: GetLastConsumeTime
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetLastConsumeTime
+ *                  2. check lastConsumeTime
+ */
+HWTEST_F(ConsumerSurfaceTest, GetLastConsumeTimeTest, Function | MediumTest | Level2)
+{
+    int64_t lastConsumeTime = 0;
+    cs->GetLastConsumeTime(lastConsumeTime);
+    std::cout << "lastConsumeTime = " << lastConsumeTime << std::endl;
+    ASSERT_NE(lastConsumeTime, 0);
+}
+
+/*
 * Function: RequestBuffer and CancelBuffer
 * Type: Function
 * Rank: Important(2)

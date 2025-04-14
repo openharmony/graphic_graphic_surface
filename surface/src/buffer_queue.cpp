@@ -15,6 +15,7 @@
 
 #include "buffer_queue.h"
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <linux/dma-buf.h>
 #include <sstream>
@@ -812,6 +813,8 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         uint32_t sequence = buffer->GetSeqNum();
         auto mapIter = bufferQueueCache_.find(sequence);
         mapIter->second.state = BUFFER_STATE_ACQUIRED;
+        mapIter->second.lastAcquireTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
 
         fence = mapIter->second.fence;
         timestamp = mapIter->second.timestamp;
@@ -982,6 +985,9 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 
         mapIter->second.state = BUFFER_STATE_RELEASED;
         mapIter->second.fence = fence;
+        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        lastConsumeTime_ = now - mapIter->second.lastAcquireTime;
 
         if (mapIter->second.isDeleting) {
             DeleteBufferInCache(sequence, lock);
@@ -2270,5 +2276,12 @@ void BufferQueue::MarkBufferReclaimableByIdLocked(uint32_t sequence)
                 buffer->GetFileDescriptor(), ret);
         }
     }
+}
+
+GSError BufferQueue::GetLastConsumeTime(int64_t &lastConsumeTime)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    lastConsumeTime = lastConsumeTime_;
+    return GSERROR_OK;
 }
 }; // namespace OHOS

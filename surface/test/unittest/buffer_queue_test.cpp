@@ -413,6 +413,22 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, Function | MediumTest | Level2)
 }
 
 /*
+ * Function: GetLastConsumeTime
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetLastConsumeTime
+ *                  2. check lastConsumeTime
+ */
+HWTEST_F(BufferQueueTest, GetLastConsumeTimeTest, Function | MediumTest | Level2)
+{
+    int64_t lastConsumeTime = 0;
+    bq->GetLastConsumeTime(lastConsumeTime);
+    std::cout << "lastConsumeTime = " << lastConsumeTime << std::endl;
+    ASSERT_NE(lastConsumeTime, 0);
+}
+
+/*
 * Function: SetDesiredPresentTimestampAndUiTimestamp
 * Type: Function
 * Rank: Important(2)
@@ -676,7 +692,8 @@ HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, Function | MediumTest | Leve
     int32_t timeOut = 6;
     std::mutex mutex_;
     std::unique_lock<std::mutex> lock(mutex_);
-    GSError ret = bq->AttachBufferUpdateStatus(lock, sequence, timeOut);
+    auto mapIter = bq->bufferQueueCache_.find(sequence);
+    GSError ret = bq->AttachBufferUpdateStatus(lock, sequence, timeOut, mapIter);
     ASSERT_EQ(ret, GSERROR_OK);
 }
 

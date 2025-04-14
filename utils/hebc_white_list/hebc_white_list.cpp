@@ -90,8 +90,10 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
     Json::Value const appNameJson = hebc.get("AppName", Json::Value{});
     unsigned int jsonSize = std::min(appNameJson.size(), MAX_HEBC_WHITELIST_NUMBER);
     for (unsigned int i = 0; i < jsonSize; i++) {
-        std::string name = appNameJson[i].asString();
-        hebcList_.emplace_back(name);
+        if (appNameJson[i].isString()) {
+            std::string name = appNameJson[i].asString();
+            hebcList_.emplace_back(name);
+        }
     }
     return true;
 }

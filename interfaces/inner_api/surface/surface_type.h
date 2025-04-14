@@ -130,6 +130,8 @@ using GraphicPixelFormat = enum {
     GRAPHIC_PIXEL_FMT_RAW10 = 37,                   /**< Raw 10bit packed format */
     GRAPHIC_PIXEL_FMT_BLOB = 38,                    /**< BLOB format */
     GRAPHIC_PIXEL_FMT_RGBA16_FLOAT = 39,            /**< RGBA16 float format */
+    GRAPHIC_PIXEL_FMT_Y8 = 40,                 /**< Y8 format */
+    GRAPHIC_PIXEL_FMT_Y16 = 41,                /**< Y16 format */
     GRAPHIC_PIXEL_FMT_VENDER_MASK = 0X7FFF0000,     /**< vendor mask format */
     GRAPHIC_PIXEL_FMT_BUTT = 0X7FFFFFFF             /**< Invalid pixel format */
 };
@@ -140,18 +142,6 @@ using GraphicLayerType = enum {
     GRAPHIC_LAYER_TYPE_SDIEBAND,        /**< Sideband layer */
     GRAPHIC_LAYER_TYPE_CURSOR,          /**< Cursor Layer */
     GRAPHIC_LAYER_TYPE_BUTT             /**< Empty layer */
-};
-
-using ProducerInitInfo = struct {
-    uint64_t uniqueId;
-    int32_t width;
-    int32_t height;
-    std::string name;
-    std::string appName;
-    bool isInHebcList;
-    std::string bufferName;
-    uint64_t producerId;
-    int32_t transformHint;
 };
 
 using GraphicLayerInfo = struct {

@@ -69,6 +69,10 @@ using BufferElement = struct BufferElement {
      */
     bool isAutoTimestamp;
     bool isPreAllocBuffer = false;
+    /**
+     * lastAcquireTime is the time when this buffer was acquired last time through AcquireBuffer interface.
+     */
+    int64_t lastAcquireTime;
 };
 
 using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
@@ -217,6 +221,7 @@ public:
     GSError ConnectStrictly();
     GSError DisconnectStrictly();
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount);
+    GSError GetLastConsumeTime(int64_t &lastConsumeTime);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
@@ -235,7 +240,8 @@ private:
     void ClearLocked(std::unique_lock<std::mutex> &lock);
     bool CheckProducerCacheListLocked();
     GSError SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock);
-    GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence, int32_t timeOut);
+    GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence,
+        int32_t timeOut, std::map<uint32_t, BufferElement>::iterator &mapIter);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool needMap);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
     void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
@@ -337,6 +343,7 @@ private:
     bool bufferSupportFastCompose_ = false;
     uint32_t rotatingBufferNumber_ = 0;
     uint32_t detachReserveSlotNum_ = 0;
+    int64_t lastConsumeTime_ = 0;
 };
 }; // namespace OHOS
 

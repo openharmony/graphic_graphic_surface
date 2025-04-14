@@ -143,6 +143,11 @@ public:
         (void)allocBufferCount;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError GetLastConsumeTime(int64_t &lastConsumeTime) const
+    {
+        (void)lastConsumeTime;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

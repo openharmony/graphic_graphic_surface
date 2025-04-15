@@ -958,6 +958,116 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, Function | MediumTest | Level2)
 }
 
 /*
+* Function: PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+*                  2. operation: producer sends invalid width/height/format/allocBufferCount config to bufferQueue
+*                  3. result: bufferQueue return GSERROR_INVALID_ARGUMENTS
+*/
+HWTEST_F(BufferQueueTest, PreAllocBuffers001, Function | MediumTest | Level2)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    EXPECT_EQ(bqTmp->SetQueueSize(3), GSERROR_OK);
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x0,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 0);
+
+    requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x0,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 0);
+
+    requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_BUTT,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 0);
+
+    requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    allocBufferCount = 0;
+    ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 0);
+    bqTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+*                  2. operation: producer sends valid width/height/format/allocBufferCount config to bufferQueue
+*                  3. result: bufferQueue return GSERROR_OK
+*/
+HWTEST_F(BufferQueueTest, PreAllocBuffers002, Function | MediumTest | Level2)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    EXPECT_EQ(bqTmp->SetQueueSize(3), GSERROR_OK);
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 3);
+    bqTmp = nullptr;
+}
+
+/*
+* Function: PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+*                  2. operation: producer sends valid width/height/format/allocBufferCount and larger allocBufferCount
+*                       than empty bufferQueueSize config to bufferQueue
+*                  3. result: bufferQueue return GSERROR_OK
+*/
+HWTEST_F(BufferQueueTest, PreAllocBuffers003, Function | MediumTest | Level2)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    EXPECT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 1);
+    bqTmp = nullptr;
+}
+
+/*
 * Function: MarkBufferReclaimableByIdLocked
 * Type: Function
 * Rank: Important(2)

@@ -101,6 +101,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT_STRICTLY, ConnectStrictlyRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER, RegisterPropertyListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER, UnRegisterPropertyListenerRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, PreAllocBuffersRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -1141,6 +1142,22 @@ GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, s
     return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
 
+int32_t BufferQueueProducer::PreAllocBuffersRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    BufferRequestConfig config = {};
+    ReadRequestConfig(arguments, config);
+    uint32_t allocBufferCount = arguments.ReadUint32();
+    GSError sRet = PreAllocBuffers(config, allocBufferCount);
+    if (sRet != GSERROR_OK) {
+        BLOGE("PreAllocBuffers failed, width: %{public}d, height: %{public}d, format: %{public}d, usage: \
+            %{public}" PRIu64 ", allocBufferCount: %{public}u, sRet: %{public}d, uniqueId: %{public}" PRIu64 " ",
+            config.width, config.height, config.format, config.usage, allocBufferCount, sRet, uniqueId_);
+        return sRet;
+    }
+    return ERR_NONE;
+}
+
 GSError BufferQueueProducer::AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix)
 {
@@ -1713,6 +1730,14 @@ GSError BufferQueueProducer::SetGlobalAlpha(int32_t alpha)
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetGlobalAlpha(alpha);
+}
+
+GSError BufferQueueProducer::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->PreAllocBuffers(config, allocBufferCount);
 }
 
 sptr<NativeSurface> BufferQueueProducer::GetNativeSurface()

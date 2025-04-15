@@ -163,6 +163,13 @@ public:
     *        GSERROR_CONSUMER_DISCONNECTED.
     */
     GSError DisconnectStrictly() override;
+    /**
+    * @brief 1.The interface needs to be used before requestBuffer;otherwise,the buffer is already allocated,
+    *    causing the preAlloc interface to fail to optimize the buffer allocation time;
+    * 2.The specifications of the SurfaceBuffer preAlloc cannot exceed the size of the bufferQueueCache;
+    * 3.The interface is an asynchronous interface;
+    */
+    GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);

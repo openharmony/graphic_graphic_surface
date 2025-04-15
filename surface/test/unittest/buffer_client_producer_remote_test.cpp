@@ -801,4 +801,26 @@ HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, Function
     GSError ret = bp->UnRegisterPropertyListener(0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+* Function: PreAllocBuffers
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: call PreAllocBuffers and check the ret
+*                  2. operation: clents sends config to producer
+*                  3. result: All server-side asynchronous execution results return sucess
+*/
+HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, Function | MediumTest | Level2)
+{
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    ASSERT_EQ(bp->PreAllocBuffers(requestConfigTmp, allocBufferCount), OHOS::GSERROR_OK);
+}
 }

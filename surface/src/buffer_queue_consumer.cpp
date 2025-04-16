@@ -171,6 +171,14 @@ void BufferQueueConsumer::Dump(std::string &result) const
     return bufferQueue_->Dump(result);
 }
 
+void BufferQueueConsumer::DumpCurrentFrameLayer() const
+{
+    if (bufferQueue_ == nullptr) {
+        return;
+    }
+    return bufferQueue_->DumpCurrentFrameLayer();
+}
+
 GraphicTransformType BufferQueueConsumer::GetTransform() const
 {
     if (bufferQueue_ == nullptr) {

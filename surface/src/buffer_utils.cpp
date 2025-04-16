@@ -16,6 +16,7 @@
 #include "buffer_utils.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include <parameters.h>
 
 #include "buffer_log.h"
 #include "surface_buffer_impl.h"
@@ -49,6 +50,11 @@ GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
         return GSERROR_BINDER;
     }
     return GSERROR_OK;
+}
+
+bool GetBoolParameter(const std::string &name, const std::string &defaultValue)
+{
+    return system::GetParameter(name, defaultValue) != "0";
 }
 
 void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)

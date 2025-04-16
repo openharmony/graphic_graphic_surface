@@ -81,6 +81,8 @@ public:
 
     void Dump(std::string &result) const override;
 
+    void DumpCurrentFrameLayer() const override;
+
     GSError GoBackground() override;
 
     GSError SetTransform(GraphicTransformType transform) override;

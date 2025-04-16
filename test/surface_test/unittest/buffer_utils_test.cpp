@@ -220,4 +220,19 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, Function | MediumTest | Level2
     GSError ret = DumpToFileAsync(0, name_, buffer);
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
+
+/*
+* Function: GetBoolParameter
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetBoolParameter
+*                  2. check ret
+ */
+HWTEST_F(BufferUtilsTest, GetBoolParameter001, Function | MediumTest | Level2)
+{
+    EXPECT_TRUE(GetBoolParameter("name", "true"));
+    EXPECT_FALSE(GetBoolParameter("name", "false"));
+}
+
 }

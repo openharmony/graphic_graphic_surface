@@ -149,6 +149,23 @@ HWTEST_F(BufferQueueConsumerTest, AcqRel002, Function | MediumTest | Level2)
     ret = bqc->AttachBuffer(buffer, timeOut);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+ * Function: GetLastConsumeTime
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetLastConsumeTime
+ *                  2. check lastConsumeTime
+ */
+HWTEST_F(BufferQueueConsumerTest, GetLastConsumeTimeTest, Function | MediumTest | Level2)
+{
+    int64_t lastConsumeTime = 0;
+    bqc->GetLastConsumeTime(lastConsumeTime);
+    std::cout << "lastConsumeTime = " << lastConsumeTime << std::endl;
+    ASSERT_NE(lastConsumeTime, 0);
+}
+
 /*
  * Function: AttachBuffer001
  * Type: Function

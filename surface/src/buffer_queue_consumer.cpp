@@ -338,4 +338,12 @@ GSError BufferQueueConsumer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
     }
     return bufferQueue_->GetCycleBuffersNumber(cycleBuffersNumber);
 }
+
+GSError BufferQueueConsumer::GetLastConsumeTime(int64_t &lastConsumeTime) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetLastConsumeTime(lastConsumeTime);
+}
 } // namespace OHOS

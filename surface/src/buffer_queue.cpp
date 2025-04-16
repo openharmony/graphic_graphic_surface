@@ -15,6 +15,7 @@
 
 #include "buffer_queue.h"
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <linux/dma-buf.h>
 #include <sstream>
@@ -811,6 +812,8 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     if (ret == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
         bufferQueueCache_[sequence].state = BUFFER_STATE_ACQUIRED;
+        bufferQueueCache_[sequence].lastAcquireTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
 
         fence = bufferQueueCache_[sequence].fence;
         timestamp = bufferQueueCache_[sequence].timestamp;
@@ -979,6 +982,9 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
 
         bufferQueueCache_[sequence].state = BUFFER_STATE_RELEASED;
         bufferQueueCache_[sequence].fence = fence;
+        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        lastConsumeTime_ = now - bufferQueueCache_[sequence].lastAcquireTime;
 
         if (bufferQueueCache_[sequence].isDeleting) {
             DeleteBufferInCache(sequence, lock);
@@ -2234,6 +2240,13 @@ GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     rotatingBufferNumber_ = cycleBuffersNumber;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetLastConsumeTime(int64_t &lastConsumeTime)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    lastConsumeTime = lastConsumeTime_;
     return GSERROR_OK;
 }
 }; // namespace OHOS

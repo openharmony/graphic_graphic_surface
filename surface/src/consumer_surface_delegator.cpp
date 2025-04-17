@@ -41,9 +41,24 @@ GSError ConsumerSurfaceDelegator::ReleaseBuffer(int slot, int releaseFenceFd)
     return GSERROR_OK;
 }
 
-GSError ConsumerSurfaceDelegator::CancelBuffer(sptr<SurfaceBuffer>& buffer)
+GSError ConsumerSurfaceDelegator::CancelBuffer(int32_t slot, int32_t fenceFd)
 {
     return GSERROR_OK;
+}
+
+GSError ConsumerSurfaceDelegator::AsyncDequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+    struct IBufferProducer::RequestBufferReturnValue& retval)
+{
+    return GSERROR_OK;
+}
+
+GSError ConsumerSurfaceDelegator::AsyncQueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd)
+{
+    return GSERROR_OK;
+}
+
+void ConsumerSurfaceDelegator::GetAncoAsyncFlag()
+{
 }
 
 GSError ConsumerSurfaceDelegator::DetachBuffer(sptr<SurfaceBuffer>& buffer)

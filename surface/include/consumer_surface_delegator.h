@@ -28,7 +28,7 @@ public:
                           struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError QueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd);
     GSError ReleaseBuffer(int slot, int releaseFenceFd);
-    GSError CancelBuffer(sptr<SurfaceBuffer>& buffer);
+    GSError CancelBuffer(int32_t slot, int32_t fenceFd);
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer);
     bool SetBufferQueue(BufferQueue* bufferQueue);
     int OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
@@ -37,6 +37,10 @@ protected:
 
 private:
     ConsumerSurfaceDelegator() = default;
+    GSError AsyncDequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+        struct IBufferProducer::RequestBufferReturnValue& retval);
+    GSError AsyncQueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd);
+    void GetAncoAsyncFlag();
     std::map<int32_t, sptr<SurfaceBuffer>> slotBufferMap_;
     BufferQueue* bufferQueue_ = nullptr;
 };

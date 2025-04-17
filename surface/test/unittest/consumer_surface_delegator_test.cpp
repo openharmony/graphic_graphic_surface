@@ -123,7 +123,9 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, ReleaseBuffer001, Function | MediumTest |
  */
 HWTEST_F(ConsumerSurfaceDelegatorTest, CancelBuffer001, Function | MediumTest | Level2)
 {
-    GSError ret = consumerDelegator->CancelBuffer(buffer);
+    int32_t slot = 0;
+    int32_t fenceFd = -1;
+    GSError ret = consumerDelegator->CancelBuffer(slot, fenceFd);
     ASSERT_EQ(ret, GSERROR_OK);
 }
 

@@ -231,8 +231,8 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, Function | MediumTest | Level2
  */
 HWTEST_F(BufferUtilsTest, GetBoolParameter001, Function | MediumTest | Level2)
 {
-    EXPECT_TRUE(GetBoolParameter("name", "true"));
-    EXPECT_FALSE(GetBoolParameter("name", "false"));
+    EXPECT_TRUE(GetBoolParameter("name", "1"));
+    EXPECT_FALSE(GetBoolParameter("name", "0"));
 }
 
 }

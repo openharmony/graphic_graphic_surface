@@ -121,7 +121,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->SetDefaultWidthAndHeight(0, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->SetDefaultUsage(0), OHOS::GSERROR_INVALID_ARGUMENTS);
     consumer->Dump(result);
-    consumer->DumpCurrentFrameLayer(result);
+    consumer->DumpCurrentFrameLayer();
     ASSERT_EQ(consumer->GetTransform(), GraphicTransformType::GRAPHIC_ROTATE_BUTT);
     ASSERT_EQ(consumer->GetScalingMode(0, scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->QueryMetaDataType(0, type), OHOS::GSERROR_INVALID_ARGUMENTS);

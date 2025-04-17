@@ -1090,6 +1090,22 @@ HWTEST_F(ConsumerSurfaceTest, Dump001, Function | MediumTest | Level2)
 }
 
 /*
+ * Function: DumpCurrentFrameLayer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call DumpCurrentFrameLayer
+ *                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, DumpCurrentFrameLayer001, Function | MediumTest | Level2)
+{
+    surface_->DumpCurrentFrameLayer();
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    ASSERT_NE(surface_->consumer_, nullptr);
+}
+
+/*
 * Function: SetTransform and GetTransform
 * Type: Function
 * Rank: Important(2)

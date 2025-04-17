@@ -156,7 +156,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, Function | MediumTes
 {
     int32_t fenceFd = 3;
     GSError ret = consumerDelegator->AsyncQueueBuffer(buffer, fenceFd);
-    ASSERT_EQ(ret, ERR_NONE);
+    ASSERT_EQ(ret, GSERROR_OK);
 }
 
 /*
@@ -169,8 +169,8 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, Function | MediumTes
  */
 HWTEST_F(ConsumerSurfaceDelegatorTest, GetAncoAsyncFlag001, Function | MediumTest | Level2)
 {
-    GSError ret = consumerDelegator->GetAncoAsyncFlag();
-    ASSERT_EQ(ret, GSERROR_OK);
+    int ret = consumerDelegator->GetAncoAsyncFlag();
+    ASSERT_EQ(ret, ERR_NONE);
 }
 
 /*

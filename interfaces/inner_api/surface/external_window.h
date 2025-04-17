@@ -530,6 +530,17 @@ int32_t OH_NativeWindow_NativeWindowAbortBuffer(OHNativeWindow *window, OHNative
 /**
  * @brief Sets or obtains the attributes of a native window, including the width, height, and content format.
  *
+ * <p><strong>API Note</strong>
+ *
+ * <strong>Performance Note</strong>
+ * <p>By default, the window buffer in the current operating system is accessed via the CPU. If an application
+ * does not need to access the window buffer data using the CPU, it can proactively disable CPU access to
+ * enhance energy efficiency and reduce power consumption.
+ * </p>
+ * <p>For details about how to optimize power consumption for data read/write operations in data buffers,
+ * see [How do I proactively disable CPU access to window buffers to reduce power consumption?]{@link https://developer.huawei.com/consumer/en/doc/harmonyos-faqs/faqs-arkgraphics-2d-14}.</p>
+ * </p>
+ *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to an <b>OHNativeWindow</b> instance.
  * @param code Indicates the operation code, pointer to <b>NativeWindowOperation</b>.

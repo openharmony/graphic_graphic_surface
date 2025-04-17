@@ -123,8 +123,54 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, ReleaseBuffer001, Function | MediumTest |
  */
 HWTEST_F(ConsumerSurfaceDelegatorTest, CancelBuffer001, Function | MediumTest | Level2)
 {
-    GSError ret = consumerDelegator->CancelBuffer(buffer);
+    int32_t slot = 0;
+    int32_t fenceFd = -1;
+    GSError ret = consumerDelegator->CancelBuffer(slot, fenceFd);
     ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: AsyncDequeueBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AsyncDequeueBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncDequeueBuffer001, Function | MediumTest | Level2)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = consumerDelegator->AsyncDequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: AsyncQueueBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AsyncQueueBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, Function | MediumTest | Level2)
+{
+    int32_t fenceFd = 3;
+    GSError ret = consumerDelegator->AsyncQueueBuffer(buffer, fenceFd);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: GetAncoAsyncFlag
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetAncoAsyncFlag
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, GetAncoAsyncFlag001, Function | MediumTest | Level2)
+{
+    int ret = consumerDelegator->GetAncoAsyncFlag();
+    ASSERT_EQ(ret, ERR_NONE);
 }
 
 /*

@@ -40,7 +40,7 @@ private:
     GSError AsyncDequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
         struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError AsyncQueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd);
-    void GetAncoAsyncFlag();
+    int GetAncoAsyncFlag();
     std::map<int32_t, sptr<SurfaceBuffer>> slotBufferMap_;
     BufferQueue* bufferQueue_ = nullptr;
 };

@@ -57,8 +57,9 @@ GSError ConsumerSurfaceDelegator::AsyncQueueBuffer(sptr<SurfaceBuffer>& buffer, 
     return GSERROR_OK;
 }
 
-void ConsumerSurfaceDelegator::GetAncoAsyncFlag()
+int ConsumerSurfaceDelegator::GetAncoAsyncFlag()
 {
+    return ERR_NONE;
 }
 
 GSError ConsumerSurfaceDelegator::DetachBuffer(sptr<SurfaceBuffer>& buffer)

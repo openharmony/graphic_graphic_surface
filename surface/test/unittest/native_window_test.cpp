@@ -2154,14 +2154,14 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, Functio
 }
 
 /*
-* Function: NativeWindowSetUsageAndFormat
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSet: call SET_USAGE with NATIVEBUFFER_USAGE_MEM_MMZ_CACHE and SET_FORMAT with
-*                             NATIVEBUFFER_PIXEL_FMT_Y8 and NATIVEBUFFER_PIXEL_FMT_Y16.
-*                  2. operation: request buffer and alloc buffer
-*                  3. result: request buffer and alloc buffer success
+ * Function: NativeWindowSetUsageAndFormat
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSet: call SET_USAGE with NATIVEBUFFER_USAGE_MEM_MMZ_CACHE and SET_FORMAT with
+ *                             NATIVEBUFFER_PIXEL_FMT_Y8 and NATIVEBUFFER_PIXEL_FMT_Y16.
+ *                  2. operation: request buffer and alloc buffer
+ *                  3. result: request buffer and alloc buffer success
  */
 HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, Function | MediumTest | Level1)
 {

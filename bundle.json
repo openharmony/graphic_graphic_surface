@@ -17,6 +17,7 @@
       "ram": "10000KB",
       "deps": {
         "components": [
+          "access_token",
           "bounds_checking_function",
           "c_utils",
           "config_policy",
@@ -28,7 +29,8 @@
           "hisysevent",
           "init",
           "ipc",
-          "jsoncpp"
+          "jsoncpp",
+          "samgr"
         ]
       },
       "build": {

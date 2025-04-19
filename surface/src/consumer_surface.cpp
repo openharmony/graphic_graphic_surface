@@ -703,4 +703,19 @@ GSError ConsumerSurface::GetLastConsumeTime(int64_t &lastConsumeTime) const
     }
     return consumer_->GetLastConsumeTime(lastConsumeTime);
 }
+
+GSError ConsumerSurface::SetMaxQueueSize(uint32_t queueSize)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->SetMaxQueueSize(queueSize);
+}
+GSError ConsumerSurface::GetMaxQueueSize(uint32_t &queueSize) const
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetMaxQueueSize(queueSize);
+}
 } // namespace OHOS

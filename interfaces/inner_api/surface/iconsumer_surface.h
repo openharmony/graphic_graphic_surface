@@ -148,6 +148,16 @@ public:
         (void)lastConsumeTime;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError SetMaxQueueSize(uint32_t queueSize)
+    {
+        (void)queueSize;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetMaxQueueSize(uint32_t &queueSize) const
+    {
+        (void)queueSize;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

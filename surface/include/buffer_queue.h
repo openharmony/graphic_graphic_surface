@@ -222,6 +222,8 @@ public:
     GSError DisconnectStrictly();
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount);
     GSError GetLastConsumeTime(int64_t &lastConsumeTime);
+    GSError SetMaxQueueSize(uint32_t queueSize);
+    GSError GetMaxQueueSize(uint32_t &queueSize) const;
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
@@ -344,6 +346,7 @@ private:
     uint32_t rotatingBufferNumber_ = 0;
     uint32_t detachReserveSlotNum_ = 0;
     int64_t lastConsumeTime_ = 0;
+    uint32_t maxQueueSize_ = 0;
 };
 }; // namespace OHOS
 

@@ -88,6 +88,8 @@ public:
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
     GSError GetLastConsumeTime(int64_t &lastConsumeTime) const;
+    GSError SetMaxQueueSize(uint32_t queueSize);
+    GSError GetMaxQueueSize(uint32_t &queueSize) const;
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

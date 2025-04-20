@@ -2495,4 +2495,31 @@ HWTEST_F(ConsumerSurfaceTest, DetachBufferFromQueueIsReserveSlot003, Function | 
     pSurface = nullptr;
     cSurface = nullptr;
 }
+
+/*
+* Function: SetMaxQueueSizeAndGetMaxQueueSize001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetMaxQueueSize and GetMaxQueueSize function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, SetMaxQueueSizeAndGetMaxQueueSize001, Function | MediumTest | Level2)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+
+    ASSERT_EQ(cSurface->SetMaxQueueSize(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(cSurface->SetMaxQueueSize(SURFACE_MAX_QUEUE_SIZE + 1), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(cSurface->SetQueueSize(2), OHOS::GSERROR_OK);
+    ASSERT_EQ(cSurface->GetQueueSize(), 2);
+    ASSERT_EQ(cSurface->SetMaxQueueSize(1), OHOS::GSERROR_OK);
+    ASSERT_EQ(cSurface->GetQueueSize(), 1);
+    ASSERT_EQ(cSurface->SetQueueSize(2), OHOS::GSERROR_OK);
+    ASSERT_EQ(cSurface->GetQueueSize(), 1);
+    ASSERT_EQ(cSurface->SetMaxQueueSize(2), OHOS::GSERROR_OK);
+    ASSERT_EQ(cSurface->GetQueueSize(), 1);
+
+    cSurface = nullptr;
+}
 }

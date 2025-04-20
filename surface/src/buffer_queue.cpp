@@ -1370,20 +1370,13 @@ GSError BufferQueue::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<S
     return GSERROR_OK;
 }
 
-GSError BufferQueue::SetQueueSize(uint32_t queueSize)
+GSError BufferQueue::SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std::mutex> &lock)
 {
-    if (queueSize == 0) {
-        BLOGW("queue size: %{public}u, uniqueId: %{public}" PRIu64 ".", queueSize, uniqueId_);
-        return GSERROR_INVALID_ARGUMENTS;
+    if (maxQueueSize_ != 0 && queueSize > maxQueueSize_) {
+        BLOGD("queueSize(%{public}d) max than maxQueueSize_(%{public}d), uniqueId: %{public}" PRIu64,
+            queueSize, maxQueueSize_, uniqueId_);
+        queueSize = maxQueueSize_;
     }
-
-    if (queueSize > SURFACE_MAX_QUEUE_SIZE) {
-        BLOGW("invalid queueSize: %{public}u, uniqueId: %{public}" PRIu64 ".",
-            queueSize, uniqueId_);
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-
-    std::unique_lock<std::mutex> lock(mutex_);
     if (queueSize < detachReserveSlotNum_) {
         BLOGW("invalid queueSize: %{public}u, reserveSlotNum: %{public}u, uniqueId: %{public}" PRIu64 ".",
             queueSize, detachReserveSlotNum_, uniqueId_);
@@ -1399,8 +1392,17 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
     } else {
         bufferQueueSize_ = queueSize;
     }
-
     return GSERROR_OK;
+}
+
+GSError BufferQueue::SetQueueSize(uint32_t queueSize)
+{
+    if (queueSize == 0 || queueSize > SURFACE_MAX_QUEUE_SIZE) {
+        BLOGW("queue size: %{public}u, uniqueId: %{public}" PRIu64 ".", queueSize, uniqueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    return SetQueueSizeLocked(queueSize, lock);
 }
 
 GSError BufferQueue::GetName(std::string &name)
@@ -2358,6 +2360,27 @@ GSError BufferQueue::GetLastConsumeTime(int64_t &lastConsumeTime)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     lastConsumeTime = lastConsumeTime_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetMaxQueueSize(uint32_t queueSize)
+{
+    if (queueSize == 0 || queueSize > SURFACE_MAX_QUEUE_SIZE) {
+        BLOGW("invalid queueSize: %{public}u, uniqueId: %{public}" PRIu64 ".",
+            queueSize, uniqueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::unique_lock<std::mutex> lock(mutex_);
+    maxQueueSize_ = queueSize;
+    if (bufferQueueSize_ > maxQueueSize_) {
+        return SetQueueSizeLocked(maxQueueSize_, lock);
+    }
+    return GSERROR_OK;
+}
+GSError BufferQueue::GetMaxQueueSize(uint32_t &queueSize) const
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    queueSize = maxQueueSize_;
     return GSERROR_OK;
 }
 }; // namespace OHOS

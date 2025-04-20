@@ -277,5 +277,8 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->GetLastFlushedDesiredPresentTimeStamp(
         lastFlushedDesiredPresentTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetBufferSupportFastCompose(bufferSupportFastCompose), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->SetMaxQueueSize(1), OHOS::SURFACE_ERROR_UNKOWN);
+    uint32_t maxQueueSize;
+    ASSERT_EQ(consumer->GetMaxQueueSize(maxQueueSize), OHOS::SURFACE_ERROR_UNKOWN);
 }
 }

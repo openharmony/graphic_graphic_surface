@@ -146,6 +146,8 @@ public:
         return GSERROR_NOT_SUPPORT;
     }
     GSError GetLastConsumeTime(int64_t &lastConsumeTime) const override;
+    GSError SetMaxQueueSize(uint32_t queueSize) override;
+    GSError GetMaxQueueSize(uint32_t &queueSize) const override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

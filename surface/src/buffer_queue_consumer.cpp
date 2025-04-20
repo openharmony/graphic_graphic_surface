@@ -346,4 +346,19 @@ GSError BufferQueueConsumer::GetLastConsumeTime(int64_t &lastConsumeTime) const
     }
     return bufferQueue_->GetLastConsumeTime(lastConsumeTime);
 }
+
+GSError BufferQueueConsumer::SetMaxQueueSize(uint32_t queueSize)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetMaxQueueSize(queueSize);
+}
+GSError BufferQueueConsumer::GetMaxQueueSize(uint32_t &queueSize) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetMaxQueueSize(queueSize);
+}
 } // namespace OHOS

@@ -286,7 +286,7 @@ private:
     void DeleteFreeListCacheLocked(uint32_t sequence);
 
     void MarkBufferReclaimableByIdLocked(uint32_t sequence);
-    GSError SetQueueSizeLocked(uint32_t queueSize);
+    GSError SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std::mutex> &lock);
 
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;

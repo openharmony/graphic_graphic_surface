@@ -1370,7 +1370,7 @@ GSError BufferQueue::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<S
     return GSERROR_OK;
 }
 
-GSError BufferQueue::SetQueueSizeLocked(uint32_t queueSize)
+GSError BufferQueue::SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std::mutex> &lock)
 {
     if (maxQueueSize_ != 0 && queueSize > maxQueueSize_) {
         BLOGD("queueSize(%{public}d) max than maxQueueSize_(%{public}d), uniqueId: %{public}" PRIu64,
@@ -1402,7 +1402,7 @@ GSError BufferQueue::SetQueueSize(uint32_t queueSize)
         return GSERROR_INVALID_ARGUMENTS;
     }
     std::unique_lock<std::mutex> lock(mutex_);
-    return SetQueueSizeLocked(queueSize);
+    return SetQueueSizeLocked(queueSize, lock);
 }
 
 GSError BufferQueue::GetName(std::string &name)
@@ -2370,10 +2370,10 @@ GSError BufferQueue::SetMaxQueueSize(uint32_t queueSize)
             queueSize, uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
-    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     maxQueueSize_ = queueSize;
     if (bufferQueueSize_ > maxQueueSize_) {
-        return SetQueueSizeLocked(maxQueueSize_);
+        return SetQueueSizeLocked(maxQueueSize_, lock);
     }
     return GSERROR_OK;
 }

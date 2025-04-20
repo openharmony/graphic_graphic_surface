@@ -1396,7 +1396,7 @@ GSError BufferQueue::SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std
 }
 
 GSError BufferQueue::SetQueueSize(uint32_t queueSize)
-{
+{ 
     if (queueSize == 0 || queueSize > SURFACE_MAX_QUEUE_SIZE) {
         BLOGW("queue size: %{public}u, uniqueId: %{public}" PRIu64 ".", queueSize, uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;

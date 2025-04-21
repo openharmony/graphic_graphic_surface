@@ -234,5 +234,4 @@ HWTEST_F(BufferUtilsTest, GetBoolParameter001, Function | MediumTest | Level2)
     EXPECT_TRUE(GetBoolParameter("name", "1"));
     EXPECT_FALSE(GetBoolParameter("name", "0"));
 }
-
 }

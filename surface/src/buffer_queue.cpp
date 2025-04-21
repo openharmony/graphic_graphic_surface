@@ -2100,9 +2100,9 @@ void BufferQueue::Dump(std::string &result)
 
 void BufferQueue::DumpCurrentFrameLayer()
 {
-    bool dumpStaticFrameEnabled = GetBoolParameter("persist.graphic.dumpstaticframe.enabled", "0");
+    bool dumpStaticFrameEnabled = GetBoolParameter("debug.dumpstaticframe.enabled", "0");
     if (!dumpStaticFrameEnabled) {
-        BLOGI("persist.graphic.dumpstaticframe.enabled not exist or not enable!");
+        BLOGI("debug.dumpstaticframe.enabled not exist or not enable!");
         return ;
     }
 

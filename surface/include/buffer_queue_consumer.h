@@ -84,6 +84,7 @@ public:
     GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache);
     uint32_t GetAvailableBufferCount() const;
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const;
+    GSError GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const;
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const;
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);

@@ -891,6 +891,48 @@ HWTEST_F(BufferQueueTest, GetLastFlushedDesiredPresentTimeStamp001, Function | M
 }
 
 /*
+* Function: GetFrontDesiredPresentTimeStamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check value
+*/
+HWTEST_F(BufferQueueTest, GetFrontDesiredPresentTimeStamp001, Function | MediumTest | Level2)
+{
+    int64_t result = 0;
+    bool isAutoTimeStamp = false;
+    bq->dirtyList_.clear();
+    GSError ret = bq->GetFrontDesiredPresentTimeStamp(result, isAutoTimeStamp);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+    ASSERT_EQ(result, 0);
+}
+
+
+/*
+* Function: GetFrontDesiredPresentTimeStamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check value
+*/
+HWTEST_F(BufferQueueTest, GetFrontDesiredPresentTimeStamp002, Function | MediumTest | Level2)
+{
+    int64_t timeStampValue = 100;
+    bool isAutoTimeStamp = false;
+    int64_t result = -1;
+    bq->dirtyList_.clear();
+    bq->bufferQueueCache_.clear();
+    uint32_t seqId = 100;
+    bq->dirtyList_.push_back(seqId);
+    bq->bufferQueueCache_[seqId].desiredPresentTimestamp = timeStampValue;
+    bq->bufferQueueCache_[seqId].isAutoTimestamp = isAutoTimeStamp;
+    GSError ret = bq->GetFrontDesiredPresentTimeStamp(result, isAutoTimeStamp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(result, timeStampValue);
+}
+
+
+/*
 * Function: GetBufferSupportFastCompose
 * Type: Function
 * Rank: Important(2)

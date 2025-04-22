@@ -244,6 +244,8 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     int32_t alpha = -1;
     int64_t lastFlushedDesiredPresentTimeStamp = -1;
     bool bufferSupportFastCompose = false;
+    int64_t frontDesiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
     ASSERT_EQ(consumer->AcquireBuffer(buffer, fence, timestamp, damages), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->ReleaseBuffer(buffer, fence), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
@@ -280,5 +282,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | 
     ASSERT_EQ(consumer->SetMaxQueueSize(1), OHOS::SURFACE_ERROR_UNKOWN);
     uint32_t maxQueueSize;
     ASSERT_EQ(consumer->GetMaxQueueSize(maxQueueSize), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetFrontDesiredPresentTimeStamp(
+        frontDesiredPresentTimeStamp, isAutoTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
 }
 }

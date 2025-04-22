@@ -158,6 +158,11 @@ public:
         (void)queueSize;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError GetFrontDesiredPresentTimeStamp(
+        [[maybe_unused]] int64_t &desiredPresentTimeStamp, [[maybe_unused]] bool &isAutoTimeStamp) const
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

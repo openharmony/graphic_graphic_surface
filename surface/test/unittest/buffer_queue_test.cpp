@@ -78,7 +78,7 @@ void BufferQueueTest::TearDownTestCase()
 * EnvConditions: N/A
 * CaseDescription: 1. call GetUsedSize and check ret
  */
-HWTEST_F(BufferQueueTest, GetUsedSize001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetUsedSize001, TestSize.Level0)
 {
     uint32_t usedSize = bq->GetUsedSize();
     ASSERT_NE(usedSize, -1);
@@ -94,7 +94,7 @@ HWTEST_F(BufferQueueTest, GetUsedSize001, Function | MediumTest | Level2)
 *                  3. call SetQueueSize again with abnormal input
 *                  4. check ret and call GetQueueSize
  */
-HWTEST_F(BufferQueueTest, QueueSize001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, QueueSize001, TestSize.Level0)
 {
     ASSERT_EQ(bq->GetQueueSize(), (uint32_t)SURFACE_DEFAULT_QUEUE_SIZE);
 
@@ -119,7 +119,7 @@ HWTEST_F(BufferQueueTest, QueueSize001, Function | MediumTest | Level2)
 *                  2. call GetQueueSize
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, QueueSize002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, QueueSize002, TestSize.Level0)
 {
     GSError ret = bq->SetQueueSize(-1);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -139,7 +139,7 @@ HWTEST_F(BufferQueueTest, QueueSize002, Function | MediumTest | Level2)
 *                  2. call AcquireBuffer and ReleaseBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
 
@@ -185,7 +185,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel001, Function | MediumTest | Level2)
 *                  2. call CancelBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
 
@@ -208,7 +208,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel002, Function | MediumTest | Level2)
 *                  2. call CancelBuffer 2 times
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel003, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel003, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
 
@@ -234,7 +234,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel003, Function | MediumTest | Level2)
 *                  2. call FlushBuffer 2 times
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel004, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel004, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
 
@@ -261,7 +261,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel004, Function | MediumTest | Level2)
 *                  2. call ReleaseBuffer 2 times
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel005, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel005, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
 
@@ -285,7 +285,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel005, Function | MediumTest | Level2)
 * CaseDescription: 1. call RequestBuffer and CancelBuffer by different retval
 *                  2. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel006, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel006, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
@@ -331,7 +331,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel006, Function | MediumTest | Level2)
 *                  3. call FlushBuffer
 *                  4. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel007, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel007, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
 
@@ -362,7 +362,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel007, Function | MediumTest | Level2)
 *                  3. call ReleaseBuffer
 *                  4. check ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel008, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel008, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
@@ -396,7 +396,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel008, Function | MediumTest | Level2)
 *                  2. call CancelBuffer
 *                  3. check retval and ret
  */
-HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     BufferRequestConfig deleteconfig = requestConfig;
@@ -420,7 +420,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, Function | MediumTest | Level2)
  * CaseDescription: 1. call GetLastConsumeTime
  *                  2. check lastConsumeTime
  */
-HWTEST_F(BufferQueueTest, GetLastConsumeTimeTest, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetLastConsumeTimeTest, TestSize.Level0)
 {
     int64_t lastConsumeTime = 0;
     bq->GetLastConsumeTime(lastConsumeTime);
@@ -437,7 +437,7 @@ HWTEST_F(BufferQueueTest, GetLastConsumeTimeTest, Function | MediumTest | Level2
 *                  2. call SetDesiredPresentTimestampAndUiTimestamp with empty parameter and check ret
 *                  3. repeatly call SetDesiredPresentTimestampAndUiTimestamp with different parameter and check ret
  */
-HWTEST_F(BufferQueueTest, SetDesiredPresentTimestampAndUiTimestamp001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SetDesiredPresentTimestampAndUiTimestamp001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     BufferRequestConfig config = requestConfig;
@@ -509,7 +509,7 @@ HWTEST_F(BufferQueueTest, SetDesiredPresentTimestampAndUiTimestamp001, Function 
 *                  2. call RequestBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, RequestBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RequestBuffer001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     BufferRequestConfig config = requestConfig;
@@ -528,7 +528,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer001, Function | MediumTest | Level2)
 *                  2. call RequestBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, RequestBuffer002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RequestBuffer002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     BufferRequestConfig config = requestConfig;
@@ -547,7 +547,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer002, Function | MediumTest | Level2)
 *                  2. call RequestBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueTest, RequestBuffer006, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RequestBuffer006, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     BufferRequestConfig config = requestConfig;
@@ -564,7 +564,7 @@ HWTEST_F(BufferQueueTest, RequestBuffer006, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call QueryIfBufferAvailable and check ret
  */
-HWTEST_F(BufferQueueTest, QueryIfBufferAvailable001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, QueryIfBufferAvailable001, TestSize.Level0)
 {
     bq->CleanCache(false, nullptr);
     bool ret = bq->QueryIfBufferAvailable();
@@ -588,7 +588,7 @@ HWTEST_F(BufferQueueTest, QueryIfBufferAvailable001, Function | MediumTest | Lev
 * EnvConditions: N/A
 * CaseDescription: 1. call GetName and check ret
  */
-HWTEST_F(BufferQueueTest, GetName001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetName001, TestSize.Level0)
 {
     std::string name("na");
     GSError ret = bq->GetName(name);
@@ -603,7 +603,7 @@ HWTEST_F(BufferQueueTest, GetName001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterConsumerListener and check ret
  */
-HWTEST_F(BufferQueueTest, RegisterConsumerListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RegisterConsumerListener001, TestSize.Level0)
 {
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     GSError ret = bq->RegisterConsumerListener(listener);
@@ -617,7 +617,7 @@ HWTEST_F(BufferQueueTest, RegisterConsumerListener001, Function | MediumTest | L
 * EnvConditions: N/A
 * CaseDescription: 1. call SetDefaultWidthAndHeight and check ret
  */
-HWTEST_F(BufferQueueTest, SetDefaultWidthAndHeight001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SetDefaultWidthAndHeight001, TestSize.Level0)
 {
     int width = 0;
     int height = 0;
@@ -641,7 +641,7 @@ HWTEST_F(BufferQueueTest, SetDefaultWidthAndHeight001, Function | MediumTest | L
 * EnvConditions: N/A
 * CaseDescription: 1. call GetDefaultWidth and check ret
  */
-HWTEST_F(BufferQueueTest, GetDefaultWidth001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetDefaultWidth001, TestSize.Level0)
 {
     int32_t width = 80;
     int32_t height = 80;
@@ -659,7 +659,7 @@ HWTEST_F(BufferQueueTest, GetDefaultWidth001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetDefaultUsage and check ret
  */
-HWTEST_F(BufferQueueTest, SetDefaultUsage001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SetDefaultUsage001, TestSize.Level0)
 {
     uint64_t usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA;
     GSError ret = bq->SetDefaultUsage(usage);
@@ -674,7 +674,7 @@ HWTEST_F(BufferQueueTest, SetDefaultUsage001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call CleanCache and check ret
  */
-HWTEST_F(BufferQueueTest, CleanCache001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, CleanCache001, TestSize.Level0)
 {
     GSError ret = bq->CleanCache(false, nullptr);
     ASSERT_EQ(ret, GSERROR_OK);
@@ -686,7 +686,7 @@ HWTEST_F(BufferQueueTest, CleanCache001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call AttachBufferUpdateStatus and check ret
  */
-HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, TestSize.Level0)
 {
     uint32_t sequence = 2;
     int32_t timeOut = 6;
@@ -704,7 +704,7 @@ HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, Function | MediumTest | Leve
 * EnvConditions: N/A
 * CaseDescription: 1. call AttachBuffer, DetachBuffer and check ret
  */
-HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, TestSize.Level0)
 {
     bq->CleanCache(false, nullptr);
     int32_t timeOut = 6;
@@ -723,7 +723,7 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, Function | MediumTest 
 * EnvConditions: N/A
 * CaseDescription: 1. call AttachBuffer, DetachBuffer and check ret
  */
-HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, TestSize.Level0)
 {
     bq->CleanCache(false, nullptr);
     int32_t timeOut = 6;
@@ -753,7 +753,7 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, Function | MediumTest 
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterSurfaceDelegator and check ret
  */
-HWTEST_F(BufferQueueTest, RegisterSurfaceDelegator001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
     surfaceDelegator = ProducerSurfaceDelegator::Create();
     GSError ret = bq->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), csurface1);
@@ -767,7 +767,7 @@ HWTEST_F(BufferQueueTest, RegisterSurfaceDelegator001, Function | MediumTest | L
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterDeleteBufferListener and check ret
  */
-HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, TestSize.Level0)
 {
     surfaceDelegator = ProducerSurfaceDelegator::Create();
     GSError ret = bq->RegisterDeleteBufferListener(nullptr, true);
@@ -783,7 +783,7 @@ HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, Function | MediumTest
 *                  2. call RequestBuffer and check ret (this will call DelegatorDequeueBuffer)
 *                  3. call FlushBuffer and check ret (this will call DelegatorQueueBuffer)
  */
-HWTEST_F(BufferQueueTest, QueueAndDequeueDelegator001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, QueueAndDequeueDelegator001, TestSize.Level0)
 {
     surfaceDelegator = ProducerSurfaceDelegator::Create();
     GSError ret = bq->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), csurface1);
@@ -808,7 +808,7 @@ HWTEST_F(BufferQueueTest, QueueAndDequeueDelegator001, Function | MediumTest | L
 * CaseDescription: 1. call SetSurfaceSourceType and check ret
 *                  2. call GetSurfaceSourceType and check the value
 */
-HWTEST_F(BufferQueueTest, SurfaceSourceType001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SurfaceSourceType001, TestSize.Level0)
 {
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
     GSError ret = bq->SetSurfaceSourceType(sourceType);
@@ -823,7 +823,7 @@ HWTEST_F(BufferQueueTest, SurfaceSourceType001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetSurfaceAppFrameworkType and check ret
 */
-HWTEST_F(BufferQueueTest, SetSurfaceAppFrameworkType001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SetSurfaceAppFrameworkType001, TestSize.Level0)
 {
     std::string type = "";
     GSError ret = bq->SetSurfaceAppFrameworkType(type);
@@ -845,7 +845,7 @@ HWTEST_F(BufferQueueTest, SetSurfaceAppFrameworkType001, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call GetSurfaceAppFrameworkType and check value
 */
-HWTEST_F(BufferQueueTest, GetSurfaceAppFrameworkType001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetSurfaceAppFrameworkType001, TestSize.Level0)
 {
     std::string type = "test";
     GSError ret = bq->SetSurfaceAppFrameworkType(type);
@@ -861,7 +861,7 @@ HWTEST_F(BufferQueueTest, GetSurfaceAppFrameworkType001, Function | MediumTest |
 * CaseDescription: 1. call SetGlobalAlpha and check value
 *                  2. call GetGlobalAlpha and check value
 */
-HWTEST_F(BufferQueueTest, SetGlobalAlpha001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SetGlobalAlpha001, TestSize.Level0)
 {
     int32_t alpha = 255;
     GSError ret = bq->SetGlobalAlpha(alpha);
@@ -880,7 +880,7 @@ HWTEST_F(BufferQueueTest, SetGlobalAlpha001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call GetLastFlushedDesiredPresentTimeStamp and check value
 */
-HWTEST_F(BufferQueueTest, GetLastFlushedDesiredPresentTimeStamp001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetLastFlushedDesiredPresentTimeStamp001, TestSize.Level0)
 {
     int64_t timeStampValue = 100000;
     bq->lastFlushedDesiredPresentTimeStamp_ = timeStampValue;
@@ -897,7 +897,7 @@ HWTEST_F(BufferQueueTest, GetLastFlushedDesiredPresentTimeStamp001, Function | M
 * EnvConditions: N/A
 * CaseDescription: 1. call GetBufferSupportFastCompose and check value
 */
-HWTEST_F(BufferQueueTest, GetBufferSupportFastCompose001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, GetBufferSupportFastCompose001, TestSize.Level0)
 {
     bool supportFastCompose = true;
     bq->bufferSupportFastCompose_ = supportFastCompose;
@@ -914,7 +914,7 @@ HWTEST_F(BufferQueueTest, GetBufferSupportFastCompose001, Function | MediumTest 
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterProducerPropertyListener and check value
 */
-HWTEST_F(BufferQueueTest, RegisterProducerPropertyListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, RegisterProducerPropertyListener001, TestSize.Level0)
 {
     bool producerId = 6;
     OnReleaseFunc onBufferRelease = nullptr;
@@ -931,7 +931,7 @@ HWTEST_F(BufferQueueTest, RegisterProducerPropertyListener001, Function | Medium
 * EnvConditions: N/A
 * CaseDescription: 1. call UnRegisterProducerPropertyListener and check value
 */
-HWTEST_F(BufferQueueTest, UnRegisterProducerPropertyListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, UnRegisterProducerPropertyListener001, TestSize.Level0)
 {
     bool producerId = 6;
     OnReleaseFunc onBufferRelease = nullptr;
@@ -948,7 +948,7 @@ HWTEST_F(BufferQueueTest, UnRegisterProducerPropertyListener001, Function | Medi
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTransformHint and check value
 */
-HWTEST_F(BufferQueueTest, SetTransformHint001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, SetTransformHint001, TestSize.Level0)
 {
     GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_90;
     uint64_t producerId = 0;
@@ -966,7 +966,7 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, Function | MediumTest | Level2)
 *                  2. operation: producer sends invalid width/height/format/allocBufferCount config to bufferQueue
 *                  3. result: bufferQueue return GSERROR_INVALID_ARGUMENTS
 */
-HWTEST_F(BufferQueueTest, PreAllocBuffers001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, PreAllocBuffers001, TestSize.Level0)
 {
     BufferQueue *bqTmp = new BufferQueue("testTmp");
     EXPECT_EQ(bqTmp->SetQueueSize(3), GSERROR_OK);
@@ -1023,7 +1023,7 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers001, Function | MediumTest | Level2)
 *                  2. operation: producer sends valid width/height/format/allocBufferCount config to bufferQueue
 *                  3. result: bufferQueue return GSERROR_OK
 */
-HWTEST_F(BufferQueueTest, PreAllocBuffers002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, PreAllocBuffers002, TestSize.Level0)
 {
     BufferQueue *bqTmp = new BufferQueue("testTmp");
     EXPECT_EQ(bqTmp->SetQueueSize(3), GSERROR_OK);
@@ -1050,7 +1050,7 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers002, Function | MediumTest | Level2)
 *                       than empty bufferQueueSize config to bufferQueue
 *                  3. result: bufferQueue return GSERROR_OK
 */
-HWTEST_F(BufferQueueTest, PreAllocBuffers003, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, PreAllocBuffers003, TestSize.Level0)
 {
     BufferQueue *bqTmp = new BufferQueue("testTmp");
     EXPECT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
@@ -1074,7 +1074,7 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers003, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call MarkBufferReclaimableByIdLocked and check value
 */
-HWTEST_F(BufferQueueTest, MarkBufferReclaimableByIdLocked001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueTest, MarkBufferReclaimableByIdLocked001, TestSize.Level0)
 {
     for (const auto &[id, ele] : bq->bufferQueueCache_) {
         printf("seq: %u\n", id);

@@ -37,7 +37,8 @@ public:
     sptr<OHOS::Surface> CreateSurface();
 
     static inline sptr<IConsumerSurface> cSurface = nullptr;
-    static inline int32_t pipeFd[2] = {};
+    static inline int32_t pipeMain[2] = {};
+    static inline int32_t pipeChild[2] = {};
     static inline int32_t ipcSystemAbilityID = 34156;
     static inline BufferRequestConfig requestConfig = {};
     static inline BufferFlushConfig flushConfig = {};
@@ -126,14 +127,15 @@ sptr<OHOS::Surface> SurfaceIPCTest::CreateSurface()
 
 pid_t SurfaceIPCTest::ChildProcessMain()
 {
-    pipe(pipeFd);
+    pipe(pipeMain);
+    pipe(pipeChild);
     pid_t pid = fork();
     if (pid != 0) {
         return pid;
     }
 
     int64_t data;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeMain[0], &data, sizeof(data));
 
     auto pSurface = CreateSurface();
     pSurface->RegisterReleaseListener(OnBufferRelease);
@@ -142,33 +144,35 @@ pid_t SurfaceIPCTest::ChildProcessMain()
     auto sRet = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
     if (sRet != OHOS::GSERROR_OK) {
         data = sRet;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeChild[1], &data, sizeof(data));
         exit(0);
     }
     sRet = SetData(buffer, pSurface);
     if (sRet != OHOS::GSERROR_OK) {
         data = sRet;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeChild[1], &data, sizeof(data));
         exit(0);
     }
 
     sRet = pSurface->FlushBuffer(buffer, -1, flushConfig);
     data = sRet;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeChild[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeMain[0], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_DELAY;
     int64_t time = 0;
     sRet = pSurface->GetPresentTimestamp(buffer->GetSeqNum(), type, time);
     if (sRet != OHOS::GSERROR_OK || time != 1) {
         data = sRet;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeChild[1], &data, sizeof(data));
         exit(0);
     }
     pSurface->UnRegisterReleaseListener();
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     exit(0);
     return 0;
 }
@@ -183,7 +187,7 @@ pid_t SurfaceIPCTest::ChildProcessMain()
 *                  3. call RequestBuffer in this process, check sRet and buffer
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
-HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceIPCTest, BufferIPC001, TestSize.Level0)
 {
     auto pid = ChildProcessMain();
     ASSERT_GE(pid, 0);
@@ -213,9 +217,9 @@ HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 0;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeMain[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeChild[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     sptr<SurfaceBuffer> buffer = nullptr;
@@ -239,9 +243,11 @@ HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
     ASSERT_EQ(bufferSecond, nullptr);
 
     //close resource
-    write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    write(pipeMain[1], &data, sizeof(data));
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     sam->RemoveSystemAbility(ipcSystemAbilityID);
     int32_t ret = 0;
     do {
@@ -256,7 +262,7 @@ HWTEST_F(SurfaceIPCTest, BufferIPC001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call Disconnect in other process, check sRet
  */
-HWTEST_F(SurfaceIPCTest, Disconnect001, Function | MediumTest | Level1)
+HWTEST_F(SurfaceIPCTest, Disconnect001, TestSize.Level0)
 {
     cSurface->RegisterConsumerListener(this);
     auto producer = cSurface->GetProducer();

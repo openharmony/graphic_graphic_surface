@@ -39,7 +39,8 @@ public:
     int32_t InitNativeWindowAndBuffer(sptr<IRemoteObject> robj);
 
     static inline sptr<OHOS::IConsumerSurface> cSurface = nullptr;
-    static inline int32_t pipeFd[2] = {};
+    static inline int32_t pipeMain[2] = {};
+    static inline int32_t pipeChild[2] = {};
     static inline int32_t ipcSystemAbilityID = 34156;
 };
 
@@ -157,14 +158,15 @@ int32_t NativeWindowBufferTest::InitNativeWindowAndBuffer(sptr<IRemoteObject> ro
 
 pid_t NativeWindowBufferTest::ChildProcessMain()
 {
-    pipe(pipeFd);
+    pipe(pipeMain);
+    pipe(pipeChild);
     pid_t pid = fork();
     if (pid != 0) {
         return pid;
     }
 
     int64_t data;
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeMain[0], &data, sizeof(data));
 
     sptr<IRemoteObject> robj = nullptr;
     while (true) {
@@ -178,17 +180,19 @@ pid_t NativeWindowBufferTest::ChildProcessMain()
     int32_t ret = InitNativeWindowAndBuffer(robj);
     if (ret != OHOS::GSERROR_OK) {
         data = ret;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeChild[1], &data, sizeof(data));
         exit(0);
         return -1;
     }
 
     data = ret;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeChild[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    read(pipeMain[0], &data, sizeof(data));
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     exit(0);
     return 0;
 }
@@ -202,7 +206,7 @@ pid_t NativeWindowBufferTest::ChildProcessMain()
 *                  2. consume surface and check buffer
 * @tc.require: issueI5GMZN issueI5IWHW
  */
-HWTEST_F(NativeWindowBufferTest, Surface001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowBufferTest, Surface001, TestSize.Level0)
 {
     auto pid = ChildProcessMain();
     ASSERT_GE(pid, 0);
@@ -233,9 +237,9 @@ HWTEST_F(NativeWindowBufferTest, Surface001, Function | MediumTest | Level2)
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 0;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeMain[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeChild[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     OHOS::sptr<SurfaceBuffer> buffer = nullptr;
@@ -250,9 +254,11 @@ HWTEST_F(NativeWindowBufferTest, Surface001, Function | MediumTest | Level2)
     ret = cSurface->ReleaseBuffer(buffer, -1);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
-    write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    write(pipeMain[1], &data, sizeof(data));
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     sam->RemoveSystemAbility(ipcSystemAbilityID);
     waitpid(pid, nullptr, 0);
 }

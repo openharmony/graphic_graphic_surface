@@ -139,7 +139,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess001(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow001, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -262,7 +262,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess002(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindow002, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -368,7 +368,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess003(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId001, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -524,7 +524,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess004(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId002, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_CreateNativeWindowFromSurfaceId002, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -665,7 +665,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess005(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_GetLastFlushedBufferV2001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetLastFlushedBufferV2001, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -757,7 +757,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess006(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeObjectReference001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeObjectReference001, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -877,7 +877,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess007(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_GetSurfaceId001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_GetSurfaceId001, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -1041,7 +1041,7 @@ int32_t NativeWindowTest::ThreadNativeWindowProcess008(int32_t *pipeRead, int32_
     return 0;
 }
 
-HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, TestSize.Level0)
 {
     int32_t pipeRead[2] = {};
     int32_t pipeWrite[2] = {};
@@ -1103,7 +1103,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowAttachBuffer001, Function
  *                  3. result: The requested buffer format attribute is NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT,
  *                     and NATIVEBUFFER_PIXEL_FMT_RGBA16_FLOAT equal GRAPHIC_PIXEL_FMT_RGBA16_FLOAT
  */
-HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowSetFormat001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowTest, OH_NativeWindow_NativeWindowSetFormat001, TestSize.Level0)
 {
     // preSetup
     sptr<IConsumerSurface> cSurface = IConsumerSurface::Create("SurfaceB");

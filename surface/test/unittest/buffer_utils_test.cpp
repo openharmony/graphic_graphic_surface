@@ -77,7 +77,7 @@ void BufferUtilsTest::TearDownTestCase()
 * CaseDescription: 1. call DumpToFileAsync
 *                  2. check ret
  */
-HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2)
+HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, TestSize.Level0)
 {
     const pid_t pid = GetRealPid();
 
@@ -122,7 +122,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest001, Function | MediumTest | Level2
 * CaseDescription: 1. call DumpToFileAsync
 *                  2. check ret
  */
-HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, Function | MediumTest | Level2)
+HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, TestSize.Level0)
 {
     const pid_t pid = GetRealPid();
 
@@ -169,7 +169,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, Function | MediumTest | Level2
 * CaseDescription: 1. call DumpToFileAsync
 *                  2. check ret
  */
-HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, Function | MediumTest | Level2)
+HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, TestSize.Level0)
 {
     buffer = nullptr;
     GSError ret = DumpToFileAsync(0, name_, buffer);
@@ -183,7 +183,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest003, Function | MediumTest | Level2
 * EnvConditions: N/A
 * CaseDescription: 1. make size bigger than SURFACE_PARCEL_SIZE_LIMIT and check the ret
  */
-HWTEST_F(BufferUtilsTest, SizeLimitTest001, Function | MediumTest | Level2)
+HWTEST_F(BufferUtilsTest, SizeLimitTest001, TestSize.Level0)
 {
     MessageParcel parcel;
     uint32_t size = SURFACE_PARCEL_SIZE_LIMIT + 1;
@@ -229,7 +229,7 @@ HWTEST_F(BufferUtilsTest, SizeLimitTest001, Function | MediumTest | Level2)
 * CaseDescription: 1. call ReadSurfaceProperty
 *                  2. check ret
  */
-HWTEST_F(BufferUtilsTest, ReadSurfacePropertyTest001, Function | MediumTest | Level2)
+HWTEST_F(BufferUtilsTest, ReadSurfacePropertyTest001, TestSize.Level0)
 {
     MessageParcel parcel;
     SurfaceProperty surfaceProperty;
@@ -246,7 +246,7 @@ HWTEST_F(BufferUtilsTest, ReadSurfacePropertyTest001, Function | MediumTest | Le
 * CaseDescription: 1. call WriteSurfaceProperty
 *                  2. check ret
  */
-HWTEST_F(BufferUtilsTest, WriteSurfacePropertyTest001, Function | MediumTest | Level2)
+HWTEST_F(BufferUtilsTest, WriteSurfacePropertyTest001, TestSize.Level0)
 {
     MessageParcel parcel;
     SurfaceProperty surfaceProperty;

@@ -2061,11 +2061,9 @@ void BufferQueue::DumpCache(std::string &result)
         result += " HDR = " + std::to_string(element.hdrMetaDataType) + ", ";
 
         double bufferMemSize = 0;
-        if (element.buffer != nullptr) {
-            result += " bufferWith = " + std::to_string(element.buffer->GetWidth()) +
-                    ", bufferHeight = " + std::to_string(element.buffer->GetHeight());
-            bufferMemSize = static_cast<double>(element.buffer->GetSize()) / BUFFER_MEMSIZE_RATE;
-        }
+        result += " bufferWith = " + std::to_string(element.buffer->GetWidth()) +
+                ", bufferHeight = " + std::to_string(element.buffer->GetHeight());
+        bufferMemSize = static_cast<double>(element.buffer->GetSize()) / BUFFER_MEMSIZE_RATE;
 
         std::ostringstream ss;
         ss.precision(BUFFER_MEMSIZE_FORMAT);

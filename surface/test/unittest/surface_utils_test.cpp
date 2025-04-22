@@ -76,7 +76,7 @@ void SurfaceUtilsTest::TearDownTestCase()
 * CaseDescription: 1. call GetInstance
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, GetInstance001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, GetInstance001, TestSize.Level0)
 {
     utils = SurfaceUtils::GetInstance();
     ASSERT_NE(utils, nullptr);
@@ -90,7 +90,7 @@ HWTEST_F(SurfaceUtilsTest, GetInstance001, Function | MediumTest | Level2)
 * CaseDescription: 1. call Add
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, Add001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, Add001, TestSize.Level0)
 {
     GSError ret = utils->Add(psurface1->GetUniqueId(), nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -104,7 +104,7 @@ HWTEST_F(SurfaceUtilsTest, Add001, Function | MediumTest | Level2)
 * CaseDescription: 1. call Add 2 times
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, Add002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, Add002, TestSize.Level0)
 {
     GSError ret = utils->Add(psurface1->GetUniqueId(), psurface1);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -121,7 +121,7 @@ HWTEST_F(SurfaceUtilsTest, Add002, Function | MediumTest | Level2)
 * CaseDescription: 1. call GetSurface by abnormal uniqueId
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, GetSurface001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, GetSurface001, TestSize.Level0)
 {
     sptr<Surface> surface = utils->GetSurface(0);
     ASSERT_EQ(surface, nullptr);
@@ -135,7 +135,7 @@ HWTEST_F(SurfaceUtilsTest, GetSurface001, Function | MediumTest | Level2)
 * CaseDescription: 1. call GetSurface
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, GetSurface002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, GetSurface002, TestSize.Level0)
 {
     sptr<Surface> surface1 = utils->GetSurface(psurface1->GetUniqueId());
     ASSERT_NE(surface1, nullptr);
@@ -151,7 +151,7 @@ HWTEST_F(SurfaceUtilsTest, GetSurface002, Function | MediumTest | Level2)
 *                  3. call GetSurface again
 *                  4. check ret
  */
-HWTEST_F(SurfaceUtilsTest, GetSurface003, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, GetSurface003, TestSize.Level0)
 {
     sptr<Surface> surface2 = utils->GetSurface(psurface2->GetUniqueId());
     ASSERT_NE(surface2, nullptr);
@@ -171,7 +171,7 @@ HWTEST_F(SurfaceUtilsTest, GetSurface003, Function | MediumTest | Level2)
 * CaseDescription: 1. call Remove
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, Remove001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, Remove001, TestSize.Level0)
 {
     GSError ret = utils->Remove(0);
     ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
@@ -185,7 +185,7 @@ HWTEST_F(SurfaceUtilsTest, Remove001, Function | MediumTest | Level2)
 * CaseDescription: 1. call Remove 2 times
 *                  2. check ret
  */
-HWTEST_F(SurfaceUtilsTest, Remove002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, Remove002, TestSize.Level0)
 {
     GSError ret = utils->Remove(psurface1->GetUniqueId());
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -202,7 +202,7 @@ HWTEST_F(SurfaceUtilsTest, Remove002, Function | MediumTest | Level2)
 * CaseDescription: 1. call ComputeTransformMatrix
 *                  2. call ComputeTransformMatrixV2
  */
-HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix001, TestSize.Level0)
 {
     // Prepare params
     sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
@@ -241,7 +241,7 @@ bool SurfaceUtilsTest::IsArrayEmpty(const float arr[TRANSFORM_MATRIX_SIZE])
 * CaseDescription: 1. call ComputeTransformMatrix with small crop
 *                  2. call ComputeTransformMatrixV2 with small crop
  */
-HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix002, TestSize.Level0)
 {
     // Prepare params
     sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();

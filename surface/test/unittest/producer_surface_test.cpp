@@ -112,7 +112,7 @@ void ProducerSurfaceTest::TearDown()
 * EnvConditions: N/A
 * CaseDescription: 1. check pSurface
  */
-HWTEST_F(ProducerSurfaceTest, ProducerSurface001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ProducerSurface001, TestSize.Level0)
 {
     ASSERT_NE(pSurface, nullptr);
 }
@@ -124,7 +124,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurface001, Function | MediumTest | Level2
 * EnvConditions: N/A
 * CaseDescription: 1. check pSurface
  */
-HWTEST_F(ProducerSurfaceTest, GetProducerInitInfo001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, GetProducerInitInfo001, TestSize.Level0)
 {
     ProducerInitInfo info;
     GSError ret = surface_->GetProducerInitInfo(info);
@@ -139,7 +139,7 @@ HWTEST_F(ProducerSurfaceTest, GetProducerInitInfo001, Function | MediumTest | Le
 * CaseDescription: 1. call RequestBuffer with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, RequestBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     int releaseFence = -1;
@@ -155,7 +155,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer001, Function | MediumTest | Level2)
 * CaseDescription: 1. call RequestBuffer with nullptr params
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, RequestBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBuffer002, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
     int releaseFence = -1;
@@ -171,7 +171,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer002, Function | MediumTest | Level2)
 * CaseDescription: 1. call RequestBuffer with nullptr params
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, RequestBuffer003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBuffer003, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     sptr<SyncFence> releaseFence = nullptr;
@@ -187,7 +187,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer003, Function | MediumTest | Level2)
 * CaseDescription: 1. call RequestBuffer with nullptr params
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, RequestBuffer004, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBuffer004, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
     sptr<SyncFence> releaseFence = nullptr;
@@ -203,7 +203,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer004, Function | MediumTest | Level2)
 * CaseDescription: 1. call RequestBuffers with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, RequestBuffers001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBuffers001, TestSize.Level0)
 {
     std::vector<sptr<SurfaceBuffer>> sfbuffers;
     std::vector<sptr<SyncFence>> releaseFences;
@@ -219,7 +219,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffers001, Function | MediumTest | Level2)
 * CaseDescription: 1. call FlushBuffer with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, FlushBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, FlushBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->FlushBuffer(buffer, SyncFence::INVALID_FENCE, flushConfig);
@@ -234,7 +234,7 @@ HWTEST_F(ProducerSurfaceTest, FlushBuffer001, Function | MediumTest | Level2)
 * CaseDescription: 1. call FlushBuffer with nullptr params
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, FlushBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, FlushBuffer002, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->FlushBuffer(buffer, nullptr, flushConfig);
@@ -249,7 +249,7 @@ HWTEST_F(ProducerSurfaceTest, FlushBuffer002, Function | MediumTest | Level2)
 * CaseDescription: 1. call FlushBuffer with nullptr params
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, FlushBuffer003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, FlushBuffer003, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
     GSError ret = surface_->FlushBuffer(buffer, SyncFence::INVALID_FENCE, flushConfig);
@@ -264,7 +264,7 @@ HWTEST_F(ProducerSurfaceTest, FlushBuffer003, Function | MediumTest | Level2)
 * CaseDescription: 1. call FlushBuffers with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, FlushBuffers001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, FlushBuffers001, TestSize.Level0)
 {
     std::vector<sptr<SurfaceBuffer>> buffers;
     buffers.push_back(SurfaceBuffer::Create());
@@ -282,7 +282,7 @@ HWTEST_F(ProducerSurfaceTest, FlushBuffers001, Function | MediumTest | Level2)
 * CaseDescription: 1. call GetLastFlushedBuffer with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, GetLastFlushedBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, GetLastFlushedBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     sptr<SyncFence> fence;
@@ -299,7 +299,7 @@ HWTEST_F(ProducerSurfaceTest, GetLastFlushedBuffer001, Function | MediumTest | L
 * CaseDescription: 1. call CancelBuffer with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, CancelBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, CancelBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->CancelBuffer(buffer);
@@ -314,7 +314,7 @@ HWTEST_F(ProducerSurfaceTest, CancelBuffer001, Function | MediumTest | Level2)
 * CaseDescription: 1. call AttachBufferToQueue with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, AttachBufferToQueue001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, AttachBufferToQueue001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->AttachBufferToQueue(buffer);
@@ -329,7 +329,7 @@ HWTEST_F(ProducerSurfaceTest, AttachBufferToQueue001, Function | MediumTest | Le
 * CaseDescription: 1. call DetachBufferFromQueue with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, DetachBufferFromQueue001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, DetachBufferFromQueue001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->DetachBufferFromQueue(buffer);
@@ -344,7 +344,7 @@ HWTEST_F(ProducerSurfaceTest, DetachBufferFromQueue001, Function | MediumTest | 
 * CaseDescription: 1. call DetachBuffer with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, DetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, DetachBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->DetachBuffer(buffer);
@@ -362,7 +362,7 @@ HWTEST_F(ProducerSurfaceTest, DetachBuffer001, Function | MediumTest | Level2)
 *                  4. call GetQueueSize
 *                  5. check ret
  */
-HWTEST_F(ProducerSurfaceTest, QueueSize001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, QueueSize001, TestSize.Level0)
 {
     ASSERT_EQ(pSurface->GetQueueSize(), (uint32_t)SURFACE_DEFAULT_QUEUE_SIZE);
     GSError ret = pSurface->SetQueueSize(2);
@@ -382,7 +382,7 @@ HWTEST_F(ProducerSurfaceTest, QueueSize001, Function | MediumTest | Level2)
 * CaseDescription: 1. call GetQueueSize with producer_ is nullptr and check ret
 *                  2. call SetQueueSize with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, QueueSize002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, QueueSize002, TestSize.Level0)
 {
     uint32_t queueSize = surface_->GetQueueSize();
     ASSERT_EQ(queueSize, 0);
@@ -399,7 +399,7 @@ HWTEST_F(ProducerSurfaceTest, QueueSize002, Function | MediumTest | Level2)
 *                  2. call GetDefaultWidth with producer_ is nullptr and check ret
 *                  3. call GetDefaultHeight with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, DefaultWidthAndHeight001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, DefaultWidthAndHeight001, TestSize.Level0)
 {
     GSError ret = surface_->SetDefaultWidthAndHeight(0, 0);
     ASSERT_EQ(ret, OHOS::GSERROR_NOT_SUPPORT);
@@ -417,7 +417,7 @@ HWTEST_F(ProducerSurfaceTest, DefaultWidthAndHeight001, Function | MediumTest | 
 * CaseDescription: 1. call SetTransformHint with producer_ is nullptr and check ret
 *                  2. call GetTransformHint with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, TransformHint001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, TransformHint001, TestSize.Level0)
 {
     GSError ret = surface_->SetTransformHint(GraphicTransformType::GRAPHIC_ROTATE_NONE);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -433,7 +433,7 @@ HWTEST_F(ProducerSurfaceTest, TransformHint001, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetDefaultUsage with producer_ is nullptr and check ret
 *                  2. call GetDefaultUsage with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, DefaultUsage001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, DefaultUsage001, TestSize.Level0)
 {
     GSError ret = surface_->SetDefaultUsage(0);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -450,7 +450,7 @@ HWTEST_F(ProducerSurfaceTest, DefaultUsage001, Function | MediumTest | Level2)
 *                  2. call FlushBuffer
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
 
@@ -473,7 +473,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel001, Function | MediumTest | Level2
 *                  2. call FlushBuffer 2 times
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel002, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     int releaseFence = -1;
@@ -497,7 +497,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel002, Function | MediumTest | Level2
 * CaseDescription: 1. call AcquireBuffer and ReleaseBuffer many times
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel003, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     int32_t flushFence;
@@ -524,7 +524,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel003, Function | MediumTest | Level2
 *                  2. call CancelBuffer
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel004, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel004, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
 
@@ -545,7 +545,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel004, Function | MediumTest | Level2
 *                  2. call CancelBuffer 2 times
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel005, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel005, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
 
@@ -568,7 +568,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel005, Function | MediumTest | Level2
 * CaseDescription: 1. call RequestBuffer and CancelBuffer many times
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel006, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel006, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     sptr<SurfaceBuffer> buffer1;
@@ -603,7 +603,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel006, Function | MediumTest | Level2
 *                  2. call SetQueueSize 2 times
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, SetQueueSizeDeleting001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SetQueueSizeDeleting001, TestSize.Level0)
 {
     sptr<ConsumerSurface> cs = static_cast<ConsumerSurface*>(csurf.GetRefPtr());
     sptr<BufferQueueProducer> bqp = static_cast<BufferQueueProducer*>(cs->GetProducer().GetRefPtr());
@@ -626,7 +626,7 @@ HWTEST_F(ProducerSurfaceTest, SetQueueSizeDeleting001, Function | MediumTest | L
 *                  3. call CancelBuffer
 *                  4. check ret
  */
-HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel007, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel007, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
 
@@ -646,7 +646,7 @@ HWTEST_F(ProducerSurfaceTest, ReqCanFluAcqRel007, Function | MediumTest | Level2
 * CaseDescription: 1. call SetUserData and GetUserData many times
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, UserData001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, UserData001, TestSize.Level0)
 {
     GSError ret;
 
@@ -681,7 +681,7 @@ HWTEST_F(ProducerSurfaceTest, UserData001, Function | MediumTest | Level2)
 *                  2. SetUserData
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, UserDataChangeListen001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, UserDataChangeListen001, TestSize.Level0)
 {
     sptr<IConsumerSurface> csurfTestUserData = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTestUserData = new BufferConsumerListener();
@@ -736,7 +736,7 @@ HWTEST_F(ProducerSurfaceTest, UserDataChangeListen001, Function | MediumTest | L
 *                  2. SetUserData
 *                  3. check ret
  */
-HWTEST_F(ProducerSurfaceTest, UserDataChangeListen002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, UserDataChangeListen002, TestSize.Level0)
 {
     sptr<IConsumerSurface> csurfTestUserData = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTestUserData = new BufferConsumerListener();
@@ -785,7 +785,7 @@ HWTEST_F(ProducerSurfaceTest, UserDataChangeListen002, Function | MediumTest | L
 * CaseDescription: 1. call GetUniqueId
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, UniqueId001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, UniqueId001, TestSize.Level0)
 {
     uint64_t uniqueId = pSurface->GetUniqueId();
     ASSERT_NE(uniqueId, 0);
@@ -798,7 +798,7 @@ HWTEST_F(ProducerSurfaceTest, UniqueId001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call GetTransform with default and check ret
  */
-HWTEST_F(ProducerSurfaceTest, transform001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, transform001, TestSize.Level0)
 {
     GSError ret = pSurface->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -811,7 +811,7 @@ HWTEST_F(ProducerSurfaceTest, transform001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTransform with other parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, transform002, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, transform002, TestSize.Level0)
 {
     GSError ret = pSurface->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_90);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -824,7 +824,7 @@ HWTEST_F(ProducerSurfaceTest, transform002, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTransform with other parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, transform003, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, transform003, TestSize.Level0)
 {
     GSError ret = pSurface->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_180);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -837,7 +837,7 @@ HWTEST_F(ProducerSurfaceTest, transform003, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTransform with other parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, transform004, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, transform004, TestSize.Level0)
 {
     GSError ret = pSurface->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -851,7 +851,7 @@ HWTEST_F(ProducerSurfaceTest, transform004, Function | MediumTest | Level1)
 * CaseDescription: 1. call SetTransform with producer_ is nullptr and check ret
 *                  2. call GetTransform with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, transform005, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, transform005, TestSize.Level0)
 {
     GSError ret = surface_->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -868,7 +868,7 @@ HWTEST_F(ProducerSurfaceTest, transform005, Function | MediumTest | Level1)
 *                  2. operation: produce SetScalingMode with invaild sequece number
 *                  3. result: SetScalingMode failed and return GSERROR_NO_ENTRY
  */
-HWTEST_F(ProducerSurfaceTest, scalingMode001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, scalingMode001, TestSize.Level0)
 {
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GSError ret = pSurface->SetScalingMode(-1, scalingMode);
@@ -883,7 +883,7 @@ HWTEST_F(ProducerSurfaceTest, scalingMode001, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetScalingMode with normal parameters and check ret
 *                  2. call GetScalingMode and check ret
  */
-HWTEST_F(ProducerSurfaceTest, scalingMode002, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, scalingMode002, TestSize.Level0)
 {
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     sptr<SurfaceBuffer> buffer;
@@ -907,7 +907,7 @@ HWTEST_F(ProducerSurfaceTest, scalingMode002, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, scalingMode003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, scalingMode003, TestSize.Level0)
 {
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GSError ret = pSurface->SetScalingMode(scalingMode);
@@ -922,7 +922,7 @@ HWTEST_F(ProducerSurfaceTest, scalingMode003, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetScalingMode with producer_ is nullptr and check ret
 *                  2. call GetScalingMode and check ret
  */
-HWTEST_F(ProducerSurfaceTest, scalingMode004, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, scalingMode004, TestSize.Level0)
 {
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GSError ret = surface_->SetScalingMode(scalingMode);
@@ -940,7 +940,7 @@ HWTEST_F(ProducerSurfaceTest, scalingMode004, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetMetaData with abnormal parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaData001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, metaData001, TestSize.Level0)
 {
     std::vector<GraphicHDRMetaData> metaData;
     GSError ret = pSurface->SetMetaData(firstSeqnum, metaData);
@@ -954,7 +954,7 @@ HWTEST_F(ProducerSurfaceTest, metaData001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetMetaData with abnormal parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaData002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, metaData002, TestSize.Level0)
 {
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetaData data = {
@@ -974,7 +974,7 @@ HWTEST_F(ProducerSurfaceTest, metaData002, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetMetaData with normal parameters and check ret
 *                  2. call GetMetaData and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaData003, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, metaData003, TestSize.Level0)
 {
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetaData data = {
@@ -1004,7 +1004,7 @@ HWTEST_F(ProducerSurfaceTest, metaData003, Function | MediumTest | Level1)
 * CaseDescription: 1. call SetMetaData with producer_ is nullptr and check ret
 *                  2. call GetMetaData and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaData004, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, metaData004, TestSize.Level0)
 {
     std::vector<GraphicHDRMetaData> metaData;
     GSError ret = surface_->SetMetaData(0, metaData);
@@ -1028,7 +1028,7 @@ HWTEST_F(ProducerSurfaceTest, metaData004, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetUserData then SetMetadataValue and check ret
 *                  2. call get functions and compare
  */
-HWTEST_F(ProducerSurfaceTest, SetMetadataValue001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SetMetadataValue001, TestSize.Level0)
 {
     GSError ret;
     sptr<SurfaceBuffer> buffer_;
@@ -1078,7 +1078,7 @@ HWTEST_F(ProducerSurfaceTest, SetMetadataValue001, Function | MediumTest | Level
 * EnvConditions: N/A
 * CaseDescription: 1. call SetMetaDataSet with abnormal parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaDataSet001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, metaDataSet001, TestSize.Level0)
 {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
@@ -1094,7 +1094,7 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetMetaDataSet with abnormal parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaDataSet002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, metaDataSet002, TestSize.Level0)
 {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
@@ -1113,7 +1113,7 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet002, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetMetaDataSet with normal parameters and check ret
 *                  2. call GetMetaDataSet and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, metaDataSet003, TestSize.Level0)
 {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
@@ -1142,7 +1142,7 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet003, Function | MediumTest | Level1)
 * CaseDescription: 1. call SetMetaDataSet with producer_ is nullptr and check ret
 *                  2. call GetMetaDataSet and check ret
  */
-HWTEST_F(ProducerSurfaceTest, metaDataSet004, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, metaDataSet004, TestSize.Level0)
 {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
@@ -1162,7 +1162,7 @@ HWTEST_F(ProducerSurfaceTest, metaDataSet004, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTunnelhandle with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, tunnelHandle001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, tunnelHandle001, TestSize.Level0)
 {
     GraphicExtDataHandle *handle = nullptr;
     handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
@@ -1185,7 +1185,7 @@ HWTEST_F(ProducerSurfaceTest, tunnelHandle001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTunnelhandle with normal parameters and check ret
  */
-HWTEST_F(ProducerSurfaceTest, tunnelHandle002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, tunnelHandle002, TestSize.Level0)
 {
     GraphicExtDataHandle *handle = nullptr;
     handle = static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
@@ -1208,7 +1208,7 @@ HWTEST_F(ProducerSurfaceTest, tunnelHandle002, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call connect and check ret
  */
-HWTEST_F(ProducerSurfaceTest, connect001, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, connect001, TestSize.Level0)
 {
     GSError ret = pSurface->Connect();
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_CONSUMER_IS_CONNECTED);
@@ -1221,7 +1221,7 @@ HWTEST_F(ProducerSurfaceTest, connect001, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call Disconnect and check ret
  */
-HWTEST_F(ProducerSurfaceTest, disconnect001, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, disconnect001, TestSize.Level0)
 {
     GSError ret = pSurface->Disconnect();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1234,7 +1234,7 @@ HWTEST_F(ProducerSurfaceTest, disconnect001, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call connect and check ret
  */
-HWTEST_F(ProducerSurfaceTest, connect002, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, connect002, TestSize.Level0)
 {
     GSError ret = pSurface->Connect();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1247,7 +1247,7 @@ HWTEST_F(ProducerSurfaceTest, connect002, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call Disconnect and check ret
  */
-HWTEST_F(ProducerSurfaceTest, disconnect002, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, disconnect002, TestSize.Level0)
 {
     GSError ret = pSurface->Disconnect();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1260,7 +1260,7 @@ HWTEST_F(ProducerSurfaceTest, disconnect002, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call connect with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, connect003, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, connect003, TestSize.Level0)
 {
     GSError ret = surface_->Connect();
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1273,7 +1273,7 @@ HWTEST_F(ProducerSurfaceTest, connect003, Function | MediumTest | Level1)
 * EnvConditions: N/A
 * CaseDescription: 1. call Disconnect with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, disconnect003, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, disconnect003, TestSize.Level0)
 {
     GSError ret = surface_->Disconnect();
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1287,7 +1287,7 @@ HWTEST_F(ProducerSurfaceTest, disconnect003, Function | MediumTest | Level1)
 * CaseDescription: 1. call GetPresentTimestamp with producer_ is nullptr and check ret
 *                  2. call SetPresentTimestamp and check ret
  */
-HWTEST_F(ProducerSurfaceTest, presentTimestamp001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, presentTimestamp001, TestSize.Level0)
 {
     GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED;
     int64_t time = 0;
@@ -1307,7 +1307,7 @@ HWTEST_F(ProducerSurfaceTest, presentTimestamp001, Function | MediumTest | Level
 * CaseDescription: 1. call GetPresentTimestamp with normal parameters and check ret
 * @tc.require: issueI5I57K
  */
-HWTEST_F(ProducerSurfaceTest, presentTimestamp002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, presentTimestamp002, TestSize.Level0)
 {
     GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_UNSUPPORTED;
     int64_t time = 0;
@@ -1324,7 +1324,7 @@ HWTEST_F(ProducerSurfaceTest, presentTimestamp002, Function | MediumTest | Level
 * CaseDescription: 1. call SetPresentTimestamp with normal parameters and check ret
 * @tc.require: issueI5I57K
  */
-HWTEST_F(ProducerSurfaceTest, presentTimestamp003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, presentTimestamp003, TestSize.Level0)
 {
     GraphicPresentTimestampType type = GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_DELAY;
     int64_t time = 0;
@@ -1340,7 +1340,7 @@ HWTEST_F(ProducerSurfaceTest, presentTimestamp003, Function | MediumTest | Level
 * CaseDescription: 1. call SetPresentTimestamp and check ret
 * @tc.require: issueI5I57K
  */
-HWTEST_F(ProducerSurfaceTest, presentTimestamp004, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, presentTimestamp004, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     int releaseFence = -1;
@@ -1366,7 +1366,7 @@ HWTEST_F(ProducerSurfaceTest, presentTimestamp004, Function | MediumTest | Level
 * CaseDescription: 1. SetWptrNativeWindowToPSurface and check ret
 * @tc.require: issueI7WYIY
  */
-HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface001, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface001, TestSize.Level0)
 {
     struct NativeWindow nativeWindow;
     GSError ret = pSurface->SetWptrNativeWindowToPSurface(&nativeWindow);
@@ -1381,7 +1381,7 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface001, Function | Mediu
  * CaseDescription: 1. SetWptrNativeWindowToPSurface with nullptr param and check ret
  * @tc.require: issueIANSVH
  */
-HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, TestSize.Level0)
 {
     GSError ret = surface_->SetWptrNativeWindowToPSurface(nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1396,7 +1396,7 @@ HWTEST_F(ProducerSurfaceTest, SetWptrNativeWindowToPSurface002, Function | Mediu
  *                  2. Call GetWindowConfig and check ret
  * @tc.require: issueIANSVH
  */
-HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, WindowConfig001, TestSize.Level0)
 {
     surface_->SetWindowConfig(requestConfig);
     auto configGet = surface_->GetWindowConfig();
@@ -1412,7 +1412,7 @@ HWTEST_F(ProducerSurfaceTest, WindowConfig001, Function | MediumTest | Level1)
  *                  2. Call GetWindowConfig and check ret
  * @tc.require: issueIANSVH
  */
-HWTEST_F(ProducerSurfaceTest, WindowConfig002, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, WindowConfig002, TestSize.Level0)
 {
     surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
     surface_->SetWindowConfigStride(requestConfig.strideAlignment);
@@ -1440,7 +1440,7 @@ HWTEST_F(ProducerSurfaceTest, WindowConfig002, Function | MediumTest | Level1)
 * CaseDescription: 1. AttachBuffer and check ret
 * @tc.require: issueI7WYIY
  */
-HWTEST_F(ProducerSurfaceTest, AttachBuffer001, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, AttachBuffer001, TestSize.Level0)
 {
     GSError ret = pSurface->CleanCache();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1460,7 +1460,7 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer001, Function | MediumTest | Level1)
 * CaseDescription: 1. call AttachBuffer with producer_ is nullptr
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceTest, AttachBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, AttachBuffer002, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->AttachBuffer(buffer);
@@ -1477,7 +1477,7 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer002, Function | MediumTest | Level2)
 * CaseDescription: 1. RegisterSurfaceDelegator and check ret
 * @tc.require: issueI7WYIY
  */
-HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
     GSError ret = pSurface->CleanCache();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1492,7 +1492,7 @@ HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, Function | MediumTest
 * EnvConditions: N/A
 * CaseDescription: 1. CleanCache and check ret
  */
-HWTEST_F(ProducerSurfaceTest, CleanCache001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, CleanCache001, TestSize.Level0)
 {
     GSError ret = pSurface->CleanCache(true);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1505,7 +1505,7 @@ HWTEST_F(ProducerSurfaceTest, CleanCache001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. CleanCache with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, CleanCache002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, CleanCache002, TestSize.Level0)
 {
     GSError ret = surface_->CleanCache(true);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1518,7 +1518,7 @@ HWTEST_F(ProducerSurfaceTest, CleanCache002, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. GoBackground with producer_ is nullptr and check ret
  */
-HWTEST_F(ProducerSurfaceTest, GoBackground001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, GoBackground001, TestSize.Level0)
 {
     GSError ret = surface_->GoBackground();
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1532,7 +1532,7 @@ HWTEST_F(ProducerSurfaceTest, GoBackground001, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetSurfaceSourceType and check ret
 *                  2. call GetSurfaceSourceType and check ret
  */
-HWTEST_F(ProducerSurfaceTest, SurfaceSourceType001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SurfaceSourceType001, TestSize.Level0)
 {
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
     GSError ret = pSurface->SetSurfaceSourceType(sourceType);
@@ -1548,7 +1548,7 @@ HWTEST_F(ProducerSurfaceTest, SurfaceSourceType001, Function | MediumTest | Leve
 * CaseDescription: 1. call SetSurfaceSourceType with producer_ is nullptr and check ret
 *                  2. call GetSurfaceSourceType with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, SurfaceSourceType002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SurfaceSourceType002, TestSize.Level0)
 {
     OHSurfaceSource sourceType = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
     GSError ret = surface_->SetSurfaceSourceType(sourceType);
@@ -1564,7 +1564,7 @@ HWTEST_F(ProducerSurfaceTest, SurfaceSourceType002, Function | MediumTest | Leve
 * CaseDescription: 1. call SetSurfaceAppFrameworkType and check ret
 *                  2. call GetSurfaceAppFrameworkType and check ret
 */
-HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, TestSize.Level0)
 {
     std::string type = "test";
     GSError ret = pSurface->SetSurfaceAppFrameworkType(type);
@@ -1580,7 +1580,7 @@ HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, Function | MediumTest 
 * CaseDescription: 1. call SetSurfaceAppFrameworkType with producer_ is nullptr and check ret
 *                  2. call GetSurfaceAppFrameworkType with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType002, TestSize.Level0)
 {
     std::string type = "test";
     GSError ret = surface_->SetSurfaceAppFrameworkType(type);
@@ -1596,7 +1596,7 @@ HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType002, Function | MediumTest 
 * CaseDescription: 1. call RegisterReleaseListener with producer_ is nullptr and check ret
 *                  2. call UnRegisterReleaseListener with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ReleaseListener001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReleaseListener001, TestSize.Level0)
 {
     GSError ret = surface_->RegisterReleaseListener(OnBufferRelease);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1615,7 +1615,7 @@ HWTEST_F(ProducerSurfaceTest, ReleaseListener001, Function | MediumTest | Level2
 * CaseDescription: 1. call RegisterReleaseListenerBackup with producer_ is nullptr and check ret
 *                  2. call UnRegisterReleaseListenerBackup with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ReleaseListenerBackup001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReleaseListenerBackup001, TestSize.Level0)
 {
     OnReleaseFuncWithFence releaseFuncWithFence;
     GSError ret = surface_->RegisterReleaseListenerBackup(releaseFuncWithFence);
@@ -1632,7 +1632,7 @@ HWTEST_F(ProducerSurfaceTest, ReleaseListenerBackup001, Function | MediumTest | 
 * CaseDescription: 1. call RegisterUserDataChangeListener with nullptr param
 *                  2. check ret
 */
-HWTEST_F(ProducerSurfaceTest, RegisterUserDataChangeListener001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RegisterUserDataChangeListener001, TestSize.Level0)
 {
     GSError ret = surface_->RegisterUserDataChangeListener("test", nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1646,7 +1646,7 @@ HWTEST_F(ProducerSurfaceTest, RegisterUserDataChangeListener001, Function | Medi
 * CaseDescription: 1. call RequestBuffers and FlushBuffers
 * @tc.require: issueI5GMZN issueI5IWHW
  */
-HWTEST_F(ProducerSurfaceTest, RequestBuffersAndFlushBuffers, Function | MediumTest | Level1)
+HWTEST_F(ProducerSurfaceTest, RequestBuffersAndFlushBuffers, TestSize.Level0)
 {
     pSurface->SetQueueSize(12);
     std::vector<sptr<SurfaceBuffer>> sfbuffers;
@@ -1703,7 +1703,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffersAndFlushBuffers, Function | MediumTe
 *                  2. call AcquireLastFlushedBuffer FAIL
 *                  3. call ReleaseLastFlushedBuffer
  */
-HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     int releaseFence = -1;
@@ -1772,7 +1772,7 @@ HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer001, Function | MediumTest
 * CaseDescription: 1. call AcquireLastFlushedBuffer FAIL
 *                  3. call ReleaseLastFlushedBuffer FAIL
  */
-HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer002, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer1 = nullptr;
     sptr<SyncFence> fence = nullptr;
@@ -1793,7 +1793,7 @@ HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer002, Function | MediumTest
 * CaseDescription: 1. call SetHdrWhitePointBrightness with producer_ is nullptr and check ret
 *                  2. call SetSdrWhitePointBrightness with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, WhitePointBrightness001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, WhitePointBrightness001, TestSize.Level0)
 {
     GSError ret = surface_->SetHdrWhitePointBrightness(0);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1809,7 +1809,7 @@ HWTEST_F(ProducerSurfaceTest, WhitePointBrightness001, Function | MediumTest | L
 * CaseDescription: 1. call ReleaseLastFlushedBuffer with buffer is nullptr and check ret
 *                  2. call ReleaseLastFlushedBuffer with producer_ is nullptr and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ReleaseLastFlushedBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ReleaseLastFlushedBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
     GSError ret = surface_->ReleaseLastFlushedBuffer(buffer);
@@ -1826,7 +1826,7 @@ HWTEST_F(ProducerSurfaceTest, ReleaseLastFlushedBuffer001, Function | MediumTest
 * EnvConditions: N/A
 * CaseDescription: 1. call SetGlobalAlpha with abnormal parameters and check ret
 */
-HWTEST_F(ProducerSurfaceTest, SetGlobalAlpha001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, SetGlobalAlpha001, TestSize.Level0)
 {
     int32_t alpha = -255;
     GSError ret = pSurface->SetGlobalAlpha(alpha);
@@ -1846,7 +1846,7 @@ HWTEST_F(ProducerSurfaceTest, SetGlobalAlpha001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call IsInHebcWhiletList and check ret
 */
-HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, TestSize.Level0)
 {
     bool isInHebcList = pSurface->IsInHebcList();
     ASSERT_EQ(isInHebcList, false);
@@ -1859,7 +1859,7 @@ HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, Function | MediumTest | Lev
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestBuffer and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -1910,7 +1910,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence, Function | MediumTest | 
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestBuffer and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence002, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -1970,7 +1970,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence002, Function | MediumTest
 *                     GSERROR_OK. The result of release buffer of flush buffer can only be
 *                     SURFACE_ERROR_BUFFER_NOT_INCACHE or GSERROR_OK.
 */
-HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2046,7 +2046,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence003, Function | MediumTest
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestBuffer and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2113,7 +2113,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferConcurrence004, Function | MediumTest
 *                  2. operation: produce request buffer
 *                  3. result: request buffer failed and return GSERROR_NO_CONSUMER
 */
-HWTEST_F(ProducerSurfaceTest, RequestBufferNoConsumer, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBufferNoConsumer, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2149,7 +2149,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferNoConsumer, Function | MediumTest | L
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestBuffer and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestBufferNoListener, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBufferNoListener, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
@@ -2189,7 +2189,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBufferNoListener, Function | MediumTest | L
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestBuffer and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestBuffersNoListener, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestBuffersNoListener, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
@@ -2231,7 +2231,7 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffersNoListener, Function | MediumTest | 
 * EnvConditions: N/A
 * CaseDescription: 1. call ProducerSurfuce function and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, TestSize.Level0)
 {
     sptr<IBufferProducer> producer = nullptr;
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
@@ -2328,7 +2328,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, Function | MediumTes
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestAndDetachBuffer function and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer001, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2372,7 +2372,7 @@ HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer001, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestAndDetachBuffer function and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer002, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2423,7 +2423,7 @@ HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer002, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestAndDetachBuffer function and check ret
 */
-HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer003, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2480,7 +2480,7 @@ HWTEST_F(ProducerSurfaceTest, RequestAndDetachBuffer003, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call GetCycleBuffersNumber and SetCycleBuffersNumber function and check ret
 */
-HWTEST_F(ProducerSurfaceTest, GetAndSetRotatingBuffersNumber001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, GetAndSetRotatingBuffersNumber001, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2509,7 +2509,7 @@ HWTEST_F(ProducerSurfaceTest, GetAndSetRotatingBuffersNumber001, Function | Medi
 * EnvConditions: N/A
 * CaseDescription: 1. call PropertyChangeCallback  and check ret
 */
-HWTEST_F(ProducerSurfaceTest, PropertyChangeCallback001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PropertyChangeCallback001, TestSize.Level0)
 {
     SurfaceProperty surfaceProperty;
     GSError ret = surface_->PropertyChangeCallback(surfaceProperty);
@@ -2523,7 +2523,7 @@ HWTEST_F(ProducerSurfaceTest, PropertyChangeCallback001, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call ResetPropertyListenerInner  and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, TestSize.Level0)
 {
     sptr<IBufferProducer> producer_ = nullptr;
     GSError ret = surface_->ResetPropertyListenerInner(0);
@@ -2539,7 +2539,7 @@ HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, Function | MediumTe
 *                  2. operation: producer sends valid config to bufferQueue then RequestBuffer
 *                  3. result: bufferQueue return GSERROR_OK
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2583,7 +2583,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, Function | MediumTest | Leve
 *                  2. operation: producer sends valid config to bufferQueue
 *                  3. result: bufferQueue return GSERROR_OK
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2619,7 +2619,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, Function | MediumTest | Leve
 *                  2. operation: producer sends non-zero allocBufferCount config to bufferQueue then RequestBuffer
 *                  3. result: calls RequestBuffer return ok, calls RequestBuffer return buffer queue full
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2659,7 +2659,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, Function | MediumTest | Leve
 * EnvConditions: N/A
 * CaseDescription: 1. call PreAllocBuffers and check ret
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2702,7 +2702,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, Function | MediumTest | Leve
 *                  2. operation: calls PreAllocBuffers, then calls PreAllocBuffers with new valid config
 *                  3. result: calls PreAllocBuffers return ok, calls RequestBuffer return ok
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2753,7 +2753,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, Function | MediumTest | Leve
 *                  2. operation: calls PreAllocBuffers with invalid allocBufferCount/width/height/format config
 *                  3. result: calls PreAllocBuffers return ok, calls RequestBuffer return ok
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest6, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest6, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();

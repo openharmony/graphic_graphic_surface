@@ -40,7 +40,8 @@ public:
     sptr<OHOS::Surface> CreateSurface();
 
     static inline sptr<IConsumerSurface> cSurface = nullptr;
-    static inline int32_t pipeFd[2] = {};
+    static inline int32_t pipeMain[2] = {};
+    static inline int32_t pipeChild[2] = {};
     static inline int32_t ipcSystemAbilityID = 34156;
     static inline BufferRequestConfig requestConfig = {};
     static inline BufferFlushConfig flushConfig = {};
@@ -137,7 +138,8 @@ sptr<OHOS::Surface> SurfaceIPCWithPTSTest::CreateSurface()
 
 pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
 {
-    pipe(pipeFd);
+    pipe(pipeMain);
+    pipe(pipeChild);
     pid_t pid = fork();
     if (pid != 0) {
         return pid;
@@ -145,7 +147,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
 
     int64_t data;
     int64_t bufferNum;
-    read(pipeFd[0], &bufferNum, sizeof(bufferNum));
+    read(pipeMain[0], &bufferNum, sizeof(bufferNum));
 
     auto pSurface = CreateSurface();
     auto nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
@@ -165,7 +167,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
         sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow, &nativeWindowBuffer, &fenceFd);
         if (sRet != OHOS::GSERROR_OK) {
             data = sRet;
-            write(pipeFd[1], &data, sizeof(data));
+            write(pipeChild[1], &data, sizeof(data));
             exit(0);
         }
         if (i == 1) {
@@ -176,7 +178,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
             sRet = SetData(nativeWindowBuffer->sfbuffer, pSurface);
             if (sRet != OHOS::GSERROR_OK) {
                 data = sRet;
-                write(pipeFd[1], &data, sizeof(data));
+                write(pipeChild[1], &data, sizeof(data));
                 exit(0);
             }
         }
@@ -189,24 +191,26 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
         sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow, nativeWindowBuffer, -1, *region);
         if (sRet != OHOS::GSERROR_OK) {
             data = sRet;
-            write(pipeFd[1], &data, sizeof(data));
+            write(pipeChild[1], &data, sizeof(data));
             exit(0);
         }
     }
 
     data = sRet;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeChild[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeMain[0], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     if (sRet != OHOS::GSERROR_OK) {
         data = sRet;
-        write(pipeFd[1], &data, sizeof(data));
+        write(pipeChild[1], &data, sizeof(data));
         exit(0);
     }
     pSurface->UnRegisterReleaseListener();
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     exit(0);
     return 0;
 }
@@ -222,7 +226,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
 *                     GSERROR_NO_BUFFER.
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
-HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, TestSize.Level0)
 {
     //生产者生产buffer
     auto pid = ChildProcessMain();
@@ -253,9 +257,9 @@ HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 3;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeMain[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeChild[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     //消费者消费buffer
@@ -282,9 +286,11 @@ HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)
     EXPECT_EQ(sRet, GSERROR_NO_BUFFER);
 
     //close resource
-    write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    write(pipeMain[1], &data, sizeof(data));
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     sam->RemoveSystemAbility(ipcSystemAbilityID);
     int32_t ret = 0;
     do {

@@ -190,7 +190,7 @@ pid_t SurfaceBatchOptWithConnectStrictlyTest::ChildProcessMain()
 *                 2. Operation: the producer failed to batch flush buffer with error code GSERROR_CONSUMER_DISCONNECTED,
 *                                 but succeeded after being connected strictly.
 */
-HWTEST_F(SurfaceBatchOptWithConnectStrictlyTest, BufferIPC001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBatchOptWithConnectStrictlyTest, BufferIPC001, TestSize.Level0)
 {
     auto pid = ChildProcessMain();
     ASSERT_GE(pid, 0);

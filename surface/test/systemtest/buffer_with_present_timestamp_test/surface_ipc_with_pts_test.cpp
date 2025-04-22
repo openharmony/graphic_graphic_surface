@@ -222,7 +222,7 @@ pid_t SurfaceIPCWithPTSTest::ChildProcessMain()
 *                             GSERROR_NO_BUFFER}
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
-HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceIPCWithPTSTest, BufferIPC001, TestSize.Level0)
 {
     //生产者生产buffer
     auto pid = ChildProcessMain();

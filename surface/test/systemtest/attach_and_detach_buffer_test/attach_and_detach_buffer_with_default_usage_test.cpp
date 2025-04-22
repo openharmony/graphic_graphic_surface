@@ -60,7 +60,7 @@ void AttachBufferWithDefaultUsageTest::OnBufferAvailable()
 *                  3. result: the preSetup surfaceA buffer’s fd requal operation surfaceB reused buffer's fd
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
-HWTEST_F(AttachBufferWithDefaultUsageTest, AttachAndDetachBufferWithDefaultUsage001, Function | MediumTest | Level2)
+HWTEST_F(AttachBufferWithDefaultUsageTest, AttachAndDetachBufferWithDefaultUsage001, TestSize.Level0)
 {
     int32_t queueSize = 3;
     // create surface A with default usage "1"
@@ -159,7 +159,7 @@ HWTEST_F(AttachBufferWithDefaultUsageTest, AttachAndDetachBufferWithDefaultUsage
 *                  3. result: the preSetup surfaceA buffer’s fd requal operation surfaceB reused buffer's fd
 * @tc.require: issueI5I57K issueI5GMZN issueI5IWHW
  */
-HWTEST_F(AttachBufferWithDefaultUsageTest, AttachAndDetachBufferWithDefaultUsage002, Function | MediumTest | Level2)
+HWTEST_F(AttachBufferWithDefaultUsageTest, AttachAndDetachBufferWithDefaultUsage002, TestSize.Level0)
 {
     int32_t queueSize = 3;
     // create surface A with default usage "0"

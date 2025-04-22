@@ -89,7 +89,7 @@ void BufferQueueConsumerTest::TearDownTestCase()
  *                  2. call AcquireBuffer and ReleaseBuffer
  *                  3. check ret
  */
-HWTEST_F(BufferQueueConsumerTest, AcqRel001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, AcqRel001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
@@ -122,7 +122,7 @@ HWTEST_F(BufferQueueConsumerTest, AcqRel001, Function | MediumTest | Level2)
  * 3. call ReleaseBuffer again
  * 4. check ret
  */
-HWTEST_F(BufferQueueConsumerTest, AcqRel002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, AcqRel002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
@@ -158,7 +158,7 @@ HWTEST_F(BufferQueueConsumerTest, AcqRel002, Function | MediumTest | Level2)
  * CaseDescription: 1. call GetLastConsumeTime
  *                  2. check lastConsumeTime
  */
-HWTEST_F(BufferQueueConsumerTest, GetLastConsumeTimeTest, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, GetLastConsumeTimeTest, TestSize.Level0)
 {
     int64_t lastConsumeTime = 0;
     bqc->GetLastConsumeTime(lastConsumeTime);
@@ -174,7 +174,7 @@ HWTEST_F(BufferQueueConsumerTest, GetLastConsumeTimeTest, Function | MediumTest 
  * CaseDescription: 1. check bufferQueue_
  *    2. call AttachBuffer
  */
-HWTEST_F(BufferQueueConsumerTest, AttachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, AttachBuffer001, TestSize.Level0)
 {
     int32_t timeOut = 0;
     IBufferProducer::RequestBufferReturnValue retval;
@@ -193,7 +193,7 @@ HWTEST_F(BufferQueueConsumerTest, AttachBuffer001, Function | MediumTest | Level
  * CaseDescription: 1. check ret
  *    2. call RegisterSurfaceDelegator
  */
-HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
     sptr<BufferQueue> bufferqueue = nullptr;
     auto bqcTmp = new BufferQueueConsumer(bufferqueue);
@@ -203,21 +203,21 @@ HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator001, Function | Medium
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
 
-HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator002, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
     GSError ret = bqc->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), surface);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
-HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator003, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator003, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
     GSError ret = bqc->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
-HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
 {
     sptr<BufferQueue> bufferQueue = nullptr;
     sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);

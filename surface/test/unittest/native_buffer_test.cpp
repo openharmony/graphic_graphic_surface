@@ -67,7 +67,7 @@ void NativeBufferTest::TearDownTestCase()
 * CaseDescription: 1. call OH_NativeBufferFromSurfaceBuffer by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBufferFromSurfaceBuffer001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBufferFromSurfaceBuffer001, TestSize.Level0)
 {
     sptr<OHOS::SurfaceBuffer> surfaceBuffer = OHOS::SurfaceBuffer::Create();
     NativeWindowBuffer* nativeWindowBuffer = OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(&surfaceBuffer);
@@ -85,7 +85,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBufferFromSurfaceBuffer001, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_Alloc by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferAlloc001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferAlloc001, TestSize.Level0)
 {
     buffer = OH_NativeBuffer_Alloc(nullptr);
     ASSERT_EQ(buffer, nullptr);
@@ -99,7 +99,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferAlloc001, Function | MediumTest | Level
 * CaseDescription: 1. call OH_NativeBuffer_Alloc
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferAlloc002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferAlloc002, TestSize.Level0)
 {
     buffer = OH_NativeBuffer_Alloc(&config);
     ASSERT_NE(buffer, nullptr);
@@ -113,7 +113,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferAlloc002, Function | MediumTest | Level
 * CaseDescription: 1. call OH_NativeBuffer_GetSeqNum by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum001, TestSize.Level0)
 {
     uint32_t id = OH_NativeBuffer_GetSeqNum(nullptr);
     ASSERT_EQ(id, UINT_MAX);
@@ -127,7 +127,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum001, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_GetSeqNum
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum002, TestSize.Level0)
 {
     uint32_t id = OH_NativeBuffer_GetSeqNum(buffer);
     ASSERT_NE(id, GSERROR_INVALID_ARGUMENTS);
@@ -141,7 +141,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum002, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_GetConfig
 *                  2. check ret
  */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetConfig001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetConfig001, TestSize.Level0)
 {
     OH_NativeBuffer_GetConfig(buffer, &checkConfig);
     ASSERT_NE(&checkConfig, nullptr);
@@ -155,7 +155,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetConfig001, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_GetConfig by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetConfig002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetConfig002, TestSize.Level0)
 {
     checkConfig.width = 0x0;
     checkConfig.height = 0x0;
@@ -176,7 +176,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetConfig002, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_Reference by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferReference001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferReference001, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_Reference(nullptr);
     ASSERT_NE(ret, GSERROR_OK);
@@ -190,7 +190,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferReference001, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_Reference
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferReference002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferReference002, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_Reference(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
@@ -204,7 +204,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferReference002, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_Unreference by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferUnreference001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferUnreference001, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_Unreference(nullptr);
     ASSERT_NE(ret, GSERROR_OK);
@@ -218,7 +218,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferUnreference001, Function | MediumTest |
 * CaseDescription: 1. call OH_NativeBuffer_Unreference
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferUnreference002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferUnreference002, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_Unreference(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
@@ -234,7 +234,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferUnreference002, Function | MediumTest |
 *                  3. OH_NativeBuffer_Alloc again
 *                  4. check OH_NativeBuffer_GetSeqNum = oldSeq + 1
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum003, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum003, TestSize.Level0)
 {
     uint32_t oldSeq = OH_NativeBuffer_GetSeqNum(buffer);
     int32_t ret = OH_NativeBuffer_Unreference(buffer);
@@ -251,7 +251,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetSeqNum003, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_GetNativeBufferConfig
 *                  2. check result
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetNativeBufferConfig001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetNativeBufferConfig001, TestSize.Level0)
 {
     OH_NativeBuffer_Config testConfig = {};
     OH_NativeBuffer_GetNativeBufferConfig(buffer, &testConfig);
@@ -269,7 +269,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetNativeBufferConfig001, Function | Me
 * CaseDescription: 1. call OH_NativeBuffer_SetColorSpace by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace001, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_SetColorSpace(nullptr, OH_COLORSPACE_DISPLAY_BT2020_PQ);
     ASSERT_NE(ret, GSERROR_OK);
@@ -283,7 +283,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace001, Function | MediumTest
 * CaseDescription: 1. call OH_NativeBuffer_SetColorSpace
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace002, TestSize.Level0)
 {
     if (buffer == nullptr) {
         buffer = OH_NativeBuffer_Alloc(&config);
@@ -304,7 +304,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace002, Function | MediumTest
 * CaseDescription: 1. call OH_NativeBuffer_GetColorSpace by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace001, TestSize.Level0)
 {
     OH_NativeBuffer_ColorSpace *colorSpace = nullptr;
     int32_t ret = OH_NativeBuffer_GetColorSpace(nullptr, colorSpace);
@@ -319,7 +319,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace001, Function | MediumTest
 * CaseDescription: 1. call OH_NativeBuffer_GetColorSpace
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace002, TestSize.Level0)
 {
     if (buffer == nullptr) {
         buffer = OH_NativeBuffer_Alloc(&config);
@@ -345,7 +345,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace002, Function | MediumTest
 * CaseDescription: 1. call OH_NativeBuffer_GetColorSpace
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace003, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace003, TestSize.Level0)
 {
     if (buffer == nullptr) {
         buffer = OH_NativeBuffer_Alloc(&config);
@@ -371,7 +371,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace003, Function | MediumTest
 * CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue001, TestSize.Level0)
 {
     int32_t size = 1024;
     uint8_t buff[size];
@@ -387,7 +387,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue001, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, TestSize.Level0)
 {
     if (buffer == nullptr) {
         buffer = OH_NativeBuffer_Alloc(&config);
@@ -430,7 +430,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue003, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue003, TestSize.Level0)
 {
     int32_t max_size = -1;
     int32_t size = 60;
@@ -449,7 +449,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue003, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue001, TestSize.Level0)
 {
     int32_t size = 1024;
     uint8_t *buff;
@@ -471,7 +471,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue001, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, TestSize.Level0)
 {
     if (buffer == nullptr) {
         buffer = OH_NativeBuffer_Alloc(&config);
@@ -524,7 +524,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue002, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue003, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue003, TestSize.Level0)
 {
     if (buffer == nullptr) {
         buffer = OH_NativeBuffer_Alloc(&config);
@@ -559,7 +559,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue003, Function | Mediu
 * CaseDescription: 1. call OH_NativeBuffer_Map by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferMap001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferMap001, TestSize.Level0)
 {
     void *virAddr = nullptr;
     int32_t ret = OH_NativeBuffer_Map(nullptr, &virAddr);
@@ -574,7 +574,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap001, Function | MediumTest | Level2)
 * CaseDescription: 1. call OH_NativeBuffer_Map
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferMap002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferMap002, TestSize.Level0)
 {
     void *virAddr = nullptr;
     int32_t ret = OH_NativeBuffer_Map(buffer, &virAddr);
@@ -590,7 +590,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap002, Function | MediumTest | Level2)
 * CaseDescription: 1. call OH_NativeBuffer_Unmap by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferUnmap001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferUnmap001, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_Unmap(nullptr);
     ASSERT_NE(ret, GSERROR_OK);
@@ -605,7 +605,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferUnmap001, Function | MediumTest | Level
 *                  2. check ret
 *                  3. call OH_NativeBuffer_Unreference
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferUnmap002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferUnmap002, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_Unmap(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
@@ -621,7 +621,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferUnmap002, Function | MediumTest | Level
 * CaseDescription: 1. call OH_NativeBufferFromNativeWindowBuffer by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer001, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBufferFromNativeWindowBuffer(nullptr);
     ASSERT_EQ(nativeBuffer, nullptr);
@@ -635,7 +635,7 @@ HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer001, Function | Med
 * CaseDescription: 1. call OH_NativeBufferFromNativeWindowBuffer
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer002, TestSize.Level0)
 {
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
@@ -690,7 +690,7 @@ HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer002, Function | Med
 * CaseDescription: 1. call OH_NativeBuffer_FromNativeWindowBuffer by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer003, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer003, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_FromNativeWindowBuffer(nullptr, nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -712,7 +712,7 @@ HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer003, Function | Med
 * CaseDescription: 1. call OH_NativeBuffer_MapPlanes by abnormal input
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes001, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes001, TestSize.Level0)
 {
     int32_t ret = OH_NativeBuffer_MapPlanes(nullptr, nullptr, nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -734,7 +734,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes001, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_MapPlanes
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, TestSize.Level0)
 {
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
@@ -786,7 +786,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, Function | MediumTest | L
 * CaseDescription: 1. call OH_NativeBuffer_MapPlanes
 *                  2. check ret
 */
-HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, Function | MediumTest | Level2)
+HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, TestSize.Level0)
 {
     sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();

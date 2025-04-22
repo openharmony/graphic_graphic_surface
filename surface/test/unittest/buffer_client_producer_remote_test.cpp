@@ -158,7 +158,7 @@ void BufferClientProducerRemoteTest::TearDownTestCase()
 * EnvConditions: N/A
 * CaseDescription: 1. check ret for IsProxyObject func
  */
-HWTEST_F(BufferClientProducerRemoteTest, IsProxy001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, IsProxy001, TestSize.Level0)
 {
     ASSERT_TRUE(robj->IsProxyObject());
 }
@@ -171,7 +171,7 @@ HWTEST_F(BufferClientProducerRemoteTest, IsProxy001, Function | MediumTest | Lev
 * CaseDescription: 1. call GetQueueSize for default
 *                  2. call SetQueueSize and check the ret of GetQueueSize
  */
-HWTEST_F(BufferClientProducerRemoteTest, QueueSize001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, QueueSize001, TestSize.Level0)
 {
     ASSERT_EQ(bp->GetQueueSize(), (uint32_t)SURFACE_DEFAULT_QUEUE_SIZE);
 
@@ -192,7 +192,7 @@ HWTEST_F(BufferClientProducerRemoteTest, QueueSize001, Function | MediumTest | L
 * CaseDescription: 1. call GetQueueSize for default
 *                  2. call SetQueueSize and check the ret of GetQueueSize
  */
-HWTEST_F(BufferClientProducerRemoteTest, ReqCan001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, ReqCan001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -212,7 +212,7 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqCan001, Function | MediumTest | Leve
 * CaseDescription: 1. call RequestBuffer
 *                  2. call CancelBuffer 2 times
  */
-HWTEST_F(BufferClientProducerRemoteTest, ReqCan002, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, ReqCan002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -233,7 +233,7 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqCan002, Function | MediumTest | Leve
 * EnvConditions: N/A
 * CaseDescription: 1. call RequestBuffer and CancelBuffer 3 times
  */
-HWTEST_F(BufferClientProducerRemoteTest, ReqCan003, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, ReqCan003, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
@@ -271,7 +271,7 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqCan003, Function | MediumTest | Leve
 *                  2. call RequestBuffer and CancelBuffer
 *                  3. call SetQueueSize again
  */
-HWTEST_F(BufferClientProducerRemoteTest, SetQueueSizeDeleting001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetQueueSizeDeleting001, TestSize.Level0)
 {
     GSError ret = bp->SetQueueSize(1);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -296,7 +296,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetQueueSizeDeleting001, Function | Med
 * CaseDescription: 1. call RequestBuffer
 *                  2. call FlushBuffer
  */
-HWTEST_F(BufferClientProducerRemoteTest, ReqFlu001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, ReqFlu001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -325,7 +325,7 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqFlu001, Function | MediumTest | Leve
 * CaseDescription: 1. call RequestBuffer
 *                  2. call FlushBuffer 2 times
  */
-HWTEST_F(BufferClientProducerRemoteTest, ReqFlu002, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, ReqFlu002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -347,7 +347,7 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqFlu002, Function | MediumTest | Leve
 * CaseDescription: 1. call AttachBuffer
 *                  2. call DetachBuffer
 */
-HWTEST_F(BufferClientProducerRemoteTest, AttachDetach001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, AttachDetach001, TestSize.Level0)
 {
     sptr<OHOS::SurfaceBuffer> buffer = new SurfaceBufferImpl(0);
     GSError ret = bp->AttachBuffer(buffer);
@@ -364,7 +364,7 @@ HWTEST_F(BufferClientProducerRemoteTest, AttachDetach001, Function | MediumTest 
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterReleaseListener
 */
-HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener001, TestSize.Level0)
 {
     OnReleaseFunc onBufferRelease = nullptr;
     sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
@@ -379,7 +379,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener001, Function | 
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterReleaseListenerBackup
 */
-HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListenerBackup001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListenerBackup001, TestSize.Level0)
 {
     OnReleaseFuncWithFence onBufferReleaseWithFence = nullptr;
     sptr<IProducerListener> listener = new BufferReleaseProducerListener(nullptr, onBufferReleaseWithFence);
@@ -394,7 +394,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListenerBackup001, Funct
 * EnvConditions: N/A
 * CaseDescription: 1. call UnRegisterReleaseListener
 */
-HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListener001, TestSize.Level0)
 {
     GSError ret = bp->UnRegisterReleaseListener();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -407,7 +407,7 @@ HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListener001, Function 
 * EnvConditions: N/A
 * CaseDescription: 1. call UnRegisterReleaseListenerBackup
 */
-HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListenerBackup001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListenerBackup001, TestSize.Level0)
 {
     GSError ret = bp->UnRegisterReleaseListenerBackup();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -420,7 +420,7 @@ HWTEST_F(BufferClientProducerRemoteTest, UnRegisterReleaseListenerBackup001, Fun
 * EnvConditions: N/A
 * CaseDescription: 1. call GetName
 */
-HWTEST_F(BufferClientProducerRemoteTest, GetName001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, GetName001, TestSize.Level0)
 {
     std::string name;
     GSError ret = bp->GetName(name);
@@ -434,7 +434,7 @@ HWTEST_F(BufferClientProducerRemoteTest, GetName001, Function | MediumTest | Lev
 * EnvConditions: N/A
 * CaseDescription: 1. call GetUniqueId
 */
-HWTEST_F(BufferClientProducerRemoteTest, GetUniqueId001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, GetUniqueId001, TestSize.Level0)
 {
     uint64_t bpid = bp->GetUniqueId();
     ASSERT_NE(bpid, 0);
@@ -452,7 +452,7 @@ HWTEST_F(BufferClientProducerRemoteTest, GetUniqueId001, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call GetDefaultUsage
 */
-HWTEST_F(BufferClientProducerRemoteTest, GetDefaultUsage001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, GetDefaultUsage001, TestSize.Level0)
 {
     uint64_t usage = bp->GetDefaultUsage();
     ASSERT_EQ(usage, 0);
@@ -465,7 +465,7 @@ HWTEST_F(BufferClientProducerRemoteTest, GetDefaultUsage001, Function | MediumTe
 * EnvConditions: N/A
 * CaseDescription: 1. call SetTransform
 */
-HWTEST_F(BufferClientProducerRemoteTest, SetTransform001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetTransform001, TestSize.Level0)
 {
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_90;
     GSError ret = bp->SetTransform(transform);
@@ -482,7 +482,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetTransform001, Function | MediumTest 
 * EnvConditions: N/A
 * CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
 */
-HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode001, TestSize.Level0)
 {
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GSError ret = bp->SetScalingMode(-1, scalingMode);
@@ -496,7 +496,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode001, Function | MediumTes
 * EnvConditions: N/A
 * CaseDescription: 1. call SetScalingMode with abnormal parameters and check ret
 */
-HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode002, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode002, TestSize.Level0)
 {
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GSError ret = bp->SetScalingMode(scalingMode);
@@ -510,7 +510,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetScalingMode002, Function | MediumTes
 * EnvConditions: N/A
 * CaseDescription: 1. call SetMetaData with abnormal parameters and check ret
 */
-HWTEST_F(BufferClientProducerRemoteTest, SetMetaData001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetMetaData001, TestSize.Level0)
 {
     std::vector<GraphicHDRMetaData> metaData;
     GSError ret = bp->SetMetaData(firstSeqnum, metaData);
@@ -524,7 +524,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetMetaData001, Function | MediumTest |
 * EnvConditions: N/A
 * CaseDescription: 1. call SetMetaDataSet with abnormal parameters and check ret
 */
-HWTEST_F(BufferClientProducerRemoteTest, SetMetaDataSet001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetMetaDataSet001, TestSize.Level0)
 {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_HDR10_PLUS;
     std::vector<uint8_t> metaData;
@@ -540,7 +540,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetMetaDataSet001, Function | MediumTes
 * EnvConditions: N/A
 * CaseDescription: 1. call GoBackground
 */
-HWTEST_F(BufferClientProducerRemoteTest, GoBackground001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, GoBackground001, TestSize.Level0)
 {
     GSError ret = bp->GoBackground();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -553,7 +553,7 @@ HWTEST_F(BufferClientProducerRemoteTest, GoBackground001, Function | MediumTest 
 * EnvConditions: N/A
 * CaseDescription: 1. call AttachBuffer
 */
-HWTEST_F(BufferClientProducerRemoteTest, AttachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, AttachBuffer001, TestSize.Level0)
 {
     GSError ret = bp->CleanCache(false);
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
@@ -574,7 +574,7 @@ HWTEST_F(BufferClientProducerRemoteTest, AttachBuffer001, Function | MediumTest 
 * CaseDescription: 1. call GetSurfaceSourceType for default
 *                  2. call SetSurfaceSourceType and check the ret
 */
-HWTEST_F(BufferClientProducerRemoteTest, SurfaceSourceType001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SurfaceSourceType001, TestSize.Level0)
 {
     OHSurfaceSource sourceType;
     bp->GetSurfaceSourceType(sourceType);
@@ -594,7 +594,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SurfaceSourceType001, Function | Medium
 * CaseDescription: 1. call GetSurfaceAppFrameworkType for default
 *                  2. call SetSurfaceAppFrameworkType and check the ret
 */
-HWTEST_F(BufferClientProducerRemoteTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SurfaceAppFrameworkType001, TestSize.Level0)
 {
     std::string appFrameworkType;
     bp->GetSurfaceAppFrameworkType(appFrameworkType);
@@ -613,7 +613,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SurfaceAppFrameworkType001, Function | 
 * CaseDescription: 1. call RequestBuffers and FlushBuffers
 * @tc.require: issueI5GMZN issueI5IWHW
  */
-HWTEST_F(BufferClientProducerRemoteTest, RequestBuffersAndFlushBuffers, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, RequestBuffersAndFlushBuffers, TestSize.Level0)
 {
     constexpr uint32_t size = 12;
     bp->SetQueueSize(size);
@@ -664,7 +664,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestBuffersAndFlushBuffers, Function
 * CaseDescription: 1. call AcquireLastFlushedBuffer and check the ret
 *                  2. call ReleaseLastFlushedBuffer and check the ret
  */
-HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer;
     sptr<SyncFence> fence;
@@ -684,7 +684,7 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, 
 * CaseDescription: 1. call SetBufferhold and check ret
 * @tc.require: issueI5GMZN issueI5IWHW
  */
-HWTEST_F(BufferClientProducerRemoteTest, SetBufferhold001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetBufferhold001, TestSize.Level0)
 {
     EXPECT_EQ(bp->SetBufferHold(true), GSERROR_OK);
     EXPECT_EQ(bp->SetBufferHold(false), GSERROR_OK);
@@ -698,7 +698,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetBufferhold001, Function | MediumTest
 * CaseDescription: 1. call SetWhitePointBrightness and check ret
 * @tc.require: issueI5GMZN issueI5IWHW
  */
-HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, TestSize.Level0)
 {
     EXPECT_EQ(bp->SetHdrWhitePointBrightness(1), GSERROR_OK);
     EXPECT_EQ(bp->SetSdrWhitePointBrightness(1), GSERROR_OK);
@@ -712,7 +712,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, Function | 
 * CaseDescription: 1. call AttachBufferFromQueue and check the ret
 *                  2. call DetachBufferFromQueue and check the ret
  */
-HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = bp->AttachBufferToQueue(buffer);
@@ -728,7 +728,7 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function |
 * EnvConditions: N/A
 * CaseDescription: 1. call SetGlobalAlpha and check the ret
  */
-HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, TestSize.Level0)
 {
     ASSERT_EQ(bp->SetGlobalAlpha(-1), OHOS::GSERROR_OK);
     ASSERT_EQ(bp->SetGlobalAlpha(255), OHOS::GSERROR_OK);
@@ -743,7 +743,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, Function | MediumTes
  *                  2. operation: call RequestAndDetachBuffer and AttachAndFlushBuffer
  *                  3. result: return OK
  */
-HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, TestSize.Level0)
 {
     ASSERT_EQ(bp->CleanCache(true), OHOS::GSERROR_OK);
     BufferRequestConfig requestConfigTmp = {
@@ -780,7 +780,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RequestAndDetachBuffer001, Function | M
 * EnvConditions: N/A
 * CaseDescription: 1. call RegisterPropertyListener
 */
-HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.Level0)
 {
     OnReleaseFunc onBufferRelease = nullptr;
     sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
@@ -796,7 +796,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, Function |
 * EnvConditions: N/A
 * CaseDescription: 1. call UnRegisterPropertyListener
 */
-HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, TestSize.Level0)
 {
     GSError ret = bp->UnRegisterPropertyListener(0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -811,7 +811,7 @@ HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, Function
 *                  2. operation: clents sends config to producer
 *                  3. result: All server-side asynchronous execution results return sucess
 */
-HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, Function | MediumTest | Level2)
+HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, TestSize.Level0)
 {
     BufferRequestConfig requestConfigTmp = {
         .width = 0x100,

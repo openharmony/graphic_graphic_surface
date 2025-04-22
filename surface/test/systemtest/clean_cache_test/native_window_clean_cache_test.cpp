@@ -40,7 +40,8 @@ public:
     sptr<OHOS::Surface> CreateSurface();
 
     static inline sptr<IConsumerSurface> cSurface = nullptr;
-    static inline int32_t pipeFd[2] = {};
+    static inline int32_t pipeMain[2] = {};
+    static inline int32_t pipeChild[2] = {};
     static inline int32_t ipcSystemAbilityID = 34156;
     static inline BufferRequestConfig requestConfig = {};
     static inline BufferFlushConfig flushConfig = {};
@@ -96,7 +97,8 @@ sptr<OHOS::Surface> NativeWindowCleanCacheTest::CreateSurface()
 
 pid_t NativeWindowCleanCacheTest::ChildProcessMain()
 {
-    pipe(pipeFd);
+    pipe(pipeMain);
+    pipe(pipeChild);
     pid_t pid = fork();
     if (pid != 0) {
         return pid;
@@ -104,7 +106,7 @@ pid_t NativeWindowCleanCacheTest::ChildProcessMain()
 
     int64_t data;
     int64_t bufferNum;
-    read(pipeFd[0], &bufferNum, sizeof(bufferNum));
+    read(pipeMain[0], &bufferNum, sizeof(bufferNum));
 
     auto pSurface = CreateSurface();
     auto nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
@@ -125,7 +127,7 @@ pid_t NativeWindowCleanCacheTest::ChildProcessMain()
         if (sRet != OHOS::GSERROR_OK) {
             std::cout<<"OH_NativeWindow_NativeWindowRequestBuffer ret:"<<sRet<<std::endl;
             data = sRet;
-            write(pipeFd[1], &data, sizeof(data));
+            write(pipeChild[1], &data, sizeof(data));
             exit(0);
         }
         struct Region *region = new Region();
@@ -138,20 +140,22 @@ pid_t NativeWindowCleanCacheTest::ChildProcessMain()
         if (sRet != OHOS::GSERROR_OK) {
             std::cout<<"OH_NativeWindow_NativeWindowFlushBuffer ret:"<<sRet<<std::endl;
             data = sRet;
-            write(pipeFd[1], &data, sizeof(data));
+            write(pipeChild[1], &data, sizeof(data));
             exit(0);
         }
     }
     sRet = OH_NativeWindow_CleanCache(nativeWindow);
     
     data = sRet;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeChild[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeMain[0], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
     pSurface->UnRegisterReleaseListener();
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     exit(0);
     return 0;
 }
@@ -165,7 +169,7 @@ pid_t NativeWindowCleanCacheTest::ChildProcessMain()
 *                  2. operation: native window clean cache success
 *                  3. result: consumer surface acquire buffer failed and no buffer in cache
  */
-HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, TestSize.Level0)
 {
     //生产者生产buffer
     auto pid = ChildProcessMain();
@@ -196,9 +200,9 @@ HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Leve
     sam->AddSystemAbility(ipcSystemAbilityID, producer->AsObject());
 
     int64_t data = 2;
-    write(pipeFd[1], &data, sizeof(data));
+    write(pipeMain[1], &data, sizeof(data));
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
-    read(pipeFd[0], &data, sizeof(data));
+    read(pipeChild[0], &data, sizeof(data));
     EXPECT_EQ(data, OHOS::GSERROR_OK);
 
     //消费者消费buffer
@@ -212,9 +216,11 @@ HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Leve
 
 
     //close resource
-    write(pipeFd[1], &data, sizeof(data));
-    close(pipeFd[0]);
-    close(pipeFd[1]);
+    write(pipeMain[1], &data, sizeof(data));
+    close(pipeMain[0]);
+    close(pipeMain[1]);
+    close(pipeChild[0]);
+    close(pipeChild[1]);
     sam->RemoveSystemAbility(ipcSystemAbilityID);
     int32_t ret = 0;
     do {
@@ -231,7 +237,7 @@ HWTEST_F(NativeWindowCleanCacheTest, CleanCache001, Function | MediumTest | Leve
 *                  2. operation: native window clean cache failed
 *                  3. result: failed and return error code GSERROR_CONSUMER_DISCONNECTED
  */
-HWTEST_F(NativeWindowCleanCacheTest, CleanCache002, Function | MediumTest | Level2)
+HWTEST_F(NativeWindowCleanCacheTest, CleanCache002, TestSize.Level0)
 {
     auto cSurface = IConsumerSurface::Create("test");
     cSurface->RegisterConsumerListener(this);

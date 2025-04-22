@@ -65,7 +65,7 @@ void SurfaceBufferImplTest::TearDownTestCase()
 *                  3. set and verify the value of parameter isConsumerAttachBufferFlag_ is false
 *                  4. set and verify the value of parameter isConsumerAttachBufferFlag_ is true
  */
-HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     int oldSeq = buffer->GetSeqNum();
@@ -86,7 +86,7 @@ HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, Function | MediumTest | Level
 * EnvConditions: N/A
 * CaseDescription: 1. check buffer state, such as bufferhandle, virAddr, fileDescriptor and size
  */
-HWTEST_F(SurfaceBufferImplTest, State001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, State001, TestSize.Level0)
 {
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
     ASSERT_EQ(buffer->GetVirAddr(), nullptr);
@@ -104,7 +104,7 @@ HWTEST_F(SurfaceBufferImplTest, State001, Function | MediumTest | Level2)
 *                  3. call Free
 *                  4. check ret
  */
-HWTEST_F(SurfaceBufferImplTest, State002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, State002, TestSize.Level0)
 {
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
     ASSERT_EQ(buffer->GetPhyAddr(), 0);
@@ -136,7 +136,7 @@ HWTEST_F(SurfaceBufferImplTest, State002, Function | MediumTest | Level2)
 *                  4. call Get data interface
 *                  5. check ret
  */
-HWTEST_F(SurfaceBufferImplTest, Parcel001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, Parcel001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> sbi = new SurfaceBufferImpl(0);
     auto sret = sbi->Alloc(requestConfig);
@@ -159,7 +159,7 @@ HWTEST_F(SurfaceBufferImplTest, Parcel001, Function | MediumTest | Level2)
 * CaseDescription: 1. Call SurfaceBuffer::Create()
 *                  2. check ret
  */
-HWTEST_F(SurfaceBufferImplTest, Create001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, Create001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     ASSERT_NE(buffer, nullptr);
@@ -180,7 +180,7 @@ HWTEST_F(SurfaceBufferImplTest, Create001, Function | MediumTest | Level2)
 *                  8. call List Metadata keys interface again
 *                  9. check ret
 */
-HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, Metadata001, TestSize.Level0)
 {
     using namespace HDI::Display::Graphic::Common::V1_0;
 
@@ -241,7 +241,7 @@ HWTEST_F(SurfaceBufferImplTest, Metadata001, Function | MediumTest | Level2)
  *                  2. call Set Metadata interface with disbale cache
                     3. check ret and metaDataCache_ should be empty
  */
-HWTEST_F(SurfaceBufferImplTest, Metadata002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, Metadata002, TestSize.Level0)
 {
     using namespace HDI::Display::Graphic::Common::V1_0;
 
@@ -273,7 +273,7 @@ HWTEST_F(SurfaceBufferImplTest, Metadata002, Function | MediumTest | Level2)
  *                  2. call Set Metadata interface with enable cache
                     3. check ret and metaDataCache_ size be 1
  */
-HWTEST_F(SurfaceBufferImplTest, Metadata003, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, Metadata003, TestSize.Level0)
 {
     using namespace HDI::Display::Graphic::Common::V1_0;
 
@@ -308,7 +308,7 @@ HWTEST_F(SurfaceBufferImplTest, Metadata003, Function | MediumTest | Level2)
 *                  4. call WriteBufferRequestConfig interface and check ret
 *                  5. call ReadBufferRequestConfig interface and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     MessageParcel parcel;
@@ -328,7 +328,7 @@ HWTEST_F(SurfaceBufferImplTest, BufferRequestConfig001, Function | MediumTest | 
 *                  3. call SetSurfaceBufferScalingMode and GetSurfaceBufferScalingMode and check ret
 *                  4. repeatly call SetSurfaceBufferScalingMode and GetSurfaceBufferScalingMode and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
@@ -348,7 +348,7 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, Function | MediumTe
 *                  3. call SetBufferDeleteFromCacheFlag and GetBufferDeleteFromCacheFlag and check ret
 *                  4. repeatly call SetBufferDeleteFromCacheFlag and GetBufferDeleteFromCacheFlag and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, BufferDeleteFromCacheFlag001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, BufferDeleteFromCacheFlag001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), false);
@@ -367,7 +367,7 @@ HWTEST_F(SurfaceBufferImplTest, BufferDeleteFromCacheFlag001, Function | MediumT
 *                  2. call TryReclaim and check ret
 *                  3. call IsReclaimed and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, TryReclaim001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, TryReclaim001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->TryReclaim(), GSERROR_INVALID_ARGUMENTS);
@@ -386,7 +386,7 @@ HWTEST_F(SurfaceBufferImplTest, TryReclaim001, Function | MediumTest | Level2)
 *                  5. set fd of handle to 123
 *                  6. call TryReclaim and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, TryReclaim002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, TryReclaim002, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
@@ -417,7 +417,7 @@ HWTEST_F(SurfaceBufferImplTest, TryReclaim002, Function | MediumTest | Level2)
 *                  4. call TryReclaim and check ret
 *                  5. call TryReclaim again and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, TryReclaim003, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, TryReclaim003, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
@@ -448,7 +448,7 @@ HWTEST_F(SurfaceBufferImplTest, TryReclaim003, Function | MediumTest | Level2)
 *                  2. call TryResumeIfNeeded and check ret
 *                  3. call IsReclaimed and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->TryResumeIfNeeded(), GSERROR_INVALID_OPERATING);
@@ -466,7 +466,7 @@ HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded001, Function | MediumTest | Le
 *                  4. call TryReclaim and check ret
 *                  5. call TryResumeIfNeeded and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded002, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
@@ -494,7 +494,7 @@ HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded002, Function | MediumTest | Le
 * CaseDescription: 1. new SurfaceBufferImpl
 *                  2. call IsReclaimed and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, IsReclaimed001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, IsReclaimed001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(buffer->IsReclaimed(), false);
@@ -509,7 +509,7 @@ HWTEST_F(SurfaceBufferImplTest, IsReclaimed001, Function | MediumTest | Level2)
 *                  2. call InitMemMgrMembers and check value
 *                  3. call InitMemMgrMembers again and check value
  */
-HWTEST_F(SurfaceBufferImplTest, InitMemMgrMembers001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceBufferImplTest, InitMemMgrMembers001, TestSize.Level0)
 {
     SurfaceBufferImpl impl;
     impl.InitMemMgrMembers();

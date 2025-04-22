@@ -113,7 +113,7 @@ void BufferQueueProducerRemoteTest::TearDownTestCase()
 * EnvConditions: N/A
 * CaseDescription: 1. call IsProxyObject and check ret
  */
-HWTEST_F(BufferQueueProducerRemoteTest, IsProxy001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, IsProxy001, TestSize.Level0)
 {
     ASSERT_FALSE(robj->IsProxyObject());
 }
@@ -127,7 +127,7 @@ HWTEST_F(BufferQueueProducerRemoteTest, IsProxy001, Function | MediumTest | Leve
 *                  2. call SetQueueSize again with abnormal input
 *                  3. check ret and call GetQueueSize
  */
-HWTEST_F(BufferQueueProducerRemoteTest, QueueSize001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, QueueSize001, TestSize.Level0)
 {
     GSError ret = bp->SetQueueSize(2);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -147,7 +147,7 @@ HWTEST_F(BufferQueueProducerRemoteTest, QueueSize001, Function | MediumTest | Le
 *                  2. call CancelBuffer
 *                  3. call AcquireBuffer and check ret
  */
-HWTEST_F(BufferQueueProducerRemoteTest, ReqCan001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, ReqCan001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -170,7 +170,7 @@ HWTEST_F(BufferQueueProducerRemoteTest, ReqCan001, Function | MediumTest | Level
 *                  3. call CancelBuffer again
 *                  4. call AcquireBuffer and check ret
  */
-HWTEST_F(BufferQueueProducerRemoteTest, ReqCan002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, ReqCan002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -194,7 +194,7 @@ HWTEST_F(BufferQueueProducerRemoteTest, ReqCan002, Function | MediumTest | Level
 * CaseDescription: 1. call RequestBuffer and CancelBuffer by different retval
 *                  2. call AcquireBuffer and check ret
  */
-HWTEST_F(BufferQueueProducerRemoteTest, ReqCan003, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, ReqCan003, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
@@ -236,7 +236,7 @@ HWTEST_F(BufferQueueProducerRemoteTest, ReqCan003, Function | MediumTest | Level
 *                  3. call AcquireBuffer again
 *                  4. check ret
  */
-HWTEST_F(BufferQueueProducerRemoteTest, ReqFlu001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, ReqFlu001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
@@ -268,7 +268,7 @@ HWTEST_F(BufferQueueProducerRemoteTest, ReqFlu001, Function | MediumTest | Level
 *                  4. call AcquireBuffer again
 *                  5. check ret
  */
-HWTEST_F(BufferQueueProducerRemoteTest, ReqFlu002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerRemoteTest, ReqFlu002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);

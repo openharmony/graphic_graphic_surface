@@ -315,6 +315,15 @@ GSError BufferQueueConsumer::GetLastFlushedDesiredPresentTimeStamp(int64_t &last
     return bufferQueue_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
 }
 
+GSError BufferQueueConsumer::GetFrontDesiredPresentTimeStamp(
+    int64_t &desiredPresentTimeStamp, bool &isAutoTimeStampe) const
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStampe);
+}
+
 GSError BufferQueueConsumer::GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const
 {
     if (bufferQueue_ == nullptr) {

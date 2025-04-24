@@ -659,6 +659,14 @@ GSError ConsumerSurface::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlus
     return consumer_->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp);
 }
 
+GSError ConsumerSurface::GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp);
+}
+
 GSError ConsumerSurface::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
 {
     if (consumer_ == nullptr) {

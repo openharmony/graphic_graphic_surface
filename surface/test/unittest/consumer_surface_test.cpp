@@ -2187,6 +2187,22 @@ HWTEST_F(ConsumerSurfaceTest, GetLastFlushedDesiredPresentTimeStamp001, Function
 }
 
 /*
+* Function: GetFrontDesiredPresentTimeStamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp001, Function | MediumTest | Level2)
+{
+    int64_t desiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
+    bq->dirtyList_.clear();
+    bq->bufferQueueCache_.clear();
+    ASSERT_EQ(bq->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp), GSERROR_NO_BUFFER);
+}
+
+/*
 * Function: GetBufferSupportFastCompose
 * Type: Function
 * Rank: Important(2)

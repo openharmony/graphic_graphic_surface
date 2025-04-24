@@ -137,6 +137,7 @@ public:
     GSError GetGlobalAlpha(int32_t &alpha) override;
     uint32_t GetAvailableBufferCount() const override;
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
+    GSError GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const override;
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) override;
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;

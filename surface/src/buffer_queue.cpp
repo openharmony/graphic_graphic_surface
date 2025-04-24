@@ -2242,6 +2242,18 @@ GSError BufferQueue::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedD
     return GSERROR_OK;
 }
 
+GSError BufferQueue::GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
+    if (frontSequence == dirtyList_.end()) {
+        return GSERROR_NO_BUFFER;
+    }
+    desiredPresentTimeStamp = bufferQueueCache_[*frontSequence].desiredPresentTimestamp;
+    isAutoTimeStamp = bufferQueueCache_[*frontSequence].isAutoTimestamp;
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);

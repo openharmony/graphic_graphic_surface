@@ -49,7 +49,7 @@ private:
     std::mutex dequeueFailedSetMutex_;
     std::mutex mapMutex_;
     std::mutex mstate_;
-    uint32_t mAncoDataspace = 0;
+    int32_t mAncoDataspace = -1;
 
     void AddBufferLocked(const sptr<SurfaceBuffer>& buffer, int32_t slot);
     sptr<SurfaceBuffer> GetBufferLocked(int32_t slot);

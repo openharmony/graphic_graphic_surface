@@ -234,4 +234,15 @@ GSError MetadataHelper::GetAdaptiveFOVMetadata(const sptr<SurfaceBuffer>& buffer
     return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_1::ATTRKEY_ADAPTIVE_FOV_METADATA,
         adaptiveFOVMetadata);
 }
+
+GSError MetadataHelper::GetSDRDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
+    std::vector<uint8_t>& sdrDynamicMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+
+    return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_0::ATTRKEY_EXTERNAL_METADATA_002,
+        sdrDynamicMetadata);
+}
 } // namespace OHOS

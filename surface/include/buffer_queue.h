@@ -68,6 +68,10 @@ using BufferElement = struct BufferElement {
      * The desiredPresentTimestamp is manually set by the producer, isAutoTimestamp is false.
      */
     bool isAutoTimestamp;
+    /**
+     * lastAcquireTime is the time when this buffer was acquired last time through AcquireBuffer interface.
+     */
+    int64_t lastAcquireTime;
 };
 
 using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
@@ -215,6 +219,7 @@ public:
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
     GSError ConnectStrictly();
     GSError DisconnectStrictly();
+    GSError GetLastConsumeTime(int64_t &lastConsumeTime);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
@@ -330,6 +335,7 @@ private:
     bool bufferSupportFastCompose_ = false;
     uint32_t rotatingBufferNumber_ = 0;
     uint32_t detachReserveSlotNum_ = 0;
+    int64_t lastConsumeTime_ = 0;
 };
 }; // namespace OHOS
 

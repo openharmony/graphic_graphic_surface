@@ -145,6 +145,7 @@ public:
         (void)cycleBuffersNumber;
         return GSERROR_NOT_SUPPORT;
     }
+    GSError GetLastConsumeTime(int64_t &lastConsumeTime) const override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

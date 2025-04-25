@@ -2098,6 +2098,26 @@ void BufferQueue::Dump(std::string &result)
     DumpCache(result);
 }
 
+void BufferQueue::DumpCurrentFrameLayer()
+{
+    bool dumpStaticFrameEnabled = GetBoolParameter("debug.dumpstaticframe.enabled", "0");
+    if (!dumpStaticFrameEnabled) {
+        BLOGI("debug.dumpstaticframe.enabled not exist or not enable!");
+        return ;
+    }
+
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
+        BufferElement element = it->second;
+        if (element.state != BUFFER_STATE_ACQUIRED) {
+            continue;
+        }
+        if (element.buffer != nullptr) {
+            DumpToFileAsync(GetRealPid(), name_, element.buffer);
+        }
+    }
+}
+
 bool BufferQueue::GetStatusLocked() const
 {
     return isValidStatus_;

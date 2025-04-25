@@ -413,6 +413,14 @@ void ConsumerSurface::Dump(std::string& result) const
     return consumer_->Dump(result);
 }
 
+void ConsumerSurface::DumpCurrentFrameLayer() const
+{
+    if (consumer_ == nullptr) {
+        return;
+    }
+    return consumer_->DumpCurrentFrameLayer();
+}
+
 GSError ConsumerSurface::SetTransform(GraphicTransformType transform)
 {
     if (producer_ == nullptr) {

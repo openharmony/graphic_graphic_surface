@@ -91,6 +91,8 @@ public:
     virtual sptr<SurfaceTunnelHandle> GetTunnelHandle() const = 0;
     virtual GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) = 0;
     virtual void Dump(std::string &result) const = 0;
+    virtual void DumpCurrentFrameLayer() const = 0;
+
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                   int64_t &timestamp, std::vector<Rect> &damages) = 0;
     virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,

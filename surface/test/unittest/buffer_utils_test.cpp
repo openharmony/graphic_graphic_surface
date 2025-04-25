@@ -254,4 +254,18 @@ HWTEST_F(BufferUtilsTest, WriteSurfacePropertyTest001, Function | MediumTest | L
     EXPECT_TRUE(parcel.WriteUint32(size));
     ASSERT_NE(ReadSurfaceProperty(parcel, surfaceProperty), OHOS::GSERROR_BINDER);
 }
+
+/*
+* Function: GetBoolParameter
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetBoolParameter
+*                  2. check ret
+ */
+HWTEST_F(BufferUtilsTest, GetBoolParameter001, Function | MediumTest | Level2)
+{
+    EXPECT_TRUE(GetBoolParameter("name", "1"));
+    EXPECT_FALSE(GetBoolParameter("name", "0"));
+}
 }

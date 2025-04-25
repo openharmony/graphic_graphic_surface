@@ -145,6 +145,7 @@ public:
     uint64_t GetUniqueId() const;
 
     void Dump(std::string &result);
+    void DumpCurrentFrameLayer();
 
     GSError SetTransform(GraphicTransformType transform);
     GraphicTransformType GetTransform() const;

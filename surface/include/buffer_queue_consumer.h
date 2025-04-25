@@ -51,6 +51,7 @@ public:
     GSError SetDefaultWidthAndHeight(int32_t width, int32_t height);
     GSError SetDefaultUsage(uint64_t usage);
     void Dump(std::string &result) const;
+    void DumpCurrentFrameLayer() const;
     GraphicTransformType GetTransform() const;
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) const;
     GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const;

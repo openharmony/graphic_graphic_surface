@@ -35,6 +35,8 @@ inline void ReadFileDescriptor(MessageParcel &parcel, int32_t &fd)
 }
 GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd);
 
+bool GetBoolParameter(const std::string &name, const std::string &defaultValue);
+
 void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config);
 static inline GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const &config)
 {

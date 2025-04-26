@@ -931,6 +931,35 @@ HWTEST_F(BufferQueueTest, GetFrontDesiredPresentTimeStamp002, Function | MediumT
     ASSERT_EQ(result, timeStampValue);
 }
 
+/*
+* Function: GetFrontDesiredPresentTimeStamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check value
+*/
+HWTEST_F(BufferQueueTest, GetFrontDesiredPresentTimeStamp003, Function | MediumTest | Level2)
+{
+    std::unique_lock<std::mutex> lock;
+    int64_t timeStampValue1 = 100;
+    bool isAutoTimeStamp1 = false;
+    int64_t timeStampValue2 = 200;
+    bool isAutoTimeStamp2 = true;
+    bq->ClearLocked(lock);
+    uint32_t seqId1 = 100;
+    uint32_t seqId2 = 200;
+    bq->dirtyList_.push_back(seqId1);
+    bq->dirtyList_.push_back(seqId2);
+    bq->bufferQueueCache_[seqId1].desiredPresentTimestamp = timeStampValue1;
+    bq->bufferQueueCache_[seqId1].isAutoTimestamp = isAutoTimeStamp1;
+    bq->bufferQueueCache_[seqId2].desiredPresentTimestamp = timeStampValue2;
+    bq->bufferQueueCache_[seqId2].isAutoTimestamp = isAutoTimeStamp2;
+    int64_t result = -1;
+    bool isAutoTimeStamp = false;
+    GSError ret = bq->GetFrontDesiredPresentTimeStamp(result, isAutoTimeStamp);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(result, timeStampValue1);
+}
 
 /*
 * Function: GetBufferSupportFastCompose

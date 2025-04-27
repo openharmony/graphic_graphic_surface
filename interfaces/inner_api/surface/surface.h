@@ -472,6 +472,35 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
+    virtual GSError GetFrameGravity(int32_t &frameGravity)
+    {
+        (void)frameGravity;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    /**
+     * @brief Set the Rotating Buffers Number object for hdi create layer max cache count.
+     * @param cycleBuffersNumber scope : (0, 2 * maxQueueSize], and it should be actual number of cycle buffers.
+     */
+    virtual GSError SetFrameGravity(int32_t frameGravity)
+    {
+        (void)frameGravity;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetFixedRotation(int32_t &fixedRotation)
+    {
+        (void)fixedRotation;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    /**
+     * @brief Set the Rotating Buffers Number object for hdi create layer max cache count.
+     * @param cycleBuffersNumber scope : (0, 2 * maxQueueSize], and it should be actual number of cycle buffers.
+     */
+    virtual GSError GetFixedRotation(int32_t fixedRotation)
+    {
+        (void)fixedRotation;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
     /**
     * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
     *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is

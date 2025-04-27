@@ -185,6 +185,28 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
+    virtual GSError GetFrameGravity(int32_t &frameGravity)
+    {
+        (void)frameGravity;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetFrameGravity(int32_t frameGravity)
+    {
+        (void)frameGravity;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
+    virtual GSError SetFixedRotation(int32_t &fixedRotation)
+    {
+        (void)fixedRotation;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetFixedRotation(int32_t fixedRotation)
+    {
+        (void)fixedRotation;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
     /**
     * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
     *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
@@ -267,6 +289,10 @@ protected:
         BUFFER_PRODUCER_SET_BUFFER_NAME,
         BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER,
         BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER,
+        BUFFER_PRODUCER_GET_FRAME_GRAVITY,
+        BUFFER_PRODUCER_SET_FRAME_GRAVITY,
+        BUFFER_PRODUCER_GET_FIXED_ROTATION,
+        BUFFER_PRODUCER_SET_FIXED_ROTATION,
         BUFFER_PRODUCER_CONNECT_STRICTLY,
         BUFFER_PRODUCER_DISCONNECT_STRICTLY,
         BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER,

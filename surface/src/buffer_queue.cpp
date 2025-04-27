@@ -52,6 +52,10 @@ constexpr uint32_t MAXIMUM_LENGTH_OF_APP_FRAMEWORK = 64;
 constexpr uint32_t INVALID_SEQUENCE = 0xFFFFFFFF;
 constexpr uint32_t ONE_SECOND_TIMESTAMP = 1e9;
 constexpr const char* BUFFER_SUPPORT_FASTCOMPOSE = "SupportFastCompose";
+constexpr int32_t INVALID_FRAME_GRAVITY = -1;
+constexpr int32_t MAX_FRAME_GRAVITY = 15;
+constexpr int32_t INVALID_FIXED_ROTATION = -1;
+constexpr int32_t MAX_FIXED_ROTATION = 1;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -2305,6 +2309,42 @@ GSError BufferQueue::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     rotatingBufferNumber_ = cycleBuffersNumber;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetFrameGravity(int32_t &frameGravity)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    frameGravity = frameGravity_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetFrameGravity(int32_t frameGravity)
+{
+    if (frameGravity < INVALID_FRAME_GRAVITY || frameGravity > MAX_FRAME_GRAVITY) {
+        BLOGE("Set frame gravity: %{public}u failed", frameGravity);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    frameGravity_ = frameGravity;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetFixedRotation(int32_t &fixedRotation)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    fixedRotation = fixedRotation_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetFixedRotation(int32_t fixedRotation)
+{
+    if (fixedRotation < INVALID_FIXED_ROTATION || fixedRotation > MAX_FIXED_ROTATION) {
+        BLOGE("Set fixed rotation: %{public}u failed", fixedRotation);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    fixedRotation_ = fixedRotation;
     return GSERROR_OK;
 }
 

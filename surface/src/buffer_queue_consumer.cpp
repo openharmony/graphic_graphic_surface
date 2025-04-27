@@ -356,6 +356,22 @@ GSError BufferQueueConsumer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
     return bufferQueue_->GetCycleBuffersNumber(cycleBuffersNumber);
 }
 
+GSError BufferQueueConsumer::GetFrameGravity(int32_t &frameGravity)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetFrameGravity(frameGravity);
+}
+
+GSError BufferQueueConsumer::GetFixedRotation(int32_t &fixedRotation)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetFixedRotation(fixedRotation);
+}
+
 GSError BufferQueueConsumer::GetLastConsumeTime(int64_t &lastConsumeTime) const
 {
     if (bufferQueue_ == nullptr) {

@@ -987,6 +987,50 @@ GSError BufferClientProducer::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     return CheckRetval(reply);
 }
 
+GSError BufferClientProducer::GetFrameGravity(int32_t &frameGravity)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_FRAME_GRAVITY, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    frameGravity = reply.ReadInt32();
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::SetFrameGravity(int32_t frameGravity)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteInt32(frameGravity)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_FRAME_GRAVITY, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::GetFixedRotation(int32_t &fixedRotation)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_FIXED_ROTATION, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    fixedRotation = reply.ReadInt32();
+    return GSERROR_OK;
+}
+
+GSError BufferClientProducer::SetFixedRotation(int32_t fixedRotation)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteInt32(fixedRotation)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_FIXED_ROTATION, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
 GSError BufferClientProducer::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);

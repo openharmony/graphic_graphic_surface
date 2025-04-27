@@ -151,6 +151,10 @@ public:
                                  BufferFlushConfig& config, bool needMap) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
+    GSError GetFrameGravity(int32_t &frameGravity) override;
+    GSError SetFrameGravity(int32_t frameGravity) override;
+    GSError GetFixedRotation(int32_t &fixedRotation) override;
+    GSError SetFixedRotation(int32_t fixedRotation) override;
     /**
     * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
     *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is

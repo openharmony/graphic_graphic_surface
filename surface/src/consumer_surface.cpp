@@ -712,6 +712,22 @@ GSError ConsumerSurface::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)
     return consumer_->GetCycleBuffersNumber(cycleBuffersNumber);
 }
 
+GSError ConsumerSurface::GetFrameGravity(int32_t &frameGravity)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetFrameGravity(frameGravity);
+}
+
+GSError ConsumerSurface::GetFixedRotation(int32_t &fixedRotation)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->GetFixedRotation(fixedRotation);
+}
+
 GSError ConsumerSurface::GetLastConsumeTime(int64_t &lastConsumeTime) const
 {
     if (consumer_ == nullptr) {

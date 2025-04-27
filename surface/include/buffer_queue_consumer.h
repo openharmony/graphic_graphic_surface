@@ -89,6 +89,8 @@ public:
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const;
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
+    GSError GetFrameGravity(int32_t &frameGravity);
+    GSError GetFixedRotation(int32_t &fixedRotation);
     GSError GetLastConsumeTime(int64_t &lastConsumeTime) const;
     GSError SetMaxQueueSize(uint32_t queueSize);
     GSError GetMaxQueueSize(uint32_t &queueSize) const;

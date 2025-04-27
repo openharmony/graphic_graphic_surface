@@ -2324,6 +2324,60 @@ HWTEST_F(ConsumerSurfaceTest, GetAndSetRotatingBuffersNumber001, TestSize.Level0
 }
 
 /*
+* Function: GetAndSetFrameGravity001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Test IPC and producer-consumer process for frameGravity. 
+                      Call GetFrameGravity and SetFrameGravity function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetAndSetFrameGravity001, TestSize.Level0)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    int32_t frameGravity = 0;
+    ASSERT_EQ(cSurface->GetFrameGravity(frameGravity), OHOS::GSERROR_OK);
+    ASSERT_EQ(frameGravity, -1);
+    ASSERT_EQ(pSurface->SetFrameGravity(10), OHOS::GSERROR_OK); // 10 : normal num
+    ASSERT_EQ(cSurface->GetFrameGravity(frameGravity), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, 10); // 10 : normal num
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
+
+/*
+* Function: GetAndSetFixedRotation001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Test IPC and producer-consumer process for fixedRotation. 
+                      Call GetFixedRotation and SetFixedRotation function and check ret.
+*/
+HWTEST_F(ConsumerSurfaceTest, GetAndSetFixedRotation001, TestSize.Level0)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+
+    int32_t fixedRotation = 0;
+    ASSERT_EQ(cSurface->GetFixedRotation(fixedRotation), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, -1);
+    ASSERT_EQ(pSurface->SetFixedRotation(1), OHOS::GSERROR_OK); // 1 : normal num
+    ASSERT_EQ(cSurface->GetFixedRotation(fixedRotation), OHOS::GSERROR_OK);
+    ASSERT_EQ(cycleBuffersNumber, 1); // 1 : normal num
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
+
+/*
 * Function: DetachBufferFromQueueIsReserveSlot001
 * Type: Function
 * Rank: Important(2)

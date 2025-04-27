@@ -36,7 +36,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef void OHNativeWindow;
+typedef struct NativeWindow OHNativeWindow;
 /**
  * @brief Creates an <b>OHNativeWindow</b> instance.\n
  *

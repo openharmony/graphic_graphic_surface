@@ -2344,7 +2344,7 @@ HWTEST_F(ConsumerSurfaceTest, GetAndSetFrameGravity001, TestSize.Level0)
     ASSERT_EQ(frameGravity, -1);
     ASSERT_EQ(pSurface->SetFrameGravity(10), OHOS::GSERROR_OK); // 10 : normal num
     ASSERT_EQ(cSurface->GetFrameGravity(frameGravity), OHOS::GSERROR_OK);
-    ASSERT_EQ(cycleBuffersNumber, 10); // 10 : normal num
+    ASSERT_EQ(frameGravity, 10); // 10 : normal num
 
     pSurface = nullptr;
     cSurface = nullptr;
@@ -2368,10 +2368,10 @@ HWTEST_F(ConsumerSurfaceTest, GetAndSetFixedRotation001, TestSize.Level0)
 
     int32_t fixedRotation = 0;
     ASSERT_EQ(cSurface->GetFixedRotation(fixedRotation), OHOS::GSERROR_OK);
-    ASSERT_EQ(cycleBuffersNumber, -1);
+    ASSERT_EQ(fixedRotation, -1);
     ASSERT_EQ(pSurface->SetFixedRotation(1), OHOS::GSERROR_OK); // 1 : normal num
     ASSERT_EQ(cSurface->GetFixedRotation(fixedRotation), OHOS::GSERROR_OK);
-    ASSERT_EQ(cycleBuffersNumber, 1); // 1 : normal num
+    ASSERT_EQ(fixedRotation, 1); // 1 : normal num
 
     pSurface = nullptr;
     cSurface = nullptr;

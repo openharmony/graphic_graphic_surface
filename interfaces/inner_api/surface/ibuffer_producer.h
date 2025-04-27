@@ -196,12 +196,12 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
-    virtual GSError SetFixedRotation(int32_t &fixedRotation)
+    virtual GSError GetFixedRotation(int32_t &fixedRotation)
     {
         (void)fixedRotation;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
-    virtual GSError GetFixedRotation(int32_t fixedRotation)
+    virtual GSError SetFixedRotation(int32_t fixedRotation)
     {
         (void)fixedRotation;
         return SURFACE_ERROR_NOT_SUPPORT;

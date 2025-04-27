@@ -97,7 +97,7 @@ void BufferQueueProducerTest::TearDown()
 *                  4. call GetQueueSize for BufferQueueProducer and BufferQueue
 *                  5. check ret
  */
-HWTEST_F(BufferQueueProducerTest, QueueSize001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, QueueSize001, TestSize.Level0)
 {
     ASSERT_EQ(bqp_->GetQueueSize(), (uint32_t)SURFACE_DEFAULT_QUEUE_SIZE);
 
@@ -119,7 +119,7 @@ HWTEST_F(BufferQueueProducerTest, QueueSize001, Function | MediumTest | Level2)
 * CaseDescription: 1. call SetStatus with false and check get status value
 *                  2. call SetStatus with true and check get status value
  */
-HWTEST_F(BufferQueueProducerTest, Status001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, Status001, TestSize.Level0)
 {
     bqp_->SetStatus(false);
     EXPECT_EQ(bqp_->GetStatus(), false);
@@ -136,7 +136,7 @@ HWTEST_F(BufferQueueProducerTest, Status001, Function | MediumTest | Level2)
 *                  2. call CancelBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueProducerTest, ReqCan001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, ReqCan001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
@@ -155,7 +155,7 @@ HWTEST_F(BufferQueueProducerTest, ReqCan001, Function | MediumTest | Level2)
 *                  2. call CancelBuffer 2 times
 *                  3. check ret
  */
-HWTEST_F(BufferQueueProducerTest, ReqCan002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, ReqCan002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
@@ -176,7 +176,7 @@ HWTEST_F(BufferQueueProducerTest, ReqCan002, Function | MediumTest | Level2)
 * CaseDescription: 1. call RequestBuffer and CancelBuffer by different retval
 *                  2. check ret
  */
-HWTEST_F(BufferQueueProducerTest, ReqCan003, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, ReqCan003, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
@@ -213,7 +213,7 @@ HWTEST_F(BufferQueueProducerTest, ReqCan003, Function | MediumTest | Level2)
 *                  2. call AcquireBuffer and ReleaseBuffer
 *                  3. check ret
  */
-HWTEST_F(BufferQueueProducerTest, ReqFlu001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, ReqFlu001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
@@ -241,7 +241,7 @@ HWTEST_F(BufferQueueProducerTest, ReqFlu001, Function | MediumTest | Level2)
 *                  3. call AcquireBuffer and ReleaseBuffer
 *                  4. check ret
  */
-HWTEST_F(BufferQueueProducerTest, ReqFlu002, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, ReqFlu002, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
@@ -274,7 +274,7 @@ HWTEST_F(BufferQueueProducerTest, ReqFlu002, Function | MediumTest | Level2)
 * CaseDescription: 1. call AttachBuffer and DetachBuffer
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, AttachAndDetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, AttachAndDetachBuffer001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retVal;
     sptr<SurfaceBuffer> &buffer = retVal.buffer;
@@ -297,7 +297,7 @@ HWTEST_F(BufferQueueProducerTest, AttachAndDetachBuffer001, Function | MediumTes
 * CaseDescription: 1. call AttachBufferRemote, DetachBufferRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, AttachAndDetachBufferRemote, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, AttachAndDetachBufferRemote, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt32(5); // write sequence
@@ -318,7 +318,7 @@ HWTEST_F(BufferQueueProducerTest, AttachAndDetachBufferRemote, Function | Medium
 * CaseDescription: 1. call SetTunnelHandle
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetTunnelHandle, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetTunnelHandle, TestSize.Level0)
 {
     EXPECT_EQ(bqp_->SetTunnelHandle(nullptr), GSERROR_OK);
     GraphicExtDataHandle *handle = static_cast<GraphicExtDataHandle *>(
@@ -339,7 +339,7 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandle, Function | MediumTest | Level
 * CaseDescription: 1. call SetTunnelHandleRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt32(5);
@@ -358,7 +358,7 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote, Function | MediumTest |
 * CaseDescription: 1. call GetPresentTimestampRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, GetPresentTimestampRemote, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, GetPresentTimestampRemote, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt32(5);
@@ -377,7 +377,7 @@ HWTEST_F(BufferQueueProducerTest, GetPresentTimestampRemote, Function | MediumTe
 * CaseDescription: 1. call GetSurfaceSourceType for default
 *                  2. call SetSurfaceSourceType and check the ret
 */
-HWTEST_F(BufferQueueProducerTest, SurfaceSourceType001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SurfaceSourceType001, TestSize.Level0)
 {
     OHSurfaceSource sourceType;
     GSError ret = bqp_->GetSurfaceSourceType(sourceType);
@@ -398,7 +398,7 @@ HWTEST_F(BufferQueueProducerTest, SurfaceSourceType001, Function | MediumTest | 
 * CaseDescription: 1. call GetSurfaceAppFrameworkType for default
 *                  2. call SetSurfaceAppFrameworkType and check the ret
 */
-HWTEST_F(BufferQueueProducerTest, SurfaceAppFrameworkType001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SurfaceAppFrameworkType001, TestSize.Level0)
 {
     std::string appFrameworkType;
     bqp_->GetSurfaceAppFrameworkType(appFrameworkType);
@@ -418,7 +418,7 @@ HWTEST_F(BufferQueueProducerTest, SurfaceAppFrameworkType001, Function | MediumT
 * CaseDescription: 1. call SetSurfaceSourceTypeRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetSurfaceSourceTypeRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetSurfaceSourceTypeRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt32(1);
@@ -437,7 +437,7 @@ HWTEST_F(BufferQueueProducerTest, SetSurfaceSourceTypeRemote001, Function | Medi
 * CaseDescription: 1. call GetSurfaceSourceTypeRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, GetSurfaceSourceTypeRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, GetSurfaceSourceTypeRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt32(5);
@@ -456,7 +456,7 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceSourceTypeRemote001, Function | Medi
 * CaseDescription: 1. call SetSurfaceAppFrameworkTypeRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetSurfaceAppFrameworkTypeRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetSurfaceAppFrameworkTypeRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteString("test");
@@ -475,7 +475,7 @@ HWTEST_F(BufferQueueProducerTest, SetSurfaceAppFrameworkTypeRemote001, Function 
 * CaseDescription: 1. call GetSurfaceAppFrameworkTypeRemote
 * 4. check ret
 */
-HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt32(5);
@@ -494,7 +494,7 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, Function 
 * CaseDescription: 1. call SetHdrWhitePointBrightness, SetSdrWhitePointBrightness
 *                  2. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetWhitePointBrightness001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetWhitePointBrightness001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteFloat(1);
@@ -514,7 +514,7 @@ HWTEST_F(BufferQueueProducerTest, SetWhitePointBrightness001, Function | MediumT
 * CaseDescription: 1. call SetDefaultUsage
 *                  2. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetDefaultUsage001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetDefaultUsage001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteUint64(0);
@@ -532,7 +532,7 @@ HWTEST_F(BufferQueueProducerTest, SetDefaultUsage001, Function | MediumTest | Le
 * CaseDescription: 1. call SetBufferHold
 *                  2. check ret
 */
-HWTEST_F(BufferQueueProducerTest, SetBufferHold001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, SetBufferHold001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteBool(false);
@@ -550,7 +550,7 @@ HWTEST_F(BufferQueueProducerTest, SetBufferHold001, Function | MediumTest | Leve
 * CaseDescription: 1. call TransformHint
 *                  2. check ret
 */
-HWTEST_F(BufferQueueProducerTest, TransformHint001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, TransformHint001, TestSize.Level0)
 {
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
 
@@ -577,7 +577,7 @@ HWTEST_F(BufferQueueProducerTest, TransformHint001, Function | MediumTest | Leve
 * EnvConditions: N/A
 * CaseDescription: BufferQueueProducer member function nullptr test
  */
-HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
 {
     sptr<BufferQueue> bqTmp = nullptr;
     sptr<BufferQueueProducer> bqpTmp = new BufferQueueProducer(bqTmp);
@@ -672,7 +672,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: CheckIsAliveTest member function test
  */
-HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, TestSize.Level0)
 {
     bqp_->magicNum_ = 0;
     EXPECT_EQ(bqp_->CheckIsAlive(), false);
@@ -687,7 +687,7 @@ HWTEST_F(BufferQueueProducerTest, CheckIsAliveTest, Function | MediumTest | Leve
 * EnvConditions: N/A
 * CaseDescription: UnRegisterPropertyListener member function test
  */
-HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, TestSize.Level0)
 {
     sptr<BufferQueue> bqtmp = nullptr;
     sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
@@ -701,7 +701,7 @@ HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerTest, Function | Med
 * EnvConditions: N/A
 * CaseDescription: RegisterPropertyListener member function test
  */
-HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerTest, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerTest, TestSize.Level0)
 {
     sptr<IProducerListener> listener = nullptr;
     sptr<BufferQueue> bqtmp = nullptr;
@@ -716,7 +716,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerTest, Function | Mediu
 * EnvConditions: N/A
 * CaseDescription: RegisterPropertyListenerRemote member function test
  */
-HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteBool(false);
@@ -733,7 +733,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, Function | 
 * EnvConditions: N/A
 * CaseDescription: UnRegisterPropertyListenerRemote member function test
  */
-HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteInt64(0);
@@ -750,7 +750,7 @@ HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, Function 
 * EnvConditions: N/A
 * CaseDescription: GetProducerInitInfoRemote member function test
  */
-HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | MediumTest | Level2)
+HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
     arguments.WriteBool(false);

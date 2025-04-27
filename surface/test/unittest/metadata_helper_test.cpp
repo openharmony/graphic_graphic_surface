@@ -54,7 +54,7 @@ void MetadataManagerTest::SetUpTestCase()
 * EnvConditions: N/A
 * CaseDescription: test ConvertMetadataToVec
 */
-HWTEST_F(MetadataManagerTest, ConvertMetadataToVecTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, ConvertMetadataToVecTest, Function | SmallTest | Level1)
 {
     uint32_t metadata = 0;
     std::vector<uint8_t> vec;
@@ -73,7 +73,7 @@ HWTEST_F(MetadataManagerTest, ConvertMetadataToVecTest, Function | SmallTest | L
 * EnvConditions: N/A
 * CaseDescription: test ConvertVecToMetadata
 */
-HWTEST_F(MetadataManagerTest, ConvertVecToMetadataTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, ConvertVecToMetadataTest, Function | SmallTest | Level1)
 {
     std::vector<uint8_t> vec;
     uint32_t metadata = 1;
@@ -91,7 +91,7 @@ HWTEST_F(MetadataManagerTest, ConvertVecToMetadataTest, Function | SmallTest | L
 * EnvConditions: N/A
 * CaseDescription: test ConvertColorSpaceTypeToInfo
 */
-HWTEST_F(MetadataManagerTest, ConvertColorSpaceTypeToInfoTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, ConvertColorSpaceTypeToInfoTest, Function | SmallTest | Level1)
 {
     CM_ColorSpaceInfo colorSpaceInfo;
     ASSERT_EQ(MetadataHelper::ConvertColorSpaceTypeToInfo(CM_SRGB_FULL, colorSpaceInfo), GSERROR_OK);
@@ -109,7 +109,7 @@ HWTEST_F(MetadataManagerTest, ConvertColorSpaceTypeToInfoTest, Function | SmallT
 * EnvConditions: N/A
 * CaseDescription: test ConvertColorSpaceInfoToType
 */
-HWTEST_F(MetadataManagerTest, ConvertColorSpaceInfoToTypeTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, ConvertColorSpaceInfoToTypeTest, Function | SmallTest | Level1)
 {
     CM_ColorSpaceInfo colorSpaceInfo = {
         .primaries = COLORPRIMARIES_SRGB,
@@ -130,7 +130,7 @@ HWTEST_F(MetadataManagerTest, ConvertColorSpaceInfoToTypeTest, Function | SmallT
 * EnvConditions: N/A
 * CaseDescription: test SetColorSpaceInfo and GetColorSpaceInfo
 */
-HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level1)
 {
     CM_ColorSpaceInfo infoSet = {
         .primaries = COLORPRIMARIES_SRGB,
@@ -164,7 +164,7 @@ HWTEST_F(MetadataManagerTest, ColorSpaceInfoTest, Function | SmallTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: test SetColorSpaceType and GetColorSpaceType
 */
-HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level1)
 {
     auto retSet = MetadataHelper::SetColorSpaceType(buffer_, CM_SRGB_FULL);
     ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
@@ -188,7 +188,7 @@ HWTEST_F(MetadataManagerTest, ColorSpaceTypeTest, Function | SmallTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: test SetHDRMetadataType and GetHDRMetadataType
 */
-HWTEST_F(MetadataManagerTest, HDRMetadataTypeTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, HDRMetadataTypeTest, Function | SmallTest | Level1)
 {
     auto retSet = MetadataHelper::SetHDRMetadataType(buffer_, CM_VIDEO_HDR_VIVID);
     ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
@@ -212,7 +212,7 @@ HWTEST_F(MetadataManagerTest, HDRMetadataTypeTest, Function | SmallTest | Level2
 * EnvConditions: N/A
 * CaseDescription: test SetHDRStaticMetadata and GetHDRStaticMetadata
 */
-HWTEST_F(MetadataManagerTest, HDRStaticMetadataTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, HDRStaticMetadataTest, Function | SmallTest | Level1)
 {
     HdrStaticMetadata metadataSet = {
         .smpte2086 = {
@@ -262,7 +262,7 @@ HWTEST_F(MetadataManagerTest, HDRStaticMetadataTest, Function | SmallTest | Leve
 * EnvConditions: N/A
 * CaseDescription: test SetHDRDynamicMetadata and GetHDRDynamicMetadata
 */
-HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Level1)
 {
     std::vector<uint8_t> metadataSet{1, 18, 119, 33, 196, 253, 112, 171, 74, 230, 99, 23, 0, 244, 82, 138, 13, 158, 100,
         41, 50, 189, 111, 144, 3, 153, 75, 210, 243, 237, 19, 12, 128};
@@ -292,7 +292,7 @@ HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Lev
 * EnvConditions: N/A
 * CaseDescription: test SetHDRStaticMetadata and GetHDRStaticMetadata
 */
-HWTEST_F(MetadataManagerTest, HDRStaticMetadataVecTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, HDRStaticMetadataVecTest, Function | SmallTest | Level1)
 {
     HdrStaticMetadata metadata = {
         .smpte2086 = {
@@ -337,7 +337,7 @@ HWTEST_F(MetadataManagerTest, HDRStaticMetadataVecTest, Function | SmallTest | L
 * EnvConditions: N/A
 * CaseDescription: test SetAdaptiveFOVMetadata and GetAdaptiveFOVMetadata
 */
-HWTEST_F(MetadataManagerTest, AdaptiveFOVMetadataTest, Function | SmallTest | Level2)
+HWTEST_F(MetadataManagerTest, AdaptiveFOVMetadataTest, Function | SmallTest | Level1)
 {
     std::vector<uint8_t> metadataSet{1, 18, 119, 33, 196, 253, 112, 171, 74, 230, 99, 23, 0, 244, 82,
         138, 13, 158, 100, 41, 50, 189, 111, 144, 3, 153, 75, 210, 243, 237, 19, 12, 128};

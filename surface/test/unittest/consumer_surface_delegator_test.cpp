@@ -74,7 +74,7 @@ void ConsumerSurfaceDelegatorTest::TearDownTestCase()
 * CaseDescription: 1. call DequeueBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, DequeueBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, DequeueBuffer001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
@@ -90,7 +90,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, DequeueBuffer001, Function | MediumTest |
 * CaseDescription: 1. call QueueBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, QueueBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, QueueBuffer001, TestSize.Level0)
 {
     int32_t fenceFd = 3;
     GSError ret = consumerDelegator->QueueBuffer(buffer, fenceFd);
@@ -105,7 +105,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, QueueBuffer001, Function | MediumTest | L
 * CaseDescription: 1. call ReleaseBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, ReleaseBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
 {
     int slot = 0;
     int32_t releaseFenceFd = 3;
@@ -121,7 +121,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, ReleaseBuffer001, Function | MediumTest |
 * CaseDescription: 1. call CancelBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, CancelBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
 {
     int32_t slot = 0;
     int32_t fenceFd = -1;
@@ -137,7 +137,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, CancelBuffer001, Function | MediumTest | 
 * CaseDescription: 1. call AsyncDequeueBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncDequeueBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncDequeueBuffer001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
     GSError ret = consumerDelegator->AsyncDequeueBuffer(requestConfig, bedata, retval);
@@ -152,7 +152,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncDequeueBuffer001, Function | MediumT
 * CaseDescription: 1. call AsyncQueueBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, TestSize.Level0)
 {
     int32_t fenceFd = 3;
     GSError ret = consumerDelegator->AsyncQueueBuffer(buffer, fenceFd);
@@ -167,7 +167,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, Function | MediumTes
 * CaseDescription: 1. call GetAncoAsyncFlag
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, GetAncoAsyncFlag001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, GetAncoAsyncFlag001, TestSize.Level0)
 {
     int ret = consumerDelegator->GetAncoAsyncFlag();
     ASSERT_EQ(ret, ERR_NONE);
@@ -181,7 +181,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, GetAncoAsyncFlag001, Function | MediumTes
 * CaseDescription: 1. call DetachBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, DetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
 {
     GSError ret = consumerDelegator->DetachBuffer(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
@@ -195,7 +195,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, DetachBuffer001, Function | MediumTest | 
 * CaseDescription: 1. call SetBufferQueue
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, SetBufferQueue001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetBufferQueue001, TestSize.Level0)
 {
     bool ret = consumerDelegator->SetBufferQueue(bq);
     ASSERT_EQ(ret, true);
@@ -209,7 +209,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, SetBufferQueue001, Function | MediumTest 
 * CaseDescription: 1. call OnRemoteRequest
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
 {
     uint32_t code = 1; // QUEUEBUFFER
     MessageParcel reply;
@@ -228,7 +228,7 @@ HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest
 * CaseDescription: 1. call GetSurfaceBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, GetSurfaceBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ConsumerSurfaceDelegatorTest, GetSurfaceBuffer001, TestSize.Level0)
 {
     GSError ret = consumerDelegator->GetSurfaceBuffer(nullptr, buffer);
     ASSERT_EQ(ret, GSERROR_OK);

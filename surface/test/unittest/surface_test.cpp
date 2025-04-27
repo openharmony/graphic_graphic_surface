@@ -264,7 +264,7 @@ public:
 * EnvConditions: N/A
 * CaseDescription: test functions from Surface
 */
-HWTEST_F(SurfaceTest, SurfaceTest001, Function | MediumTest | Level2)
+HWTEST_F(SurfaceTest, SurfaceTest001, TestSize.Level0)
 {
     EXPECT_EQ(surface->GetProducerInitInfo(info), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->RequestBuffer(buffer, fence, bufferRequestConfig), GSERROR_NOT_SUPPORT);
@@ -306,7 +306,7 @@ HWTEST_F(SurfaceTest, SurfaceTest001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: test functions from Surface
 */
-HWTEST_F(SurfaceTest, SurfaceTest002, Function | MediumTest | Level2)
+HWTEST_F(SurfaceTest, SurfaceTest002, TestSize.Level0)
 {
     EXPECT_EQ(surface->GetNativeSurface(), nullptr);
     EXPECT_EQ(surface->QueryIfBufferAvailable(), false);

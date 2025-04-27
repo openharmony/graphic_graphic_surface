@@ -57,7 +57,7 @@ void TransactSurfaceDelegatorStubTest::TearDownTestCase()
 * CaseDescription: 1. call SetClient
 *                  2. check ret
  */
-HWTEST_F(TransactSurfaceDelegatorStubTest, SetClient001, Function | MediumTest | Level2)
+HWTEST_F(TransactSurfaceDelegatorStubTest, SetClient001, TestSize.Level0)
 {
     bool ret = tsd->SetClient(surfaceDelegator->AsObject());
     EXPECT_EQ(ret, true);
@@ -71,7 +71,7 @@ HWTEST_F(TransactSurfaceDelegatorStubTest, SetClient001, Function | MediumTest |
 * CaseDescription: 1. call SendSelfProxy
 *                  2. check ret
  */
-HWTEST_F(TransactSurfaceDelegatorStubTest, SendSelfProxy001, Function | MediumTest | Level2)
+HWTEST_F(TransactSurfaceDelegatorStubTest, SendSelfProxy001, TestSize.Level0)
 {
     int ret = tsd->SendSelfProxy();
     ASSERT_EQ(ret, ERR_NONE);
@@ -85,7 +85,7 @@ HWTEST_F(TransactSurfaceDelegatorStubTest, SendSelfProxy001, Function | MediumTe
 * CaseDescription: 1. call ReadNativeHandle
 *                  2. check ret
  */
-HWTEST_F(TransactSurfaceDelegatorStubTest, ReadNativeHandle001, Function | MediumTest | Level2)
+HWTEST_F(TransactSurfaceDelegatorStubTest, ReadNativeHandle001, TestSize.Level0)
 {
     MessageParcel input;
     NativeHandleT* buffer = tsd->ReadNativeHandle(input);
@@ -100,7 +100,7 @@ HWTEST_F(TransactSurfaceDelegatorStubTest, ReadNativeHandle001, Function | Mediu
 * CaseDescription: 1. call CloseNativeHandle
 *                  2. check ret
  */
-HWTEST_F(TransactSurfaceDelegatorStubTest, CloseNativeHandle001, Function | MediumTest | Level2)
+HWTEST_F(TransactSurfaceDelegatorStubTest, CloseNativeHandle001, TestSize.Level0)
 {
     ASSERT_NO_FATAL_FAILURE(tsd->CloseNativeHandle(nullptr));
 }

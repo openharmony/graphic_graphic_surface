@@ -116,7 +116,7 @@ void ProducerSurfaceDelegatorTest::TearDownTestCase()
 * CaseDescription: 1. call QueueBuffer
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, TestSize.Level0)
 {
     int32_t slot = 1;
     int32_t acquireFence = 3;
@@ -134,7 +134,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, Function | MediumTest | L
 * CaseDescription: 1. call DequeueBuffer
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, TestSize.Level0)
 {
     int32_t slot = 1;
     qwe->SetSurface(pSurface);
@@ -150,7 +150,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, Function | MediumTest |
 * CaseDescription: 1. call QueueBuffer
 *                  2. check SendMessage ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, TestSize.Level0)
 {
     int32_t slot = 1;
     int32_t acquireFence = 3;
@@ -167,7 +167,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, Function | MediumTest | L
 * CaseDescription: 1. call ReleaseBuffer
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
 {
     sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
     GSError ret = qwe->ReleaseBuffer(pBuffer, fence);
@@ -182,7 +182,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, Function | MediumTest |
 * CaseDescription: 1. call DetachBuffer
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
 {
     int32_t slot = -1;
     GSError ret = qwe->DetachBuffer(slot);
@@ -197,7 +197,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, Function | MediumTest | 
 * CaseDescription: 1. call CancelBuffer
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
 {
     int32_t slot = -1;
     int32_t fenceFd = -1;
@@ -213,7 +213,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, Function | MediumTest | 
 * CaseDescription: 1. call ClearBufferSlot
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, TestSize.Level0)
 {
     int32_t slot = -1;
     GSError ret = qwe->ClearBufferSlot(slot);
@@ -228,7 +228,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, Function | MediumTest
 * CaseDescription: 1. call OnRemoteRequest
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
 {
     uint32_t code = 1; // QUEUEBUFFER
     MessageParcel reply;
@@ -248,7 +248,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, Function | MediumTest
 * CaseDescription: 1. call ClearAllBuffers
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, TestSize.Level0)
 {
     GSError ret = qwe->ClearAllBuffers();
     ASSERT_EQ(ret, GSERROR_OK);
@@ -262,7 +262,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, Function | MediumTest
 * CaseDescription: 1. call AddBufferLocked
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, TestSize.Level0)
 {
     ASSERT_NO_FATAL_FAILURE({
         qwe->AddBufferLocked(nullptr, 0);
@@ -277,7 +277,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, Function | MediumTest
 * CaseDescription: 1. call GetBufferLocked
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, TestSize.Level0)
 {
     ASSERT_EQ(qwe->GetBufferLocked(0), nullptr);
 }
@@ -290,7 +290,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, Function | MediumTest
 * CaseDescription: 1. call GetSlotLocked
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, TestSize.Level0)
 {
     ASSERT_EQ(qwe->GetSlotLocked(nullptr), 0);
 }
@@ -303,7 +303,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, Function | MediumTest |
 * CaseDescription: 1. call RetryFlushBuffer
 *                  2. check ret
 */
-HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, TestSize.Level0)
 {
     BufferFlushConfig config = {
         .damage = {
@@ -326,7 +326,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, Function | MediumTes
 * CaseDescription: 1. call OnSetDataspace
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, TestSize.Level0)
 {
     MessageParcel reply;
     MessageParcel data;
@@ -342,7 +342,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, Function | MediumTest | 
 * CaseDescription: 1. call HasSlotInSet
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
     bool ret = delegator->HasSlotInSet(0);
@@ -360,7 +360,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, Function | MediumTest | Lev
 * CaseDescription: 1. call InsertSlotIntoSet
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
     delegator->InsertSlotIntoSet(0);
@@ -378,7 +378,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, Function | MediumTest 
 * CaseDescription: 1. call EraseSlotFromSet
 *                  2. check ret
  */
-HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, Function | MediumTest | Level2)
+HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
     delegator->InsertSlotIntoSet(0);

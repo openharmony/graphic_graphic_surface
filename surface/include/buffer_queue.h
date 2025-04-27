@@ -77,7 +77,7 @@ using BufferElement = struct BufferElement {
 
 using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
 
-class BufferQueue : public RefBase {
+class SURFACE_HIDDEN BufferQueue : public RefBase {
 public:
     BufferQueue(const std::string &name);
     virtual ~BufferQueue();

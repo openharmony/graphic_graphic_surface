@@ -23,7 +23,7 @@
 #include "buffer_queue.h"
 
 namespace OHOS {
-class BufferQueueConsumer : public RefBase {
+class SURFACE_HIDDEN BufferQueueConsumer : public RefBase {
 public:
     BufferQueueConsumer(sptr<BufferQueue>& bufferQueue);
     virtual ~BufferQueueConsumer();

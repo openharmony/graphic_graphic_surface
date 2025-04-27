@@ -16,7 +16,7 @@ import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 ## Build sync_fence.so {{{
 config("sync_fence_config") {
-  visibility = [ ":sync_fence" ]
+  visibility = [ ":sync_fence", ":sync_fence_static" ]
 
   cflags = [
     "-Wall",
@@ -36,12 +36,39 @@ config("sync_fence_public_config") {
 }
 
 ohos_shared_library("sync_fence") {
+  deps = [ ":sync_fence_static" ]
   sanitize = {
     boundary_sanitize = true
     integer_overflow = true
     ubsan = true
   }
 
+  public_configs = [ ":sync_fence_public_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+  ]
+
+  innerapi_tags = [
+    "chipsetsdk",
+    "platformsdk_indirect",
+  ]
+  part_name = "graphic_surface"
+  subsystem_name = "graphic"
+}
+
+ohos_static_library("sync_fence_static") {
+  sanitize = {
+    boundary_sanitize = true
+    integer_overflow = true
+    ubsan = true
+  }
   sources = [
     "src/acquire_fence_manager.cpp",
     "src/frame_sched.cpp",
@@ -67,10 +94,6 @@ ohos_shared_library("sync_fence") {
     defines = [ "FENCE_SCHED_ENABLE" ]
   }
 
-  innerapi_tags = [
-    "chipsetsdk",
-    "platformsdk_indirect",
-  ]
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

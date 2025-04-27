@@ -39,7 +39,9 @@
           "//foundation/graphic/graphic_surface/sync_fence:sync_fence",
           "//foundation/graphic/graphic_surface/buffer_handle:buffer_handle",
           "//foundation/graphic/graphic_surface/utils/frame_report:frame_report",
-          "//foundation/graphic/graphic_surface/utils/hebc_white_list:hebc_white_list"
+          "//foundation/graphic/graphic_surface/utils/hebc_white_list:hebc_white_list",
+          "//foundation/graphic/graphic_surface/surface:surface_static",
+          "//foundation/graphic/graphic_surface/sync_fence:sync_fence_static"
         ],
         "inner_kits": [
           {
@@ -63,6 +65,14 @@
               ],
               "header_base": "//foundation/graphic/graphic_surface/interfaces/inner_api/surface"
             }
+          },
+          {
+            "type": "none",
+            "name": "//foundation/graphic/graphic_surface/surface:surface_static"
+          },
+          {
+            "type": "none",
+            "name": "//foundation/graphic/graphic_surface/sync_fence:sync_fence_static"
           },
           {
             "type": "so",

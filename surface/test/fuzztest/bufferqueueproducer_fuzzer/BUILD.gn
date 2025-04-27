@@ -37,8 +37,8 @@ ohos_fuzztest("BufferQueueProducerFuzzTest") {
   ]
   sources = [ "bufferqueueproducer_fuzzer.cpp" ]
   deps = [
-    "$graphic_surface_root/surface:surface",
-    "$graphic_surface_root/sync_fence:sync_fence",
+    "$graphic_surface_root/surface:surface_static",
+    "$graphic_surface_root/sync_fence:sync_fence_static",
   ]
   external_deps = [
     "c_utils:utils",

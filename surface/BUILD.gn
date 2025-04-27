@@ -62,6 +62,47 @@ ohos_static_library("surface_headers") {
 }
 
 ohos_shared_library("surface") {
+  deps = [ ":surface_static" ]
+
+  sanitize = {
+    boundary_sanitize = true
+    integer_overflow = true
+    ubsan = true
+  }
+
+  public_configs = [ ":surface_public_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_2",
+    "drivers_interface_display:libdisplay_buffer_proxy_1.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_1.1",
+    "drivers_interface_display:libdisplay_commontype_proxy_2.0",
+    "drivers_interface_display:libdisplay_commontype_proxy_2.1",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "init:libbegetutil",
+    "ipc:ipc_capi",
+    "ipc:ipc_single",
+  ]
+
+  symlink_target_name = [
+    "libnative_buffer.so",
+    "libnative_window.so",
+  ]
+
+  innerapi_tags = [
+    "chipsetsdk",
+    "platformsdk",
+  ]
+
+  part_name = "graphic_surface"
+  subsystem_name = "graphic"
+}
+
+ohos_static_library("surface_static") {
   sanitize = {
     boundary_sanitize = true
     integer_overflow = true
@@ -118,21 +159,11 @@ ohos_shared_library("surface") {
     "ipc:ipc_single",
   ]
 
-  symlink_target_name = [
-    "libnative_buffer.so",
-    "libnative_window.so",
-  ]
-
   if (graphic_2d_ext_delegator && defined(vendor_root)) {
     sources += libsurface_ext_delegator_sources
     sources -= libsurface_ext_delegator_sources_del
     external_deps += libsurface_ext_delegator_external_deps
   }
-
-  innerapi_tags = [
-    "chipsetsdk",
-    "platformsdk",
-  ]
 
   part_name = "graphic_surface"
   subsystem_name = "graphic"

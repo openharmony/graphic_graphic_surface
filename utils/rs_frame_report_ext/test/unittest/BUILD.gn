@@ -25,6 +25,7 @@ ohos_unittest("rs_frame_report_ext_test") {
   module_out_path = module_output_path
   sources = [ "rs_frame_report_ext_test.cpp" ]
   deps = [ ":rs_frame_report_ext_test_common" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 config("rs_frame_report_ext_test_config") {

@@ -25,6 +25,7 @@ ohos_unittest("frame_report_test") {
   module_out_path = module_output_path
   sources = [ "frame_report_test.cpp" ]
   deps = [ ":frame_report_test_common" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 config("frame_report_test_config") {

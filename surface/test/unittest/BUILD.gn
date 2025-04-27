@@ -307,9 +307,9 @@ ohos_static_library("surface_test_common") {
   public_configs = [ ":surface_test_common_public_config" ]
 
   public_deps = [
-    "$graphic_surface_root/buffer_handle:buffer_handle",
-    "$graphic_surface_root/surface:surface",
-    "$graphic_surface_root/sync_fence:sync_fence",
+    "$graphic_surface_root/buffer_handle:buffer_handle_static",
+    "$graphic_surface_root/surface:surface_static",
+    "$graphic_surface_root/sync_fence:sync_fence_static",
     "$graphic_surface_root/test_header:test_header",
   ]
 

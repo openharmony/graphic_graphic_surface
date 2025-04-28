@@ -888,7 +888,7 @@ HWTEST_F(BufferQueueTest, SetFrameGravity001, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     int32_t resultFrameGravity = -1;
-    ret = bq->GetGlobalAlpha(resultFrameGravity);
+    ret = bq->GetFrameGravity(resultFrameGravity);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(resultFrameGravity, frameGravity);
 }

@@ -478,8 +478,8 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     /**
-     * @brief Set the Rotating Buffers Number object for hdi create layer max cache count.
-     * @param cycleBuffersNumber scope : (0, 2 * maxQueueSize], and it should be actual number of cycle buffers.
+     * @brief Set the frame gravity.
+     * @param frameGravity -1 for invalid setting. 0 to 15 is normal value.
      */
     virtual GSError SetFrameGravity(int32_t frameGravity)
     {
@@ -492,8 +492,8 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     /**
-     * @brief Set the Rotating Buffers Number object for hdi create layer max cache count.
-     * @param cycleBuffersNumber scope : (0, 2 * maxQueueSize], and it should be actual number of cycle buffers.
+     * @brief Set the fixed rotation value for whether the rotation is fixed.
+     * @param fixedRotation -1 for invalid setting. 1 for fixed or 0 for otherwise.
      */
     virtual GSError SetFixedRotation(int32_t fixedRotation)
     {

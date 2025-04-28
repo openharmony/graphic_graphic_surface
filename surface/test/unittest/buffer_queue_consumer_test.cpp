@@ -242,6 +242,8 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     GraphicPresentTimestamp timestamp1;
     bool isInCache = false;
     int32_t alpha = -1;
+    int32_t frameGravity = -1;
+    int32_t fixedRotation = -1;
     int64_t lastFlushedDesiredPresentTimeStamp = -1;
     bool bufferSupportFastCompose = false;
     int64_t frontDesiredPresentTimeStamp = -1;
@@ -277,6 +279,8 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->IsSurfaceBufferInCache(0, isInCache), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetGlobalAlpha(alpha), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetFrameGravity(frameGravity), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetFixedRotation(fixedRotation), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetLastFlushedDesiredPresentTimeStamp(
         lastFlushedDesiredPresentTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetBufferSupportFastCompose(bufferSupportFastCompose), OHOS::SURFACE_ERROR_UNKOWN);

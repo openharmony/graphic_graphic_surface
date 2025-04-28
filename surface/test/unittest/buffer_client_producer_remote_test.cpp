@@ -734,6 +734,32 @@ HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, TestSize.Level0)
     ASSERT_EQ(bp->SetGlobalAlpha(255), OHOS::GSERROR_OK);
 }
 
+/*
+* Function: SetGlobalAlpha
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGlobalAlpha and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, TestSize.Level0)
+{
+    ASSERT_EQ(bp->SetFrameGravity(-1), OHOS::GSERROR_OK);
+    ASSERT_EQ(bp->SetFrameGravity(15), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SetGlobalAlpha
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGlobalAlpha and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetGlobalAlpha001, TestSize.Level0)
+{
+    ASSERT_EQ(bp->SetFixedRotation(-1), OHOS::GSERROR_OK);
+    ASSERT_EQ(bp->SetFixedRotation(1), OHOS::GSERROR_OK);
+}
+
 /**
  * Function: SetScalingMode and GetScalingMode
  * Type: Function

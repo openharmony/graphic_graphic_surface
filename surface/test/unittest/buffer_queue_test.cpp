@@ -874,6 +874,46 @@ HWTEST_F(BufferQueueTest, SetGlobalAlpha001, TestSize.Level0)
 }
 
 /*
+* Function: SetFrameGravity and GetGlobalAlpha
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetFrameGravity and check value
+*                  2. call GetGlobalAlpha and check value
+*/
+HWTEST_F(BufferQueueTest, SetGlobalAlpha001, TestSize.Level0)
+{
+    int32_t frameGravity = 15;
+    GSError ret = bq->SetFrameGravity(frameGravity);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t resultFrameGravity = -1;
+    ret = bq->GetGlobalAlpha(resultFrameGravity);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(resultFrameGravity, frameGravity);
+}
+
+/*
+* Function: SetFixedRotation and GetFixedRotation
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetFixedRotation and check value
+*                  2. call GetFixedRotation and check value
+*/
+HWTEST_F(BufferQueueTest, SetFixedRotation001, TestSize.Level0)
+{
+    int32_t fixedRotation = 1;
+    GSError ret = bq->SetFixedRotation(fixedRotation);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t resultFixedRotation = -1;
+    ret = bq->GetFixedRotation(resultFixedRotation);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(resultFixedRotation, fixedRotation);
+}
+
+/*
 * Function: GetLastFlushedDesiredPresentTimeStamp
 * Type: Function
 * Rank: Important(2)

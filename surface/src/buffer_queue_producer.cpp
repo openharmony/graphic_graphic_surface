@@ -97,9 +97,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, AttachAndFlushBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER, GetRotatingBuffersNumberRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, SetRotatingBuffersNumberRemote),
-    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_FRAME_GRAVITY, GetFrameGravityRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_FRAME_GRAVITY, SetFrameGravityRemote),
-    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_FIXED_ROTATION, GetFixedRotationRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_FIXED_ROTATION, SetFixedRotationRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT_STRICTLY, DisconnectStrictlyRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT_STRICTLY, ConnectStrictlyRemote),
@@ -1116,50 +1114,12 @@ int32_t BufferQueueProducer::SetRotatingBuffersNumberRemote(MessageParcel &argum
     return ERR_NONE;
 }
 
-int32_t BufferQueueProducer::GetFrameGravityRemote(MessageParcel &arguments,
-    MessageParcel &reply, MessageOption &option)
-{
-    int32_t frameGravity = -1;
-    auto ret = GetFrameGravity(frameGravity);
-    if (ret != GSERROR_OK) {
-        if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
-        return ERR_INVALID_REPLY;
-    }
-
-    if (!reply.WriteInt32(GSERROR_OK) || !reply.WriteInt32(frameGravity)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-
-    return ERR_NONE;
-}
-
 int32_t BufferQueueProducer::SetFrameGravityRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     int32_t frameGravity = arguments.ReadInt32();
     auto ret = SetFrameGravity(frameGravity);
     if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-
-    return ERR_NONE;
-}
-
-int32_t BufferQueueProducer::GetFixedRotationRemote(MessageParcel &arguments,
-    MessageParcel &reply, MessageOption &option)
-{
-    int32_t fixedRotation = -1;
-    auto ret = GetFixedRotation(fixedRotation);
-    if (ret != GSERROR_OK) {
-        if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
-        return ERR_INVALID_REPLY;
-    }
-
-    if (!reply.WriteInt32(GSERROR_OK) || !reply.WriteInt32(fixedRotation)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
@@ -1892,28 +1852,12 @@ GSError BufferQueueProducer::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     return bufferQueue_->SetCycleBuffersNumber(cycleBuffersNumber);
 }
 
-GSError BufferQueueProducer::GetFrameGravity(int32_t &frameGravity)
-{
-    if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
-    }
-    return bufferQueue_->GetFrameGravity(frameGravity);
-}
-
 GSError BufferQueueProducer::SetFrameGravity(int32_t frameGravity)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetFrameGravity(frameGravity);
-}
-
-GSError BufferQueueProducer::GetFixedRotation(int32_t &fixedRotation)
-{
-    if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
-    }
-    return bufferQueue_->GetFixedRotation(fixedRotation);
 }
 
 GSError BufferQueueProducer::SetFixedRotation(int32_t fixedRotation)

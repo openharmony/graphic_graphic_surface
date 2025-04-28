@@ -2503,66 +2503,6 @@ HWTEST_F(ProducerSurfaceTest, GetAndSetRotatingBuffersNumber001, TestSize.Level0
 }
 
 /*
-* Function: GetAndSetFrameGravity001
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. Test IPC and producer-consumer process for frameGravity.
-                      Call GetFrameGravity and SetFrameGravity function and check ret.
-*/
-HWTEST_F(ProducerSurfaceTest, GetAndSetFrameGravity001, TestSize.Level0)
-{
-    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
-    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
-    cSurfTmp->RegisterConsumerListener(listenerTmp);
-    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
-    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
-
-    int32_t frameGravity = 0;
-    ASSERT_EQ(pSurfaceTmp->GetFrameGravity(frameGravity), OHOS::GSERROR_OK);
-    ASSERT_EQ(frameGravity, -1);
-    ASSERT_EQ(pSurfaceTmp->SetFrameGravity(-2), OHOS::GSERROR_INVALID_ARGUMENTS); // -2 : error num
-    ASSERT_EQ(pSurfaceTmp->SetFrameGravity(16), OHOS::GSERROR_INVALID_ARGUMENTS); // 16 : error num
-    ASSERT_EQ(pSurfaceTmp->SetFrameGravity(15), OHOS::GSERROR_OK); // 15 : normal num
-    ASSERT_EQ(pSurfaceTmp->GetFrameGravity(frameGravity), OHOS::GSERROR_OK);
-    ASSERT_EQ(frameGravity, 15); // 15 : normal num
-
-    pSurfaceTmp = nullptr;
-    producerTmp = nullptr;
-    cSurfTmp = nullptr;
-}
-
-/*
-* Function: GetAndSetFixedRotation001
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. Test IPC and producer-consumer process for fixedRotation.
-                      Call GetFixedRotation and SetFixedRotation function and check ret.
-*/
-HWTEST_F(ProducerSurfaceTest, GetAndSetFixedRotation001, TestSize.Level0)
-{
-    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
-    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
-    cSurfTmp->RegisterConsumerListener(listenerTmp);
-    sptr<IBufferProducer> producerTmp = cSurfTmp->GetProducer();
-    sptr<Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
-
-    int32_t fixedRotation = 0;
-    ASSERT_EQ(pSurfaceTmp->GetFixedRotation(fixedRotation), OHOS::GSERROR_OK);
-    ASSERT_EQ(fixedRotation, -1);
-    ASSERT_EQ(pSurfaceTmp->SetFixedRotation(-2), OHOS::GSERROR_INVALID_ARGUMENTS); // -2 : error num
-    ASSERT_EQ(pSurfaceTmp->SetFixedRotation(2), OHOS::GSERROR_INVALID_ARGUMENTS); // 2 : error num
-    ASSERT_EQ(pSurfaceTmp->SetFixedRotation(1), OHOS::GSERROR_OK); // 1 : normal num
-    ASSERT_EQ(pSurfaceTmp->GetFixedRotation(fixedRotation), OHOS::GSERROR_OK);
-    ASSERT_EQ(fixedRotation, 1); // 1 : normal num
-
-    pSurfaceTmp = nullptr;
-    producerTmp = nullptr;
-    cSurfTmp = nullptr;
-}
-
-/*
 * Function: PropertyChangeCallback
 * Type: Function
 * Rank: Important(2)

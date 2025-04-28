@@ -120,9 +120,7 @@ public:
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
-    GSError GetFrameGravity(int32_t &frameGravity) override;
     GSError SetFrameGravity(int32_t frameGravity) override;
-    GSError GetFixedRotation(int32_t &fixedRotation) override;
     GSError SetFixedRotation(int32_t fixedRotation) override;
     GSError ConnectStrictly() override;
     GSError DisconnectStrictly() override;

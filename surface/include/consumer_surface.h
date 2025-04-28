@@ -149,17 +149,7 @@ public:
         return GSERROR_NOT_SUPPORT;
     }
     GSError GetFrameGravity(int32_t &frameGravity) override;
-    GSError SetFrameGravity(int32_t frameGravity) override
-    {
-        (void)frameGravity;
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError GetFixedRotation(int32_t &fixedRotation) override;
-    GSError SetFixedRotation(int32_t fixedRotation) override
-    {
-        (void)fixedRotation;
-        return GSERROR_NOT_SUPPORT;
-    }
     GSError GetLastConsumeTime(int64_t &lastConsumeTime) const override;
     GSError SetMaxQueueSize(uint32_t queueSize) override;
     GSError GetMaxQueueSize(uint32_t &queueSize) const override;

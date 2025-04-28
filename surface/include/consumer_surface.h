@@ -148,6 +148,8 @@ public:
         (void)cycleBuffersNumber;
         return GSERROR_NOT_SUPPORT;
     }
+    GSError GetFrameGravity(int32_t &frameGravity) override;
+    GSError GetFixedRotation(int32_t &fixedRotation) override;
     GSError GetLastConsumeTime(int64_t &lastConsumeTime) const override;
     GSError SetMaxQueueSize(uint32_t queueSize) override;
     GSError GetMaxQueueSize(uint32_t &queueSize) const override;

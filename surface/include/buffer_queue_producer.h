@@ -130,6 +130,8 @@ public:
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap) override;
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber) override;
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber) override;
+    GSError SetFrameGravity(int32_t frameGravity) override;
+    GSError SetFixedRotation(int32_t fixedRotation) override;
 
     GSError ConnectStrictly() override;
     GSError DisconnectStrictly() override;
@@ -195,6 +197,8 @@ private:
     int32_t AttachAndFlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetFrameGravityRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetFixedRotationRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t DisconnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ConnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

@@ -1250,6 +1250,22 @@ GSError ProducerSurface::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
     return producer_->SetCycleBuffersNumber(cycleBuffersNumber);
 }
 
+GSError ProducerSurface::SetFrameGravity(int32_t frameGravity)
+{
+    if (producer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return producer_->SetFrameGravity(frameGravity);
+}
+
+GSError ProducerSurface::SetFixedRotation(int32_t fixedRotation)
+{
+    if (producer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return producer_->SetFixedRotation(fixedRotation);
+}
+
 GSError ProducerSurface::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
 {
     if (producer_ == nullptr) {

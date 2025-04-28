@@ -97,6 +97,8 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, AttachAndFlushBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER, GetRotatingBuffersNumberRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ROTATING_BUFFERS_NUMBER, SetRotatingBuffersNumberRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_FRAME_GRAVITY, SetFrameGravityRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_FIXED_ROTATION, SetFixedRotationRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_DISCONNECT_STRICTLY, DisconnectStrictlyRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CONNECT_STRICTLY, ConnectStrictlyRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER, RegisterPropertyListenerRemote),
@@ -1112,6 +1114,30 @@ int32_t BufferQueueProducer::SetRotatingBuffersNumberRemote(MessageParcel &argum
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::SetFrameGravityRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    int32_t frameGravity = arguments.ReadInt32();
+    auto ret = SetFrameGravity(frameGravity);
+    if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetFixedRotationRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    int32_t fixedRotation = arguments.ReadInt32();
+    auto ret = SetFixedRotation(fixedRotation);
+    if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+
+    return ERR_NONE;
+}
+
 GSError BufferQueueProducer::RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
     RequestBufferReturnValue& retval)
 {
@@ -1824,5 +1850,21 @@ GSError BufferQueueProducer::SetCycleBuffersNumber(uint32_t cycleBuffersNumber)
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetCycleBuffersNumber(cycleBuffersNumber);
+}
+
+GSError BufferQueueProducer::SetFrameGravity(int32_t frameGravity)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetFrameGravity(frameGravity);
+}
+
+GSError BufferQueueProducer::SetFixedRotation(int32_t fixedRotation)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetFixedRotation(fixedRotation);
 }
 }; // namespace OHOS

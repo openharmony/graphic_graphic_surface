@@ -220,6 +220,10 @@ public:
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
+    GSError GetFrameGravity(int32_t &frameGravity);
+    GSError SetFrameGravity(int32_t frameGravity);
+    GSError GetFixedRotation(int32_t &fixedRotation);
+    GSError SetFixedRotation(int32_t fixedRotation);
     GSError ConnectStrictly();
     GSError DisconnectStrictly();
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount);
@@ -347,6 +351,8 @@ private:
     int64_t lastFlushedDesiredPresentTimeStamp_ = 0;
     bool bufferSupportFastCompose_ = false;
     uint32_t rotatingBufferNumber_ = 0;
+    int32_t frameGravity_ = -1;
+    int32_t fixedRotation_ = -1;
     uint32_t detachReserveSlotNum_ = 0;
     int64_t lastConsumeTime_ = 0;
     uint32_t maxQueueSize_ = 0;

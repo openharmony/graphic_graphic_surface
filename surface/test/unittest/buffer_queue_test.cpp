@@ -881,7 +881,7 @@ HWTEST_F(BufferQueueTest, SetGlobalAlpha001, TestSize.Level0)
 * CaseDescription: 1. call SetFrameGravity and check value
 *                  2. call GetGlobalAlpha and check value
 */
-HWTEST_F(BufferQueueTest, SetGlobalAlpha001, TestSize.Level0)
+HWTEST_F(BufferQueueTest, SetFrameGravity001, TestSize.Level0)
 {
     int32_t frameGravity = 15;
     GSError ret = bq->SetFrameGravity(frameGravity);

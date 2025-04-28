@@ -27,7 +27,9 @@ namespace OHOS {
 #define SURFACE_DEFAULT_QUEUE_SIZE 3
 #define SURFACE_MAX_SIZE 58982400 // 8K * 8K
 
+#ifndef _WIN32
 #define SURFACE_HIDDEN __attribute__((visibility("hidden")))
+#endif
 
 constexpr uint32_t SURFACE_PARCEL_SIZE_LIMIT = 1024;
 

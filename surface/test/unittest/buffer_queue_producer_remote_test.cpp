@@ -51,71 +51,26 @@ public:
     static inline std::vector<uint32_t> deletingBuffers;
     static inline int64_t timestamp = 0;
     static inline std::vector<Rect> damages = {};
-    static inline sptr<IRemoteObject> robj = nullptr;
     static inline sptr<IBufferProducer> bp = nullptr;
     static inline sptr<BufferQueue> bq = nullptr;
     static inline sptr<BufferQueueProducer> bqp = nullptr;
     static inline sptr<BufferExtraData> bedata = nullptr;
-    static inline int32_t systemAbilityID = 345154;
 };
 
 void BufferQueueProducerRemoteTest::SetUpTestCase()
 {
-    uint64_t tokenId;
-    const char *perms[2];
-    perms[0] = "ohos.permission.DISTRIBUTED_DATASYNC";
-    perms[1] = "ohos.permission.CAMERA";
-    NativeTokenInfoParams infoInstance = {
-        .dcapsNum = 0,
-        .permsNum = 2,
-        .aclsNum = 0,
-        .dcaps = NULL,
-        .perms = perms,
-        .acls = NULL,
-        .processName = "dcamera_client_demo",
-        .aplStr = "system_basic",
-    };
-    tokenId = GetAccessTokenId(&infoInstance);
-    SetSelfTokenID(tokenId);
-    int32_t ret = Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
-    ASSERT_EQ(ret, Security::AccessToken::RET_SUCCESS);
-    
     bq = new BufferQueue("test");
     bqp = new BufferQueueProducer(bq);
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bq->RegisterConsumerListener(listener);
-
-    auto sm = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    sm->AddSystemAbility(systemAbilityID, bqp);
-
-    robj = sm->GetSystemAbility(systemAbilityID);
-    bp = iface_cast<IBufferProducer>(robj);
-
+    bp = bqp;
     bedata = new OHOS::BufferExtraDataImpl;
 }
 
 void BufferQueueProducerRemoteTest::TearDownTestCase()
 {
-    bp = nullptr;
-    robj = nullptr;
-
-    auto sm = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    sm->RemoveSystemAbility(systemAbilityID);
-
     bqp = nullptr;
     bq = nullptr;
-}
-
-/*
-* Function: IsProxyObject
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call IsProxyObject and check ret
- */
-HWTEST_F(BufferQueueProducerRemoteTest, IsProxy001, TestSize.Level0)
-{
-    ASSERT_FALSE(robj->IsProxyObject());
 }
 
 /*

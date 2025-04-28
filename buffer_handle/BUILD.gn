@@ -16,7 +16,7 @@ import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 ## buffer_handle.so {{{
 config("buffer_handle_config") {
-  visibility = [ ":buffer_handle" ]
+  visibility = [ ":buffer_handle", ":buffer_handle_static" ]
 
   cflags = [
     "-Wall",
@@ -32,14 +32,12 @@ config("buffer_handle_public_config") {
 }
 
 ohos_shared_library("buffer_handle") {
+  deps = [ ":buffer_handle_static" ]
   sanitize = {
     boundary_sanitize = true
     integer_overflow = true
     ubsan = true
   }
-  sources = [ "src/buffer_handle.cpp" ]
-
-  configs = [ ":buffer_handle_config" ]
 
   public_configs = [ ":buffer_handle_public_config" ]
 
@@ -53,6 +51,23 @@ ohos_shared_library("buffer_handle") {
     "chipsetsdk",
     "platformsdk",
   ]
+  subsystem_name = "graphic"
+  part_name = "graphic_surface"
+}
+
+ohos_static_library("buffer_handle_static") {
+  sources = [ "src/buffer_handle.cpp" ]
+
+  configs = [ ":buffer_handle_config" ]
+
+  public_configs = [ ":buffer_handle_public_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+
   subsystem_name = "graphic"
   part_name = "graphic_surface"
 }

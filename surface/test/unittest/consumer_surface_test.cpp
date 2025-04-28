@@ -2328,7 +2328,7 @@ HWTEST_F(ConsumerSurfaceTest, GetAndSetRotatingBuffersNumber001, TestSize.Level0
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. Test IPC and producer-consumer process for frameGravity. 
+* CaseDescription: 1. Test IPC and producer-consumer process for frameGravity.
                       Call GetFrameGravity and SetFrameGravity function and check ret
 */
 HWTEST_F(ConsumerSurfaceTest, GetAndSetFrameGravity001, TestSize.Level0)
@@ -2355,7 +2355,7 @@ HWTEST_F(ConsumerSurfaceTest, GetAndSetFrameGravity001, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. Test IPC and producer-consumer process for fixedRotation. 
+* CaseDescription: 1. Test IPC and producer-consumer process for fixedRotation.
                       Call GetFixedRotation and SetFixedRotation function and check ret.
 */
 HWTEST_F(ConsumerSurfaceTest, GetAndSetFixedRotation001, TestSize.Level0)

@@ -2134,6 +2134,7 @@ void BufferQueue::Dump(std::string &result)
 
 void BufferQueue::DumpCurrentFrameLayer()
 {
+    SURFACE_TRACE_NAME_FMT("mcc BufferQueue::DumpCurrentFrameLayer");
     bool dumpStaticFrameEnabled = GetBoolParameter("debug.dumpstaticframe.enabled", "0");
     if (!dumpStaticFrameEnabled) {
         BLOGI("debug.dumpstaticframe.enabled not exist or not enable!");
@@ -2141,15 +2142,18 @@ void BufferQueue::DumpCurrentFrameLayer()
     }
 
     std::lock_guard<std::mutex> lockGuard(mutex_);
+    uint8_t cnt = 0;
     for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
         BufferElement element = it->second;
         if (element.state != BUFFER_STATE_ACQUIRED) {
             continue;
         }
         if (element.buffer != nullptr) {
+            cnt++;
             DumpToFileAsync(GetRealPid(), name_, element.buffer);
         }
     }
+    BLOGI("mcc BufferQueue::DumpCurrentFrameLayer dump %{pubilc}d buffer", cnt);
 }
 
 bool BufferQueue::GetStatusLocked() const

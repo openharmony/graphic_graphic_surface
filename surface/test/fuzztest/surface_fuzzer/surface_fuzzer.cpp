@@ -83,6 +83,54 @@ namespace OHOS {
         MetadataHelper::GetHDRStaticMetadata(buffer, hdrStaticMetadata);
     }
 
+    void SurfaceFuzzTest5(sptr<OHOS::Surface> pSurface, sptr<OHOS::IConsumerSurface> cSurface)
+    {
+        pSurface->IsConsumer();
+        cSurface->IsConsumer();
+        bool cleanAll = GetData<bool>();
+        pSurface->CleanCache(cleanAll);
+        pSurface->QueryIfBufferAvailable();
+        pSurface->GetName();
+        pSurface->GoBackground();
+        pSurface->Connect();
+        uint64_t defaultUsage = GetData<uint64_t>();
+        pSurface->SetDefaultUsage(defaultUsage);
+        pSurface->GetDefaultUsage();
+        std::string userKey = GetStringFromData(STR_LEN);
+        pSurface->GetUserData(userKey);
+        sptr<SyncFence> syncFence = new SyncFence(-1);
+        uint32_t queueSize = GetData<uint32_t>();
+        int32_t fenceFd = syncFence->Get();
+        sptr<OHOS::SurfaceBuffer> buffer = new SurfaceBufferImpl(GetData<uint32_t>());
+        BufferRequestConfig requestConfig = GetData<BufferRequestConfig>();
+        BufferFlushConfig flushConfig = GetData<BufferFlushConfig>();
+        pSurface->PreAllocBuffers(requestConfig, queueSize);
+        sleep(1); // 设置1s间隔，确保preAllocBuffer流程结束再request buffer
+        pSurface->RequestBuffer(buffer, fenceFd, requestConfig);
+        pSurface->CancelBuffer(buffer);
+        pSurface->FlushBuffer(buffer, fenceFd, flushConfig);
+        pSurface->AttachBuffer(buffer);
+        pSurface->DetachBuffer(buffer);
+        int32_t timeout = 0;
+        pSurface->AttachBuffer(buffer, timeout);
+        pSurface->DetachBuffer(buffer);
+        pSurface->SetQueueSize(queueSize);
+        Rect damage = GetData<Rect>();
+        int64_t timestamp = GetData<int64_t>();
+        cSurface->AcquireBuffer(buffer, fenceFd, timestamp, damage);
+        cSurface->ReleaseBuffer(buffer, fenceFd);
+        cSurface->AttachBuffer(buffer);
+        cSurface->DetachBuffer(buffer);
+        sptr<SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
+        cSurface->AttachBuffer(buffer1, timeout);
+        cSurface->DetachBuffer(buffer1);
+        cSurface->AttachBufferToQueue(buffer);
+        cSurface->DetachBufferFromQueue(buffer);
+        syncFence = nullptr;
+        buffer = nullptr;
+        cSurface->SetQueueSize(queueSize);
+    }
+
     void SurfaceFuzzTest4(sptr<OHOS::Surface> pSurface, sptr<OHOS::IConsumerSurface> cSurface)
     {
         int32_t width = GetData<int32_t>();
@@ -256,6 +304,9 @@ namespace OHOS {
         SurfaceFuzzTest1(pSurface, cSurface);
         SurfaceFuzzTest3(pSurface, cSurface);
         SurfaceFuzzTest4(pSurface, cSurface);
+        for (uint32_t i = 0; i < 10; i++) { // 循环10次preAllocBuffer、request buffer流程，测稳定性
+            SurfaceFuzzTest5(pSurface, cSurface);
+        }
         listener = nullptr;
         free(listenerClazz);
         pSurface = nullptr;

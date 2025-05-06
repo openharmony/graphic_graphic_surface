@@ -2271,8 +2271,12 @@ GSError BufferQueue::GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTime
     if (frontSequence == dirtyList_.end()) {
         return GSERROR_NO_BUFFER;
     }
-    desiredPresentTimeStamp = bufferQueueCache_[*frontSequence].desiredPresentTimestamp;
-    isAutoTimeStamp = bufferQueueCache_[*frontSequence].isAutoTimestamp;
+    auto iter = bufferQueueCache_.find(*frontSequence);
+    if (iter == bufferQueueCache_.end()) {
+        return GSERROR_NO_BUFFER;
+    }
+    desiredPresentTimeStamp = (iter->second).desiredPresentTimestamp;
+    isAutoTimeStamp = (iter->second).isAutoTimestamp;
     return GSERROR_OK;
 }
 

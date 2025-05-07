@@ -18,17 +18,11 @@
 
 #include "external_window.h"
 #include "native_buffer.h"
+#include "surface_buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define MKMAGIC(a, b, c, d) (((a) << 24) + ((b) << 16) + ((c) << 8) + ((d) << 0))
-
-enum NativeObjectMagic {
-    NATIVE_OBJECT_MAGIC_WINDOW = MKMAGIC('W', 'I', 'N', 'D'),
-    NATIVE_OBJECT_MAGIC_WINDOW_BUFFER = MKMAGIC('W', 'B', 'U', 'F'),
-};
 
 // pSurface type is OHOS::sptr<OHOS::Surface>*
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface);
@@ -83,6 +77,16 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
 int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t *size, uint8_t **metadata);
 int32_t NativeWindowCleanCache(OHNativeWindow *window);
+void NativeWindowAddToCache(OHNativeWindow *window, OHOS::SurfaceBuffer *sfbuffer, OHNativeWindowBuffer **buffer);
+/**
+ * 1. The lock and unlock interfaces need to be used in pairs;
+ * 2. The internal usage of the interface is set to CPU read/write
+ * 3. The lock interface has requestBuffer logic inside, so there is no need to call the requestBuffer interface again;
+ * 4. If fenceFd is not equal to -1 inside the lock interface after requestBuffer, it will wait;
+ * 5. Repeated locking or unlocking will result in an illegal operation error code;
+*/
+int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWindowBuffer **buffer);
+int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window);
 
 #ifdef __cplusplus
 }

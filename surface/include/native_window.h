@@ -25,6 +25,21 @@
 #include <atomic>
 #include <mutex>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define MKMAGIC(a, b, c, d) (((a) << 24) + ((b) << 16) + ((c) << 8) + ((d) << 0))
+
+enum NativeObjectMagic {
+    NATIVE_OBJECT_MAGIC_WINDOW = MKMAGIC('W', 'I', 'N', 'D'),
+    NATIVE_OBJECT_MAGIC_WINDOW_BUFFER = MKMAGIC('W', 'B', 'U', 'F'),
+};
+
+#ifdef __cplusplus
+}
+#endif
+
 struct SURFACE_HIDDEN NativeWindowMagic : public OHOS::RefBase {
     NativeWindowMagic(NativeObjectMagic m) : magic(m) {}
     virtual ~NativeWindowMagic() {}
@@ -36,7 +51,6 @@ struct NativeWindow : public NativeWindowMagic {
     ~NativeWindow();
     OHOS::sptr<OHOS::Surface> surface;
     int64_t uiTimestamp = 0;
-    uint32_t lastBufferSeqNum = 0;
     std::unordered_map<uint32_t, NativeWindowBuffer*> bufferCache_;
     std::atomic<int64_t> desiredPresentTimestamp{0};
     char* appFrameworkType_ = nullptr;

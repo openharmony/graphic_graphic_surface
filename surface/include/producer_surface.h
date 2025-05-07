@@ -172,6 +172,12 @@ public:
     * 3.The interface is an asynchronous interface;
     */
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
+    /**
+    * @brief After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
+    *        This interface forces CPU usage;
+    */    
+    GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer) override;
+    GSError ProducerSurfaceUnlockAndFlushBuffer() override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);
@@ -189,6 +195,9 @@ private:
         IBufferProducer::RequestBufferReturnValue& retval, BufferRequestConfig& config);
     void ReleasePreCacheBuffer(int bufferCacheSize);
 
+    GSError RequestBufferLocked(sptr<SurfaceBuffer>& buffer,
+        sptr<SyncFence>& fence, BufferRequestConfig& config);
+    
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;
     std::map<int32_t, sptr<SurfaceBuffer>> bufferProducerCache_;
@@ -212,6 +221,8 @@ private:
     BufferRequestConfig windowConfig_ = {0};
     ProducerInitInfo initInfo_ = {0};
     sptr<SurfaceBuffer> preCacheBuffer_ = nullptr;
+    sptr<SurfaceBuffer> mLockedBuffer_ = nullptr;
+    Region region_ = {0};
 };
 } // namespace OHOS
 

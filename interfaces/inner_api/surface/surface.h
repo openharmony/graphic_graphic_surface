@@ -526,6 +526,17 @@ public:
         (void)allocBufferCount;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer)
+    {
+        (void)config;
+        (void)region;
+        (void)buffer;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError ProducerSurfaceUnlockAndFlushBuffer()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
 };

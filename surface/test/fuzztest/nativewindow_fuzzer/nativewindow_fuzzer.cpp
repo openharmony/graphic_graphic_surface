@@ -201,6 +201,22 @@ namespace OHOS {
         DestroyNativeWindowBuffer(nwBuffer);
     }
 
+    void NativeWindowFuzzTest2(OHNativeWindow *nativeWindow)
+    {
+        // 稳定性测试，10次重复lock->unlock
+        for (uint32_t i = 0; i < 10; i++) {
+            OHNativeWindowBuffer* buffer = nullptr;
+            Region::Rect rect = {0};
+            rect.x = 0x100;
+            rect.y = 0x100;
+            rect.w = 0x100;
+            rect.h = 0x100;
+            Region region = {.rects = &rect, .rectNumber = 1};
+            NativeWindowLockBuffer(nativeWindow, region, &buffer);
+            NativeWindowUnlockAndFlushBuffer(nativeWindow);
+        }
+    }
+
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         if (data == nullptr) {
@@ -229,6 +245,7 @@ namespace OHOS {
         HandleOpt1(nativeWindow);
         NativeWindowFuzzTest(nativeWindow, nwBuffer);
         NativeWindowFuzzTest1(nativeWindow, nwBuffer);
+        NativeWindowFuzzTest2(nativeWindow);
         DestoryNativeWindow(nativeWindow);
         return true;
     }

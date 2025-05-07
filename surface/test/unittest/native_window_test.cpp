@@ -2201,4 +2201,136 @@ HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, TestSize.Level0)
     ASSERT_EQ(ret, GSERROR_OK);
     ASSERT_NE(nativeWindowBuffer2, nullptr);
 }
+
+/*
+ * Function: NativeWindowLockBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSet: call NativeWindowLockBuffer with null surface or null window
+ *                  2. operation: request native buffer with lock
+ *                  3. result: request native buffer with lock buffer fail
+ */
+HWTEST_F(NativeWindowTest, NativeWindowLockBuffer001, TestSize.Level0)
+{
+    OHNativeWindow* window = new OHNativeWindow();
+    ASSERT_NE(window, nullptr);
+
+    OHNativeWindowBuffer* buffer = nullptr;
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    int32_t ret = NativeWindowLockBuffer(nullptr, region, &buffer);
+    ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
+    ret = NativeWindowLockBuffer(window, region, nullptr);
+    ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
+    ret = NativeWindowLockBuffer(window, region, &buffer);
+    ASSERT_EQ(ret, SURFACE_ERROR_ERROR);
+    delete window;
+}
+
+/*
+ * Function: NativeWindowLockBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSet: native window is unlocked, call NativeWindowLockBuffer with null surface or null window
+ *                  2. operation: request native buffer with lock
+ *                  3. result: request native buffer with lock buffer fail
+ */
+HWTEST_F(NativeWindowTest, NativeWindowLockBuffer002, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listenerTmp);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    OHNativeWindow* window = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(window, nullptr);
+    
+    OHNativeWindowBuffer* buffer = nullptr;
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    int32_t ret = NativeWindowLockBuffer(window, region, &buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+    
+    ret = NativeWindowLockBuffer(window, region, &buffer);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(buffer, nullptr);
+    
+    ret = NativeWindowUnlockAndFlushBuffer(window);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_EQ(buffer, nullptr);
+    OH_NativeWindow_DestroyNativeWindow(window);
+}
+
+/*
+ * Function: NativeWindowUnlockAndFlushBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSet: call NativeWindowUnlockAndFlushBuffer with null surface or null window
+ *                  2. operation: unlock native buffer
+ *                  3. result: unlock native buffer fail
+ */
+HWTEST_F(NativeWindowTest, NativeWindowUnlockAndFlushBuffer001, TestSize.Level0)
+{
+    OHNativeWindow* window = new OHNativeWindow();
+    ASSERT_NE(window, nullptr);
+
+    int32_t ret = NativeWindowUnlockAndFlushBuffer(nullptr);
+    ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowUnlockAndFlushBuffer(window);
+    ASSERT_EQ(ret, SURFACE_ERROR_ERROR);
+    delete window;
+}
+
+/*
+ * Function: NativeWindowUnlockAndFlushBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSet: call NativeWindowUnlockAndFlushBuffer with valid window.
+ *                  2. operation: unlock native buffer
+ *                  3. result: unlock native buffer success
+ */
+HWTEST_F(NativeWindowTest, NativeWindowUnlockAndFlushBuffer002, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listenerTmp);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+
+    OHNativeWindow* window = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(window, nullptr);
+    
+    OHNativeWindowBuffer* buffer = nullptr;
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    int32_t ret = NativeWindowLockBuffer(window, region, &buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+    
+    ret = NativeWindowUnlockAndFlushBuffer(window);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    ret = NativeWindowUnlockAndFlushBuffer(window);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+    OH_NativeWindow_DestroyNativeWindow(window);
+}
 }

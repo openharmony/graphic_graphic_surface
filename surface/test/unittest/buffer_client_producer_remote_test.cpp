@@ -814,20 +814,6 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.L
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
-
-/*
-* Function: UnRegisterPropertyListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call UnRegisterPropertyListener
-*/
-HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, TestSize.Level0)
-{
-    GSError ret = bp->UnRegisterPropertyListener(0);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
 /*
 * Function: PreAllocBuffers
 * Type: Function
@@ -848,5 +834,18 @@ HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, TestSize.Level0)
     };
     uint32_t allocBufferCount = 3;
     ASSERT_EQ(bp->PreAllocBuffers(requestConfigTmp, allocBufferCount), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: UnRegisterPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call UnRegisterPropertyListener
+*/
+HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, TestSize.Level0)
+{
+    GSError ret = bp->UnRegisterPropertyListener(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 }

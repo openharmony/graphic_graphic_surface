@@ -37,6 +37,11 @@ public:
     }
 };
 
+static inline GSError OnBufferRelease(sptr<SurfaceBuffer> &buffer)
+{
+    return GSERROR_OK;
+}
+
 static OHExtDataHandle *AllocOHExtDataHandle(uint32_t reserveInts)
 {
     size_t handleSize = sizeof(OHExtDataHandle) + (sizeof(int32_t) * reserveInts);
@@ -2203,6 +2208,181 @@ HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeWindow_NativeWindowRequestBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowRequestBuffer by abnormal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, DisconnectStrictly001, TestSize.Level0)
+{
+    int32_t sRet = 0;
+    uint32_t queueSize = 32;
+
+    sptr<OHOS::IConsumerSurface> pConsumerSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> pListener = new BufferConsumerListener();
+    pConsumerSurface->RegisterConsumerListener(pListener);
+    sptr<OHOS::IBufferProducer> pBufferProducer = pConsumerSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface1 = Surface::CreateSurfaceAsProducer(pBufferProducer);
+    sptr<OHOS::Surface> pSurface2 = Surface::CreateSurfaceAsProducer(pBufferProducer);
+
+    sptr<OHOS::IConsumerSurface> tConsumerSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> tListener = new BufferConsumerListener();
+    tConsumerSurface->RegisterConsumerListener(tListener);
+    sptr<OHOS::IBufferProducer> tBufferProducer = tConsumerSurface->GetProducer();
+    sptr<OHOS::Surface> tSurface = Surface::CreateSurfaceAsProducer(tBufferProducer);
+
+    pSurface1->RegisterReleaseListener(OnBufferRelease);
+    pSurface2->RegisterReleaseListener(OnBufferRelease);
+    tSurface->RegisterReleaseListener(OnBufferRelease);
+    pSurface1->SetQueueSize(queueSize);
+    pSurface2->SetQueueSize(queueSize);
+    tSurface->SetQueueSize(queueSize);
+
+    OHNativeWindow* nativeWindow1 = OH_NativeWindow_CreateNativeWindow(&pSurface1);
+    OHNativeWindow* nativeWindow2 = OH_NativeWindow_CreateNativeWindow(&pSurface2);
+    OHNativeWindow* nativeWindow3 = OH_NativeWindow_CreateNativeWindow(&tSurface);
+
+    SetNativeWindowConfig(nativeWindow1);
+    SetNativeWindowConfig(nativeWindow2);
+    SetNativeWindowConfig(nativeWindow3);
+
+    int fenceFd = -1;
+    struct Region *region = new Region();
+    struct Region::Rect *rect = new Region::Rect();
+    rect->x = 0x100;
+    rect->y = 0x100;
+    rect->w = 0x100;
+    rect->h = 0x100;
+    region->rects = rect;
+
+    OHNativeWindowBuffer* nativeWindowBuffer1 = nullptr;
+    OHNativeWindowBuffer* nativeWindowBuffer2 = nullptr;
+   
+    // 不同的surface(指不同消费端)创建不同的nativewindow
+    pSurface1->ConnectStrictly();
+    tSurface->DisconnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow3, &nativeWindowBuffer2, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    tSurface->ConnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow3, &nativeWindowBuffer2, &fenceFd);
+    tSurface->DisconnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow3, nativeWindowBuffer2, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+
+    pSurface1->DisconnectStrictly();
+    tSurface->ConnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow3, &nativeWindowBuffer2, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow3, nativeWindowBuffer2, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+
+    // 同一个surface(指相同消费端)调用不同nativewindow
+    pSurface1->ConnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow2, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow2, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+
+
+    pSurface2->DisconnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow2, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow2, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+
+    // 同一个surface调用相同nativewindow
+    pSurface1->ConnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+
+    pSurface1->DisconnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+
+    // 调用1000次ConnectStrictly和DisconnectStrictly
+    uint32_t testCount = 1000;
+    for (int i = 0; i < testCount; i++) {
+        pSurface1->ConnectStrictly();
+    }
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    for (int i = 0; i < testCount; i++) {
+        pSurface1->DisconnectStrictly();
+    }
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+
+    // 调用ConnectStrictly->DisconnectStrictly，再调用不同的nativewindow
+    pSurface1->ConnectStrictly();
+    pSurface1->DisconnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow2, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow2, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+
+    // 调用DisconnectStrictly->ConnectStrictly，再调用不同的nativewindow
+    pSurface1->DisconnectStrictly();
+    pSurface1->ConnectStrictly();
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow1, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow2, &nativeWindowBuffer1, &fenceFd);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+    sRet = OH_NativeWindow_NativeWindowFlushBuffer(nativeWindow2, nativeWindowBuffer1, fenceFd, *region);
+    EXPECT_EQ(sRet, OHOS::GSERROR_OK);
+
+	// 验证OH_NativeWindow_CleanCache在消费端断连后的错误码
+	pSurface1->Connect();
+	sRet = OH_NativeWindow_NativeWindowRequestBuffer(nativeWindow1, &nativeWindowBuffer1, &fenceFd);
+	pSurface1->Disconnect();
+	sRet = OH_NativeWindow_CleanCache(nativeWindow1);
+	EXPECT_EQ(sRet, OHOS::GSERROR_CONSUMER_DISCONNECTED);
+    rect = nullptr;
+    region = nullptr;
+    delete rect;
+    delete region;
+}
+
+/*
  * Function: NativeWindowLockBuffer
  * Type: Function
  * Rank: Important(2)
@@ -2264,7 +2444,7 @@ HWTEST_F(NativeWindowTest, NativeWindowLockBuffer002, TestSize.Level0)
     ASSERT_NE(buffer, nullptr);
     
     ret = NativeWindowLockBuffer(window, region, &buffer);
-    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
     ASSERT_EQ(buffer, nullptr);
     
     ret = NativeWindowUnlockAndFlushBuffer(window);
@@ -2330,7 +2510,7 @@ HWTEST_F(NativeWindowTest, NativeWindowUnlockAndFlushBuffer002, TestSize.Level0)
     ASSERT_EQ(ret, GSERROR_OK);
 
     ret = NativeWindowUnlockAndFlushBuffer(window);
-    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
     OH_NativeWindow_DestroyNativeWindow(window);
 }
 }

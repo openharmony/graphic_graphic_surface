@@ -18,7 +18,6 @@
 
 #include "external_window.h"
 #include "native_buffer.h"
-#include "surface_buffer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,7 +76,6 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
 int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t *size, uint8_t **metadata);
 int32_t NativeWindowCleanCache(OHNativeWindow *window);
-void NativeWindowAddToCache(OHNativeWindow *window, OHOS::SurfaceBuffer *sfbuffer, OHNativeWindowBuffer **buffer);
 /**
  * 1. The lock and unlock interfaces need to be used in pairs;
  * 2. The internal usage of the interface is set to CPU read/write

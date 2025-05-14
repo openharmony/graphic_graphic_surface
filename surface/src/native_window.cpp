@@ -163,6 +163,26 @@ void DestroyNativeWindowBuffer(OHNativeWindowBuffer* buffer)
     NativeObjectUnreference(buffer);
 }
 
+static void NativeWindowAddToCache(OHNativeWindow *window, OHOS::SurfaceBuffer *sfbuffer, OHNativeWindowBuffer **buffer)
+{
+    uint32_t seqNum = sfbuffer->GetSeqNum();
+
+    std::lock_guard<std::mutex> lockGuard(window->mutex_);
+    auto iter = window->bufferCache_.find(seqNum);
+    if (iter == window->bufferCache_.end()) {
+        OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
+        nwBuffer->sfbuffer = sfbuffer;
+        nwBuffer->uiTimestamp = window->uiTimestamp;
+        *buffer = nwBuffer;
+        // Add to cache
+        NativeObjectReference(nwBuffer);
+        window->bufferCache_[seqNum] = nwBuffer;
+    } else {
+        *buffer = iter->second;
+        (*buffer)->uiTimestamp = window->uiTimestamp;
+    }
+}
+
 int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     OHNativeWindowBuffer **buffer, int *fenceFd)
 {
@@ -946,27 +966,6 @@ int32_t NativeWindowCleanCache(OHNativeWindow *window)
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return windowSurface->CleanCache();
-}
-
-void NativeWindowAddToCache(OHNativeWindow *window, OHOS::SurfaceBuffer *sfbuffer, OHNativeWindowBuffer **buffer)
-{
-    uint32_t seqNum = sfbuffer->GetSeqNum();
-    {
-        std::lock_guard<std::mutex> lockGuard(window->mutex_);
-        auto iter = window->bufferCache_.find(seqNum);
-        if (iter == window->bufferCache_.end()) {
-            OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
-            nwBuffer->sfbuffer = sfbuffer;
-            nwBuffer->uiTimestamp = window->uiTimestamp;
-            *buffer = nwBuffer;
-            // Add to cache
-            NativeObjectReference(nwBuffer);
-            window->bufferCache_[seqNum] = nwBuffer;
-        } else {
-            *buffer = iter->second;
-            (*buffer)->uiTimestamp = window->uiTimestamp;
-        }
-    }
 }
 
 int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWindowBuffer **buffer)

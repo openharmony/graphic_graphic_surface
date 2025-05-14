@@ -1285,35 +1285,34 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
                                                    sptr<SurfaceBuffer>& buffer)
 {
     SURFACE_TRACE_NAME_FMT("ProducerSurfaceLockBuffer width: %u, height: %u", config.width, config.height);
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        // native buffer is locked
-        if (mLockedBuffer_ != nullptr) {
-            buffer = nullptr;
-            return GSERROR_INVALID_OPERATING;
-        }
-        config.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE);
-        sptr<SyncFence> syncFence = SyncFence::InvalidFence();
-        auto ret = RequestBufferLocked(buffer, syncFence, config);
-        if (ret != GSERROR_OK) {
-            buffer = nullptr;
-            BLOGE("RequestBuffer failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
-            return ret;
-        }
-        if (syncFence != SyncFence::InvalidFence()) {
-            SURFACE_TRACE_NAME_FMT("wait syncFence, bufferId: %u, uniqueId: %u", buffer->GetSeqNum(), GetUniqueId());
-            syncFence->Wait(-1);
-        }
-        ret = buffer->Map();
-        if (ret != GSERROR_OK) {
-            buffer = nullptr;
-            BLOGE("Map failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
-            return ret;
-        }
-        mLockedBuffer_ = buffer;
-        region_.rectNumber = region.rectNumber;
-        region_.rects = new Region::Rect();
-        auto tmpRet = memcpy_s(region_.rects, sizeof(Region::Rect), region.rects, sizeof(Region::Rect));
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    // native buffer is locked
+    if (mLockedBuffer_ != nullptr) {
+        buffer = nullptr;
+        return GSERROR_INVALID_OPERATING;
+    }
+    config.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE);
+    sptr<SyncFence> syncFence = SyncFence::InvalidFence();
+    auto ret = RequestBufferLocked(buffer, syncFence, config);
+    if (ret != GSERROR_OK) {
+        buffer = nullptr;
+        BLOGE("RequestBuffer failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
+        return ret;
+    }
+    SURFACE_TRACE_NAME_FMT("wait syncFence, bufferId: %u, uniqueId: %u", buffer->GetSeqNum(), GetUniqueId());
+    syncFence->Wait(-1);
+    ret = buffer->Map();
+    if (ret != GSERROR_OK) {
+        buffer = nullptr;
+        BLOGE("Map failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
+        return ret;
+    }
+    mLockedBuffer_ = buffer;
+    region_.rectNumber = region.rectNumber;
+    if (region.rectNumber != 0 && region.rects != nullptr) {
+        region_.rects = new Region::Rect[region.rectNumber];
+        auto tmpRet = memcpy_s(region_.rects, region.rectNumber * sizeof(Region::Rect),
+                               region.rects, region.rectNumber * sizeof(Region::Rect));
         if (tmpRet != EOK) {
             delete[] region_.rects;
             region_.rects = nullptr;
@@ -1321,45 +1320,44 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
             return SURFACE_ERROR_UNKOWN;            
         }
     }
+
     return SURFACE_ERROR_OK;
 }
 
 GSError ProducerSurface::ProducerSurfaceUnlockAndFlushBuffer()
 {
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        // native buffer is unlocked
-        if (mLockedBuffer_ == nullptr) {
-            return GSERROR_INVALID_OPERATING;
-        }
-        OHOS::BufferFlushConfigWithDamages config;
-        if ((region_.rectNumber <= DAMAGES_MAX_SIZE) && (region_.rectNumber > 0) && (region_.rects != nullptr)) {
-            config.damages.reserve(region_.rectNumber);
-            for (uint32_t i = 0; i < region_.rectNumber; i++) {
-                OHOS::Rect damage = {
-                    .x = region_.rects[i].x,
-                    .y = region_.rects[i].y,
-                    .w = static_cast<int32_t>(region_.rects[i].w),
-                    .h = static_cast<int32_t>(region_.rects[i].h),
-                };
-                config.damages.emplace_back(damage);
-            }
-        } else {
-            OHOS::BufferRequestConfig windowConfig = GetWindowConfig();
-            config.damages.reserve(1);
-            OHOS::Rect damage = {.x = 0, .y = 0, .w = windowConfig.width, .h = windowConfig.height};
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    // native buffer is unlocked
+    if (mLockedBuffer_ == nullptr) {
+        return GSERROR_INVALID_OPERATING;
+    }
+    OHOS::BufferFlushConfigWithDamages config;
+    if ((region_.rectNumber <= DAMAGES_MAX_SIZE) && (region_.rectNumber > 0) && (region_.rects != nullptr)) {
+        config.damages.reserve(region_.rectNumber);
+        for (uint32_t i = 0; i < region_.rectNumber; i++) {
+            OHOS::Rect damage = {
+                .x = region_.rects[i].x,
+                .y = region_.rects[i].y,
+                .w = static_cast<int32_t>(region_.rects[i].w),
+                .h = static_cast<int32_t>(region_.rects[i].h),
+            };
             config.damages.emplace_back(damage);
         }
-        sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
-        auto ret = FlushBuffer(mLockedBuffer_, acquireFence, config);
-        if (ret != GSERROR_OK) {
-            BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRId64 ".", ret, GetUniqueId());
-            return ret;
-        }
-        mLockedBuffer_ = nullptr;
-        delete[] region_.rects;
-        region_.rects = nullptr;
+    } else {
+        OHOS::BufferRequestConfig windowConfig = GetWindowConfig();
+        config.damages.reserve(1);
+        OHOS::Rect damage = {.x = 0, .y = 0, .w = windowConfig.width, .h = windowConfig.height};
+        config.damages.emplace_back(damage);
     }
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    auto ret = FlushBuffer(mLockedBuffer_, acquireFence, config);
+    if (ret != GSERROR_OK) {
+        BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRId64 ".", ret, GetUniqueId());
+        return ret;
+    }
+    mLockedBuffer_ = nullptr;
+    delete[] region_.rects;
+    region_.rects = nullptr;
     return SURFACE_ERROR_OK;
 }
 } // namespace OHOS

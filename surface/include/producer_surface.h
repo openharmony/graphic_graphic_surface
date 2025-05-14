@@ -171,11 +171,7 @@ public:
     * 2.The specifications of the SurfaceBuffer preAlloc cannot exceed the size of the bufferQueueCache;
     * 3.The interface is an asynchronous interface;
     */
-    GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
-    /**
-    * @brief After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
-    *        This interface forces CPU usage;
-    */    
+    GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;  
     GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer) override;
     GSError ProducerSurfaceUnlockAndFlushBuffer() override;
 private:
@@ -222,7 +218,7 @@ private:
     ProducerInitInfo initInfo_ = {0};
     sptr<SurfaceBuffer> preCacheBuffer_ = nullptr;
     sptr<SurfaceBuffer> mLockedBuffer_ = nullptr;
-    Region region_ = {0};
+    Region region_ = {.rectNumber = 0, .rects = nullptr};
 };
 } // namespace OHOS
 

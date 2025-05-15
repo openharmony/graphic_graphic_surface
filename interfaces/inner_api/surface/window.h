@@ -77,13 +77,24 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     int32_t *size, uint8_t **metadata);
 int32_t NativeWindowCleanCache(OHNativeWindow *window);
 /**
+ * @brief Request native window buffer with lock.
  * 1. The lock and unlock interfaces need to be used in pairs;
  * 2. The internal usage of the interface is set to CPU read/write
  * 3. The lock interface has requestBuffer logic inside, so there is no need to call the requestBuffer interface again;
  * 4. If fenceFd is not equal to -1 inside the lock interface after requestBuffer, it will wait;
  * 5. Repeated locking or unlocking will result in an illegal operation error code;
-*/
+ * @param window Indicates the window.
+ * @param region Indicates the info of the dirty region.
+ * @param buffer Indicates the pointer to a <b>NativeWindowBuffer</b> instance.
+ * @return Returns the error code of the request of lock.
+ */
 int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWindowBuffer **buffer);
+/**
+ * @brief Unlock native window buffer with lock.
+ * The lock and unlock interfaces need to be used in pairs;
+ * @param window Indicates the window.
+ * @return Returns the error code of the request of unlock.
+ */
 int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window);
 
 #ifdef __cplusplus

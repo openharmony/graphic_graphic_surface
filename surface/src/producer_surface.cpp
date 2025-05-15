@@ -304,7 +304,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
 }
 
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-                                     BufferFlushConfigWithDamages& config)
+                                     BufferFlushConfigWithDamages& config, bool needLock)
 {
     if (buffer == nullptr || fence == nullptr || producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
@@ -318,7 +318,11 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
     bool traceTag = IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP);
     AcquireFenceTracker::TrackFence(fence, traceTag);
     if (ret == GSERROR_NO_CONSUMER) {
-        CleanCache();
+        if (needLock == true) {
+            CleanCache();
+        } else {
+            CleanCacheWithLock();
+        }
         BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
     }
     return ret;
@@ -827,12 +831,11 @@ GSError ProducerSurface::CleanCacheLocked(bool cleanAll)
     return ret;
 }
 
-GSError ProducerSurface::CleanCache(bool cleanAll)
+GSError ProducerSurface::CleanCacheWithLock(bool cleanAll)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    std::lock_guard<std::mutex> lockGuard(mutex_);
     uint32_t bufSeqNum = 0;
     GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
     CleanAllLocked(&bufSeqNum);
@@ -840,6 +843,12 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
         preCacheBuffer_ = nullptr;
     }
     return ret;
+}
+
+GSError ProducerSurface::CleanCache(bool cleanAll)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return CleanCacheWithLock(cleanAll);
 }
 
 GSError ProducerSurface::GoBackground()
@@ -1317,7 +1326,7 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
             delete[] region_.rects;
             region_.rects = nullptr;
             BLOGE("memcpy_s failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
-            return SURFACE_ERROR_UNKOWN;            
+            return SURFACE_ERROR_UNKOWN;
         }
     }
 
@@ -1344,13 +1353,12 @@ GSError ProducerSurface::ProducerSurfaceUnlockAndFlushBuffer()
             config.damages.emplace_back(damage);
         }
     } else {
-        OHOS::BufferRequestConfig windowConfig = GetWindowConfig();
         config.damages.reserve(1);
-        OHOS::Rect damage = {.x = 0, .y = 0, .w = windowConfig.width, .h = windowConfig.height};
+        OHOS::Rect damage = {.x = 0, .y = 0, .w = windowConfig_.width, .h = windowConfig_.height};
         config.damages.emplace_back(damage);
     }
     sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
-    auto ret = FlushBuffer(mLockedBuffer_, acquireFence, config);
+    auto ret = FlushBuffer(mLockedBuffer_, acquireFence, config, false);
     if (ret != GSERROR_OK) {
         BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRId64 ".", ret, GetUniqueId());
         return ret;

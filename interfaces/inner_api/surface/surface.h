@@ -272,11 +272,12 @@ public:
         return false;
     }
     virtual GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-                                BufferFlushConfigWithDamages &config)
+                                BufferFlushConfigWithDamages &config, bool needLock = true)
     {
         (void)buffer;
         (void)fence;
         (void)config;
+        (void)needLock;
         return GSERROR_NOT_SUPPORT;
     }
     virtual GSError FlushBuffers(const std::vector<sptr<SurfaceBuffer>> &buffers,
@@ -526,6 +527,13 @@ public:
         (void)allocBufferCount;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    /**
+    * @brief Request a buffer with lock.
+    * @param config Indicates the buffer config to be requested.
+    * @param region Indicates the info of the dirty region.
+    * @param buffer Indicates the pointer to a <b>SurfaceBuffer</b> instance.
+    * @return Returns the error code of the request of lock.
+    */
     virtual GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer)
     {
         (void)config;
@@ -533,6 +541,10 @@ public:
         (void)buffer;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    /**
+    * @brief Unlock a buffer with lock.
+    * @return Returns the error code of the request of unlock.
+    */
     virtual GSError ProducerSurfaceUnlockAndFlushBuffer()
     {
         return SURFACE_ERROR_NOT_SUPPORT;

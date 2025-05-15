@@ -62,7 +62,7 @@ public:
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix = false) override;
     GSError FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence,
-                        BufferFlushConfigWithDamages &config) override;
+                        BufferFlushConfigWithDamages &config, bool needLock = true) override;
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) override;
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;
@@ -193,6 +193,7 @@ private:
 
     GSError RequestBufferLocked(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, BufferRequestConfig& config);
+    GSError CleanCacheWithLock(bool cleanAll = false);
     
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;

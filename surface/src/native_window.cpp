@@ -163,6 +163,26 @@ void DestroyNativeWindowBuffer(OHNativeWindowBuffer* buffer)
     NativeObjectUnreference(buffer);
 }
 
+static void NativeWindowAddToCache(OHNativeWindow *window, OHOS::SurfaceBuffer *sfbuffer, OHNativeWindowBuffer **buffer)
+{
+    uint32_t seqNum = sfbuffer->GetSeqNum();
+
+    std::lock_guard<std::mutex> lockGuard(window->mutex_);
+    auto iter = window->bufferCache_.find(seqNum);
+    if (iter == window->bufferCache_.end()) {
+        OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
+        nwBuffer->sfbuffer = sfbuffer;
+        nwBuffer->uiTimestamp = window->uiTimestamp;
+        *buffer = nwBuffer;
+        // Add to cache
+        NativeObjectReference(nwBuffer);
+        window->bufferCache_[seqNum] = nwBuffer;
+    } else {
+        *buffer = iter->second;
+        (*buffer)->uiTimestamp = window->uiTimestamp;
+    }
+}
+
 int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     OHNativeWindowBuffer **buffer, int *fenceFd)
 {
@@ -189,23 +209,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
                 ret, window->surface->GetUniqueId());
         return ret;
     }
-    uint32_t seqNum = sfbuffer->GetSeqNum();
-    {
-        std::lock_guard<std::mutex> lockGuard(window->mutex_);
-        auto iter = window->bufferCache_.find(seqNum);
-        if (iter == window->bufferCache_.end()) {
-            OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
-            nwBuffer->sfbuffer = sfbuffer;
-            nwBuffer->uiTimestamp = window->uiTimestamp;
-            *buffer = nwBuffer;
-            // Add to cache
-            NativeObjectReference(nwBuffer);
-            window->bufferCache_[seqNum] = nwBuffer;
-        } else {
-            *buffer = iter->second;
-            (*buffer)->uiTimestamp = window->uiTimestamp;
-        }
-    }
+    NativeWindowAddToCache(window, sfbuffer, buffer);
     *fenceFd = releaseFence->Dup();
     return OHOS::SURFACE_ERROR_OK;
 }
@@ -245,17 +249,6 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
         BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
             ret, window->surface->GetUniqueId());
         return ret;
-    }
-
-    {
-        std::lock_guard<std::mutex> lockGuard(window->mutex_);
-        auto it = std::find_if(window->bufferCache_.begin(), window->bufferCache_.end(),
-            [buffer](const std::pair<uint32_t, NativeWindowBuffer*>& element) {
-                return element.second == buffer;
-            });
-        if (it != window->bufferCache_.end()) {
-            window->lastBufferSeqNum = it->first;
-        }
     }
 
     return OHOS::SURFACE_ERROR_OK;
@@ -973,6 +966,43 @@ int32_t NativeWindowCleanCache(OHNativeWindow *window)
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     return windowSurface->CleanCache();
+}
+
+int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWindowBuffer **buffer)
+{
+    if (window == nullptr || buffer == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null.");
+
+    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+    int32_t requestWidth = window->surface->GetDefaultWidth();
+    int32_t requestHeight = window->surface->GetDefaultHeight();
+    if (requestWidth != 0 && requestHeight != 0) {
+        windowConfig.width = requestWidth;
+        windowConfig.height = requestHeight;
+    }
+    OHOS::sptr<OHOS::SurfaceBuffer> sfbuffer;
+    int32_t ret = window->surface->ProducerSurfaceLockBuffer(windowConfig, region, sfbuffer);
+    if (ret != OHOS::GSError::SURFACE_ERROR_OK || sfbuffer == nullptr) {
+        *buffer = nullptr;
+        BLOGE("ProducerSurfaceLockBuffer ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
+                ret, window->surface->GetUniqueId());
+        return ret;
+    }
+
+    NativeWindowAddToCache(window, sfbuffer, buffer);
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window)
+{
+    if (window == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null.");
+    return window->surface->ProducerSurfaceUnlockAndFlushBuffer();
 }
 
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)

@@ -134,6 +134,7 @@ namespace OHOS {
         bufferqueue->DoFlushBuffer(sequence, bedata, syncFence, flushConfig);
         bufferqueue->AcquireBuffer(buffer, syncFence, timestamp, damages);
         bufferqueue->ReleaseBuffer(buffer, syncFence);
+        bufferqueue->ListenerBufferReleasedCb(buffer, syncFence);
         bufferqueue->AttachBuffer(buffer1, timeOut);
         bufferqueue->DetachBuffer(buffer1);
         float matrix[16] = {0};
@@ -168,7 +169,6 @@ namespace OHOS {
         bufferqueue->SetDesiredPresentTimestampAndUiTimestamp(sequence, expectPresentTimestamp, uiTimestamp);
         int64_t desiredPresentTimestamp = GetData<int64_t>();
         bufferqueue->IsPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
-        bufferqueue->ListenerBufferReleasedCb(buffer, syncFence);
         bufferqueue->OnBufferDeleteCbForHardwareThreadLocked(buffer);
         {
             std::mutex mutex;

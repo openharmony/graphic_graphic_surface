@@ -2808,4 +2808,179 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest6, TestSize.Level0)
     producerTmp = nullptr;
     cSurfTmp = nullptr;
 }
+
+/*
+* Function: ProducerSurfaceLockBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer_ is nullptr, calls locl buffer and check the ret
+*                  2. operation: calls ProducerSurfaceLockBuffer with valid config
+*                  3. result: calls lock buffer return GSE_ERROR_INVALID_ARGUMENTS
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    BufferRequestConfig requestConfig= {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    sptr<SurfaceBuffer> buffer = nullptr;
+    pSurfaceTmp->producer_ = nullptr;
+    GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
+    ASSERT_EQ(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_EQ(buffer, nullptr);
+}
+
+/*
+* Function: ProducerSurfaceLockBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: native window is unlocked, calls locl buffer and check the ret
+*                  2. operation: calls lock buffer with valid config
+*                  3. result: calls lock buffer return ok
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    sptr<SurfaceBuffer> buffer = nullptr;
+    
+    GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
+    ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_NE(buffer, nullptr);
+    
+    ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
+    pSurfaceTmp = nullptr;
+}
+
+/*
+* Function: ProducerSurfaceUnlockAndFlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: producer_ is nullptr, calls unlock and flush buffer and check the ret
+*                  2. operation: calls unlock buffer with valid config
+*                  3. result: calls unlock buffer return ok
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    sptr<SurfaceBuffer> buffer = nullptr;
+    
+    GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
+    ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_NE(buffer, nullptr);
+    
+    pSurfaceTmp->producer_ = nullptr;
+    ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_NE(pSurfaceTmp->region_.rects, nullptr);
+}
+
+/*
+* Function: ProducerSurfaceUnlockAndFlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: native buffer is locked, calls unlock and flush buffer and check the ret
+*                  2. operation: calls unlock and flush buffer with valid config
+*                  3. result: calls unlock buffer return ok
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    sptr<SurfaceBuffer> buffer = nullptr;
+    
+    GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
+    ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
+
+    ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
+    ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
+    pSurfaceTmp = nullptr;
+}
 }

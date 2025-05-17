@@ -2385,8 +2385,8 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
     }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (allocBufferCount > bufferQueueSize_ - bufferQueueCache_.size()) {
-            allocBufferCount = bufferQueueSize_ - bufferQueueCache_.size();
+        if (allocBufferCount > bufferQueueSize_ - detachReserveSlotNum_ - bufferQueueCache_.size()) {
+            allocBufferCount = bufferQueueSize_ - detachReserveSlotNum_ - bufferQueueCache_.size();
         }
     }
     if (allocBufferCount == 0) {
@@ -2398,7 +2398,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         for (auto iter = surfaceBufferCache.begin(); iter != surfaceBufferCache.end(); ++iter) {
-            if (bufferQueueCache_.size() >= bufferQueueSize_) {
+            if (bufferQueueCache_.size() >= bufferQueueSize_- detachReserveSlotNum_) {
                 BLOGW("CacheSize: %{public}zu, QueueSize: %{public}d, allocBufferCount: %{public}zu,"
                    " queId: %{public}" PRIu64, bufferQueueCache_.size(), bufferQueueSize_,
                    surfaceBufferCache.size(), uniqueId_);

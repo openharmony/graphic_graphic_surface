@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <map>
+#include <vector>
 #include <gtest/gtest.h>
 #include <surface.h>
 #include <buffer_extra_data_impl.h>
@@ -1175,6 +1176,89 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers003, TestSize.Level0)
     GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 1);
+    bqTmp = nullptr;
+}
+
+/*
+ * Function: PreAllocBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+ *                  2. operation: producer sends all usage type
+ *                  3. result: bufferQueue return GSERROR_OK
+ */
+HWTEST_F(BufferQueueTest, PreAllocBuffers004, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    EXPECT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+    };
+
+    uint32_t allocBufferCount = 3;
+    std::vector<SurfaceBufferUsage> bufferUsages = {
+        SurfaceBufferUsage::BUFFER_USAGE_CPU_READ,
+        SurfaceBufferUsage::BUFFER_USAGE_CPU_WRITE,
+        SurfaceBufferUsage::BUFFER_USAGE_MEM_MMZ,
+        SurfaceBufferUsage::BUFFER_USAGE_MEM_DMA,
+        SurfaceBufferUsage::BUFFER_USAGE_MEM_SHARE,
+        SurfaceBufferUsage::BUFFER_USAGE_MEM_MMZ_CACHE,
+        SurfaceBufferUsage::BUFFER_USAGE_MEM_FB,
+        SurfaceBufferUsage::BUFFER_USAGE_ASSIGN_SIZE,
+        SurfaceBufferUsage::BUFFER_USAGE_HW_RENDER,
+        SurfaceBufferUsage::BUFFER_USAGE_HW_TEXTURE,
+        SurfaceBufferUsage::BUFFER_USAGE_HW_COMPOSER,
+        SurfaceBufferUsage::BUFFER_USAGE_PROTECTED,
+        SurfaceBufferUsage::BUFFER_USAGE_CAMERA_READ,
+        SurfaceBufferUsage::BUFFER_USAGE_CAMERA_WRITE,
+        SurfaceBufferUsage::BUFFER_USAGE_VIDEO_ENCODER,
+        SurfaceBufferUsage::BUFFER_USAGE_VIDEO_DECODER,
+        SurfaceBufferUsage::BUFFER_USAGE_CPU_READ_OFTEN,
+        SurfaceBufferUsage::BUFFER_USAGE_CPU_HW_BOTH,
+        SurfaceBufferUsage::BUFFER_USAGE_ALIGNMENT_512,
+        SurfaceBufferUsage::BUFFER_USAGE_DRM_REDRAW,
+        SurfaceBufferUsage::BUFFER_USAGE_GRAPHIC_2D_ACCEL,
+        SurfaceBufferUsage::BUFFER_USAGE_PREFER_NO_PADDING
+    };
+
+    for (const auto& bufferUsage : bufferUsages) {
+        // 遍历不同的usage
+        requestConfigTmp.usage = bufferUsage;
+        GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 1);
+        bqTmp = nullptr;      
+    }
+}
+
+/*
+ * Function: PreAllocBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+ *                  2. operation: producer sends valid width/height/format and larger allocBufferCount
+ *                       than max bufferQueueSize config to bufferQueue
+ *                  3. result: bufferQueue return GSERROR_OK
+ */
+HWTEST_F(BufferQueueTest, PreAllocBuffers005, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    // max queue size为64
+    EXPECT_EQ(bqTmp->SetQueueSize(64), GSERROR_OK);
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 65;
+    GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 64);
     bqTmp = nullptr;
 }
 

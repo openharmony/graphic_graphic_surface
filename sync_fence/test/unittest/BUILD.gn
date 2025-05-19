@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,7 +19,10 @@ module_out_path = "graphic_surface/graphic_surface/sync_fence"
 group("unittest") {
   testonly = true
 
-  deps = [ ":sync_fence_test" ]
+  deps = [
+    ":native_fence_test",
+    ":sync_fence_test",
+  ]
 }
 
 ## UnitTest sync_fence_test {{{
@@ -46,6 +49,27 @@ ohos_unittest("sync_fence_test") {
 }
 
 ## UnitTest sync_fence_test }}}
+
+## UnitTest native_fence_test {{{
+ohos_unittest("native_fence_test") {
+  module_out_path = module_out_path
+
+  sources = [ "native_fence_test.cpp" ]
+
+  deps = [
+    ":sync_fence_common",
+    "$graphic_surface_root/sync_fence:sync_fence_static",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+  ]
+}
+
+## UnitTest native_fence_test }}}
 
 ## Build sync_fence_common.a {{{
 config("sync_fence_common_public_config") {

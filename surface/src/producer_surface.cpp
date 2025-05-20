@@ -321,7 +321,7 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
         if (needLock == true) {
             CleanCache();
         } else {
-            CleanCacheWithLock();
+            CleanCacheLocked(false);
         }
         BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
     }
@@ -389,7 +389,15 @@ GSError ProducerSurface::CancelBuffer(sptr<SurfaceBuffer>& buffer)
     if (bedata == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
+    auto ret = producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
+    if (ret == GSERROR_OK) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        mLockedBuffer_ = nullptr;
+        region_.rectNumber = 0;
+        delete[] region_.rects;
+        region_.rects = nullptr;
+    }
+    return ret;
 }
 
 GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer,
@@ -831,24 +839,10 @@ GSError ProducerSurface::CleanCacheLocked(bool cleanAll)
     return ret;
 }
 
-GSError ProducerSurface::CleanCacheWithLock(bool cleanAll)
-{
-    if (producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    uint32_t bufSeqNum = 0;
-    GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
-    CleanAllLocked(&bufSeqNum);
-    if (cleanAll) {
-        preCacheBuffer_ = nullptr;
-    }
-    return ret;
-}
-
 GSError ProducerSurface::CleanCache(bool cleanAll)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    return CleanCacheWithLock(cleanAll);
+    return CleanCacheLocked(cleanAll);
 }
 
 GSError ProducerSurface::GoBackground()
@@ -1290,6 +1284,22 @@ GSError ProducerSurface::PreAllocBuffers(const BufferRequestConfig &config, uint
     return producer_->PreAllocBuffers(config, allocBufferCount);
 }
 
+GSError ProducerSurface::ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& buffer)
+{
+    sptr<BufferExtraData> bedata = buffer->GetExtraData();
+    if (bedata == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    auto ret = producer_->CancelBuffer(buffer->GetSeqNum(), bedata);
+    if (ret == GSERROR_OK) {
+        mLockedBuffer_ = nullptr;
+        region_.rectNumber = 0;
+        delete[] region_.rects;
+        region_.rects = nullptr;
+    }
+    return ret;
+}
+
 GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region,
                                                    sptr<SurfaceBuffer>& buffer)
 {
@@ -1313,7 +1323,9 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
     ret = buffer->Map();
     if (ret != GSERROR_OK) {
         buffer = nullptr;
-        BLOGE("Map failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
+        auto tmpRet = ProducerSurfaceCancelBufferLocked(buffer);
+        BLOGE("Map failed, ret:%{public}d, cancelBuffer tmpRet:%{public}d,"
+            "uniqueId: %{public}" PRIu64 ".", ret, tmpRet, GetUniqueId());
         return ret;
     }
     mLockedBuffer_ = buffer;
@@ -1323,9 +1335,9 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
         auto tmpRet = memcpy_s(region_.rects, region.rectNumber * sizeof(Region::Rect),
                                region.rects, region.rectNumber * sizeof(Region::Rect));
         if (tmpRet != EOK) {
-            delete[] region_.rects;
-            region_.rects = nullptr;
-            BLOGE("memcpy_s failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
+            auto tmpRet = ProducerSurfaceCancelBufferLocked(buffer);
+            BLOGE("memcpy_s failed, ret:%{public}d, cancelBuffer tmpRet:%{public}d,"
+                "uniqueId: %{public}" PRIu64 ".", ret, tmpRet, GetUniqueId());
             return SURFACE_ERROR_UNKOWN;
         }
     }

@@ -23,6 +23,13 @@
 extern "C" {
 #endif
 
+#define MKMAGIC(a, b, c, d) (((a) << 24) + ((b) << 16) + ((c) << 8) + ((d) << 0))
+
+enum NativeObjectMagic {
+    NATIVE_OBJECT_MAGIC_WINDOW = MKMAGIC('W', 'I', 'N', 'D'),
+    NATIVE_OBJECT_MAGIC_WINDOW_BUFFER = MKMAGIC('W', 'B', 'U', 'F'),
+};
+
 // pSurface type is OHOS::sptr<OHOS::Surface>*
 OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface);
 void DestoryNativeWindow(OHNativeWindow* window);

@@ -797,7 +797,22 @@ public:
     * {@link SURFACE_ERROR_OUT_OF_RANGE} 40603000 - out of range.
     */
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;  
+    /**
+     * @brief Request a buffer with lock.
+     * 
+     * @param config Indicates the buffer config to be requested.
+     * @param region Indicates the info of the dirty region.
+     * @param buffer Indicates the pointer to a <b>SurfaceBuffer</b> instance.
+     * @return Returns the error code of the request of lock.
+     * {@link GSERROR_INVALID_OPERATING} 41201000 - Operate invalid.
+     */
     GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer) override;
+    /**
+     * @brief Unlock a buffer with lock.
+     * 
+     * @return Returns the error code of the request of unlock.
+     * {@link GSERROR_INVALID_OPERATING} 41201000 - Operate invalid.
+     */
     GSError ProducerSurfaceUnlockAndFlushBuffer() override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
@@ -818,8 +833,8 @@ private:
 
     GSError RequestBufferLocked(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, BufferRequestConfig& config);
-    GSError CleanCacheWithLock(bool cleanAll = false);
-    
+    GSError ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& buffer);
+
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;
     std::map<int32_t, sptr<SurfaceBuffer>> bufferProducerCache_;

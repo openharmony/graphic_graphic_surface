@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,6 +96,7 @@ public:
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;
     GSError SetGlobalAlpha(int32_t alpha) override;
+    GSError SetRequestBufferNoblockMode(bool noblock) override;
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) override;
 
@@ -193,6 +194,7 @@ private:
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t ReleaseLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetGlobalAlphaRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetRequestBufferNoblockModeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestAndDetachBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AttachAndFlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetRotatingBuffersNumberRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

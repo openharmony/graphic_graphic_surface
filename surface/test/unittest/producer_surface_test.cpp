@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -614,6 +614,22 @@ HWTEST_F(ProducerSurfaceTest, SetQueueSizeDeleting001, TestSize.Level0)
 
     ret = pSurface->SetQueueSize(2);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: SetRequestBufferNoblockMode
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetRequestBufferNoblockMode
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetRequestBufferNoblockMode, TestSize.Level0)
+{
+    sptr<ProducerSurface> producerSurface = nullptr;
+    producerSurface = new ProducerSurface(producer);
+    ASSERT_NE(producerSurface, nullptr);
+    ASSERT_EQ(producerSurface->SetRequestBufferNoblockMode(true), OHOS::GSERROR_OK);
 }
 
 /*
@@ -2317,6 +2333,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, TestSize.Level0)
     ASSERT_EQ(pSurfaceTmp->ReleaseLastFlushedBuffer(nullptr), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->ReleaseLastFlushedBuffer(buffer), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->SetGlobalAlpha(0), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->SetRequestBufferNoblockMode(false), OHOS::GSERROR_INVALID_ARGUMENTS);
 
     pSurfaceTmp = nullptr;
 }
@@ -3061,5 +3078,267 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer004, TestSize.L
     ASSERT_EQ(ret, OHOS::GSERROR_NO_CONSUMER);
     ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
     ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
+}
+
+/*
+* Function: ProducerSurfaceBlockRequestAndNoBlockRequest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: set RequestBuffer mode is block mode.
+*                  2. operation: call multiple RequestBuffer between mode is block and noBlock.
+*                  3. result: start calling RequestBuffer and return GSERROR_OK.
+*                     After call RequestBuffer return GSERROR_NO_BUFFER.
+*                     Final call RequestBuffer return GSERROR_NO_BUFFER.
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceBlockRequestAndNoBlockRequest001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+
+    sptr<SurfaceBuffer> buffer1;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmpTest->RequestBuffer(buffer1, releaseFence, requestConfig);
+    std::cout << "get buffer1: " << buffer1 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer1, nullptr);
+
+    sptr<SurfaceBuffer> buffer2;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer2, releaseFence, requestConfig);
+    std::cout << "get buffer2: " << buffer2 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer2, nullptr);
+
+    sptr<SurfaceBuffer> buffer3;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer3, releaseFence, requestConfig);
+    std::cout << "get buffer3: " << buffer3 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+
+    sptr<SurfaceBuffer> bufferBlock;
+    auto start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(bufferBlock, releaseFence, requestConfig);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_GE(duration.count(), 3000); // 确认阻塞
+    std::cout << "get bufferBlock: " << bufferBlock << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+    ASSERT_EQ(bufferBlock, nullptr);
+
+    pSurfaceTmpTest->SetRequestBufferNoblockMode(true); // 设置为非阻塞模式
+    sptr<SurfaceBuffer> bufferNoBlock;
+    start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(bufferNoBlock, releaseFence, requestConfig);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_LT(duration.count(), 5); // 确认非阻塞 5 means timeout value
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+    ASSERT_EQ(bufferNoBlock, nullptr);
+}
+
+/*
+* Function: ProducerSurfaceNoBlockRequestAndFlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: set RequestBuffer mode is block mode.
+*                  2. operation: call multiple RequestBuffer and
+*                     set mode is noblock then call RequestBuffer once after call FlushBuffer.
+*                  3. result: start calling RequestBuffer and return GSERROR_OK.
+*                     After call RequestBuffer return GSERROR_NO_BUFFER.
+*                     Final call RequestBuffer return GSERROR_OK.
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestAndFlushBuffer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+
+    sptr<SurfaceBuffer> buffer1;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmpTest->RequestBuffer(buffer1, releaseFence, requestConfig);
+    std::cout << "get buffer1: " << buffer1 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer1, nullptr);
+
+    sptr<SurfaceBuffer> buffer2;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer2, releaseFence, requestConfig);
+    std::cout << "get buffer2: " << buffer2 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer2, nullptr);
+
+    sptr<SurfaceBuffer> buffer3;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer3, releaseFence, requestConfig);
+    std::cout << "get buffer3: " << buffer3 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+
+    sptr<SurfaceBuffer> bufferBlock;
+    auto start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(bufferBlock, releaseFence, requestConfig);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_GE(duration.count(), 3000); // 确认阻塞 3000 means timeout value
+    std::cout << "get bufferBlock: " << bufferBlock << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+    ASSERT_EQ(bufferBlock, nullptr);
+
+    pSurfaceTmpTest->SetRequestBufferNoblockMode(true); // 设置为非阻塞模式
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    ret = pSurfaceTmpTest->FlushBuffer(buffer3, releaseFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+
+    ret = pSurfaceTmpTest->FlushBuffer(buffer2, releaseFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer2, nullptr);
+
+    sptr<SurfaceBuffer> buffer4;
+    start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(buffer4, releaseFence, requestConfig);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_LT(duration.count(), 5); // 确认非阻塞 5 means timeout value
+    std::cout << "get buffer4: " << buffer4 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer4, nullptr);
+
+    sptr<SurfaceBuffer> buffer5;
+    start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(buffer5, releaseFence, requestConfig);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_LT(duration.count(), 5); // 确认非阻塞 5 means timeout value
+    std::cout << "get buffer5: " << buffer5 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer5, nullptr);
+}
+
+/*
+* Function: ProducerSurfaceNoBlockRequestAndReuseBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: call multiple RequestBuffer.
+*                  2. operation: call multiple RequestBuffer and call FlushBuffer, AcquireBuffer, ReleaseBuffer.
+*                  3. result: start calling RequestBuffer and return GSERROR_OK.
+*                     Final call RequestBuffer return GSERROR_OK.
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestAndReuseBuffer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+
+    sptr<SurfaceBuffer> buffer1;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmpTest->RequestBuffer(buffer1, releaseFence, requestConfig);
+    std::cout << "get buffer1: " << buffer1 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer1, nullptr);
+
+    sptr<SurfaceBuffer> buffer2;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer2, releaseFence, requestConfig);
+    std::cout << "get buffer2: " << buffer2 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer2, nullptr);
+
+    sptr<SurfaceBuffer> buffer3;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer3, releaseFence, requestConfig);
+    std::cout << "get buffer3: " << buffer3 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+
+    sptr<SurfaceBuffer> bufferBlock;
+    auto start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(bufferBlock, releaseFence, requestConfig);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_GE(duration.count(), 3000); // 确认阻塞 3000 means timeout value
+    std::cout << "get bufferBlock: " << bufferBlock << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+    ASSERT_EQ(bufferBlock, nullptr);
+
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    ret = pSurfaceTmpTest->FlushBuffer(buffer3, releaseFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+    std::cout << "get buffer3: " << buffer3 << std::endl;
+
+    int64_t timestampTmp = 0;
+    Rect damageTmp = {};
+    sptr<OHOS::SyncFence> fence;
+    ret = cSurfTmp->AcquireBuffer(buffer3, fence, timestampTmp, damageTmp);
+    std::cout << "get buffer3: " << buffer3 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+
+    ret = cSurfTmp->ReleaseBuffer(buffer3, fence);
+    std::cout << "get buffer3: " << buffer3 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer3, nullptr);
+
+    pSurfaceTmpTest->SetRequestBufferNoblockMode(true); // 设置为非阻塞模式
+
+    sptr<SurfaceBuffer> buffer4;
+    start = std::chrono::high_resolution_clock::now();
+    ret = pSurfaceTmpTest->RequestBuffer(buffer4, releaseFence, requestConfig);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_LT(duration.count(), 5); // 非阻塞 5 means timeout value
+    std::cout << "get buffer4: " << buffer4 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer4, nullptr);
 }
 }

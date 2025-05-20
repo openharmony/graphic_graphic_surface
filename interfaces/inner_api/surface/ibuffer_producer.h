@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -156,6 +156,11 @@ public:
         (void)alpha;
         return SURFACE_ERROR_NOT_SUPPORT;
     };
+    virtual GSError SetRequestBufferNoblockMode(bool noblock)
+    {
+        (void)noblock;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    };
     virtual GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
         RequestBufferReturnValue& retval)
     {
@@ -272,6 +277,7 @@ protected:
         BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER,
         BUFFER_PRODUCER_SET_GLOBALALPHA,
+        BUFFER_PRODUCER_SET_REQUESTBUFFER_NOBLOCKMODE,
         BUFFER_PRODUCER_REGISTER_RELEASE_LISTENER_BACKUP,
         BUFFER_PRODUCER_UNREGISTER_RELEASE_LISTENER_BACKUP,
         BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER,

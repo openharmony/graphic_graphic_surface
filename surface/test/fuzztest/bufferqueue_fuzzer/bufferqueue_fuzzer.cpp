@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,6 +52,21 @@ namespace OHOS {
         bedata->ExtraGet(keyDouble, valueDouble);
         bedata->ExtraGet(keyStr, valueStr);
         return bedata;
+    }
+
+    void BufferQueueFuzzTest3()
+    {
+        std::string name = GetStringFromData(STR_LEN);
+        sptr<BufferQueue> bufferqueue = new BufferQueue(name);
+        BufferRequestConfig requestConfig = GetData<BufferRequestConfig>();
+        BufferRequestConfig Config = GetData<BufferRequestConfig>();
+        sptr<OHOS::SurfaceBuffer> buffer = SurfaceBuffer::Create();
+        sptr<BufferExtraData> bedata = GetBufferExtraDataFromData();
+        IBufferProducer::RequestBufferReturnValue retval;
+        retval.buffer = buffer;
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        bufferqueue->SetupNewBufferLocked(buffer, bedata, requestConfig, Config, retval, lock);
     }
 
     void BufferQueueFuzzTest2()
@@ -205,6 +220,9 @@ namespace OHOS {
         bufferqueue->SetScalingMode(mode);
         bool bufferHold = GetData<bool>();
         bufferqueue->SetBufferHold(bufferHold);
+        bool noBlock = GetData<bool>();
+        bufferqueue->SetRequestBufferNoblockMode(noBlock);
+        bufferqueue->GetRequestBufferNoblockMode(noBlock);
         uint32_t reserveInts = GetData<uint32_t>() % 0x100000; // no more than 0x100000
         GraphicExtDataHandle *handle = AllocExtDataHandle(reserveInts);
         sptr<SurfaceTunnelHandle> tunnelHandle = new SurfaceTunnelHandle();
@@ -213,6 +231,7 @@ namespace OHOS {
         FreeExtDataHandle(handle);
         BufferQueueFuzzTest1();
         BufferQueueFuzzTest2();
+        BufferQueueFuzzTest3();
 
         return true;
     }

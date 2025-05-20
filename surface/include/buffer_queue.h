@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -207,6 +207,8 @@ public:
     GSError ReleaseLastFlushedBuffer(uint32_t sequence);
     GSError SetGlobalAlpha(int32_t alpha);
     GSError GetGlobalAlpha(int32_t &alpha);
+    GSError SetRequestBufferNoblockMode(bool noblock);
+    GSError GetRequestBufferNoblockMode(bool &noblock);
     uint32_t GetAvailableBufferCount();
 
     void SetConnectedPid(int32_t connectedPid);
@@ -285,6 +287,9 @@ private:
         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+    GSError SetupNewBufferLocked(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
+        BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
+        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
     GSError CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata);
     void DumpPropertyListener();
     void AllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount,
@@ -342,6 +347,8 @@ private:
     float sdrWhitePointBrightness_ = 0.0;
     uint32_t acquireLastFlushedBufSequence_;
     int32_t globalAlpha_ = -1;
+    // The default is false, where true indicates non blocking mode and false indicates blocking mode.
+    bool requestBufferNoBlockMode_ = false;
     std::mutex globalAlphaMutex_;
     std::string requestBufferStateStr_;
     std::string acquireBufferStateStr_;

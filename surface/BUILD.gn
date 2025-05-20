@@ -86,7 +86,9 @@ ohos_shared_library("surface") {
     "init:libbegetutil",
     "ipc:ipc_capi",
   ]
-  public_external_deps = [ "ipc:ipc_single" ]
+  if (!is_arkui_x) {
+    public_external_deps = [ "ipc:ipc_single" ]
+  }
   symlink_target_name = [
     "libnative_buffer.so",
     "libnative_window.so",

@@ -234,7 +234,10 @@ ohos_unittest("metadata_helper_test") {
   sources = [ "metadata_helper_test.cpp" ]
 
   deps = [ ":surface_test_common" ]
-
+  defines = []
+  if (defined(graphic_surface_feature_tv_metadata_enable) && graphic_surface_feature_tv_metadata_enable) {
+      defines += [ "RS_ENABLE_TV_PQ_METADATA" ]
+  }
   external_deps = [
     "c_utils:utils",
     "drivers_interface_display:display_commontype_idl_headers",

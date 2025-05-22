@@ -359,4 +359,236 @@ HWTEST_F(MetadataManagerTest, AdaptiveFOVMetadataTest, Function | SmallTest | Le
     ASSERT_EQ(MetadataHelper::SetAdaptiveFOVMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);
     ASSERT_EQ(MetadataHelper::GetAdaptiveFOVMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
 }
+
+#ifdef RS_ENABLE_TV_PQ_METADATA
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetSceneTag
+ */
+HWTEST_F(MetadataManagerTest, SetSceneTagTest, Function | SmallTest | Level1)
+{
+    unsigned char value = 3;
+    GSError retSet = MetadataHelper::SetSceneTag(buffer_, value);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.scene_tag, 3);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetUIFrameCount
+ */
+HWTEST_F(MetadataManagerTest, SetUIFrameCountTest, Function | SmallTest | Level1)
+{
+    unsigned char value = 60;
+    GSError retSet = MetadataHelper::SetUIFrameCount(buffer_, value);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.ui_frame_cnt, 60);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoFrameCount
+ */
+HWTEST_F(MetadataManagerTest, SetVideoFrameCountTest, Function | SmallTest | Level1)
+{
+    unsigned char value = 168;
+    GSError retSet = MetadataHelper::SetVideoFrameCount(buffer_, value);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.vid_frame_cnt, 168);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoFrameRate
+ */
+HWTEST_F(MetadataManagerTest, SetVideoFrameRateTest, Function | SmallTest | Level1)
+{
+    unsigned char value = 24;
+    GSError retSet = MetadataHelper::SetVideoFrameRate(buffer_, value);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.vid_fps, 24);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoTVInfo
+ */
+HWTEST_F(MetadataManagerTest, SetVideoTVInfoTest, Function | SmallTest | Level1)
+{
+    TvVideoWindow tvVideoWindow = {400, 600, 1080, 720, 1};
+    GSError retSet = MetadataHelper::SetVideoTVInfo(buffer_, tvVideoWindow);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.vid_win_x, 400);
+    ASSERT_EQ(tvPQMetadata.vid_win_y, 600);
+    ASSERT_EQ(tvPQMetadata.vid_win_width, 1080);
+    ASSERT_EQ(tvPQMetadata.vid_win_height, 720);
+    ASSERT_EQ(tvPQMetadata.vid_win_size, 1);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoDecoderHigh
+ */
+HWTEST_F(MetadataManagerTest, SetVideoDecoderHighTest, Function | SmallTest | Level1)
+{
+    unsigned short vidVdhWidth = 1920;
+    unsigned short vidVdhHeight = 1080;
+    GSError retSet = MetadataHelper::SetVideoDecoderHigh(buffer_, vidVdhWidth, vidVdhHeight);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.vid_vdh_width, 1920);
+    ASSERT_EQ(tvPQMetadata.vid_vdh_height, 1080);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoTVScaleMode
+ */
+HWTEST_F(MetadataManagerTest, SetVideoTVScaleModeTest, Function | SmallTest | Level1)
+{
+    unsigned char value = 2;
+    GSError retSet = MetadataHelper::SetVideoTVScaleMode(buffer_, value);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.scale_mode, 2);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoTVDpPixelFormat
+ */
+HWTEST_F(MetadataManagerTest, SetVideoTVDpPixelFormatTest, Function | SmallTest | Level1)
+{
+    unsigned int value = 1;
+    GSError retSet = MetadataHelper::SetVideoTVDpPixelFormat(buffer_, value);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.dp_pix_fmt, 1);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SetVideoColorimetryHdr
+ */
+HWTEST_F(MetadataManagerTest, SetVideoColorimetryHdrTest, Function | SmallTest | Level1)
+{
+    unsigned char hdr = 3;
+    unsigned char colorimetry = 4;
+    GSError retSet = MetadataHelper::SetVideoColorimetryHdr(buffer_, hdr, colorimetry);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.hdr, 3);
+    ASSERT_EQ(tvPQMetadata.colorimetry, 4);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test EraseVideoTVInfoKey
+ */
+HWTEST_F(MetadataManagerTest, EraseVideoTVInfoKeyTest, Function | SmallTest | Level1)
+{
+    unsigned char hdr = 3;
+    unsigned char colorimetry = 4;
+    GSError retSet = MetadataHelper::SetVideoColorimetryHdr(buffer_, hdr, colorimetry);
+    ASSERT_EQ(retSet, GSERROR_OK);
+
+    TvPQMetadata tvPQMetadata;
+    GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(tvPQMetadata.hdr, 3);
+    ASSERT_EQ(tvPQMetadata.colorimetry, 4);
+
+    ASSERT_EQ(MetadataHelper::EraseVideoTVInfoKey(buffer_), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata), GSERROR_OK);
+}
+
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test for abnormal
+ */
+HWTEST_F(MetadataManagerTest, TvMetadataAbnormalTest, Function | SmallTest | Level1)
+{
+    TvPQMetadata tvMetadata = { 0 };
+    TvVideoWindow tvVideoWindow = { 0 };
+    sptr<OHOS::SurfaceBuffer> bufferPtr = nullptr;
+    ASSERT_NE(MetadataHelper::SetVideoTVMetadata(bufferPtr, tvMetadata), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::GetVideoTVMetadata(bufferPtr, tvMetadata), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetSceneTag(bufferPtr, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetUIFrameCount(bufferPtr, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoFrameCount(bufferPtr, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoFrameRate(bufferPtr, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoDecoderHigh(bufferPtr, 1, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoTVScaleMode(bufferPtr, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoTVDpPixelFormat(bufferPtr, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoColorimetryHdr(bufferPtr, 1, 1), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::SetVideoTVInfo(bufferPtr, tvVideoWindow), GSERROR_OK);
+    ASSERT_NE(MetadataHelper::EraseVideoTVInfoKey(bufferPtr), GSERROR_OK);
+    ASSERT_EQ(MetadataHelper::EraseVideoTVInfoKey(bufferPtr), GSERROR_NO_BUFFER);
+}
+#endif
 }

@@ -161,6 +161,10 @@ ohos_static_library("surface_static") {
     external_deps += libsurface_ext_delegator_external_deps
   }
 
+  if (graphic_surface_feature_tv_metadata_enable) {
+    defines = [ "RS_ENABLE_TV_PQ_METADATA" ]
+  }
+
   part_name = "graphic_surface"
   subsystem_name = "graphic"
 }

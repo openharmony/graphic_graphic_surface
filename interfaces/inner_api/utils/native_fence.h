@@ -44,74 +44,67 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /**
- * @brief Checks if the fence is valid.
+ * @brief Checks if the fenceFd is valid.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
- * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization. \n
- * This value is a non negative integer.
- * @return Returns <b>true</b> if the fence is valid; returns <b>false</b> otherwise.
+ * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
+ * @return Returns true if the fenceFd is valid.
+ *         Returns false if the fenceFd is a negative integer.
  * @since 20
  * @version 1.0
  */
 bool OH_NativeFence_IsValid(int fenceFd);
 
 /**
- * @brief Waits for a fence signal. The maximum waiting time is determined by the timeout parameter. \n
- * If the fence is invalid, it is equivalent to the fence having signaled, \n
- * and the function will return false immediately. \n
+ * @brief Waits for a fence signal. The maximum waiting time is determined by the timeout parameter.
  * The incoming fenceFd needs to be closed by the user themselves.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
- * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization. \n
- * This value is a non negative integer.
- * @param timeout Indicates the timeout duration. \n
+ * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
+ * @param timeout Indicates the timeout duration.
  * The unit is milliseconds, -1 represents permanent waiting, 0 represents immediate return.
- * @return Returns <b>true</b> if the fence signaled; \n
- * returns <b>false</b> in the following cases: \n
- * 1.The fence is invalid. \n
- * 2.No event occurred within the specified timeout period. \n
- * 3.The underlying poll interface call failed. \n
- * 4.The timeout value is 0. \n
- * 5.Failed to duplicate the file descriptor.
+ * @return Returns true if the fence signaled.
+ *         Returns false in the following cases:
+ *         1.if the fenceFd is a negative integer.
+ *         2.no event occurred within the specified timeout period.
+ *         3.the underlying poll interface call failed.
+ *         4.the timeout value is 0.
+ *         5.failed to duplicate the file descriptor.
  * @since 20
  * @version 1.0
  */
 bool OH_NativeFence_Wait(int fenceFd, uint32_t timeout);
 
 /**
- * @brief Waits forever for a fence signal. \n
- * If the fence is invalid, it is equivalent to the fence having signaled, \n
- * and the function will return false immediately. \n
+ * @brief Waits forever for a fence signal.
  * The incoming fenceFd needs to be closed by the user themselves.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
- * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization. \n
- * This value is a non negative integer.
- * @return Returns true if the fence signaled; \n
- * returns <b>false</b> in the following cases: \n
- * 1.The fence is invalid. \n
- * 2.No incidents have occurred, permanent waiting. \n
- * 3.Failed to duplicate the file descriptor.
+ * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
+ * @return Returns true if the fence signaled.
+ *         Returns false in the following cases:
+ *         1.if the fenceFd is a negative integer.
+ *         2.no incidents have occurred, permanent waiting.
+ *         3.failed to duplicate the file descriptor.
  * @since 20
  * @version 1.0
  */
 bool OH_NativeFence_WaitForever(int fenceFd);
 
 /**
- * @brief Close the fence.
+ * @brief Close the fenceFd.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
- * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization. \n
+ * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
  * This value is a non negative integer.
  * @since 20
  * @version 1.0
  */
 void OH_NativeFence_Close(int fenceFd);
-
 #ifdef __cplusplus
 }
 #endif
-
 /** @} */
 #endif

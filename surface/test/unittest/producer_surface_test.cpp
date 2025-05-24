@@ -2892,6 +2892,61 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer002, TestSize.Level0)
 }
 
 /*
+ * Function: ProducerSurfaceLockBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: native window is unlocked, calls locl buffer and check the ret
+ *                  2. operation: calls lock buffer with valid config
+ *                  3. result: calls lock buffer return ok
+ */
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer003, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    Region::Rect rect = {0};
+    rect.x = 0x100;
+    rect.y = 0x100;
+    rect.w = 0x100;
+    rect.h = 0x100;
+    Region region = {.rects = &rect, .rectNumber = 1};
+    sptr<SurfaceBuffer> buffer = nullptr;
+    uint32_t bufferQueueSize = 3;
+    for (uint32_t i = 0; i < bufferQueueSize; i++) {
+        GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+        ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+        ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
+        ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+        ASSERT_NE(buffer, nullptr);
+    
+        ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
+        ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    }
+    buffer = nullptr;
+    int32_t flushFence;
+    int64_t timeStampTmp = 0;
+    Rect damageTmp = {};
+    for (uint32_t i = 0; i < bufferQueueSize; ++i) {
+        GSError ret = cSurfTmp->AcquireBuffer(buffer, flushFence, timeStampTmp, damageTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ret = cSurfTmp->ReleaseBuffer(buffer, -1);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    EXPECT_EQ(OHOS::GSERROR_NO_BUFFER, cSurfTmp->AcquireBuffer(buffer, flushFence, timeStampTmp, damageTmp));
+}
+
+/*
 * Function: ProducerSurfaceUnlockAndFlushBuffer
 * Type: Function
 * Rank: Important(2)

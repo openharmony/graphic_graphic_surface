@@ -1322,10 +1322,10 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
     syncFence->Wait(-1);
     ret = buffer->Map();
     if (ret != GSERROR_OK) {
-        buffer = nullptr;
         auto tmpRet = ProducerSurfaceCancelBufferLocked(buffer);
         BLOGE("Map failed, ret:%{public}d, cancelBuffer tmpRet:%{public}d,"
             "uniqueId: %{public}" PRIu64 ".", ret, tmpRet, GetUniqueId());
+        buffer = nullptr;
         return ret;
     }
     mLockedBuffer_ = buffer;
@@ -1338,6 +1338,7 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
             auto tmpRet = ProducerSurfaceCancelBufferLocked(buffer);
             BLOGE("memcpy_s failed, ret:%{public}d, cancelBuffer tmpRet:%{public}d,"
                 "uniqueId: %{public}" PRIu64 ".", ret, tmpRet, GetUniqueId());
+            buffer = nullptr;
             return SURFACE_ERROR_UNKOWN;
         }
     }
@@ -1355,7 +1356,7 @@ GSError ProducerSurface::ProducerSurfaceUnlockAndFlushBuffer()
     OHOS::BufferFlushConfigWithDamages config;
     if ((region_.rectNumber <= DAMAGES_MAX_SIZE) && (region_.rectNumber > 0) && (region_.rects != nullptr)) {
         config.damages.reserve(region_.rectNumber);
-        for (uint32_t i = 0; i < region_.rectNumber; i++) {
+        for (int32_t i = 0; i < region_.rectNumber; i++) {
             OHOS::Rect damage = {
                 .x = region_.rects[i].x,
                 .y = region_.rects[i].y,

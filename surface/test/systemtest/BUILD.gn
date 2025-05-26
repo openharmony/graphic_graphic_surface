@@ -38,6 +38,10 @@ ohos_unittest("native_window_buffer_test_st") {
   sources = [ "native_window_buffer_test.cpp" ]
 
   deps = [ ":surface_system_test_common" ]
+  external_deps = [
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
+  ]
 }
 
 ## SystemTest native_window_buffer_test }}}
@@ -60,6 +64,10 @@ ohos_unittest("surface_ipc_test_st") {
   sources = [ "surface_ipc_test.cpp" ]
 
   deps = [ ":surface_system_test_common" ]
+  external_deps = [
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
+  ]
 }
 
 ## SystemTest surface_ipc_test }}}
@@ -70,6 +78,10 @@ ohos_unittest("native_window_clean_cache_test_st") {
 
   sources = [ "clean_cache_test/native_window_clean_cache_test.cpp" ]
   deps = [ ":surface_system_test_common" ]
+  external_deps = [
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
+  ]
 }
 
 ## SystemTest surface_ipc_with_connect_strictly_test_st {{{
@@ -79,6 +91,10 @@ ohos_unittest("surface_ipc_with_connect_strictly_test_st") {
     "connect_and_disconnect_test/surface_ipc_with_connect_strictly_test.cpp",
   ]
   deps = [ ":surface_system_test_common" ]
+  external_deps = [
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
+  ]
 }
 
 ## SystemTest surface_ipc_with_connect_strictly_test_st }}}
@@ -88,6 +104,10 @@ ohos_unittest("surface_batch_opt_with_connect_strictly_test_st") {
   module_out_path = module_out_path
   sources = [ "connect_and_disconnect_test/surface_batch_opt_with_connect_strictly_test.cpp" ]
   deps = [ ":surface_system_test_common" ]
+  external_deps = [
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
+  ]
 }
 
 ## SystemTest surface_ipc_with_connect_strictly_test_st }}}

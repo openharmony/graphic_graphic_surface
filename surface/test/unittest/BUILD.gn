@@ -105,6 +105,10 @@ ohos_unittest("buffer_client_producer_remote_test") {
   sources = [ "buffer_client_producer_remote_test.cpp" ]
 
   deps = [ ":surface_test_common" ]
+  external_deps = [
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
+  ]
 }
 
 ## UnitTest buffer_client_producer_remote_test }}}

@@ -143,7 +143,16 @@ using GraphicLayerType = enum {
     GRAPHIC_LAYER_TYPE_OVERLAY,         /**< Overlay layer */
     GRAPHIC_LAYER_TYPE_SDIEBAND,        /**< Sideband layer */
     GRAPHIC_LAYER_TYPE_CURSOR,          /**< Cursor Layer */
-    GRAPHIC_LAYER_TYPE_BUTT             /**< Empty layer */
+    GRAPHIC_LAYER_TYPE_BUTT,            /**< Empty layer */
+    GRAPHIC_LAYER_TYPE_TUNNEL           /**< Tunnel Layer */
+};
+
+using TunnelLayerProperty = enum {
+    TUNNEL_PROP_INVALID = 0,            /**< invalid tunnel layer property */
+    TUNNEL_PROP_POSTION = 1 << 0,       /**< update layer position by tunnel */
+    TUNNEL_PROP_BUFFER_ADDR = 1 << 1,   /**< update layer buffer address by tunnel */
+    TUNNEL_PROP_HWC_COMMIT = 1 << 2,    /**< tunnel layer update by client */
+    TUNNEL_PROP_SHB_COMMIT = 1 << 3,    /**< tunnel layer update by device */
 };
 
 using GraphicLayerInfo = struct {

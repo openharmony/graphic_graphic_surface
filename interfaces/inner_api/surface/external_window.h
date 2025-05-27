@@ -403,6 +403,7 @@ typedef enum {
      * the surface is created by video.
      */
     OH_SURFACE_SOURCE_VIDEO,
+    OH_SURFACE_SOURCE_LOWPOWERVIDEO,
 } OHSurfaceSource;
 
 /**

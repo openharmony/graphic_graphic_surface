@@ -2153,7 +2153,7 @@ void BufferQueue::DumpCurrentFrameLayer()
             DumpToFileAsync(GetRealPid(), name_, element.buffer);
         }
     }
-    BLOGD("BufferQueue::DumpCurrentFrameLayer dump %{pubilc}d buffer", cnt);
+    BLOGD("BufferQueue::DumpCurrentFrameLayer dump %{public}d buffer", cnt);
 }
 
 bool BufferQueue::GetStatusLocked() const

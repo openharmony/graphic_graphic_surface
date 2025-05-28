@@ -17,7 +17,6 @@
 #define FRAMEWORKS_SURFACE_INCLUDE_METADATA_MANAGER_H
 
 #include <vector>
-
 #include <securec.h>
 
 #include "graphic_common.h"
@@ -25,6 +24,10 @@
 #include "v1_0/cm_color_space.h"
 #include "v1_0/hdr_static_metadata.h"
 #include "v1_0/buffer_handle_meta_key_type.h"
+#ifdef RS_ENABLE_TV_PQ_METADATA
+#include <functional>
+#include "tv_pq_metadata.h"
+#endif
 
 namespace OHOS {
 class MetadataHelper {
@@ -89,6 +92,23 @@ public:
     static GSError GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer,
         HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion& crop);
 
+#ifdef RS_ENABLE_TV_PQ_METADATA
+    using OnSetFieldsFunc = std::function<void(TvPQMetadata &tvPQMetadata)>;
+    static GSError SetVideoTVMetadata(sptr<SurfaceBuffer>& buffer, const TvPQMetadata& tvMetadata);
+    static GSError GetVideoTVMetadata(const sptr<SurfaceBuffer>& buffer, TvPQMetadata& tvMetadata);
+
+    static GSError SetSceneTag(sptr<SurfaceBuffer>& buffer, unsigned char value);
+    static GSError SetUIFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value);
+    static GSError SetVideoFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value);
+    static GSError SetVideoFrameRate(sptr<SurfaceBuffer>& buffer, unsigned char value);
+    static GSError SetVideoDecoderHigh(sptr<SurfaceBuffer>& buffer, unsigned short vidVdhWidth,
+        unsigned short vidVdhHeight);
+    static GSError SetVideoTVScaleMode(sptr<SurfaceBuffer>& buffer, unsigned char value);
+    static GSError SetVideoTVDpPixelFormat(sptr<SurfaceBuffer>& buffer, unsigned int value);
+    static GSError SetVideoColorimetryHdr(sptr<SurfaceBuffer>& buffer, unsigned char hdr, unsigned char colorimetry);
+    static GSError SetVideoTVInfo(sptr<SurfaceBuffer>& buffer, const TvVideoWindow& tvVideoWindow);
+    static GSError EraseVideoTVInfoKey(sptr<SurfaceBuffer>& buffer);
+#endif
     static GSError SetAdaptiveFOVMetadata(sptr<SurfaceBuffer>& buffer,
         const std::vector<uint8_t>& adaptiveFOVMetadata);
     static GSError GetAdaptiveFOVMetadata(const sptr<SurfaceBuffer>& buffer,
@@ -97,6 +117,9 @@ public:
     static GSError GetVideoDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
         std::vector<uint8_t>& videoDynamicMetadata);
 private:
+#ifdef RS_ENABLE_TV_PQ_METADATA
+    static GSError UpdateTVMetadataField(sptr<SurfaceBuffer>& buffer, OnSetFieldsFunc func);
+#endif
     static constexpr uint32_t PRIMARIES_MASK =
         static_cast<uint32_t>(HDI::Display::Graphic::Common::V1_0::CM_PRIMARIES_MASK);
     static constexpr uint32_t TRANSFUNC_MASK =

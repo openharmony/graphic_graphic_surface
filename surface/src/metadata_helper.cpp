@@ -245,4 +245,154 @@ GSError MetadataHelper::GetVideoDynamicMetadata(const sptr<SurfaceBuffer>& buffe
     return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_0::ATTRKEY_EXTERNAL_METADATA_002,
         videoDynamicMetadata);
 }
+
+#ifdef RS_ENABLE_TV_PQ_METADATA
+using namespace OHOS::HDI::Display::Graphic::Common::V2_1;
+
+GSError MetadataHelper::UpdateTVMetadataField(sptr<SurfaceBuffer>& buffer, OnSetFieldsFunc func)
+{
+    if (buffer == nullptr) {
+        BLOGE("invalid buffer!");
+        return GSERROR_NO_BUFFER;
+    }
+    TvPQMetadata tvMetadata;
+    if (GetVideoTVMetadata(buffer, tvMetadata) != GSERROR_OK) {
+        BLOGD("tvMetadata not exist, reset data");
+        (void)memset_s(&tvMetadata, sizeof(tvMetadata), 0, sizeof(tvMetadata));
+    }
+    func(tvMetadata);
+    return SetVideoTVMetadata(buffer, tvMetadata);
+}
+
+GSError MetadataHelper::SetVideoTVMetadata(sptr<SurfaceBuffer>& buffer, const TvPQMetadata& tvMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+    std::vector<uint8_t> tvMetadataVec;
+    auto ret = ConvertMetadataToVec(tvMetadata, tvMetadataVec);
+    if (ret != GSERROR_OK) {
+        BLOGE("tvMetadata ConvertMetadataToVec failed");
+        return ret;
+    }
+    buffer->SetBufferHandle(buffer->GetBufferHandle());
+    auto ret1 = buffer->SetMetadata(ATTRKEY_VIDEO_TV_PQ, tvMetadataVec);
+    if (ret1 != GSERROR_OK) {
+        BLOGE("tvMetadata SetMetadata failed %{public}d! id = %{public}d", ret1, buffer->GetSeqNum());
+        return ret1;
+    }
+    return ret1;
+}
+
+GSError MetadataHelper::GetVideoTVMetadata(const sptr<SurfaceBuffer>& buffer, TvPQMetadata& tvMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+    std::vector<uint8_t> tvMetadataVec;
+    buffer->SetBufferHandle(buffer->GetBufferHandle());
+    auto ret = buffer->GetMetadata(ATTRKEY_VIDEO_TV_PQ, tvMetadataVec);
+    if (ret != GSERROR_OK) {
+        BLOGE("tvMetadata GetMetadata failed %{public}d! id = %{public}d", ret, buffer->GetSeqNum());
+        return ret;
+    }
+    return ConvertVecToMetadata(tvMetadataVec, tvMetadata);
+}
+
+GSError MetadataHelper::SetSceneTag(sptr<SurfaceBuffer>& buffer, unsigned char value)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.scene_tag = value;
+        BLOGD("tvMetadata scene_tag = %{public}u", tvPQMetadata.scene_tag);
+    });
+}
+
+GSError MetadataHelper::SetUIFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.ui_frame_cnt = value;
+        BLOGD("tvMetadata ui_frame_cnt = %{public}u", tvPQMetadata.ui_frame_cnt);
+    });
+}
+
+GSError MetadataHelper::SetVideoFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.vid_frame_cnt = value;
+        BLOGD("tvMetadata vid_frame_cnt = %{public}u", tvPQMetadata.vid_frame_cnt);
+    });
+}
+
+GSError MetadataHelper::SetVideoFrameRate(sptr<SurfaceBuffer>& buffer, unsigned char value)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.vid_fps = value;
+        BLOGD("tvMetadata vid_fps = %{public}u", tvPQMetadata.vid_fps);
+    });
+}
+
+GSError MetadataHelper::SetVideoTVInfo(sptr<SurfaceBuffer>& buffer, const TvVideoWindow& tvVideoWindow)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.vid_win_x = tvVideoWindow.x;
+        tvPQMetadata.vid_win_y = tvVideoWindow.y;
+        tvPQMetadata.vid_win_width = tvVideoWindow.width;
+        tvPQMetadata.vid_win_height = tvVideoWindow.height;
+        tvPQMetadata.vid_win_size = tvVideoWindow.size;
+        BLOGD("tvMetadata vid_win = (%{public}u, %{public}u, %{public}u, %{public}u), size = %{public}u",
+            tvPQMetadata.vid_win_x, tvPQMetadata.vid_win_y, tvPQMetadata.vid_win_width,tvPQMetadata.vid_win_height, 
+            tvPQMetadata.vid_win_size);
+    });
+}
+
+GSError MetadataHelper::SetVideoDecoderHigh(sptr<SurfaceBuffer>& buffer, unsigned short vidVdhWidth,
+    unsigned short vidVdhHeight)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.vid_vdh_width = vidVdhWidth;
+        tvPQMetadata.vid_vdh_height = vidVdhHeight;
+        BLOGD("tvPQMetadata vid_vdh_width = %{public}u, tvPQMetadata vid_vdh_height = %{public}u",
+            tvPQMetadata.vid_vdh_width, tvPQMetadata.vid_vdh_height);
+    });
+}
+
+GSError MetadataHelper::SetVideoTVScaleMode(sptr<SurfaceBuffer>& buffer, unsigned char value)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.scale_mode = value;
+        BLOGD("tvMetadata scale_mode = %{public}u", tvPQMetadata.scale_mode);
+    });
+}
+
+GSError MetadataHelper::SetVideoTVDpPixelFormat(sptr<SurfaceBuffer>& buffer, unsigned int value)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.dp_pix_fmt = value;
+        BLOGD("tvMetadata dp_pix_fmt = %{public}u", tvPQMetadata.dp_pix_fmt);
+    });
+}
+
+GSError MetadataHelper::SetVideoColorimetryHdr(sptr<SurfaceBuffer>& buffer, unsigned char hdr,
+    unsigned char colorimetry)
+{
+    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+        tvPQMetadata.colorimetry = colorimetry;
+        tvPQMetadata.hdr = hdr;
+        BLOGD("Colorimetry = %{public}u, HDR = %{public}u", tvPQMetadata.colorimetry, tvPQMetadata.hdr);
+    });
+}
+
+GSError MetadataHelper::EraseVideoTVInfoKey(sptr<SurfaceBuffer>& buffer)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+    auto ret = buffer->EraseMetadataKey(ATTRKEY_VIDEO_TV_PQ);
+    if (ret != GSERROR_OK) {
+        BLOGE("tvMetadata EraseVideoTVInfoKey ret = %{public}d", ret);
+        return ret;
+    }
+    return GSERROR_OK;
+}
+#endif
 } // namespace OHOS

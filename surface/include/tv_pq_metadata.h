@@ -33,23 +33,23 @@ struct TvVideoWindow {
 // tv metadata format for transmit
 #pragma pack(push, 1)
 struct TvPQMetadata {
-    uint16_t scene_tag;
-    uint8_t ui_frame_cnt;
-    uint8_t vid_frame_cnt;
-    uint8_t vid_fps;
-    uint16_t vid_win_x;
-    uint16_t vid_win_y;
-    uint16_t vid_win_width;
-    uint16_t vid_win_height;
-    uint8_t vid_win_size;
-    uint16_t vid_vdh_width;
-    uint16_t vid_vdh_height;
-    uint8_t scale_mode : 4;
-    uint8_t dp_pix_fmt : 4;
+    uint16_t sceneTag;
+    uint8_t uiFrameCnt;
+    uint8_t vidFrameCnt;
+    uint8_t vidFps;
+    uint16_t vidWinX;
+    uint16_t vidWinY;
+    uint16_t vidWinWidth;
+    uint16_t vidWinHeight;
+    uint8_t vidWinSize;
+    uint16_t vidVdhWidth;
+    uint16_t vidVdhHeight;
+    uint8_t scaleMode : 4;
+    uint8_t dpPixFmt : 4;
     uint8_t colorimetry : 4;
     uint8_t hdr : 4;
-    uint16_t hdr_luminance;
-    uint16_t hdr_ratio;
+    uint16_t hdrLuminance;
+    uint16_t hdrRatio;
     uint8_t reserved[4];
 };
 #pragma pack(pop)

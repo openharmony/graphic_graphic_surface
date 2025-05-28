@@ -377,7 +377,7 @@ HWTEST_F(MetadataManagerTest, SetSceneTagTest, Function | SmallTest | Level1)
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.scene_tag, 3);
+    ASSERT_EQ(tvPQMetadata.sceneTag, 3);
 }
 
 /*
@@ -396,7 +396,7 @@ HWTEST_F(MetadataManagerTest, SetUIFrameCountTest, Function | SmallTest | Level1
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.ui_frame_cnt, 60);
+    ASSERT_EQ(tvPQMetadata.uiFrameCnt, 60);
 }
 
 /*
@@ -415,7 +415,7 @@ HWTEST_F(MetadataManagerTest, SetVideoFrameCountTest, Function | SmallTest | Lev
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.vid_frame_cnt, 168);
+    ASSERT_EQ(tvPQMetadata.vidFrameCnt, 168);
 }
 
 /*
@@ -434,7 +434,7 @@ HWTEST_F(MetadataManagerTest, SetVideoFrameRateTest, Function | SmallTest | Leve
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.vid_fps, 24);
+    ASSERT_EQ(tvPQMetadata.vidFps, 24);
 }
 
 /*
@@ -453,11 +453,11 @@ HWTEST_F(MetadataManagerTest, SetVideoTVInfoTest, Function | SmallTest | Level1)
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.vid_win_x, 400);
-    ASSERT_EQ(tvPQMetadata.vid_win_y, 600);
-    ASSERT_EQ(tvPQMetadata.vid_win_width, 1080);
-    ASSERT_EQ(tvPQMetadata.vid_win_height, 720);
-    ASSERT_EQ(tvPQMetadata.vid_win_size, 1);
+    ASSERT_EQ(tvPQMetadata.vidWinX, 400);
+    ASSERT_EQ(tvPQMetadata.vidWinY, 600);
+    ASSERT_EQ(tvPQMetadata.vidWinWidth, 1080);
+    ASSERT_EQ(tvPQMetadata.vidWinHeight, 720);
+    ASSERT_EQ(tvPQMetadata.vidWinSize, 1);
 }
 
 /*
@@ -477,8 +477,8 @@ HWTEST_F(MetadataManagerTest, SetVideoDecoderHighTest, Function | SmallTest | Le
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.vid_vdh_width, 1920);
-    ASSERT_EQ(tvPQMetadata.vid_vdh_height, 1080);
+    ASSERT_EQ(tvPQMetadata.vidVdhWidth, 1920);
+    ASSERT_EQ(tvPQMetadata.vidVdhHeight, 1080);
 }
 
 /*
@@ -497,7 +497,7 @@ HWTEST_F(MetadataManagerTest, SetVideoTVScaleModeTest, Function | SmallTest | Le
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.scale_mode, 2);
+    ASSERT_EQ(tvPQMetadata.scaleMode, 2);
 }
 
 /*
@@ -516,7 +516,7 @@ HWTEST_F(MetadataManagerTest, SetVideoTVDpPixelFormatTest, Function | SmallTest 
     TvPQMetadata tvPQMetadata;
     GSError retGet = MetadataHelper::GetVideoTVMetadata(buffer_, tvPQMetadata);
     ASSERT_EQ(retGet, GSERROR_OK);
-    ASSERT_EQ(tvPQMetadata.dp_pix_fmt, 1);
+    ASSERT_EQ(tvPQMetadata.dpPixFmt, 1);
 }
 
 /*

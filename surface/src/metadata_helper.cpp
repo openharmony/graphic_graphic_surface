@@ -302,46 +302,46 @@ GSError MetadataHelper::GetVideoTVMetadata(const sptr<SurfaceBuffer>& buffer, Tv
 GSError MetadataHelper::SetSceneTag(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.scene_tag = value;
-        BLOGD("tvMetadata scene_tag = %{public}u", tvPQMetadata.scene_tag);
+        tvPQMetadata.sceneTag = value;
+        BLOGD("tvMetadata sceneTag = %{public}u", tvPQMetadata.sceneTag);
     });
 }
 
 GSError MetadataHelper::SetUIFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.ui_frame_cnt = value;
-        BLOGD("tvMetadata ui_frame_cnt = %{public}u", tvPQMetadata.ui_frame_cnt);
+        tvPQMetadata.uiFrameCnt = value;
+        BLOGD("tvMetadata uiFrameCnt = %{public}u", tvPQMetadata.uiFrameCnt);
     });
 }
 
 GSError MetadataHelper::SetVideoFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.vid_frame_cnt = value;
-        BLOGD("tvMetadata vid_frame_cnt = %{public}u", tvPQMetadata.vid_frame_cnt);
+        tvPQMetadata.vidFrameCnt = value;
+        BLOGD("tvMetadata vidFrameCnt = %{public}u", tvPQMetadata.vidFrameCnt);
     });
 }
 
 GSError MetadataHelper::SetVideoFrameRate(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.vid_fps = value;
-        BLOGD("tvMetadata vid_fps = %{public}u", tvPQMetadata.vid_fps);
+        tvPQMetadata.vidFps = value;
+        BLOGD("tvMetadata vidFps = %{public}u", tvPQMetadata.vidFps);
     });
 }
 
 GSError MetadataHelper::SetVideoTVInfo(sptr<SurfaceBuffer>& buffer, const TvVideoWindow& tvVideoWindow)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.vid_win_x = tvVideoWindow.x;
-        tvPQMetadata.vid_win_y = tvVideoWindow.y;
-        tvPQMetadata.vid_win_width = tvVideoWindow.width;
-        tvPQMetadata.vid_win_height = tvVideoWindow.height;
-        tvPQMetadata.vid_win_size = tvVideoWindow.size;
+        tvPQMetadata.vidWinX = tvVideoWindow.x;
+        tvPQMetadata.vidWinY = tvVideoWindow.y;
+        tvPQMetadata.vidWinWidth = tvVideoWindow.width;
+        tvPQMetadata.vidWinHeight = tvVideoWindow.height;
+        tvPQMetadata.vidWinSize = tvVideoWindow.size;
         BLOGD("tvMetadata vid_win = (%{public}u, %{public}u, %{public}u, %{public}u), size = %{public}u",
-            tvPQMetadata.vid_win_x, tvPQMetadata.vid_win_y, tvPQMetadata.vid_win_width,tvPQMetadata.vid_win_height, 
-            tvPQMetadata.vid_win_size);
+            tvPQMetadata.vidWinX, tvPQMetadata.vidWinY, tvPQMetadata.vidWinWidth, tvPQMetadata.vidWinHeight,
+            tvPQMetadata.vidWinSize);
     });
 }
 
@@ -349,26 +349,26 @@ GSError MetadataHelper::SetVideoDecoderHigh(sptr<SurfaceBuffer>& buffer, unsigne
     unsigned short vidVdhHeight)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.vid_vdh_width = vidVdhWidth;
-        tvPQMetadata.vid_vdh_height = vidVdhHeight;
-        BLOGD("tvPQMetadata vid_vdh_width = %{public}u, tvPQMetadata vid_vdh_height = %{public}u",
-            tvPQMetadata.vid_vdh_width, tvPQMetadata.vid_vdh_height);
+        tvPQMetadata.vidVdhWidth = vidVdhWidth;
+        tvPQMetadata.vidVdhHeight = vidVdhHeight;
+        BLOGD("tvPQMetadata vidVdhWidth = %{public}u, tvPQMetadata vidVdhHeight = %{public}u",
+            tvPQMetadata.vidVdhWidth, tvPQMetadata.vidVdhHeight);
     });
 }
 
 GSError MetadataHelper::SetVideoTVScaleMode(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.scale_mode = value;
-        BLOGD("tvMetadata scale_mode = %{public}u", tvPQMetadata.scale_mode);
+        tvPQMetadata.scaleMode = value;
+        BLOGD("tvMetadata scaleMode = %{public}u", tvPQMetadata.scaleMode);
     });
 }
 
 GSError MetadataHelper::SetVideoTVDpPixelFormat(sptr<SurfaceBuffer>& buffer, unsigned int value)
 {
     return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
-        tvPQMetadata.dp_pix_fmt = value;
-        BLOGD("tvMetadata dp_pix_fmt = %{public}u", tvPQMetadata.dp_pix_fmt);
+        tvPQMetadata.dpPixFmt = value;
+        BLOGD("tvMetadata dpPixFmt = %{public}u", tvPQMetadata.dpPixFmt);
     });
 }
 

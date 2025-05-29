@@ -90,6 +90,13 @@ int ProducerSurfaceDelegator::OnDequeueBuffer(MessageParcel &data, MessageParcel
     return ERR_NONE;
 }
 
+int ProducerSurfaceDelegator::OnQueueBuffer(MessageParcel &data, MessageParcel &reply)
+{
+    (void)data;
+    (void)reply;
+    return ERR_NONE;
+}
+
 int ProducerSurfaceDelegator::OnSetDataspace(MessageParcel& data, MessageParcel& reply)
 {
     mAncoDataspace = -1;
@@ -100,6 +107,13 @@ int ProducerSurfaceDelegator::OnRemoteRequest(uint32_t code, MessageParcel &data
     MessageOption &option)
 {
     return ERR_NONE;
+}
+
+int32_t ProducerSurfaceDelegator::OnNdkFlushBuffer(MessageParcel &data, MessageParcel &reply)
+{
+    (void)data;
+    (void)reply;
+    return GSERROR_OK;
 }
 
 GSError ProducerSurfaceDelegator::RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence,
@@ -141,4 +155,21 @@ GraphicTransformType ProducerSurfaceDelegator::ConvertTransformToHmos(uint32_t t
     return mLastTransform_;
 }
 
+int32_t ProducerSurfaceDelegator::NdkFlushBuffer(
+    sptr<SurfaceBuffer>& buffer, int32_t slot, const sptr<SyncFence>& fence)
+{
+    (void)buffer;
+    (void)slot;
+    (void)fence;
+    return GSERROR_OK;
+}
+
+sptr<SurfaceBuffer> ProducerSurfaceDelegator::NdkConvertBuffer(
+    MessageParcel& data, int32_t hasNewBuffer, int32_t slot)
+{
+    (void)data;
+    (void)hasNewBuffer;
+    (void)slot;
+    return nullptr;
+}
 } // namespace OHOS

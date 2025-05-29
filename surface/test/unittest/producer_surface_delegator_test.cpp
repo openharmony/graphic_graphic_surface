@@ -109,12 +109,12 @@ void ProducerSurfaceDelegatorTest::TearDownTestCase()
 }
 
 /*
-* Function: QueueBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call QueueBuffer
-*                  2. check ret
+ * Function: QueueBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call QueueBuffer
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, TestSize.Level0)
 {
@@ -127,12 +127,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, TestSize.Level0)
 }
 
 /*
-* Function: DequeueBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call DequeueBuffer
-*                  2. check ret
+ * Function: DequeueBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call DequeueBuffer
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, TestSize.Level0)
 {
@@ -143,12 +143,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, TestSize.Level0)
 }
 
 /*
-* Function: QueueBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call QueueBuffer
-*                  2. check SendMessage ret
+ * Function: QueueBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call QueueBuffer
+ *                  2. check SendMessage ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, TestSize.Level0)
 {
@@ -160,12 +160,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, TestSize.Level0)
 }
 
 /*
-* Function: ReleaseBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call ReleaseBuffer
-*                  2. check ret
+ * Function: ReleaseBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ReleaseBuffer
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
 {
@@ -175,12 +175,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
 }
 
 /*
-* Function: DetachBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call DetachBuffer
-*                  2. check ret
+ * Function: DetachBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call DetachBuffer
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
 {
@@ -190,12 +190,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
 }
 
 /*
-* Function: CancelBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call CancelBuffer
-*                  2. check ret
+ * Function: CancelBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call CancelBuffer
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
 {
@@ -206,12 +206,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
 }
 
 /*
-* Function: ClearBufferSlot
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call ClearBufferSlot
-*                  2. check ret
+ * Function: ClearBufferSlot
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ClearBufferSlot
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, TestSize.Level0)
 {
@@ -221,12 +221,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, TestSize.Level0)
 }
 
 /*
-* Function: OnRemoteRequest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OnRemoteRequest
-*                  2. check ret
+ * Function: OnRemoteRequest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OnRemoteRequest
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
 {
@@ -241,12 +241,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
 }
 
 /*
-* Function: ClearAllBuffers
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call ClearAllBuffers
-*                  2. check ret
+ * Function: ClearAllBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ClearAllBuffers
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, TestSize.Level0)
 {
@@ -255,12 +255,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, TestSize.Level0)
 }
 
 /*
-* Function: AddBufferLocked
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call AddBufferLocked
-*                  2. check ret
+ * Function: AddBufferLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AddBufferLocked
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, TestSize.Level0)
 {
@@ -270,12 +270,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, TestSize.Level0)
 }
 
 /*
-* Function: GetBufferLocked
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call GetBufferLocked
-*                  2. check ret
+ * Function: GetBufferLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetBufferLocked
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, TestSize.Level0)
 {
@@ -283,12 +283,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, TestSize.Level0)
 }
 
 /*
-* Function: GetSlotLocked
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call GetSlotLocked
-*                  2. check ret
+ * Function: GetSlotLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetSlotLocked
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, TestSize.Level0)
 {
@@ -296,13 +296,13 @@ HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, TestSize.Level0)
 }
 
 /*
-* Function: RetryFlushBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RetryFlushBuffer
-*                  2. check ret
-*/
+ * Function: RetryFlushBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RetryFlushBuffer
+ *                  2. check ret
+ */
 HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, TestSize.Level0)
 {
     BufferFlushConfig config = {
@@ -319,12 +319,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, TestSize.Level0)
 }
 
 /*
-* Function: OnSetDataspace
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OnSetDataspace
-*                  2. check ret
+ * Function: OnSetDataspace
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OnSetDataspace
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, TestSize.Level0)
 {
@@ -335,12 +335,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, TestSize.Level0)
 }
 
 /*
-* Function: HasSlotInSet
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call HasSlotInSet
-*                  2. check ret
+ * Function: HasSlotInSet
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call HasSlotInSet
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, TestSize.Level0)
 {
@@ -353,12 +353,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, TestSize.Level0)
 }
 
 /*
-* Function: InsertSlotIntoSet
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call InsertSlotIntoSet
-*                  2. check ret
+ * Function: InsertSlotIntoSet
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call InsertSlotIntoSet
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, TestSize.Level0)
 {
@@ -371,12 +371,12 @@ HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, TestSize.Level0)
 }
 
 /*
-* Function: EraseSlotFromSet
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call EraseSlotFromSet
-*                  2. check ret
+ * Function: EraseSlotFromSet
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call EraseSlotFromSet
+ *                  2. check ret
  */
 HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, TestSize.Level0)
 {
@@ -385,5 +385,63 @@ HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, TestSize.Level0)
     ASSERT_EQ(delegator->HasSlotInSet(0), true);
     delegator->EraseSlotFromSet(0);
     ASSERT_EQ(delegator->HasSlotInSet(0), false);
+}
+
+/*
+ * Function: OnNdkFlushBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OnNdkFlushBuffer
+ *                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, OnNdkFlushBuffer, TestSize.Level0)
+{
+    MessageParcel reply;
+    MessageParcel data;
+    ASSERT_EQ(qwe->OnNdkFlushBuffer(data, reply), GSERROR_OK);
+}
+
+/*
+ * Function: OnQueueBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OnQueueBuffer
+ *                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, OnQueueBuffer, TestSize.Level0)
+{
+    MessageParcel reply;
+    MessageParcel data;
+    ASSERT_EQ(qwe->OnQueueBuffer(data, reply), 0);
+}
+
+/*
+ * Function: NdkFlushBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call NdkFlushBuffer
+ *                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, NdkFlushBuffer, TestSize.Level0)
+{
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    ASSERT_EQ(qwe->NdkFlushBuffer(pBuffer, 0, fence), GSERROR_OK);
+}
+
+/*
+ * Function: NdkConvertBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call NdkConvertBuffer
+ *                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, NdkConvertBuffer, TestSize.Level0)
+{
+    MessageParcel data;
+    ASSERT_EQ(qwe->NdkConvertBuffer(data, 0, 0), nullptr);
 }
 } // namespace OHOS::Rosen

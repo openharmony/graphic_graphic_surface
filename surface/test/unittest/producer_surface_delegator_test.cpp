@@ -115,7 +115,7 @@ void ProducerSurfaceDelegatorTest::TearDownTestCase()
 * EnvConditions: N/A
 * CaseDescription: 1. call QueueBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, TestSize.Level0)
 {
     int32_t slot = 1;
@@ -133,7 +133,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer002, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call DequeueBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, TestSize.Level0)
 {
     int32_t slot = 1;
@@ -149,7 +149,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, DequeueBuffer002, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call QueueBuffer
 *                  2. check SendMessage ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, TestSize.Level0)
 {
     int32_t slot = 1;
@@ -166,7 +166,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, QueueBuffer003, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call ReleaseBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
 {
     sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
@@ -181,7 +181,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call DetachBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
 {
     int32_t slot = -1;
@@ -196,7 +196,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call CancelBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
 {
     int32_t slot = -1;
@@ -212,7 +212,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call ClearBufferSlot
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, TestSize.Level0)
 {
     int32_t slot = -1;
@@ -227,7 +227,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ClearBufferSlot001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call OnRemoteRequest
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
 {
     uint32_t code = 1; // QUEUEBUFFER
@@ -247,7 +247,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call ClearAllBuffers
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, TestSize.Level0)
 {
     GSError ret = qwe->ClearAllBuffers();
@@ -261,7 +261,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, ClearAllBuffers001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call AddBufferLocked
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, TestSize.Level0)
 {
     ASSERT_NO_FATAL_FAILURE({
@@ -276,7 +276,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, AddBufferLocked001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call GetBufferLocked
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, TestSize.Level0)
 {
     ASSERT_EQ(qwe->GetBufferLocked(0), nullptr);
@@ -289,7 +289,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, GetBufferLocked001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call GetSlotLocked
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, GetSlotLocked001, TestSize.Level0)
 {
     ASSERT_EQ(qwe->GetSlotLocked(nullptr), 0);
@@ -325,7 +325,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, RetryFlushBuffer001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call OnSetDataspace
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, TestSize.Level0)
 {
     MessageParcel reply;
@@ -341,7 +341,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, SetDataspace001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call HasSlotInSet
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
@@ -359,7 +359,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, HasSlotInSet, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call InsertSlotIntoSet
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
@@ -377,7 +377,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, InsertSlotIntoSet, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call EraseSlotFromSet
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, TestSize.Level0)
 {
     sptr<ProducerSurfaceDelegator> delegator = new ProducerSurfaceDelegator();
@@ -394,7 +394,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call OnNdkFlushBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, OnNdkFlushBuffer, TestSize.Level0)
 {
     MessageParcel reply;
@@ -409,7 +409,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, OnNdkFlushBuffer, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call OnQueueBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, OnQueueBuffer, TestSize.Level0)
 {
     MessageParcel reply;
@@ -424,7 +424,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, OnQueueBuffer, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call NdkFlushBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, NdkFlushBuffer, TestSize.Level0)
 {
     sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
@@ -438,7 +438,7 @@ HWTEST_F(ProducerSurfaceDelegatorTest, NdkFlushBuffer, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call NdkConvertBuffer
 *                  2. check ret
- */
+*/
 HWTEST_F(ProducerSurfaceDelegatorTest, NdkConvertBuffer, TestSize.Level0)
 {
     MessageParcel data;

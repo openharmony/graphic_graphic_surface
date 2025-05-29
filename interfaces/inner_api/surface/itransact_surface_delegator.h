@@ -35,6 +35,8 @@ protected:
         CLIENT = 5,
         CANCELBUFFER = 6,
         DETACHBUFFER = 7,
+        NDKFLUSHBUFFER = 11,
+        GETNDKVERSION = 23,
     };
 };
 } // namespace OHOS

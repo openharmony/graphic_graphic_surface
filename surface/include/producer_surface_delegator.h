@@ -41,6 +41,8 @@ public:
     int OnSetDataspace(MessageParcel& data, MessageParcel& reply);
     int OnDequeueBuffer(MessageParcel &data, MessageParcel &reply);
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
+    int OnQueueBuffer(MessageParcel& data, MessageParcel& reply);
+    int32_t OnNdkFlushBuffer(MessageParcel& data, MessageParcel& reply);
 
     static void SetDisplayRotation(int32_t rotation);
 
@@ -66,6 +68,8 @@ private:
     void EraseSlotFromSet(int32_t slot);
     void UpdateBufferTransform();
     GraphicTransformType ConvertTransformToHmos(uint32_t transform);
+    int32_t NdkFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t slot, const sptr<SyncFence>& fence);
+    sptr<SurfaceBuffer> NdkConvertBuffer(MessageParcel& data, int32_t hasNewBuffer, int32_t slot);
 };
 } // namespace OHOS
 #endif // PRODUCER_SURFACE_DELEGATOR_H

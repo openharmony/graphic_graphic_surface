@@ -386,4 +386,62 @@ HWTEST_F(ProducerSurfaceDelegatorTest, EraseSlotFromSet, TestSize.Level0)
     delegator->EraseSlotFromSet(0);
     ASSERT_EQ(delegator->HasSlotInSet(0), false);
 }
+
+/*
+* Function: OnNdkFlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OnNdkFlushBuffer
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, OnNdkFlushBuffer, TestSize.Level0)
+{
+    MessageParcel reply;
+    MessageParcel data;
+    ASSERT_EQ(qwe->OnNdkFlushBuffer(data, reply), GSERROR_OK);
+}
+
+/*
+* Function: OnQueueBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OnQueueBuffer
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, OnQueueBuffer, TestSize.Level0)
+{
+    MessageParcel reply;
+    MessageParcel data;
+    ASSERT_EQ(qwe->OnQueueBuffer(data, reply), 0);
+}
+
+/*
+* Function: NdkFlushBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NdkFlushBuffer
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, NdkFlushBuffer, TestSize.Level0)
+{
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    ASSERT_EQ(qwe->NdkFlushBuffer(pBuffer, 0, fence), GSERROR_OK);
+}
+
+/*
+* Function: NdkConvertBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NdkConvertBuffer
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, NdkConvertBuffer, TestSize.Level0)
+{
+    MessageParcel data;
+    ASSERT_EQ(qwe->NdkConvertBuffer(data, 0, 0), nullptr);
+}
 } // namespace OHOS::Rosen

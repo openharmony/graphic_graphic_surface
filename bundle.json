@@ -30,7 +30,9 @@
           "init",
           "ipc",
           "jsoncpp",
-          "samgr"
+          "samgr",
+          "cJSON",
+          "selinux_adapter"
         ]
       },
       "build": {

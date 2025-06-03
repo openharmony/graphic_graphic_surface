@@ -3396,4 +3396,49 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestAndReuseBuffer001, Te
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer4, nullptr);
 }
+
+/*
+ * Function: ProducerSurfaceNoBlockRequestBufferLoopCallInterfaceTesting
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: on noBlock mode
+ *                  2. operation: call multiple RequestBuffer.
+ *                  3. result: Interface execution without crash.
+ */
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfaceTesting001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+    pSurfaceTmpTest->SetRequestBufferNoblockMode(true); // 设置为非阻塞模式
+    BufferFlushConfig flushConfig = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    for (auto i = 0; i != 1000; i++) { // 1000 means loop times
+        sptr<SurfaceBuffer> bufferTmp;
+        int releaseFence = -1;
+        GSError ret = pSurfaceTmpTest->RequestBuffer(bufferTmp, releaseFence, requestConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_NE(bufferTmp, nullptr);
+
+        ret = pSurfaceTmpTest->FlushBuffer(bufferTmp, releaseFence, flushConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_NE(bufferTmp, nullptr);
+    }
+}
 }

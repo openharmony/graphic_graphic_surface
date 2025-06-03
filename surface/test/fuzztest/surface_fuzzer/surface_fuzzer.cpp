@@ -162,6 +162,8 @@ namespace OHOS {
             handle = nullptr;
         }
         cSurface->GetSurfaceAppFrameworkType();
+        bool noBlock = GetData<bool>();
+        pSurface->SetRequestBufferNoblockMode(noBlock);
     }
 
     void SurfaceFuzzTest3(sptr<OHOS::Surface> pSurface, sptr<OHOS::IConsumerSurface> cSurface)

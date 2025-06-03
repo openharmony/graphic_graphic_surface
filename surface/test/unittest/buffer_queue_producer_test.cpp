@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -665,6 +665,44 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->PreAllocBuffers(config, 0), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
+}
+
+/*
+* Function: SetRequestBufferNoblockMode
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetRequestBufferNoblockMode
+*                  2. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetRequestBufferNoblockMode, TestSize.Level0)
+{
+    ASSERT_EQ(bqp_->SetRequestBufferNoblockMode(true), OHOS::GSERROR_OK);
+    bool noblockMode = false;
+    ASSERT_EQ(bq_->GetRequestBufferNoblockMode(noblockMode), OHOS::GSERROR_OK);
+    ASSERT_EQ(noblockMode, true);
+
+    ASSERT_EQ(bqp_->SetRequestBufferNoblockMode(false), OHOS::GSERROR_OK);
+    ASSERT_EQ(bq_->GetRequestBufferNoblockMode(noblockMode), OHOS::GSERROR_OK);
+    ASSERT_EQ(noblockMode, false);
+}
+
+/*
+* Function: SetRequestBufferNoblockModeRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetRequestBufferNoblockModeRemote
+*                  2. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, SetRequestBufferNoblockModeRemote, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetRequestBufferNoblockModeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
 }
 
 /*

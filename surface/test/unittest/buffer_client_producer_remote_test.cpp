@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -688,6 +688,20 @@ HWTEST_F(BufferClientProducerRemoteTest, SetBufferhold001, TestSize.Level0)
 {
     EXPECT_EQ(bp->SetBufferHold(true), GSERROR_OK);
     EXPECT_EQ(bp->SetBufferHold(false), GSERROR_OK);
+}
+
+/*
+* Function: SetRequestBufferNoblockMode
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetRequestBufferNoblockMode and check ret
+* @tc.require: issueICALHV
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetRequestBufferNoblockMode001, TestSize.Level0)
+{
+    EXPECT_EQ(bp->SetRequestBufferNoblockMode(true), GSERROR_OK);
+    EXPECT_EQ(bp->SetRequestBufferNoblockMode(false), GSERROR_OK);
 }
 
 /*

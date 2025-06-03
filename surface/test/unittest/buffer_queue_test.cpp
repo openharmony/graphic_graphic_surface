@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -145,7 +145,18 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel001, TestSize.Level0)
     IBufferProducer::RequestBufferReturnValue retval;
 
     // first request
+    ASSERT_EQ(bq->freeList_.size(), 0);
+    ASSERT_EQ(bq->dirtyList_.size(), 0);
+    ASSERT_EQ(bq->GetUsedSize(), 0);
+    ASSERT_EQ(bq->bufferQueueSize_, 2);
+    ASSERT_EQ(bq->detachReserveSlotNum_, 0);
+
+    auto start = std::chrono::high_resolution_clock::now();
     GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(retval.buffer, nullptr);
     ASSERT_GE(retval.sequence, 0);
@@ -191,7 +202,17 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel002, TestSize.Level0)
     IBufferProducer::RequestBufferReturnValue retval;
 
     // not first request
+    ASSERT_EQ(bq->freeList_.size(), 1);
+    ASSERT_EQ(bq->dirtyList_.size(), 0);
+    ASSERT_EQ(bq->GetUsedSize(), 1);
+    ASSERT_EQ(bq->bufferQueueSize_, 2);
+    ASSERT_EQ(bq->detachReserveSlotNum_, 0);
+    auto start = std::chrono::high_resolution_clock::now();
     GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_GE(retval.sequence, 0);
     ASSERT_EQ(retval.buffer, nullptr);
@@ -308,7 +329,17 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel006, TestSize.Level0)
     cache[retval2.sequence] = retval2.buffer;
 
     // no buffer
+    ASSERT_EQ(bq->freeList_.size(), 0);
+    ASSERT_EQ(bq->dirtyList_.size(), 0);
+    ASSERT_EQ(bq->GetUsedSize(), 2u);
+    ASSERT_EQ(bq->bufferQueueSize_, 2);
+    ASSERT_EQ(bq->detachReserveSlotNum_, 0);
+    auto start = std::chrono::high_resolution_clock::now();
     ret = bq->RequestBuffer(requestConfig, bedata, retval3);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+
     ASSERT_NE(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(retval3.buffer, nullptr);
 
@@ -411,6 +442,142 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel009, TestSize.Level0)
 
     ret = bq->CancelBuffer(retval.sequence, bedata);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: RequestBuffer, FlushBuffer, AcquireBuffer and ReleaseBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer and FlushBuffer
+*                  2. call AcquireBuffer and ReleaseBuffer
+*                  3. check ret
+ */
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel0010, Function | MediumTest | Level2)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval.sequence, 0);
+    ASSERT_EQ(retval.buffer, nullptr);
+
+    ret = bq->RequestBuffer(requestConfig, bedata, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval1.sequence, 0);
+    ASSERT_NE(retval1.buffer, nullptr);
+
+    ASSERT_EQ(bq->freeList_.size(), 0);
+    ASSERT_EQ(bq->GetUsedSize(), 2u);
+    ASSERT_EQ(bq->bufferQueueSize_, 2);
+    ASSERT_EQ(bq->detachReserveSlotNum_, 0);
+    ASSERT_EQ(bq->dirtyList_.size(), 0);
+
+    bq->SetRequestBufferNoblockMode(true);
+    bool noblock = false;
+    bq->GetRequestBufferNoblockMode(noblock);
+    ASSERT_TRUE(noblock);
+    auto start = std::chrono::high_resolution_clock::now();
+    ret = bq->RequestBuffer(requestConfig, bedata, retval2);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+
+    ret = bq->CancelBuffer(retval.sequence, bedata);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->CancelBuffer(retval1.sequence, bedata);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: RequestBuffer and CancelBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer
+*                  2. call CancelBuffer
+*                  3. check retval and ret
+ */
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel0011, Function | MediumTest | Level2)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval.sequence, 0);
+    ASSERT_EQ(retval.buffer, nullptr);
+
+    ret = bq->RequestBuffer(requestConfig, bedata, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval1.sequence, 0);
+    ASSERT_EQ(retval1.buffer, nullptr);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval1.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    // no buffer
+    ASSERT_EQ(bq->freeList_.size(), 0);
+    ASSERT_EQ(bq->GetUsedSize(), 2u);
+    ASSERT_EQ(bq->bufferQueueSize_, 2);
+    ASSERT_EQ(bq->detachReserveSlotNum_, 0);
+    ASSERT_EQ(bq->dirtyList_.size(), 1);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    ret = bq->RequestBuffer(requestConfig, bedata, retval2);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(retval2.buffer, nullptr);
+
+    ret = bq->CancelBuffer(retval.sequence, bedata);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval2.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->AcquireBuffer(retval2.buffer, retval.fence, timestamp, damages);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    ret = bq->ReleaseBuffer(retval2.buffer, releaseFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bq->SetRequestBufferNoblockMode(false);
+    bool noblock = true;
+    bq->GetRequestBufferNoblockMode(noblock);
+    ASSERT_FALSE(noblock);
+}
+
+/*
+* Function: RequestBuffer and CancelBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer
+*                  2. call CancelBuffer
+*                  3. check ret
+ */
+HWTEST_F(BufferQueueTest, ReqCanFluAcqRel0012, Function | MediumTest | Level2)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+
+    for (auto i = 0; i != 1000; i++) {
+        GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        ret = bq->CancelBuffer(retval.sequence, bedata);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
 }
 
 /*

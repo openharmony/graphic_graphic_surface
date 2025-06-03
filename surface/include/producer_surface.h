@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -691,6 +691,21 @@ public:
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError SetGlobalAlpha(int32_t alpha) override;
+    /**
+     * @brief Set the request buffer isblocked for the surface.
+     * Blocking mode: Keep the original logic unchanged.
+     * Non-blocking mode:
+     * 1.If all buffers are requested and no buffer is in flushed state, immediately return GSERROR_NO_BUFFER.
+     * 2.If all buffers are requested and there are buffers in flushed state, return the earliest flushed buffer
+     * to the user through the RequestBuffer interface.
+     *
+     * @param noblock [in] Request buffer mode flag:
+     * - false: Blocking request mode (default)
+     * - true: Non-blocking request mode
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
+    GSError SetRequestBufferNoblockMode(bool noblock = false) override;
     /**
      * @brief Check the surface is in hebc white list.
      * 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -93,6 +93,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ACQUIRE_LAST_FLUSHED_BUFFER, AcquireLastFlushedBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_RELEASE_LAST_FLUSHED_BUFFER, ReleaseLastFlushedBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_GLOBALALPHA, SetGlobalAlphaRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_REQUESTBUFFER_NOBLOCKMODE, SetRequestBufferNoblockModeRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REQUEST_AND_DETACH_BUFFER, RequestAndDetachBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_ATTACH_AND_FLUSH_BUFFER, AttachAndFlushBufferRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_ROTATING_BUFFERS_NUMBER, GetRotatingBuffersNumberRemote),
@@ -1033,6 +1034,17 @@ int32_t BufferQueueProducer::SetGlobalAlphaRemote(MessageParcel &arguments, Mess
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::SetRequestBufferNoblockModeRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    bool noblock = arguments.ReadBool();
+    GSError sRet = SetRequestBufferNoblockMode(noblock);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
 int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
@@ -1756,6 +1768,14 @@ GSError BufferQueueProducer::SetGlobalAlpha(int32_t alpha)
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetGlobalAlpha(alpha);
+}
+
+GSError BufferQueueProducer::SetRequestBufferNoblockMode(bool noblock)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetRequestBufferNoblockMode(noblock);
 }
 
 GSError BufferQueueProducer::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)

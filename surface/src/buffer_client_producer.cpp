@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -924,6 +924,16 @@ GSError BufferClientProducer::SetGlobalAlpha(int32_t alpha)
         return GSERROR_BINDER;
     }
     SEND_REQUEST(BUFFER_PRODUCER_SET_GLOBALALPHA, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::SetRequestBufferNoblockMode(bool noblock)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteBool(noblock)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_REQUESTBUFFER_NOBLOCKMODE, arguments, reply, option);
     return CheckRetval(reply);
 }
 

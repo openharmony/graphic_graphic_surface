@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -316,6 +316,23 @@ void BufferQueue::RequestBufferDebugInfoLocked()
     }
 }
 
+GSError BufferQueue::SetupNewBufferLocked(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
+    BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
+{
+    GSError ret = AllocBuffer(buffer, updateConfig, lock);
+    if (ret == GSERROR_OK) {
+        AddDeletingBuffersLocked(retval.deletingBuffers);
+        SetSurfaceBufferHebcMetaLocked(buffer);
+        SetSurfaceBufferGlobalAlphaUnlocked(buffer);
+        SetReturnValue(buffer, bedata, retval);
+    } else {
+        BLOGE("Fail to alloc or map Buffer[%{public}d %{public}d] ret: %{public}d, uniqueId: %{public}" PRIu64,
+            config.width, config.height, ret, uniqueId_);
+    }
+    return ret;
+}
+
 GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
@@ -344,33 +361,35 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 
     // check queue size
     if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
-        waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
-            [this]() { return WaitForCondition(); });
-        if (!GetStatusLocked() && !isBatch_) {
-            SURFACE_TRACE_NAME_FMT("Status wrong, status: %d", GetStatusLocked());
-            BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
-        }
-        // try dequeue from free list again
-        ret = PopFromFreeListLocked(buffer, updateConfig);
-        if (ret == GSERROR_OK) {
-            return ReuseBuffer(updateConfig, bedata, retval, lock);
-        } else if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
-            RequestBufferDebugInfoLocked();
-            return GSERROR_NO_BUFFER;
+        if (!requestBufferNoBlockMode_) {
+            waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
+                [this]() { return WaitForCondition(); });
+            if (!GetStatusLocked() && !isBatch_) {
+                SURFACE_TRACE_NAME_FMT("Status wrong, status: %d", GetStatusLocked());
+                BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+            }
+            // try dequeue from free list again
+            ret = PopFromFreeListLocked(buffer, updateConfig);
+            if (ret == GSERROR_OK) {
+                return ReuseBuffer(updateConfig, bedata, retval, lock);
+            } else if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
+                RequestBufferDebugInfoLocked();
+                return GSERROR_NO_BUFFER;
+            }
+        } else {
+            ret = PopFromDirtyListLocked(buffer);
+            if (ret == GSERROR_OK) {
+                buffer->SetSurfaceBufferColorGamut(config.colorGamut);
+                buffer->SetSurfaceBufferTransform(config.transform);
+                return ReuseBuffer(updateConfig, bedata, retval, lock);
+            } else if (ret == GSERROR_NO_BUFFER) {
+                LogAndTraceAllBufferInBufferQueueCache();
+                return GSERROR_NO_BUFFER;
+            }
         }
     }
 
-    ret = AllocBuffer(buffer, updateConfig, lock);
-    if (ret == GSERROR_OK) {
-        AddDeletingBuffersLocked(retval.deletingBuffers);
-        SetSurfaceBufferHebcMetaLocked(buffer);
-        SetSurfaceBufferGlobalAlphaUnlocked(buffer);
-        SetReturnValue(buffer, bedata, retval);
-    } else {
-        BLOGE("Fail to alloc or map Buffer[%{public}d %{public}d] ret: %{public}d, uniqueId: %{public}" PRIu64,
-            config.width, config.height, ret, uniqueId_);
-    }
-    return ret;
+    return SetupNewBufferLocked(buffer, bedata, updateConfig, config, retval, lock);
 }
 
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
@@ -2007,6 +2026,20 @@ GSError BufferQueue::GetGlobalAlpha(int32_t &alpha)
 {
     std::lock_guard<std::mutex> lockGuard(globalAlphaMutex_);
     alpha = globalAlpha_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetRequestBufferNoblockMode(bool noblock)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    requestBufferNoBlockMode_ = noblock;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetRequestBufferNoblockMode(bool &noblock)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    noblock = requestBufferNoBlockMode_;
     return GSERROR_OK;
 }
 

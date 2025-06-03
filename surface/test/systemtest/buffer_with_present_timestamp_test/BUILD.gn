@@ -54,6 +54,8 @@ ohos_unittest("surface_ipc_with_pts_test_st") {
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
   ]
 }
 
@@ -87,6 +89,8 @@ ohos_unittest("surface_ipc_with_invaild_pts_test_st") {
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
   ]
 }
 
@@ -120,6 +124,8 @@ ohos_unittest("surface_ipc_with_dropframe_test_st") {
     "hilog:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
+    "cJSON:cjson_static",     
+    "selinux_adapter:librestorecon"
   ]
 }
 ## SystemTest surface_ipc_with_dropframe_test_st }}}

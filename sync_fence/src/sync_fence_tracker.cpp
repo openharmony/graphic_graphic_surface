@@ -92,6 +92,7 @@ void QosApply(unsigned int level)
     if (fd < 0) {
         return;
     }
+    fdsan_exchange_owner_tag(fd, 0, LOG_DOMAIN);
 
     int tid = gettid();
     struct QosCtrlData data;
@@ -102,7 +103,7 @@ void QosApply(unsigned int level)
     if (ret < 0) {
         HILOG_WARN(LOG_CORE, "qos apply failed");
     }
-    close(fd);
+    fdsan_close_with_tag(fd, LOG_DOMAIN);
 }
 #endif
 }

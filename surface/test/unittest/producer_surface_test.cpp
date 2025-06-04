@@ -3441,4 +3441,48 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
         ASSERT_NE(bufferTmp, nullptr);
     }
 }
+
+/*
+ * Function: ProducerSurfaceNoBlockRequestBufferLoopCallInterfaceTesting002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: on noBlock mode
+ *                  2. operation: call multiple RequestBuffer.
+ *                  3. result: Return GSERROR_OK for the first 3 times, and GSERROR_NO_BUFFER for the following times.
+ */
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfaceTesting002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+    };
+    pSurfaceTmpTest->SetRequestBufferNoblockMode(true); // 设置为非阻塞模式
+    for (auto i = 0; i != 1000; i++) { // 1000 means loop times
+        sptr<SurfaceBuffer> bufferTmp;
+        int releaseFence = -1;
+        auto start = std::chrono::high_resolution_clock::now();
+        GSError ret = pSurfaceTmpTest->RequestBuffer(bufferTmp, releaseFence, requestConfig);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        ASSERT_LT(duration.count(), 5); // 5 means timeout value
+        if (i < 3) { // 3 means the first three requests for buffer were successful
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_NE(bufferTmp, nullptr);
+        } else {
+            ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+            ASSERT_EQ(bufferTmp, nullptr);
+        }
+    }
+}
 }

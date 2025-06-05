@@ -60,6 +60,9 @@ bool FrameSched::LoadLibrary()
         schedSoLoaded_ = true;
     }
     LOGI("load library success!");
+    sendFenceIdFunc_ = (SendFenceIdFunc)LoadSymbol("SendFenceId");
+    monitorGpuStartFunc_ = (MonitorGpuStartFunc)LoadSymbol("MonitorGpuStart");
+    monitorGpuEndFunc_ = (MonitorGpuEndFunc)LoadSymbol("MonitorGpuEnd");
     return true;
 }
 
@@ -103,13 +106,19 @@ void FrameSched::Init()
     }
 }
 
-void FrameSched::MonitorGpuStart()
+void FrameSched::SendFenceId(uint32_t fenceId)
 {
-    if (monitorGpuStartFunc_ == nullptr) {
-        monitorGpuStartFunc_ = (MonitorGpuStartFunc)LoadSymbol("MonitorGpuStart");
+    if (sendFenceIdFunc_ != nullptr) {
+        sendFenceIdFunc_(fenceId);
+    } else {
+        LOGE("FrameSched:[SendFenceId]load SendFenceId function failed.");
     }
+}
+
+void FrameSched::MonitorGpuStart(uint32_t fenceId)
+{
     if (monitorGpuStartFunc_ != nullptr) {
-        monitorGpuStartFunc_();
+        monitorGpuStartFunc_(fenceId);
     } else {
         LOGE("FrameSched:[MonitorStart]load MonitorStart function failed.");
     }
@@ -117,9 +126,6 @@ void FrameSched::MonitorGpuStart()
 
 void FrameSched::MonitorGpuEnd()
 {
-    if (monitorGpuEndFunc_ == nullptr) {
-        monitorGpuEndFunc_ = (MonitorGpuEndFunc)LoadSymbol("MonitorGpuEnd");
-    }
     if (monitorGpuEndFunc_ != nullptr) {
         monitorGpuEndFunc_();
     } else {

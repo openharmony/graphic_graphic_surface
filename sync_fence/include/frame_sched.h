@@ -23,7 +23,8 @@ namespace OHOS {
 namespace Rosen {
 
 using InitFunc = void(*)();
-using MonitorGpuStartFunc = void(*)();
+using SendFenceIdFunc = void(*)(int);
+using MonitorGpuStartFunc = void(*)(int);
 using MonitorGpuEndFunc = void(*)();
 using SetFrameParamFunc = void(*)(int, int, int, int);
 
@@ -31,7 +32,8 @@ class FrameSched {
 public:
     static FrameSched& GetInstance();
     void SetFrameParam(int requestId, int load, int schedFrameNum, int value);
-    void MonitorGpuStart();
+    void SendFenceId(uint32_t fenceId);
+    void MonitorGpuStart(uint32_t fenceId);
     void MonitorGpuEnd();
 
 private:
@@ -47,6 +49,7 @@ private:
     void* schedHandle_ = nullptr;
     bool schedSoLoaded_ = false;
     InitFunc initFunc_ = nullptr;
+    SendFenceIdFunc sendFenceIdFunc_ = nullptr;
     MonitorGpuStartFunc monitorGpuStartFunc_ = nullptr;
     MonitorGpuEndFunc monitorGpuEndFunc_ = nullptr;
     SetFrameParamFunc setFrameParamFunc_ = nullptr;

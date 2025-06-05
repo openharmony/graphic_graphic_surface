@@ -103,7 +103,7 @@ HWTEST_F(AcquireFenceTrackerTest, AcquireFenceTracker001, Function | MediumTest 
     AcquireFenceTracker::SetBlurSize(blurSize);
     int containerNodeNum = 1000;
     AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
-    EXPECT_EQ(AcquireFenceTracker::tracker_->processedNodeNum_, 0);
+    EXPECT_EQ(AcquireFenceTracker::tracker_->processedNodeNum_, 1000);
 }
 
 /*

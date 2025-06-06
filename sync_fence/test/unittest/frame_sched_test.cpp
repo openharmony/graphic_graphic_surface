@@ -52,13 +52,13 @@ HWTEST_F(FrameSchedTest, SetFrameParam001, Function | MediumTest | Level2)
 }
 
 /*
-* Function: SendFenceId
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SendFenceId
-*                  2. check ret
-*/
+ * Function: SendFenceId
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SendFenceId
+ *                  2. check ret
+ */
 HWTEST_F(FrameSchedTest, SendFenceId001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;

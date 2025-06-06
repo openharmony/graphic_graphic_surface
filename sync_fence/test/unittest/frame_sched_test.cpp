@@ -52,6 +52,26 @@ HWTEST_F(FrameSchedTest, SetFrameParam001, Function | MediumTest | Level2)
 }
 
 /*
+ * Function: SendFenceId
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SendFenceId
+ *                  2. check ret
+ */
+HWTEST_F(FrameSchedTest, SendFenceId001, Function | MediumTest | Level2)
+{
+    Rosen::FrameSched frameSched_;
+    uint32_t fenceId = 1;
+    frameSched_.sendFenceIdFunc_ = nullptr;
+    frameSched_.SendFenceId(fenceId);
+    EXPECT_EQ(frameSched_.sendFenceIdFunc_, nullptr);
+    frameSched_.LoadLibrary();
+    frameSched_.SendFenceId(fenceId);
+    EXPECT_NE(frameSched_.sendFenceIdFunc_, nullptr);
+}
+
+/*
 * Function: MonitorGpuStart
 * Type: Function
 * Rank: Important(2)
@@ -62,8 +82,13 @@ HWTEST_F(FrameSchedTest, SetFrameParam001, Function | MediumTest | Level2)
 HWTEST_F(FrameSchedTest, MonitorGpuStart001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
+    uint32_t fenceId = 1;
+    frameSched_.monitorGpuStartFunc_ = nullptr;
+    frameSched_.MonitorGpuStart(fenceId);
     EXPECT_EQ(frameSched_.monitorGpuStartFunc_, nullptr);
-    frameSched_.MonitorGpuStart();
+    frameSched_.LoadLibrary();
+    frameSched_.MonitorGpuStart(fenceId);
+    EXPECT_NE(frameSched_.monitorGpuStartFunc_, nullptr);
 }
 
 /*
@@ -77,8 +102,12 @@ HWTEST_F(FrameSchedTest, MonitorGpuStart001, Function | MediumTest | Level2)
 HWTEST_F(FrameSchedTest, MonitorGpuEnd001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
-    EXPECT_EQ(frameSched_.monitorGpuEndFunc_, nullptr);
+    frameSched_.monitorGpuEndFunc_ = nullptr;
     frameSched_.MonitorGpuEnd();
+    EXPECT_EQ(frameSched_.monitorGpuEndFunc_, nullptr);
+    frameSched_.LoadLibrary();
+    frameSched_.MonitorGpuEnd();
+    EXPECT_NE(frameSched_.monitorGpuEndFunc_, nullptr);
 }
 
 /*

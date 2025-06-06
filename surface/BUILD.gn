@@ -171,14 +171,3 @@ ohos_static_library("surface_static") {
 
 ## Build surface.so }}}
 
-ohos_source_set("arkuix_surface") {
-  sources = [
-    "src/cross_platform/native_window.cpp",
-    "src/cross_platform/surface_utils.cpp",
-  ]
-
-  public_configs = [ ":surface_public_config" ]
-
-  part_name = "graphic_surface"
-  subsystem_name = "graphic"
-}

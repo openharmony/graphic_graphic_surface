@@ -61,7 +61,7 @@ ohos_shared_library("sync_fence") {
   symlink_target_name = [ "libnative_fence.so" ]
 
   innerapi_tags = [
-    "chipsetsdk",
+    "chipsetsdk_sp",
     "platformsdk_indirect",
     "ndk",
   ]

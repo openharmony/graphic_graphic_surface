@@ -33,68 +33,218 @@ public:
         sptr<SyncFence> fence;
         int64_t timestamp;
         std::vector<Rect> damages;
+        int64_t desiredPresentTimestamp;
+        int64_t requestTimeNs;
+        int64_t flushTimeNs;
+        bool isAutoTimestamp;
     };
+
     static sptr<IConsumerSurface> Create(std::string name = "noname");
 
     virtual ~IConsumerSurface() = default;
 
-    virtual bool IsConsumer() const = 0;
-    virtual sptr<IBufferProducer> GetProducer() const = 0;
-
+    virtual bool IsConsumer() const
+    {
+        return true;
+    }
+    virtual sptr<IBufferProducer> GetProducer() const
+    {
+        return nullptr;
+    }
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
-                                  int64_t &timestamp, Rect &damage) = 0;
-    virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence) = 0;
-
+                                  int64_t &timestamp, Rect &damage)
+    {
+        (void)buffer;
+        (void)fence;
+        (void)timestamp;
+        (void)damage;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence)
+    {
+        (void)buffer;
+        (void)fence;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                                  int64_t &timestamp, Rect &damage) = 0;
-    virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) = 0;
-
-    virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
-
-    virtual GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) = 0;
-
-    virtual uint32_t GetQueueSize() = 0;
-    virtual GSError SetQueueSize(uint32_t queueSize) = 0;
-
-    virtual GSError SetDefaultWidthAndHeight(int32_t width, int32_t height) = 0;
-    virtual int32_t GetDefaultWidth() = 0;
-    virtual int32_t GetDefaultHeight() = 0;
-
-    virtual GSError SetDefaultUsage(uint64_t usage) = 0;
-    virtual uint64_t GetDefaultUsage() = 0;
-
-    virtual GSError SetUserData(const std::string &key, const std::string &val) = 0;
-    virtual std::string GetUserData(const std::string &key) = 0;
-
+                                  int64_t &timestamp, Rect &damage)
+    {
+        (void)buffer;
+        (void)fence;
+        (void)timestamp;
+        (void)damage;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
+    {
+        (void)buffer;
+        (void)fence;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer)
+    {
+        (void)buffer;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError DetachBuffer(sptr<SurfaceBuffer>& buffer)
+    {
+        (void)buffer;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual uint32_t GetQueueSize()
+    {
+        return 0;
+    }
+    virtual GSError SetQueueSize(uint32_t queueSize)
+    {
+        (void)queueSize;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetDefaultWidthAndHeight(int32_t width, int32_t height)
+    {
+        (void)width;
+        (void)height;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual int32_t GetDefaultWidth()
+    {
+        return 0;
+    }
+    virtual int32_t GetDefaultHeight()
+    {
+        return 0;
+    }
+    virtual GSError SetDefaultUsage(uint64_t usage)
+    {
+        (void)usage;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual uint64_t GetDefaultUsage()
+    {
+        return 0;
+    }
+    virtual GSError SetUserData(const std::string &key, const std::string &val)
+    {
+        (void)key;
+        (void)val;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual std::string GetUserData(const std::string &key)
+    {
+        (void)key;
+        return "";
+    }
     virtual const std::string& GetName() = 0;
-    virtual uint64_t GetUniqueId() const = 0;
-
-    virtual GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener) = 0;
-    virtual GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener) = 0;
-    virtual GSError UnregisterConsumerListener() = 0;
-
-    virtual GSError GoBackground() = 0;
-
-    virtual GSError SetTransform(GraphicTransformType transform) = 0;
-    virtual GraphicTransformType GetTransform() const = 0;
-
-    virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
-    virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) = 0;
-    virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
+    virtual uint64_t GetUniqueId() const
+    {
+        return 0;
+    }
+    virtual GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener)
+    {
+        (void)listener;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener)
+    {
+        (void)listener;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError UnregisterConsumerListener()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError GoBackground()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetTransform(GraphicTransformType transform)
+    {
+        (void)transform;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GraphicTransformType GetTransform() const
+    {
+        return GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    }
+    virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
+    {
+        (void)sequence;
+        (void)scalingMode;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
+    {
+        (void)sequence;
+        (void)scalingMode;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
+    {
+        (void)sequence;
+        (void)metaData;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
-                                   const std::vector<uint8_t> &metaData) = 0;
-    virtual GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const = 0;
-    virtual GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const = 0;
+                                   const std::vector<uint8_t> &metaData)
+    {
+        (void)sequence;
+        (void)key;
+        (void)metaData;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const
+    {
+        (void)sequence;
+        (void)type;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const
+    {
+        (void)sequence;
+        (void)metaData;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key,
-                                   std::vector<uint8_t> &metaData) const = 0;
-    virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle) = 0;
-    virtual sptr<SurfaceTunnelHandle> GetTunnelHandle() const = 0;
-    virtual GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp) = 0;
-    virtual void Dump(std::string &result) const = 0;
-    virtual void DumpCurrentFrameLayer() const = 0;
-
+                                   std::vector<uint8_t> &metaData) const
+    {
+        (void)sequence;
+        (void)key;
+        (void)metaData;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle)
+    {
+        (void)handle;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual sptr<SurfaceTunnelHandle> GetTunnelHandle() const
+    {
+        return nullptr;
+    }
+    virtual GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
+    {
+        (void)sequence;
+        (void)timestamp;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual void Dump(std::string &result) const
+    {
+        (void)result;
+        return;
+    }
+    virtual void DumpCurrentFrameLayer() const
+    {
+        return;
+    }
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                                  int64_t &timestamp, std::vector<Rect> &damages) = 0;
+                                  int64_t &timestamp, std::vector<Rect> &damages)
+    {
+        (void)buffer;
+        (void)fence;
+        (void)timestamp;
+        (void)damages;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
                                   bool isUsingAutoTimestamp)
     {
@@ -102,20 +252,62 @@ public:
         (void)expectPresentTimestamp;
         (void)isUsingAutoTimestamp;
         return SURFACE_ERROR_NOT_SUPPORT;
-    };
-    virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
-    virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) = 0;
-    virtual void ConsumerRequestCpuAccess(bool on) = 0;
-    virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
-    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) = 0;
-    virtual bool IsBufferHold() = 0;
-    virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
-    virtual float GetHdrWhitePointBrightness() const = 0;
-    virtual float GetSdrWhitePointBrightness() const = 0;
-
-    virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType) = 0;
-
-    virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache) = 0;
+    }
+    virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut)
+    {
+        (void)buffer;
+        (void)timeOut;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client)
+    {
+        (void)client;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual void ConsumerRequestCpuAccess(bool on)
+    {
+        (void)on;
+    }
+    virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
+    {
+        (void)buffer;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false)
+    {
+        (void)buffer;
+        (void)isReserveSlot;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual bool IsBufferHold()
+    {
+        return false;
+    }
+    virtual GSError SetScalingMode(ScalingMode scalingMode)
+    {
+        (void)scalingMode;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual float GetHdrWhitePointBrightness() const
+    {
+        return 0;
+    }
+    virtual float GetSdrWhitePointBrightness() const
+    {
+        return 0;
+    }
+    virtual GSError GetSurfaceBufferTransformType(sptr<SurfaceBuffer> buffer, GraphicTransformType *transformType)
+    {
+        (void)buffer;
+        (void)transformType;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError IsSurfaceBufferInCache(uint32_t seqNum, bool &isInCache)
+    {
+        (void)seqNum;
+        (void)isInCache;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError GetGlobalAlpha(int32_t &alpha)
     {
         (void)alpha;
@@ -124,16 +316,16 @@ public:
     virtual uint32_t GetAvailableBufferCount() const
     {
         return SURFACE_ERROR_NOT_SUPPORT;
-    };
+    }
     virtual GSError GetLastFlushedDesiredPresentTimeStamp(
         [[maybe_unused]] int64_t &lastFlushedDesiredPresentTimeStamp) const
     {
         return SURFACE_ERROR_NOT_SUPPORT;
-    };
+    }
     virtual GSError GetBufferSupportFastCompose([[maybe_unused]] bool &bufferSupportFastCompose)
     {
         return SURFACE_ERROR_NOT_SUPPORT;
-    };
+    }
     virtual GSError SetBufferName(const std::string &name)
     {
         (void)name;
@@ -163,6 +355,22 @@ public:
     virtual GSError GetFrontDesiredPresentTimeStamp(
         [[maybe_unused]] int64_t &desiredPresentTimeStamp, [[maybe_unused]] bool &isAutoTimeStamp) const
     {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue)
+    {
+        (void)returnValue;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
+    {
+        (void)sequence;
+        (void)fence;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetIsActiveGame(bool isActiveGame)
+    {
+        (void)isActiveGame;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 protected:

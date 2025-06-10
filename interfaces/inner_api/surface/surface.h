@@ -178,11 +178,19 @@ public:
         (void)cleanAll;
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError GoBackground() = 0;
-
-    virtual GSError SetTransform(GraphicTransformType transform) = 0;
-    virtual GraphicTransformType GetTransform() const = 0;
-
+    virtual GSError GoBackground()
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetTransform(GraphicTransformType transform)
+    {
+        (void)transform;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GraphicTransformType GetTransform() const
+    {
+        return GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    }
     virtual GSError Connect()
     {
         return GSERROR_NOT_SUPPORT;
@@ -191,7 +199,12 @@ public:
     {
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
+    virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode)
+    {
+        (void)sequence;
+        (void)scalingMode;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
     {
         (void)sequence;
@@ -312,21 +325,42 @@ public:
     }
     virtual GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) = 0;
     virtual GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client) = 0;
-    virtual GSError RegisterReleaseListener(OnReleaseFuncWithFence func) = 0;
+    virtual GSError RegisterReleaseListener(OnReleaseFuncWithFence func)
+    {
+        (void)func;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError RegisterReleaseListenerBackup(OnReleaseFuncWithFence func)
     {
         (void)func;
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func) = 0;
-    virtual GSError UnRegisterUserDataChangeListener(const std::string &funcName) = 0;
-    virtual GSError ClearUserDataChangeListener() = 0;
-
+    virtual GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func)
+    {
+        (void)funcName;
+        (void)func;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError UnRegisterUserDataChangeListener(const std::string &funcName)
+    {
+        (void)funcName;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError ClearUserDataChangeListener()
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer) = 0;
     virtual GSError DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool isReserveSlot = false) = 0;
-
-    virtual GraphicTransformType GetTransformHint() const = 0;
-    virtual GSError SetTransformHint(GraphicTransformType transformHint) = 0;
+    virtual GraphicTransformType GetTransformHint() const
+    {
+        return GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    }
+    virtual GSError SetTransformHint(GraphicTransformType transformHint)
+    {
+        (void)transformHint;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError SetBufferName(const std::string &name)
     {
         (void)name;
@@ -347,7 +381,10 @@ public:
         return 0;
     }
 
-    virtual void SetBufferHold(bool hold) = 0;
+    virtual void SetBufferHold(bool hold)
+    {
+        (void)hold;
+    }
     virtual void SetWindowConfig(const BufferRequestConfig& config)
     {
         (void)config;
@@ -387,10 +424,24 @@ public:
         return config;
     }
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
-    virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
-    virtual OHSurfaceSource GetSurfaceSourceType() const = 0;
-    virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) = 0;
-    virtual std::string GetSurfaceAppFrameworkType() const = 0;
+    virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType)
+    {
+        (void)sourceType;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual OHSurfaceSource GetSurfaceSourceType() const
+    {
+        return OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    }
+    virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType)
+    {
+        (void)appFrameworkType;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual std::string GetSurfaceAppFrameworkType() const
+    {
+        return std::string();
+    }
     virtual GSError SetHdrWhitePointBrightness(float brightness)
     {
         (void)brightness;
@@ -553,6 +604,12 @@ public:
     virtual GSError ProducerSurfaceUnlockAndFlushBuffer()
     {
         return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
+    {
+        (void)sequence;
+        (void)fence;
+        return GSERROR_NOT_SUPPORT;
     }
 protected:
     Surface() = default;

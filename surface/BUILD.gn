@@ -95,7 +95,7 @@ ohos_shared_library("surface") {
   ]
 
   innerapi_tags = [
-    "chipsetsdk",
+    "chipsetsdk_sp",
     "platformsdk",
   ]
 

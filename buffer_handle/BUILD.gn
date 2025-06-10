@@ -48,7 +48,7 @@ ohos_shared_library("buffer_handle") {
   ]
 
   innerapi_tags = [
-    "chipsetsdk",
+    "chipsetsdk_sp",
     "platformsdk",
   ]
   subsystem_name = "graphic"

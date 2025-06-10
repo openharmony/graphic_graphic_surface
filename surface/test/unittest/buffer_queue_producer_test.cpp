@@ -663,6 +663,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->SetFrameGravity(-1), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetFixedRotation(-1), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->PreAllocBuffers(config, 0), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->SetRequestBufferNoblockMode(true), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
 }

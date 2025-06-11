@@ -1477,4 +1477,108 @@ HWTEST_F(BufferQueueTest, SetupNewBufferLockedAndAllocBuffer001, TestSize.Level0
     EXPECT_EQ(bq->SetupNewBufferLocked(buffer, bedata, updateConfig, requestConfig,
         retval, lock), SURFACE_ERROR_UNKOWN);
 }
+
+/*
+ * Function: Multiple requests for buffer in blocking mode, other threads release buffer and reuse buffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. requestThread multiple requests for buffer in blocking mode
+ *                  2. releaseThread release buffer
+ *                  3. requestThread reuse buffer
+ *                  4. check ret
+ */
+HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndReuseBuffer001, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    IBufferProducer::RequestBufferReturnValue retval3;
+
+    BufferRequestConfig requestConfigTest = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 5000,
+    };
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool conditionMet = false;
+    std::atomic<bool> stopRequest(false);
+    std::atomic<bool> stopRelease(false);
+    sptr<BufferQueue> bqTest = new BufferQueue("test");
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    bqTest->RegisterConsumerListener(listener);
+    // Create thread for requesting buffer
+    std::thread requestThread([&]() {
+        while (!stopRequest) {
+            GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_GE(retval.sequence, 0);
+            ASSERT_NE(retval.buffer, nullptr);
+
+            ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval1);
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_GE(retval1.sequence, 0);
+            ASSERT_NE(retval1.buffer, nullptr);
+
+            ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval2);
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_GE(retval2.sequence, 0);
+            ASSERT_NE(retval2.buffer, nullptr);
+
+            ASSERT_EQ(bqTest->freeList_.size(), 0);
+            ASSERT_EQ(bqTest->GetUsedSize(), 3U);
+            ASSERT_EQ(bqTest->bufferQueueSize_, 3U);
+            ASSERT_EQ(bqTest->detachReserveSlotNum_, 0);
+            ASSERT_EQ(bqTest->dirtyList_.size(), 0);
+
+            conditionMet = true;
+            cv.notify_one();
+            auto start = std::chrono::high_resolution_clock::now();
+            ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval3);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+            ASSERT_LT(duration.count(), 1500); // Confirm blockage 1500 means timeout value
+            ASSERT_GT(duration.count(), 800); // Confirm blockage 800 means timeout value
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_EQ(retval3.buffer, nullptr);
+        }
+    });
+
+    // Create a thread to release the buffer
+    std::thread releaseThread([&]() {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [&]() { return conditionMet || stopRelease; });
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (conditionMet) {
+            sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+            GSError ret = bqTest->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_EQ(bqTest->freeList_.size(), 0);
+            ASSERT_EQ(bqTest->dirtyList_.size(), 1);
+            ret = bqTest->AcquireBuffer(retval.buffer, retval.fence, timestamp, damages);
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_NE(retval.buffer, nullptr);
+            ASSERT_EQ(bqTest->freeList_.size(), 0);
+            ASSERT_EQ(bqTest->dirtyList_.size(), 0);
+            sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+            ret = bqTest->ReleaseBuffer(retval.buffer, releaseFence);
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_EQ(bqTest->freeList_.size(), 1);
+            ASSERT_EQ(bqTest->dirtyList_.size(), 0);
+        }
+    });
+    // Stop the threads after 1 second
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    stopRequest = true;
+    stopRelease = true;
+    cv.notify_one();
+
+    requestThread.join();
+    releaseThread.join();
+}
 }

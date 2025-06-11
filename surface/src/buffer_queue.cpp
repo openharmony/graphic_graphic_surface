@@ -949,13 +949,9 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
     if (ret != GSERROR_OK) {
         return ret;
     }
-    auto mapIter = bufferQueueCache_.find(returnValue.buffer->GetSeqNum());
-    if (mapIter == bufferQueueCache_.end()) {
-        LogAndTraceAllBufferInBufferQueueCache();
-        return GSERROR_INTERNAL;
-    }
-    returnValue.isAutoTimestamp = mapIter->second.isAutoTimestamp;
-    returnValue.desiredPresentTimestamp = mapIter->second.desiredPresentTimestamp;
+    auto bufferElement = bufferQueueCache_[returnValue.buffer->GetSeqNum()];
+    returnValue.isAutoTimestamp = bufferElement.isAutoTimestamp;
+    returnValue.desiredPresentTimestamp = bufferElement.desiredPresentTimestamp;
     return GSERROR_OK;
 }
 
@@ -1033,9 +1029,9 @@ void BufferQueue::OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuff
 
 GSError BufferQueue::ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
 {
-    std::unique_lock<std::mutex> lock(mutex_);
     sptr<SurfaceBuffer> buffer = nullptr;
     {
+        std::unique_lock<std::mutex> lock(mutex_);
         auto mapIter = bufferQueueCache_.find(sequence);
         if (mapIter == bufferQueueCache_.end()) {
             LogAndTraceAllBufferInBufferQueueCache();

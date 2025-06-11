@@ -705,6 +705,35 @@ public:
      * {@link SURFACE_ERROR_UNKOWN} 50002000 - Inner error.
      */
     GSError GetMaxQueueSize(uint32_t &queueSize) const override;
+    /**
+     * @brief Acquire buffer for data consumed.
+     * 
+     * @param returnValue [out] Acquire buffer return value Contains the acquired buffer information including
+     *                          buffer, fence, damages, and other timestamp.
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
+     */
+    GSError AcquireBuffer(AcquireBufferReturnValue& returnValue) override;
+    /**
+     * @brief Release buffer for data production.
+     * 
+     * @param sequence [in] Consumed data buffer sequence.
+     * @param fence [in] fence fd for asynchronous waiting mechanism.
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     * {@link SURFACE_ERROR_BUFFER_NOT_INCACHE} 41210000 - Buffer not in cache.
+     * {@link SURFACE_ERROR_BUFFER_STATE_INVALID} 41207000 - Buffer state invalid.
+     */
+    GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence) override;
+    /**
+     * @brief Sets whether the bufferqueue is used by the game
+     * @param isActiveGame [in] Flag indicating whether the queue is used by game:
+     *             - true: Optimize for game usage
+     *             - false: Normal operation mode
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link SURFACE_ERROR_UNKOWN} 50002000 - Inner error.
+     */
+    GSError SetIsActiveGame(bool isActiveGame) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

@@ -87,6 +87,7 @@ public:
 
     GSError WriteBufferRequestConfig(MessageParcel &parcel) override;
     GSError ReadBufferRequestConfig(MessageParcel &parcel) override;
+    GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
     BufferRequestConfig GetBufferRequestConfig() const override;
     void SetBufferRequestConfig(const BufferRequestConfig &config) override;
     void SetConsumerAttachBufferFlag(bool value) override;

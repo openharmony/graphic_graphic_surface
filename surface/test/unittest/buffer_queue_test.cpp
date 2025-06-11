@@ -70,6 +70,14 @@ void BufferQueueTest::SetUpTestCase()
 void BufferQueueTest::TearDownTestCase()
 {
     bq = nullptr;
+    bedata = nullptr;
+    csurface1 = nullptr;
+    surfaceDelegator = nullptr;
+    for (auto it : cache) {
+        it.second = nullptr;
+    }
+    cache.clear();
+    sleep(2);  // 2 : sleep time
 }
 
 /*
@@ -1669,5 +1677,62 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndStatusWrong001, TestSize.Leve
 
     requestThread.join();
     releaseThread.join();
+}
+
+/*
+ * Function: SetIsActiveGame
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsActiveGame and check value
+ */
+HWTEST_F(BufferQueueTest, SetIsActiveGame001, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    ASSERT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
+
+    bqTmp->SetIsActiveGame(true);
+    ASSERT_EQ(bqTmp->isActiveGame_, true);
+    bqTmp = nullptr;
+}
+
+/*
+ * Function: AcquireBuffer and ReleaseBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AcquireBuffer and check value
+ */
+HWTEST_F(BufferQueueTest, ReleaseBufferBySeq001, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+
+    // first request
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+    ASSERT_GE(retval.sequence, 0);
+
+    // add cache
+    cache[retval.sequence] = retval.buffer;
+
+    // buffer queue will map
+    uint8_t *addr1 = reinterpret_cast<uint8_t*>(retval.buffer->GetVirAddr());
+    ASSERT_NE(addr1, nullptr);
+    addr1[0] = 5;
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    IConsumerSurface::AcquireBufferReturnValue returnVal;
+    ret = bq->AcquireBuffer(returnVal);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->ReleaseBuffer(returnVal.buffer->GetSeqNum(), returnVal.fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_BUFFER_NOT_INCACHE);
+
+    ret = bq->ReleaseBuffer(returnVal.buffer->GetSeqNum(), returnVal.fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 }

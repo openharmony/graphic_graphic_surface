@@ -1034,7 +1034,7 @@ GSError BufferQueue::ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fen
         std::unique_lock<std::mutex> lock(mutex_);
         auto mapIter = bufferQueueCache_.find(sequence);
         if (mapIter == bufferQueueCache_.end()) {
-            LogAndTraceAllBufferInBufferQueueCache();
+            LogAndTraceAllBufferInBufferQueueCacheLocked();
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
         BufferElement& bufferElement = mapIter->second;

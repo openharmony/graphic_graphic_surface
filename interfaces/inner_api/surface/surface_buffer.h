@@ -147,6 +147,16 @@ public:
         (void)parcel;
         return GSERROR_OK;
     };
+    virtual GSError ReadBufferProperty(MessageParcel& parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    };
+    virtual GSError WriteBufferProperty(MessageParcel& parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    };
     virtual GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
     {
         (void)bufferInfo;

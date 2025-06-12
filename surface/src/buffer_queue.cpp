@@ -406,7 +406,7 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     }
     std::unique_lock<std::mutex> lock(mutex_);
     auto ret = RequestBufferLocked(config, bedata, retval, lock);
-    if (isActiveGame_) {
+    if (ret == GSERROR_OK && isActiveGame_) {
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
         bufferQueueCache_[retval.sequence].requestTimeNs = endTimeNs - startTimeNs;

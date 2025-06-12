@@ -206,7 +206,7 @@ private:
     int32_t RegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t UnRegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
-    void SetConnectedPid(int32_t connectedPid);
+    void SetConnectedPidLocked(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
     bool CheckIsAlive();

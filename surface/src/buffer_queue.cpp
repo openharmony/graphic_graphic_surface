@@ -383,7 +383,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
                 buffer->SetSurfaceBufferTransform(config.transform);
                 return ReuseBuffer(updateConfig, bedata, retval, lock);
             } else if (ret == GSERROR_NO_BUFFER) {
-                LogAndTraceAllBufferInBufferQueueCache();
+                LogAndTraceAllBufferInBufferQueueCacheLocked();
                 return GSERROR_NO_BUFFER;
             }
         }
@@ -808,7 +808,7 @@ void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, in
     mapIter->second.timestamp = static_cast<int64_t>(uiTimestamp);
 }
 
-void BufferQueue::LogAndTraceAllBufferInBufferQueueCache()
+void BufferQueue::LogAndTraceAllBufferInBufferQueueCacheLocked()
 {
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
@@ -848,7 +848,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
     } else if (ret == GSERROR_NO_BUFFER) {
-        LogAndTraceAllBufferInBufferQueueCache();
+        LogAndTraceAllBufferInBufferQueueCacheLocked();
     }
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
@@ -868,7 +868,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
         std::lock_guard<std::mutex> lockGuard(mutex_);
         std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
         if (frontSequence == dirtyList_.end()) {
-            LogAndTraceAllBufferInBufferQueueCache();
+            LogAndTraceAllBufferInBufferQueueCacheLocked();
             return GSERROR_NO_BUFFER;
         }
         auto mapIter = bufferQueueCache_.find(*frontSequence);
@@ -877,7 +877,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
         if (!frontIsAutoTimestamp && frontDesiredPresentTimestamp > expectPresentTimestamp
             && frontDesiredPresentTimestamp - ONE_SECOND_TIMESTAMP <= expectPresentTimestamp) {
             SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
-            LogAndTraceAllBufferInBufferQueueCache();
+            LogAndTraceAllBufferInBufferQueueCacheLocked();
             return GSERROR_NO_BUFFER_READY;
         }
         while (!(frontIsAutoTimestamp && !isUsingAutoTimestamp)
@@ -903,7 +903,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
         }
         if (!frontIsAutoTimestamp && !IsPresentTimestampReady(frontDesiredPresentTimestamp, expectPresentTimestamp)) {
             SURFACE_TRACE_NAME_FMT("Acquire no buffer ready");
-            LogAndTraceAllBufferInBufferQueueCache();
+            LogAndTraceAllBufferInBufferQueueCacheLocked();
             return GSERROR_NO_BUFFER_READY;
         }
     }
@@ -2213,7 +2213,7 @@ uint32_t BufferQueue::GetAvailableBufferCount()
     return static_cast<uint32_t>(dirtyList_.size());
 }
 
-void BufferQueue::SetConnectedPid(int32_t connectedPid)
+void BufferQueue::SetConnectedPidLocked(int32_t connectedPid)
 {
     connectedPid_ = connectedPid;
 }

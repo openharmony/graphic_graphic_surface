@@ -1037,7 +1037,7 @@ GSError BufferQueue::ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fen
             LogAndTraceAllBufferInBufferQueueCache();
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
-        BufferElement bufferElement = mapIter->second;
+        BufferElement& bufferElement = mapIter->second;
         buffer = bufferElement.buffer;
         auto ret = ReleaseBufferLocked(bufferElement, fence, lock);
         if (ret != GSERROR_OK) {

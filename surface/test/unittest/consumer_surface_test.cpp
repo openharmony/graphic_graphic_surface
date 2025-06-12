@@ -82,10 +82,10 @@ void ConsumerSurfaceTest::SetUpTestCase()
 
 void ConsumerSurfaceTest::TearDownTestCase()
 {
-    cs = nullptr;
-    bq = nullptr;
-    ps = nullptr;
     surfaceDelegator = nullptr;
+    ps = nullptr;
+    bq = nullptr;
+    cs = nullptr;
 }
 
 void ConsumerSurfaceTest::deleteBuffer(int32_t bufferId)

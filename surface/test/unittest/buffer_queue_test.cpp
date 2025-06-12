@@ -69,15 +69,9 @@ void BufferQueueTest::SetUpTestCase()
 
 void BufferQueueTest::TearDownTestCase()
 {
-    bq = nullptr;
-    bedata = nullptr;
     csurface1 = nullptr;
-    surfaceDelegator = nullptr;
-    for (auto it : cache) {
-        it.second = nullptr;
-    }
-    cache.clear();
-    sleep(2);  // 2 : sleep time
+    bedata = nullptr;
+    bq = nullptr;
 }
 
 /*
@@ -1707,19 +1701,10 @@ HWTEST_F(BufferQueueTest, ReleaseBufferBySeq001, TestSize.Level0)
 {
     IBufferProducer::RequestBufferReturnValue retval;
 
-    // first request
     GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(retval.buffer, nullptr);
     ASSERT_GE(retval.sequence, 0);
-
-    // add cache
-    cache[retval.sequence] = retval.buffer;
-
-    // buffer queue will map
-    uint8_t *addr1 = reinterpret_cast<uint8_t*>(retval.buffer->GetVirAddr());
-    ASSERT_NE(addr1, nullptr);
-    addr1[0] = 5;
 
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
     ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);

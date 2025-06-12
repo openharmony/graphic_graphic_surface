@@ -1718,7 +1718,7 @@ HWTEST_F(BufferQueueTest, ReleaseBufferBySeq001, TestSize.Level0)
         .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
         .timeout = 5000,
     };
-    bqTmp->SetIsActiveGame(true);
+    bqTest->SetIsActiveGame(true);
 
     GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);

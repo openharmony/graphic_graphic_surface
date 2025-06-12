@@ -77,7 +77,7 @@ void BufferQueueTest::TearDownTestCase()
         it.second = nullptr;
     }
     cache.clear();
-    sleep(2);
+    sleep(2);  // 2 : sleep time
 }
 
 /*

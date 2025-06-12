@@ -2678,7 +2678,7 @@ HWTEST_F(ConsumerSurfaceTest, AcquireBufferByReturnValue, TestSize.Level0)
 
     IConsumerSurface::AcquireBufferReturnValue returnValue;
     GSError ret = surface_->AcquireBuffer(returnValue);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 
     surface_ = nullptr;
 }

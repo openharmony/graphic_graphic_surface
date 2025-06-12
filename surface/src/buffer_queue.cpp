@@ -1064,8 +1064,8 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
             OnBufferDeleteCbForHardwareThreadLocked(buffer);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
-        BufferElement buffer = mapIter->second;
-        auto ret = ReleaseBufferLocked(buffer, fence, lock);
+        BufferElement bufferElement = mapIter->second;
+        auto ret = ReleaseBufferLocked(bufferElement, fence, lock);
         if (ret != GSERROR_OK) {
             return ret;
         }

@@ -117,12 +117,36 @@ GSError ConsumerSurface::AcquireBuffer(AcquireBufferReturnValue &returnValue, in
     return consumer_->AcquireBuffer(returnValue, expectPresentTimestamp, isUsingAutoTimestamp);
 }
 
+GSError ConsumerSurface::AcquireBuffer(AcquireBufferReturnValue &returnValue)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->AcquireBuffer(returnValue);
+}
+
 GSError ConsumerSurface::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     if (buffer == nullptr || consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return consumer_->ReleaseBuffer(buffer, fence);
+}
+
+GSError ConsumerSurface::ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
+{
+    if (sequence == 0 || consumer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return consumer_->ReleaseBuffer(sequence, fence);
+}
+
+GSError ConsumerSurface::SetIsActiveGame(bool isTransactonActiveGame)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->SetIsActiveGame(isTransactonActiveGame);
 }
 
 GSError ConsumerSurface::AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t& fence,

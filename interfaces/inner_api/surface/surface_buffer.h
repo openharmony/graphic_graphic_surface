@@ -47,6 +47,17 @@ using ProducerInitInfo = struct {
     sptr<IProducerListener> propertyListener; // register callback in ctor
     int32_t transformHint;
 };
+
+struct RSBufferInfo {
+    GraphicColorGamut surfaceBufferColorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    int32_t surfaceBufferWidth = 0;
+    int32_t surfaceBufferHeight = 0;
+    uint32_t sequence = 0;
+    BufferRequestConfig bufferRequestConfig;
+};
+
 class SurfaceBuffer : public RefBase {
 public:
     virtual BufferHandle *GetBufferHandle() const = 0;
@@ -136,6 +147,21 @@ public:
         (void)parcel;
         return GSERROR_OK;
     };
+    virtual GSError ReadBufferProperty(MessageParcel& parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    };
+    virtual GSError WriteBufferProperty(MessageParcel& parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    };
+    virtual GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
+    {
+        (void)bufferInfo;
+        return GSERROR_OK;
+    }
     virtual BufferRequestConfig GetBufferRequestConfig() const = 0;
     virtual void SetBufferRequestConfig(const BufferRequestConfig &config)
     {

@@ -82,6 +82,9 @@ void ConsumerSurfaceTest::SetUpTestCase()
 
 void ConsumerSurfaceTest::TearDownTestCase()
 {
+    surfaceDelegator = nullptr;
+    ps = nullptr;
+    bq = nullptr;
     cs = nullptr;
 }
 
@@ -2611,5 +2614,119 @@ HWTEST_F(ConsumerSurfaceTest, SetMaxQueueSizeAndGetMaxQueueSize001, TestSize.Lev
     ASSERT_EQ(cSurface->GetQueueSize(), 1);
 
     cSurface = nullptr;
+}
+
+/*
+ * Function: AcquireBuffer and ReleaseBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and FlushBuffer
+ *                  2. call AcquireBuffer and ReleaseBuffer
+ *                  3. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseBufferWithSequence001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> csTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    csTmp->RegisterConsumerListener(listenerTmp);
+    auto pTmp = csTmp->GetProducer();
+    sptr<BufferQueue> bqTmp = new BufferQueue("test");
+    sptr<Surface> psTmp = Surface::CreateSurfaceAsProducer(pTmp);
+
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+
+    GSError ret = psTmp->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = psTmp->FlushBuffer(buffer, SyncFence::INVALID_FENCE, flushConfigWithDamages);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    IConsumerSurface::AcquireBufferReturnValue returnValue = {
+        .buffer = nullptr,
+        .fence = new SyncFence(-1),
+    };
+    ret = csTmp->AcquireBuffer(returnValue);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(returnValue.buffer, nullptr);
+    ASSERT_EQ(damages.size(), flushConfigWithDamages.damages.size());
+    for (decltype(damages.size()) i = 0; i < damages.size(); i++) {
+        ASSERT_EQ(damages[i].x, flushConfigWithDamages.damages[i].x);
+        ASSERT_EQ(damages[i].y, flushConfigWithDamages.damages[i].y);
+        ASSERT_EQ(damages[i].w, flushConfigWithDamages.damages[i].w);
+        ASSERT_EQ(damages[i].h, flushConfigWithDamages.damages[i].h);
+    }
+
+    ASSERT_EQ(returnValue.timestamp, flushConfigWithDamages.timestamp);
+    ret = csTmp->ReleaseBuffer(returnValue.buffer, returnValue.fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: AcquireBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffer and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, AcquireBufferByReturnValue, TestSize.Level0)
+{
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+
+    IConsumerSurface::AcquireBufferReturnValue returnValue;
+    GSError ret = surface_->AcquireBuffer(returnValue);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+
+    surface_ = nullptr;
+}
+
+/*
+ * Function: ReleaseBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ReleaseBuffer and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, ReleaseBufferBySeq, TestSize.Level0)
+{
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+    uint32_t sequence = 0;
+    sptr<SyncFence> fence = new SyncFence(-1);
+    GSError ret = surface_->ReleaseBuffer(sequence, fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    sequence = 1;
+    surface_->consumer_ = nullptr;
+    ret = surface_->ReleaseBuffer(sequence, fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    surface_ = nullptr;
+}
+
+/*
+ * Function: SetIsActiveGame
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsActiveGame and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, SetIsActiveGame001, TestSize.Level0)
+{
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+    bool isTransactonActiveGame = false;
+    // consumer_ is nullptr
+    surface_->consumer_ = nullptr;
+    surface_->SetIsActiveGame(isTransactonActiveGame);
+    // consumer_ is not nullptr
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    surface_->SetIsActiveGame(isTransactonActiveGame);
+    queue = nullptr;
+    surface_->consumer_ = nullptr;
+    surface_ = nullptr;
 }
 }

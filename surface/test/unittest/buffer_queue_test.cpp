@@ -69,7 +69,15 @@ void BufferQueueTest::SetUpTestCase()
 
 void BufferQueueTest::TearDownTestCase()
 {
+    csurface1 = nullptr;
+    bedata = nullptr;
     bq = nullptr;
+    surfaceDelegator = nullptr;
+    for (auto it : cache) {
+        it.second = nullptr;
+    }
+    cache.clear();
+    sleep(2);  // 2 : sleep time
 }
 
 /*
@@ -1669,5 +1677,68 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndStatusWrong001, TestSize.Leve
 
     requestThread.join();
     releaseThread.join();
+}
+
+/*
+ * Function: SetIsActiveGame
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsActiveGame and check value
+ */
+HWTEST_F(BufferQueueTest, SetIsActiveGame001, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    ASSERT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
+
+    bqTmp->SetIsActiveGame(true);
+    ASSERT_EQ(bqTmp->isActiveGame_, true);
+    bqTmp = nullptr;
+}
+
+/*
+ * Function: AcquireBuffer and ReleaseBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AcquireBuffer and check value
+ */
+HWTEST_F(BufferQueueTest, ReleaseBufferBySeq001, TestSize.Level0)
+{
+    sptr<BufferQueue> bqTest = new BufferQueue("test");
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    bqTest->RegisterConsumerListener(listener);
+
+    IBufferProducer::RequestBufferReturnValue retval;
+    BufferRequestConfig requestConfigTest = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 5000,
+    };
+    bqTest->SetIsActiveGame(true);
+
+    GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+    ASSERT_GE(retval.sequence, 0);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bqTest->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    IConsumerSurface::AcquireBufferReturnValue returnVal;
+    ret = bqTest->AcquireBuffer(returnVal);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bqTest->ReleaseBuffer(returnVal.buffer->GetSeqNum(), returnVal.fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bqTest->ReleaseBuffer(returnVal.buffer->GetSeqNum(), returnVal.fence);
+    ASSERT_EQ(ret, OHOS::GSERROR_BUFFER_STATE_INVALID);
+
+    bqTest = nullptr;
 }
 }

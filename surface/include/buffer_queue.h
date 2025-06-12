@@ -211,7 +211,7 @@ public:
     GSError GetRequestBufferNoblockMode(bool &noblock);
     uint32_t GetAvailableBufferCount();
 
-    void SetConnectedPid(int32_t connectedPid);
+    void SetConnectedPidLocked(int32_t connectedPid);
     GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
         struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
@@ -266,7 +266,7 @@ private:
     bool GetStatusLocked() const;
     void CallConsumerListener();
     void SetSurfaceBufferGlobalAlphaUnlocked(sptr<SurfaceBuffer> buffer);
-    void LogAndTraceAllBufferInBufferQueueCache();
+    void LogAndTraceAllBufferInBufferQueueCacheLocked();
     bool IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp);
     void SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
                                                   uint64_t uiTimestamp);

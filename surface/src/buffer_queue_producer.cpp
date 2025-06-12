@@ -1635,7 +1635,7 @@ GSError BufferQueueProducer::Connect()
             uniqueId_);
         return GSERROR_CONSUMER_DISCONNECTED;
     }
-    SetConnectedPid(callingPid);
+    SetConnectedPidLocked(callingPid);
     return SURFACE_ERROR_OK;
 }
 
@@ -1651,7 +1651,7 @@ GSError BufferQueueProducer::Disconnect(uint32_t* bufSeqNum)
         if (ret != GSERROR_OK) {
             return ret;
         }
-        SetConnectedPid(0);
+        SetConnectedPidLocked(0);
     }
     return bufferQueue_->CleanCache(false, bufSeqNum);
 }
@@ -1803,7 +1803,7 @@ void BufferQueueProducer::OnBufferProducerRemoteDied()
             BLOGD("no connections, uniqueId: %{public}" PRIu64 ".", uniqueId_);
             return;
         }
-        SetConnectedPid(0);
+        SetConnectedPidLocked(0);
     }
     bufferQueue_->CleanCache(false, nullptr);
 }
@@ -1835,11 +1835,11 @@ void BufferQueueProducer::ProducerSurfaceDeathRecipient::OnRemoteDied(const wptr
     producer->OnBufferProducerRemoteDied();
 }
 
-void BufferQueueProducer::SetConnectedPid(int32_t connectedPid)
+void BufferQueueProducer::SetConnectedPidLocked(int32_t connectedPid)
 {
     connectedPid_ = connectedPid;
     if (bufferQueue_) {
-        bufferQueue_->SetConnectedPid(connectedPid_);
+        bufferQueue_->SetConnectedPidLocked(connectedPid_);
     }
 }
 

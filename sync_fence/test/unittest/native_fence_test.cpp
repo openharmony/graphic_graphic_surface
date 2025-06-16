@@ -44,14 +44,14 @@ public:
 };
 
 /*
-* Function: NativeFenceWaitTest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: open a valid fence fd.
-*                  2. operation: call OH_NativeFence_Wait with valid fence fd and timeout.
-*                  3. result: OH_NativeFence_Wait returns false because no event occurred after timeout.
-*/
+ * Function: NativeFenceWaitTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: open a valid fence fd.
+ *                  2. operation: call OH_NativeFence_Wait with valid fence fd and timeout.
+ *                  3. result: OH_NativeFence_Wait returns false because no event occurred after timeout.
+ */
 TEST_F(NativeFenceTest, NativeFenceWaitTest)
 {
     // Test invalid fence fd
@@ -74,15 +74,15 @@ TEST_F(NativeFenceTest, NativeFenceWaitTest)
 }
 
 /*
-* Function: NativeFenceWaitWithSignalTest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: create a valid fence fd by signalfd.
-*                  2. operation: waitThread call OH_NativeFence_Wait with valid fence fd and timeout. \n
-*                                mainThread call kill to send signal after 3 seconds.
-*                  3. result: OH_NativeFence_Wait should return true because has event occurred after 3 seconds.
-*/
+ * Function: NativeFenceWaitWithSignalTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: create a valid fence fd by signalfd.
+ *                  2. operation: waitThread call OH_NativeFence_Wait with valid fence fd and timeout. \n
+ *                                mainThread call kill to send signal after 3 seconds.
+ *                  3. result: OH_NativeFence_Wait should return true because has event occurred after 3 seconds.
+ */
 TEST_F(NativeFenceTest, NativeFenceWaitWithSignalTest)
 {
     // Test invalid fence fd
@@ -128,14 +128,14 @@ TEST_F(NativeFenceTest, NativeFenceWaitWithSignalTest)
 }
 
 /*
-* Function: NativeFenceIsValidTest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: create a valid and invalid fence fd.
-*                  2. operation: call the OH_NativeFence_IsValid with a fence fd.
-*                  3. result: legitimate ID returns true, illegal ID returns false.
-*/
+ * Function: NativeFenceIsValidTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: create a valid and invalid fence fd.
+ *                  2. operation: call the OH_NativeFence_IsValid with a fence fd.
+ *                  3. result: legitimate ID returns true, illegal ID returns false.
+ */
 TEST_F(NativeFenceTest, NativeFenceIsValidTest)
 {
     // Test invalid fence fd
@@ -153,15 +153,48 @@ TEST_F(NativeFenceTest, NativeFenceIsValidTest)
 }
 
 /*
-* Function: NativeFenceWaitForeverWithSignalTest
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: create a valid fence fd by signalfd.
-*                  2. operation: waitThread call OH_NativeFence_WaitForever with valid fence fd and timeout. \n
-*                                mainThread call kill to send signal after 3 seconds.
-*                  3. result: OH_NativeFence_WaitForever should return true because has event occurred after 3 seconds.
-*/
+ * Function: NativeFenceLoopCallInterfaceTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: create a valid fence fd.
+ *                  2. operation: call the OH_NativeFence_IsValid and OH_NativeFence_Close with 1000 times.
+ *                  3. result: Interface execution without crash.
+ */
+TEST_F(NativeFenceTest, NativeFenceLoopCallInterfaceTest)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    for (auto i = 0; i != 1000; i++) { // 1000 represents the number of cycles
+        bool result = OH_NativeFence_IsValid(INVALID_FD);
+        EXPECT_FALSE(result);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "OH_NativeFence_IsValid cost time:   " << duration.count() << "ms" << std::endl;
+    ASSERT_GE(duration.count(), 0);
+
+    start = std::chrono::high_resolution_clock::now();
+    for (auto i = 0; i != 1000; i++) { // 1000 represents the number of cycles
+        int fd = open("/dev/GPIO_TEST", O_RDONLY);
+        ASSERT_GE(fd, 0);
+        OH_NativeFence_Close(fd);
+    }
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "OH_NativeFence_Close cost time:   " << duration.count() << "ms" << std::endl;
+    ASSERT_GE(duration.count(), 0);
+}
+
+/*
+ * Function: NativeFenceWaitForeverWithSignalTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: create a valid fence fd by signalfd.
+ *                  2. operation: waitThread call OH_NativeFence_WaitForever with valid fence fd and timeout. \n
+ *                                mainThread call kill to send signal after 3 seconds.
+ *                  3. result: OH_NativeFence_WaitForever should return true because has event occurred after 3 seconds.
+ */
 TEST_F(NativeFenceTest, NativeFenceWaitForeverWithSignalTest)
 {
     // Test invalid fence fd

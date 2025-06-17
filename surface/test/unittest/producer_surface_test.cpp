@@ -3429,6 +3429,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
             .h = 0x100,
         },
     };
+    auto start = std::chrono::high_resolution_clock::now();
     for (auto i = 0; i != 1000; i++) { // 1000 means loop times
         sptr<SurfaceBuffer> bufferTmp;
         int releaseFence = -1;
@@ -3440,6 +3441,10 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
         ASSERT_NE(bufferTmp, nullptr);
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
+    ASSERT_GE(duration.count(), 100); // 100 means costs time value
 }
 
 /*

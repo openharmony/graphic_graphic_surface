@@ -15,10 +15,12 @@
 
 #include <unistd.h>
 #include <fstream>
-#include <json/json.h>
+#include <sstream>
 #include "config_policy_utils.h"
 #include "buffer_log.h"
 #include "hebc_white_list.h"
+
+#include<cJSON.h>
 
 namespace OHOS {
 namespace {
@@ -33,7 +35,6 @@ static std::once_flag nameFlag_;
 bool HebcWhiteList::Check(const std::string& appName) noexcept
 {
     if (!Init()) {
-        BLOGD("Init failed");
         return false;
     }
     return (std::find(hebcList_.begin(), hebcList_.end(), appName) != hebcList_.end());
@@ -72,28 +73,38 @@ void HebcWhiteList::GetApplicationName(std::string& name) noexcept
 
 bool HebcWhiteList::ParseJson(std::string const &json) noexcept
 {
-    Json::Value root{};
-    Json::Reader reader(Json::Features::all());
     if (json.empty()) {
         return true;
     }
-    
-    if (!reader.parse(json, root)) {
-        BLOGD("parse json failed");
+
+    cJSON *parsed=cJSON_Parse(json.c_str());
+    if(parsed == nullptr) {
         return false;
     }
 
-    if (!root.isMember("HEBC")) {
+    cJSON *hebc = cJSON_GetObjectItem(parsed, "HEBC");
+    if(hebc == nullptr) {
         return true;
     }
-    Json::Value const hebc = root.get("HEBC", Json::Value{});
-    Json::Value const appNameJson = hebc.get("AppName", Json::Value{});
-    unsigned int jsonSize = std::min(appNameJson.size(), MAX_HEBC_WHITELIST_NUMBER);
-    for (unsigned int i = 0; i < jsonSize; i++) {
-        if (appNameJson[i].isString()) {
-            std::string name = appNameJson[i].asString();
+
+    cJSON *appNameJson = cJSON_GetObjectItem(hebc, "AppName");
+    if(!appNameJson) {
+        return true;
+    }
+
+    int appNameCount = 0;
+    if(appNameJson->type == cJSON_Array) {
+        cJSON *item;
+        cJSON_ArrayForEach(item, appNameJson) {
+            if(appNameCount++>MAX_HEBC_WHITELIST_NUMBER){
+                return true;
+            }
+            std::string name(item->valuestring);
             hebcList_.emplace_back(name);
         }
+    } else {
+        std::string name(appNameJson->valuestring);
+        hebcList_.emplace_back(name);
     }
     return true;
 }

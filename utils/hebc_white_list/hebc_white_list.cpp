@@ -20,7 +20,7 @@
 #include "buffer_log.h"
 #include "hebc_white_list.h"
 
-#include<cJSON.h>
+#include <cJSON.h>
 
 namespace OHOS {
 namespace {
@@ -77,26 +77,26 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
         return true;
     }
 
-    cJSON *parsed=cJSON_Parse(json.c_str());
-    if(parsed == nullptr) {
+    cJSON *parsed = cJSON_Parse(json.c_str());
+    if (parsed == nullptr) {
         return false;
     }
 
     cJSON *hebc = cJSON_GetObjectItem(parsed, "HEBC");
-    if(hebc == nullptr) {
+    if (hebc == nullptr) {
         return true;
     }
 
     cJSON *appNameJson = cJSON_GetObjectItem(hebc, "AppName");
-    if(!appNameJson) {
+    if (!appNameJson) {
         return true;
     }
 
     int appNameCount = 0;
-    if(appNameJson->type == cJSON_Array) {
+    if (appNameJson->type == cJSON_Array) {
         cJSON *item;
         cJSON_ArrayForEach(item, appNameJson) {
-            if(appNameCount++>MAX_HEBC_WHITELIST_NUMBER){
+            if (appNameCount++ > MAX_HEBC_WHITELIST_NUMBER) {
                 return true;
             }
             std::string name(item->valuestring);

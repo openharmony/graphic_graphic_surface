@@ -102,7 +102,7 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
             if (item == nullptr || !cJSON_IsString(item) || item->valuestring == nullptr) {
                 continue;
             }
-            if (appNameCount++ > MAX_HEBC_WHITELIST_NUMBER) {
+            if (++appNameCount > MAX_HEBC_WHITELIST_NUMBER) {
                 cJSON_Delete(parsed);
                 return true;
             }

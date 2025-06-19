@@ -99,15 +99,12 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
     if (appNameJson->type == cJSON_Array) {
         cJSON *item;
         cJSON_ArrayForEach(item, appNameJson) {
-            if(item == nullptr) {
+            if(item == nullptr || !cJSON_IsString(item->valuestring)) {
                 continue;
             }
             if (appNameCount++ > MAX_HEBC_WHITELIST_NUMBER) {
                 cJSON_Delete(parsed);
                 return true;
-            }
-            if(!cJSON_IsString(item->valuestring)) {
-                continue;
             }
             std::string name(item->valuestring);
             hebcList_.emplace_back(name);

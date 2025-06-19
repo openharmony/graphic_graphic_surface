@@ -25,7 +25,7 @@ namespace OHOS {
 class MetadataManagerTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase() {}
+    static void TearDownTestCase();
 
     static inline BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -45,6 +45,12 @@ void MetadataManagerTest::SetUpTestCase()
     buffer_ = new SurfaceBufferImpl(0);
     auto ret = buffer_->Alloc(requestConfig);
     ASSERT_EQ(ret, GSERROR_OK);
+}
+
+void MetadataManagerTest::TearDownTestCase()
+{
+    nullBuffer_ = nullptr;
+    buffer_ = nullptr;
 }
 
 /*

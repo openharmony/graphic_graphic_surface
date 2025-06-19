@@ -69,6 +69,8 @@ void BufferQueueProducerRemoteTest::SetUpTestCase()
 
 void BufferQueueProducerRemoteTest::TearDownTestCase()
 {
+    bedata = nullptr;
+    bp = nullptr;
     bqp = nullptr;
     bq = nullptr;
 }

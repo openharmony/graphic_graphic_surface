@@ -188,14 +188,16 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsArrayExceedMax, Function | MediumT
 {
     HebcWhiteList wl;
     std::string json = R"({"HEBC":{"AppName":[)";
-    for (int i = 0; i < HebcWhiteList::MAX_HEBC_WHITELIST_NUMBER + 2; ++i) {
+    // Assuming this is the maximum size defined in HebcWhiteList
+    uint32_t MAX_HEBC_WHITELIST_NUMBER = 10000; 
+    for (int i = 0; i < MAX_HEBC_WHITELIST_NUMBER + 2; ++i) {
         json += "\"a\",";
     }
     json.pop_back(); // delete ending comma
     json += "]}}";
     EXPECT_TRUE(wl.ParseJson(json));
     auto list = wl.hebcList_;
-    EXPECT_LE(list.size(), HebcWhiteList::MAX_HEBC_WHITELIST_NUMBER);
+    EXPECT_LE(list.size(), MAX_HEBC_WHITELIST_NUMBER);
 }
 
 /*

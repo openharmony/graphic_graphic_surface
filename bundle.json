@@ -22,6 +22,7 @@
         "components": [
           "access_token",
           "bounds_checking_function",
+          "cJSON",
           "c_utils",
           "config_policy",
           "drivers_interface_display",
@@ -32,9 +33,7 @@
           "hisysevent",
           "init",
           "ipc",
-          "jsoncpp",
           "samgr",
-          "cJSON",
           "selinux_adapter"
         ]
       },

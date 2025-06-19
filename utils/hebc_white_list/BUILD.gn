@@ -50,7 +50,7 @@ ohos_static_library("hebc_white_list") {
     "c_utils:utils",
     "config_policy:configpolicy_util",
     "hilog:libhilog",
-    "jsoncpp:jsoncpp",
+    "cJSON:cjson",
   ]
 
   subsystem_name = "graphic"

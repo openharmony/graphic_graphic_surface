@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <linux/sync_file.h>
-#include <signal.h>
+#include <csignal>
 #include <sys/ioctl.h>
 #include <sys/signalfd.h>
 #include <thread>
@@ -94,7 +94,7 @@ TEST_F(NativeFenceTest, NativeFenceWaitWithSignalTest)
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT); // Monitor SIGINT signal (Ctrl C)
     sigaddset(&mask, SIGTERM); // Monitor SIGTERM signal (kill command)
-    sigprocmask(SIG_BLOCK, &mask, NULL);
+    sigprocmask(SIG_BLOCK, &mask, nullptr);
     int sfd = signalfd(-1, &mask, 0);
     if (sfd == -1) {
         perror("signalfd failed");
@@ -206,7 +206,7 @@ TEST_F(NativeFenceTest, NativeFenceWaitForeverWithSignalTest)
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT); // Monitor SIGINT signal (Ctrl C)
     sigaddset(&mask, SIGTERM); // Monitor SIGTERM signal (kill command)
-    sigprocmask(SIG_BLOCK, &mask, NULL);
+    sigprocmask(SIG_BLOCK, &mask, nullptr);
 
     int sfd = signalfd(-1, &mask, 0);
     if (sfd == -1) {

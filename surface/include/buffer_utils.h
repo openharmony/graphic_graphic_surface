@@ -115,7 +115,7 @@ static inline bool isBufferUtilPresentTimestampReady(int64_t desiredPresentTimes
     if (desiredPresentTimestamp <= expectPresentTimestamp) {
         return true;
     }
-    uint32_t oneSecondTimestamp = 1e9;
+    int32_t oneSecondTimestamp = 1e9;
     if (desiredPresentTimestamp - oneSecondTimestamp > expectPresentTimestamp) {
         return true;
     }

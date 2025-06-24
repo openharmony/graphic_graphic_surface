@@ -13,10 +13,12 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+#include <fcntl.h>
 #include <surface.h>
 #include <buffer_extra_data_impl.h>
 #include <buffer_queue_producer.h>
 #include "buffer_consumer_listener.h"
+#include "buffer_utils.h"
 #include "consumer_surface.h"
 #include "frame_report.h"
 #include "sync_fence.h"
@@ -348,6 +350,63 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote, TestSize.Level0)
     MessageOption option;
     int32_t ret = bqp_->SetTunnelHandleRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
+* Function: SetTunnelHandleRemote002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelHandleRemote
+*                  2. check ret and errno
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote002, TestSize.Level0)
+{
+    system("mount -o remount, rw /");
+    system("mkdir -p /data/SurfaceTestTmp");
+    system("touch /data/SurfaceTestTmp/test.txt");
+    int32_t fd = -1;
+    {
+        sptr<BufferQueueProducer> tmpBufferQueueProducer = nullptr;
+        sptr<BufferQueue> tmpBufferQueue = nullptr;
+        tmpBufferQueue = new BufferQueue("SetTunnelHandleRemoteTest");
+        sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+        tmpBufferQueue->RegisterConsumerListener(listener);
+        if (tmpBufferQueueProducer == nullptr) {
+            tmpBufferQueueProducer = new BufferQueueProducer(tmpBufferQueue);
+        }
+
+        GraphicExtDataHandle *handle =
+            static_cast<GraphicExtDataHandle *>(malloc(sizeof(GraphicExtDataHandle) + sizeof(int32_t) * 1));
+        EXPECT_NE(handle, nullptr);
+        if (handle) {
+            MessageParcel arguments, reply;
+            MessageOption option;
+            std::string testPath = "/data/SurfaceTestTmp/test.txt";
+            errno = 0; // reset errno
+            fd = open(testPath.c_str(), O_RDONLY);
+            EXPECT_GE(fd, 0);
+            handle->fd = fd;
+            handle->reserveInts = 1;
+            handle->reserve[0] = 0;
+            EXPECT_EQ(arguments.WriteBool(true), true);
+            EXPECT_EQ(WriteExtDataHandle(arguments, handle), GSERROR_OK);
+            EXPECT_EQ(tmpBufferQueueProducer->SetTunnelHandleRemote(arguments, reply, option), ERR_NONE);
+            free(handle);
+            handle = nullptr;
+        }
+    }
+
+    /* tmpBufferQueueProducer and tmpBufferQueue has been destructed,
+     * and the fd dup by WriteExtDataHandle has been closed.
+     * so the global variable errno is expected to be 0.
+     */
+    EXPECT_EQ(errno, 0);
+
+    if (fd > 0) {
+        EXPECT_EQ(close(fd), 0);
+    }
+    system("rm -rf /data/SurfaceTestTmp");
 }
 
 /*

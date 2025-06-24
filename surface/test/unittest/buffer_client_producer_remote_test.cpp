@@ -848,7 +848,9 @@ HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, TestSize.Level0)
         .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
     };
     uint32_t allocBufferCount = 3;
-    ASSERT_EQ(bp->PreAllocBuffers(requestConfigTmp, allocBufferCount), OHOS::GSERROR_OK);
+    GSError ret = bp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    sleep(1); // 给alloc预留内存分配时间
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
 /*

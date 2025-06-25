@@ -874,7 +874,7 @@ private:
     ProducerInitInfo initInfo_ = {0};
     sptr<SurfaceBuffer> preCacheBuffer_ = nullptr;
     sptr<SurfaceBuffer> mLockedBuffer_ = nullptr;
-    Region region_ = {.rectNumber = 0, .rects = nullptr};
+    Region region_ = {.rects = nullptr, .rectNumber = 0};
 };
 } // namespace OHOS
 

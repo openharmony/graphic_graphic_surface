@@ -82,7 +82,7 @@ GSError SurfaceTunnelHandle::SetHandle(const GraphicExtDataHandle *handle)
         BLOGE("AllocExtDataHandle failed");
         return GSERROR_INVALID_OPERATING;
     }
-    tunnelHandle_->fd = handle->fd;
+    tunnelHandle_->fd = dup(handle->fd);
     for (uint32_t index = 0; index < handle->reserveInts; index++) {
         tunnelHandle_->reserve[index] = handle->reserve[index];
     }

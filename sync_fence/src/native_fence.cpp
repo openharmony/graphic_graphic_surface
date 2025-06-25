@@ -34,7 +34,6 @@ bool OH_NativeFence_Wait(int fenceFd, uint32_t timeout)
     }
 
     bool result = fence->Wait(timeout) == 0 ? true : false;
-    close(dupFd);
     return result;
 }
 
@@ -54,7 +53,6 @@ bool OH_NativeFence_WaitForever(int fenceFd)
     }
 
     bool result = fence->Wait(-1) == 0 ? true : false;
-    close(dupFd);
     return result;
 }
 
@@ -74,4 +72,4 @@ void OH_NativeFence_Close(int fenceFd)
     }
 
     close(fenceFd);
-} 
+}

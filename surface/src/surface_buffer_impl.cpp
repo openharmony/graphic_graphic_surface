@@ -95,12 +95,13 @@ SurfaceBufferImpl::SurfaceBufferImpl()
         sequenceNumber_ = (static_cast<uint32_t>(getpid()) & 0xFFFF) << 16;
         // 0xFFFF is seqnum mask.
         sequenceNumber_ |= (sequence_number_++ & 0xFFFF);
+    
+        InitMemMgrMembers();
 
         mutex.unlock();
     }
     metaDataCache_.clear();
     bedata_ = new BufferExtraDataImpl;
-    InitMemMgrMembers();
 
     BLOGD("SurfaceBufferImpl ctor, seq: %{public}u", sequenceNumber_);
 }

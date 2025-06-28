@@ -48,6 +48,7 @@ public:
 
     GSError FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
                         sptr<SyncFence> fence, BufferFlushConfigWithDamages &config) override;
+    GSError SetLppShareFd(int fd, bool state) override;
 
     GSError FlushBuffers(const std::vector<uint32_t> &sequences,
         const std::vector<sptr<BufferExtraData>> &bedata,
@@ -205,6 +206,7 @@ private:
     int32_t ConnectStrictlyRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t UnRegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetLppShareFdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,

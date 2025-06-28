@@ -865,4 +865,22 @@ HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, TestSize
     GSError ret = bp->UnRegisterPropertyListener(0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+/*
+ * Function: SetLppShareFd
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call SetLppShareFd
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetLppShareFd001, TestSize.Level0)
+{
+    int fd = 100;
+    bool state = false;
+    GSError ret = bp->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, OHOS::GSERROR_TYPE_ERROR);
+
+    fd = -1;
+    ret = bp->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
 }

@@ -341,4 +341,23 @@ HWTEST_F(BufferQueueConsumerTest, SetIsActiveGame001, TestSize.Level0)
     bqc->SetIsActiveGame(false);
     bqc->bufferQueue_ = nullptr;
 }
+
+/*
+ * Function: SetLppDrawSource
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: set lpp draw source
+ */
+HWTEST_F(BufferQueueConsumerTest, SetLppDrawSource001, TestSize.Level0)
+{
+    bool isShbDrawLpp = false;
+    bool isRsDrawLpp = false;
+    sptr<BufferQueue> bufferQueue = nullptr;
+    sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);
+    ASSERT_EQ(consumer->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::SURFACE_ERROR_UNKOWN);
+
+    consumer->bufferQueue_ = new BufferQueue("test");
+    ASSERT_EQ(consumer->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
+}
 }

@@ -105,6 +105,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER, RegisterPropertyListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER, UnRegisterPropertyListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, PreAllocBuffersRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_LPP_FD, SetLppShareFdRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -651,6 +652,19 @@ int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arg
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetLppShareFdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    int32_t fd = arguments.ReadFileDescriptor();
+    if (fd < 0) {
+        reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
+        return ERR_INVALID_VALUE;
+    }
+    bool state = arguments.ReadBool();
+    GSError sret = SetLppShareFd(fd, state);
+    reply.WriteInt32(sret);
     return ERR_NONE;
 }
 
@@ -1886,5 +1900,12 @@ GSError BufferQueueProducer::SetFixedRotation(int32_t fixedRotation)
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetFixedRotation(fixedRotation);
+}
+GSError BufferQueueProducer::SetLppShareFd(int fd, bool state)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetLppShareFd(fd, state);
 }
 }; // namespace OHOS

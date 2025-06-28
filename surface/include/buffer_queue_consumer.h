@@ -29,7 +29,7 @@ public:
     virtual ~BufferQueueConsumer();
 
     GSError AcquireBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
-                               int64_t &timestamp, std::vector<Rect> &damages);
+                               int64_t &timestamp, std::vector<Rect> &damages, bool isLppMode = false);
     GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
                           bool isUsingAutoTimestamp);
     GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue);
@@ -97,6 +97,7 @@ public:
     GSError GetMaxQueueSize(uint32_t &queueSize) const;
     GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence> &fence);
     GSError SetIsActiveGame(bool isActiveGame);
+    GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

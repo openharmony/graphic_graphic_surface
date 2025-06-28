@@ -1031,4 +1031,17 @@ GSError BufferClientProducer::PreAllocBuffers(const BufferRequestConfig &config,
     SEND_REQUEST(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, arguments, reply, option);
     return GSERROR_OK;
 }
+
+GSError BufferClientProducer::SetLppShareFd(int fd, bool state)
+{
+    if (fd < 0) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteFileDescriptor(fd) || !arguments.WriteBool(state)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_LPP_FD, arguments, reply, option);
+    return CheckRetval(reply);
+}
 }; // namespace OHOS

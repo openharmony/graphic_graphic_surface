@@ -227,6 +227,12 @@ public:
         (void)allocBufferCount;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError SetLppShareFd(int fd, bool state)
+    {
+        (void)fd;
+        (void)state;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -292,6 +298,7 @@ protected:
         BUFFER_PRODUCER_REGISTER_PROPERTY_LISTENER,
         BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER,
         BUFFER_PRODUCER_PRE_ALLOC_BUFFERS,
+        BUFFER_PRODUCER_SET_LPP_FD,
     };
 };
 } // namespace OHOS

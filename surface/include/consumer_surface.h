@@ -101,6 +101,7 @@ public:
      * @param fence [out] fence fd for asynchronous waiting mechanism.
      * @param timestamp [out] The timestamp of the produced data.
      * @param damage [out] The dirty buffer area set by the producer.
+     * @param isLppMode [in] Normal buffer or LPP buffer.
      * @return {@link GSERROR_OK} 0 - Success.
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      * {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
@@ -108,7 +109,7 @@ public:
      * @see ReleaseBuffer
      */
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                          int64_t &timestamp, std::vector<Rect> &damages) override;
+                          int64_t &timestamp, std::vector<Rect> &damages, bool isLppMode = false) override;
     /**
      * @brief Acquire buffer for data consumed.
      * 
@@ -734,6 +735,15 @@ public:
      * {@link SURFACE_ERROR_UNKOWN} 50002000 - Inner error.
      */
     GSError SetIsActiveGame(bool isActiveGame) override;
+    /**
+     * @brief Set the playback source for Lpp video
+     *
+     * @param isShbSource [in] sensorhub sends video source
+     * @param isRsSource [in] render_service sends video source
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */            
+    GSError SetLppDrawSource(bool isShbSource, bool isRsSource) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

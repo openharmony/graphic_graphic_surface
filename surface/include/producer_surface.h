@@ -829,6 +829,14 @@ public:
      * {@link GSERROR_INVALID_OPERATING} 41201000 - Operate invalid.
      */
     GSError ProducerSurfaceUnlockAndFlushBuffer() override;
+    /**
+     * @brief Set the fd of Lpp shared memory.
+     * @param fd File descriptor.
+     * @param state Link or Unlink.
+     * @return Returns the error code of the request of unlock.
+     * {@link GSERROR_INVALID_OPERATING} 41201000 - Operate invalid.
+     */
+    GSError SetLppShareFd(int fd, bool state) override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);

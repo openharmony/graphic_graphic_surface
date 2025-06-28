@@ -859,4 +859,69 @@ HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, TestSize.Level0)
     int32_t ret = bqp_->GetProducerInitInfoRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_DATA);
 }
+/*
+ * Function: SetLppShareFdRemote
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetLppShareFdRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote001, TestSize.Level0)
+{
+    int fd = 100;
+    bool state = false;
+    MessageParcel arguments;
+    arguments.WriteInterfaceToken(BufferQueueProducer::GetDescriptor());
+    arguments.WriteFileDescriptor(fd);
+    arguments.WriteBool(state);
+    MessageParcel reply;
+    MessageOption option;
+    bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
+    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD,arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
+ * Function: SetLppShareFdRemote
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetLppShareFdRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote002, TestSize.Level0)
+{
+    int fd = -1;
+    bool state = false;
+    MessageParcel arguments;
+    arguments.WriteInterfaceToken(BufferQueueProducer::GetDescriptor());
+    arguments.WriteFileDescriptor(fd);
+    arguments.WriteBool(state);
+    MessageParcel reply;
+    MessageOption option;
+    bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
+    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD,arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+}
+
+/*
+ * Function: SetLppShareFd
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetLppShareFd member function test
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFd001, TestSize.Level0)
+{
+    int fd = 100;
+    bool state = false;
+    sptr<BufferQueue> bqtmp = nullptr;
+    sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
+    int ret = bqtmp->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+
+    bqtmp = new BufferQueue("test");
+    bqptmp->bufferQueue_ = bqtmp;
+    ret = bqptmp->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, GSERROR_TYPE_ERROR);
+}
 }

@@ -21,6 +21,7 @@
 #include <sstream>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/mman.h>
 #include <cinttypes>
 #include <unistd.h>
 #include <parameters.h>
@@ -56,6 +57,9 @@ constexpr int32_t MIN_FRAME_GRAVITY = -1;
 constexpr int32_t MAX_FRAME_GRAVITY = 15;
 constexpr int32_t MIN_FIXED_ROTATION = -1;
 constexpr int32_t MAX_FIXED_ROTATION = 1;
+constexpr int32_t LPP_SLOT_SIZE = 8;
+constexpr int32_t MAX_LPP_SKIP_COUNT = 10;
+static const size_t LPP_SHARED_MEM_SIZE = 0x1000;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -107,6 +111,7 @@ BufferQueue::~BufferQueue()
     for (auto &[id, _] : bufferQueueCache_) {
         OnBufferDeleteForRS(id);
     }
+    SetLppShareFd(lppFd_, false);
 }
 
 uint32_t BufferQueue::GetUsedSize()
@@ -1188,11 +1193,13 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
             it->second.isPreAllocBuffer, sequence, uniqueId_);
         if (it->second.isPreAllocBuffer) {
             bufferQueueCache_.erase(it);
+            lppBufferCache_.erase(sequence);
             DeleteFreeListCacheLocked(sequence);
             return;
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(it);
+        lppBufferCache_.erase(sequence);
         deletingList_.push_back(sequence);
     }
 }
@@ -1306,6 +1313,9 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
     }
     AttachBufferUpdateBufferInfo(buffer, needMap);
     bufferQueueCache_[sequence] = ele;
+    if (sourceType_ == OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO) {
+        lppBufferCache_[sequence] = buffer;
+    }
     return GSERROR_OK;
 }
 
@@ -1334,6 +1344,7 @@ GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType 
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(sequence);
+        lppBufferCache_.erase(sequence);
     } else {
         if (mapIter->second.state != BUFFER_STATE_ACQUIRED) {
             BLOGE("seq: %{public}u, state: %{public}d, uniqueId: %{public}" PRIu64 ".",
@@ -1443,6 +1454,7 @@ GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)
     }
     OnBufferDeleteForRS(sequence);
     bufferQueueCache_.erase(sequence);
+    lppBufferCache_.erase(sequence);
     return GSERROR_OK;
 }
 
@@ -1644,6 +1656,7 @@ void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock)
     }
     bufferQueueCache_.clear();
     freeList_.clear();
+    lppBufferCache_.clear();
     dirtyList_.clear();
     deletingList_.clear();
 }
@@ -2361,6 +2374,7 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
                 }
             }
             bufferQueueCache_.erase(sequence);
+            lppBufferCache_.erase(sequence);
             return ret;
         }
     }
@@ -2574,6 +2588,127 @@ GSError BufferQueue::SetIsActiveGame(bool isActiveGame)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     isActiveGame_ = isActiveGame;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::AcquireLppBuffer(
+    sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO || lppSlotInfo_ == nullptr) {
+        BLOGD("AcquireLppBuffer source is not Lpp");
+        return GSERROR_TYPE_ERROR;
+    }
+    SURFACE_TRACE_NAME_FMT("AcquireLppBuffer name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
+    const auto slotInfo = *lppSlotInfo_;
+    int32_t readOffset = -1;
+    if (slotInfo.readOffset < 0 || slotInfo.readOffset >= LPP_SLOT_SIZE || slotInfo.writeOffset < 0 ||
+        slotInfo.writeOffset >= LPP_SLOT_SIZE) {
+        BLOGI("AcquireLppBuffer name: slotInfo Parameter validation failed");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    if (!isRsDrawLpp_) {
+        readOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+    } else {
+        int32_t maxWriteOffset =
+            (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+        if (slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset) {
+            lppSkipCount_++;
+            return GSERROR_NO_BUFFER;
+        }
+        readOffset = (slotInfo.readOffset + 1) % LPP_SLOT_SIZE;
+    }
+    lppSkipCount_ = 0;
+    const auto bufferSlot = slotInfo.slot[readOffset];
+    lppSlotInfo_->readOffset = readOffset;
+    lastLppWriteOffset_ = slotInfo.writeOffset;
+    uint32_t seqId = bufferSlot.seqId;
+
+    auto bufferPtr = lppBufferCache_.find(seqId);
+    if (bufferPtr == lppBufferCache_.end()) {
+        SURFACE_TRACE_NAME_FMT("AcquireLppBuffer buffer cache no find buffer, seqId = [%d]", seqId);
+        return GSERROR_NO_BUFFER;
+    }
+    buffer = bufferPtr->second;
+    fence = SyncFence::INVALID_FENCE;
+    damages = {{
+        .x = bufferSlot.damage[0],
+        .y = bufferSlot.damage[1],
+        .w = bufferSlot.damage[2],
+        .h = bufferSlot.damage[3],
+    }};
+    timestamp = bufferSlot.timestamp;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetLppShareFd(int fd, bool state)
+{
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO) {
+            BLOGD("SetLowPowerShareBuffer source is not Lpp");
+            return GSERROR_TYPE_ERROR;
+        }
+    }
+    
+    if (state) {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (lppFd_ != -1) {
+            BLOGD("fd cannot be assigned repeatedly");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        void *lppPtr = mmap(nullptr, LPP_SHARED_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        if (lppPtr == nullptr || lppPtr == MAP_FAILED) {
+            BLOGW("SetLowPowerShareBuffer set fd, fd parse error");
+            close(fd);
+            lppFd_ = -1;
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        lppSlotInfo_ = static_cast<LppSlotInfo *>(lppPtr);
+        lppFd_ = fd;
+        BLOGI("SetLowPowerShareBuffer set fd success");
+    } else {
+        FlushLppBuffer();
+        std::unique_lock<std::mutex> lock(mutex_);
+        munmap(static_cast<void *>(lppSlotInfo_), sizeof(LppSlotInfo));
+        close(fd);
+        lppSlotInfo_ = nullptr;
+        BLOGI("SetLowPowerShareBuffer remove fd success");
+        lppFd_ = 0;
+    }
+    return GSERROR_OK;
+}
+
+void BufferQueue::FlushLppBuffer()
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    AcquireLppBuffer(buffer, acquireFence, timestamp, damages);
+    if (buffer == nullptr) {
+        return;
+    }
+    BufferFlushConfigWithDamages cfg{
+        .damages = damages,
+        .timestamp = timestamp,
+        .desiredPresentTimestamp = -1,
+    };
+    FlushBuffer(buffer->GetSeqNum(), buffer->GetExtraData(), acquireFence, cfg);
+}
+
+GSError BufferQueue::SetLppDrawSource(bool isShbSource, bool isRsSource)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO || lppSlotInfo_ == nullptr) {
+        isRsDrawLpp_ = false;
+        return GSERROR_TYPE_ERROR;
+    }
+    if (lppSkipCount_ >= MAX_LPP_SKIP_COUNT) {
+        return GSERROR_OUT_OF_RANGE;
+    }
+    lppSlotInfo_->isStopShbDraw = !isShbSource;
+    isRsDrawLpp_ = isRsSource;
     return GSERROR_OK;
 }
 }; // namespace OHOS

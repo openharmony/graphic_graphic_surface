@@ -1846,7 +1846,7 @@ HWTEST_F(BufferQueueTest, SetLppShareFd002, TestSize.Level0)
 {
     sptr<BufferQueue> tmpBq = new BufferQueue("test");
     bool state = true;
-    int fd = static_cast<int>(open("/dev/lpptest", O_RDWR | O_CREAT, (mode_t)0600));
+    int fd = static_cast<int>(::open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(060)));
     ASSERT_NE(fd, -1);
     ASSERT_NE(ftruncate(fd, 0x1000), -1);
 

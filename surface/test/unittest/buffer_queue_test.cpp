@@ -12,7 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <fcntl.h>
 #include <map>
+#include <sys/mman.h>
 #include <vector>
 #include <gtest/gtest.h>
 #include <surface.h>
@@ -1793,17 +1795,17 @@ HWTEST_F(BufferQueueTest, AcquireLppBufferLock001, TestSize.Level0)
     tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
 
-     tmpBq->lppSlotInfo_->readOffset = 7;
-     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
+    tmpBq->lppSlotInfo_->readOffset = 7;
+    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
 
-     tmpBq->lppSlotInfo_->readOffset = 0;
-     tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset  1;
-     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
+    tmpBq->lppSlotInfo_->readOffset = 0;
+    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset;
+    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
 
-     tmpBq->lppSlotInfo_->readOffset = 7;
-     tmpBq->lppBufferCache_[100] = SurfaceBuffer::Create();
-     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_OK);
-     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    tmpBq->lppSlotInfo_->readOffset = 7;
+    tmpBq->lppBufferCache_[100] = SurfaceBuffer::Create();
+    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_OK);
+    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
 }
 
 /*

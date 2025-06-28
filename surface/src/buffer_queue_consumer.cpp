@@ -35,7 +35,7 @@ GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<Syn
         return SURFACE_ERROR_UNKOWN;
     }
     if (isLppMode) {
-       return bufferQueue_->AcquireLppBuffer(buffer, fence, timestamp, damages);
+        return bufferQueue_->AcquireLppBuffer(buffer, fence, timestamp, damages);
     }
     return bufferQueue_->AcquireBuffer(buffer, fence, timestamp, damages);
 }

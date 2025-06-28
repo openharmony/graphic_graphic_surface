@@ -877,7 +877,7 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote001, TestSize.Level0)
     MessageParcel reply;
     MessageOption option;
     bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
-    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD,arguments, reply, option);
+    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD, arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
 }
 
@@ -899,7 +899,7 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote002, TestSize.Level0)
     MessageParcel reply;
     MessageOption option;
     bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
-    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD,arguments, reply, option);
+    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD, arguments, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
 

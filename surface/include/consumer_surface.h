@@ -742,8 +742,9 @@ public:
      * @param isRsSource [in] render_service sends video source
      * @return {@link GSERROR_OK} 0 - Success.
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
-     */            
+     */
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource) override;
+
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

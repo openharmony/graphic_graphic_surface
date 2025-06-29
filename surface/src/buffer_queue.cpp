@@ -2646,7 +2646,7 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
     {
         std::unique_lock<std::mutex> lock(mutex_);
         if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO) {
-            BLOGD("SetLowPowerShareBuffer source is not Lpp");
+            BLOGD("SetLppShareFd source is not Lpp");
             return GSERROR_TYPE_ERROR;
         }
     }
@@ -2659,22 +2659,26 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
         }
         void *lppPtr = mmap(nullptr, LPP_SHARED_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (lppPtr == nullptr || lppPtr == MAP_FAILED) {
-            BLOGW("SetLowPowerShareBuffer set fd, fd parse error");
+            BLOGW("SetLppShareFd set fd, fd parse error");
             close(fd);
             lppFd_ = -1;
             return GSERROR_INVALID_ARGUMENTS;
         }
         lppSlotInfo_ = static_cast<LppSlotInfo *>(lppPtr);
         lppFd_ = fd;
-        BLOGI("SetLowPowerShareBuffer set fd success");
+        BLOGI("SetLppShareFd set fd success");
     } else {
         FlushLppBuffer();
         std::unique_lock<std::mutex> lock(mutex_);
         munmap(static_cast<void *>(lppSlotInfo_), sizeof(LppSlotInfo));
-        close(fd);
+        auto ret = close(lppFd_);
+        if (ret == -1) {
+            BLOGI("Failed to close fd = [%d]", lppFd_);
+            return GSERROR_OK;
+        }
         lppSlotInfo_ = nullptr;
-        BLOGI("SetLowPowerShareBuffer remove fd success");
-        lppFd_ = 0;
+        BLOGI("SetLppShareFd remove fd success");
+        lppFd_ = -1;
     }
     return GSERROR_OK;
 }

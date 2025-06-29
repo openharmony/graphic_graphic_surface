@@ -2671,10 +2671,10 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
         FlushLppBuffer();
         std::unique_lock<std::mutex> lock(mutex_);
         munmap(static_cast<void *>(lppSlotInfo_), sizeof(LppSlotInfo));
-        auto ret = close(lppFd_);
-        if (ret == -1) {
-            BLOGI("Failed to close fd = [%d]", lppFd_);
-            return GSERROR_OK;
+        auto lppFdRet = close(lppFd_);
+        auto fdRet = close(fd);
+        if (lppFdRet == -1 || fdRet == -1) {
+            BLOGI("Failed to close lppFd_ = [%d], fd = [%d]", lppFd_, fd);
         }
         lppSlotInfo_ = nullptr;
         BLOGI("SetLppShareFd remove fd success");

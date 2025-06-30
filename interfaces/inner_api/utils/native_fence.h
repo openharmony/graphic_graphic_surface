@@ -19,7 +19,6 @@
  *
  * @brief Provides the native fence capability
  *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
  * @since 20
  * @version 1.0
  */
@@ -31,7 +30,7 @@
  *
  * @kit ArkGraphics2D
  * @library libnative_fence.so
- * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @since 20
  * @version 1.0
  */
@@ -48,7 +47,6 @@ extern "C" {
 /**
  * @brief Checks if the fenceFd is valid.
  *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
  * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
  * @return Returns true if the fenceFd is valid.
  *         Returns false if the fenceFd is a negative integer.
@@ -61,10 +59,9 @@ bool OH_NativeFence_IsValid(int fenceFd);
  * @brief Waits for a fence signal. The maximum waiting time is determined by the timeout parameter.
  * The incoming fenceFd needs to be closed by the user themselves.
  *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
  * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
  * @param timeout Indicates the timeout duration.
- * The unit is milliseconds, -1 represents permanent waiting, 0 represents immediate return.
+ * The unit is milliseconds, 0 represents immediate return.
  * @return Returns true if the fence signaled.
  *         Returns false in the following cases:
  *         1.if the fenceFd is a negative integer.
@@ -81,7 +78,6 @@ bool OH_NativeFence_Wait(int fenceFd, uint32_t timeout);
  * @brief Waits forever for a fence signal.
  * The incoming fenceFd needs to be closed by the user themselves.
  *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
  * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
  * @return Returns true if the fence signaled.
  *         Returns false in the following cases:
@@ -96,7 +92,6 @@ bool OH_NativeFence_WaitForever(int fenceFd);
 /**
  * @brief Close the fenceFd.
  *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeFence
  * @param fenceFd Indicates a file descriptor handle, which is used for timing synchronization.
  * This value is a non negative integer.
  * @since 20

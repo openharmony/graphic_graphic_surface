@@ -77,6 +77,20 @@ using BufferElement = struct BufferElement {
     int64_t flushTimeNs;
 };
 
+struct BufferSlot {
+    uint32_t seqId;
+    int64_t timestamp;
+    int32_t damage[4];
+};
+
+struct LppSlotInfo {
+    int32_t readOffset = -1;
+    int32_t writeOffset = -1;
+    BufferSlot slot[8];
+    int32_t frameRate = 0;
+    bool isStopShbDraw = false;
+};
+
 using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;
 
 class SURFACE_HIDDEN BufferQueue : public RefBase {
@@ -238,6 +252,10 @@ public:
     GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence> &fence);
     GSError ReleaseBufferLocked(BufferElement &ele, const sptr<SyncFence> &fence, std::unique_lock<std::mutex> &lock);
     GSError SetIsActiveGame(bool isActiveGame);
+    GSError SetLppShareFd(int fd, bool state);
+    GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
+    GSError AcquireLppBuffer(
+        sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
         std::unique_lock<std::mutex> &lock);
@@ -306,6 +324,7 @@ private:
     GSError SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std::mutex> &lock);
     GSError AcquireBufferLocked(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                 int64_t &timestamp, std::vector<Rect> &damages);
+    void FlushLppBuffer();
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -359,6 +378,14 @@ private:
     std::mutex globalAlphaMutex_;
     std::string requestBufferStateStr_;
     std::string acquireBufferStateStr_;
+    // << Lpp
+    std::map<uint32_t, sptr<SurfaceBuffer>> lppBufferCache_;
+    LppSlotInfo *lppSlotInfo_ = nullptr;
+    int32_t lastLppWriteOffset_ = -1;
+    bool isRsDrawLpp_ = false;
+    int32_t lppFd_ = 0;
+    int32_t lppSkipCount_ = 0;
+    // Lpp >>
     int32_t connectedPid_ = 0;
     bool isAllocatingBuffer_ = false;
     std::condition_variable isAllocatingBufferCon_;

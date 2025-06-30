@@ -3490,4 +3490,27 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
         }
     }
 }
+
+/*
+ * Function: SetLppShareFd
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetLppShareFd
+ */
+HWTEST_F(ProducerSurfaceTest, SetLppShareFd001, TestSize.Level0)
+{
+    int fd = 100;
+    bool state = false;
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<BufferQueueProducer> producer = static_cast<BufferQueueProducer *>((cSurfTmp->GetProducer()).GetRefPtr());
+
+    sptr<IBufferProducer> producer1 = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer1);
+    ASSERT_EQ(pSurfaceTmp->SetLppShareFd(fd, state), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    pSurfaceTmp->producer_ = producer;
+    producer->bufferQueue_ = nullptr;
+    ASSERT_EQ(pSurfaceTmp->SetLppShareFd(fd, state), OHOS::SURFACE_ERROR_UNKOWN);
+}
 }

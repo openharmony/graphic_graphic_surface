@@ -126,6 +126,7 @@ public:
     GSError ConnectStrictly() override;
     GSError DisconnectStrictly() override;
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
+    GSError SetLppShareFd(int fd, bool state) override;
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);

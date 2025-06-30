@@ -237,12 +237,13 @@ public:
         return;
     }
     virtual GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                                  int64_t &timestamp, std::vector<Rect> &damages)
+                                  int64_t &timestamp, std::vector<Rect> &damages, bool isLppMode = false)
     {
         (void)buffer;
         (void)fence;
         (void)timestamp;
         (void)damages;
+        (void)isLppMode;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
@@ -372,6 +373,12 @@ public:
     {
         (void)isActiveGame;
         return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetLppDrawSource(bool isShbSource, bool isRsSource)
+    {
+        (void)isShbSource;
+        (void)isRsSource;
+        return GSERROR_NOT_SUPPORT;
     }
 protected:
     IConsumerSurface() = default;

@@ -1389,4 +1389,12 @@ GSError ProducerSurface::ProducerSurfaceUnlockAndFlushBuffer()
     region_.rects = nullptr;
     return SURFACE_ERROR_OK;
 }
+GSError ProducerSurface::SetLppShareFd(int fd, bool state)
+{
+    if (producer_ == nullptr || fd < 0) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    return producer_->SetLppShareFd(fd, state);
+}
 } // namespace OHOS

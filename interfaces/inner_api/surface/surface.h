@@ -114,6 +114,12 @@ public:
         (void)damage;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError SetLppShareFd(int fd, bool state)
+    {
+        (void)fd;
+        (void)state;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
     {
         (void)buffer;

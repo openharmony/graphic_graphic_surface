@@ -29,10 +29,13 @@ BufferQueueConsumer::~BufferQueueConsumer()
 }
 
 GSError BufferQueueConsumer::AcquireBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-    int64_t &timestamp, std::vector<Rect> &damages)
+    int64_t &timestamp, std::vector<Rect> &damages, bool isLppMode)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
+    }
+    if (isLppMode) {
+        return bufferQueue_->AcquireLppBuffer(buffer, fence, timestamp, damages);
     }
     return bufferQueue_->AcquireBuffer(buffer, fence, timestamp, damages);
 }
@@ -416,5 +419,12 @@ GSError BufferQueueConsumer::GetMaxQueueSize(uint32_t &queueSize) const
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetMaxQueueSize(queueSize);
+}
+GSError BufferQueueConsumer::SetLppDrawSource(bool isShbSource, bool isRsSource)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetLppDrawSource(isShbSource, isRsSource);
 }
 } // namespace OHOS

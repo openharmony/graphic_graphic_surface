@@ -350,12 +350,12 @@ GSError BufferQueueConsumer::GetLastFlushedDesiredPresentTimeStamp(int64_t &last
 }
 
 GSError BufferQueueConsumer::GetFrontDesiredPresentTimeStamp(
-    int64_t &desiredPresentTimeStamp, bool &isAutoTimeStampe) const
+    int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    return bufferQueue_->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStampe);
+    return bufferQueue_->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp);
 }
 
 GSError BufferQueueConsumer::GetBufferSupportFastCompose(bool &bufferSupportFastCompose) const

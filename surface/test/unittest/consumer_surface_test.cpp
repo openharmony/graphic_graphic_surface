@@ -1892,7 +1892,7 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess001, TestSize.Level0)
     std::vector<uint8_t> values;
     buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
     ASSERT_EQ(values.size(), 0);
-    
+
     ret = pSurface->CancelBuffer(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
 
@@ -1905,7 +1905,7 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess001, TestSize.Level0)
     values.clear();
     buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
     ASSERT_EQ(values.size(), 0);
-    
+
     ret = pSurface->CancelBuffer(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
 
@@ -1918,7 +1918,7 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess001, TestSize.Level0)
     values.clear();
     buffer->GetMetadata(V1_1::BufferHandleAttrKey::ATTRKEY_REQUEST_ACCESS_TYPE, values);
     ASSERT_EQ(values.size(), 0);
-    
+
     ret = pSurface->CancelBuffer(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
 }
@@ -1961,7 +1961,7 @@ HWTEST_F(ConsumerSurfaceTest, ConsumerRequestCpuAccess002, TestSize.Level0)
     if (values.size() == 1) {
         ASSERT_EQ(values[0], V1_1::HebcAccessType::HEBC_ACCESS_HW_ONLY);
     }
-    
+
     ret = pSurface->CancelBuffer(buffer);
     ASSERT_EQ(ret, GSERROR_OK);
 
@@ -2205,13 +2205,13 @@ HWTEST_F(ConsumerSurfaceTest, GetLastFlushedDesiredPresentTimeStamp001, TestSize
     ASSERT_EQ(cs->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp), GSERROR_OK);
 }
 
-/*
-* Function: GetFrontDesiredPresentTimeStamp
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
-*/
+/**
+ * Function: GetFrontDesiredPresentTimeStamp001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+ */
 HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp001, Function | MediumTest | Level2)
 {
     int64_t desiredPresentTimeStamp = -1;
@@ -2219,6 +2219,48 @@ HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp001, Function | Med
     bq->dirtyList_.clear();
     bq->bufferQueueCache_.clear();
     ASSERT_EQ(bq->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp), GSERROR_NO_BUFFER);
+}
+
+/**
+ * Function: GetFrontDesiredPresentTimeStamp002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp002, Function | MediumTest | Level2)
+{
+    sptr<ConsumerSurface> tmpConsumerSurface = new ConsumerSurface("test");
+    int64_t desiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
+    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
+        SURFACE_ERROR_UNKOWN);
+
+    sptr<BufferQueue> queue = nullptr;
+    tmpConsumerSurface->consumer_ = new BufferQueueConsumer(queue);
+    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
+        SURFACE_ERROR_UNKOWN);
+}
+
+/**
+ * Function: GetFrontDesiredPresentTimeStamp003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp003, Function | MediumTest | Level2)
+{
+    sptr<ConsumerSurface> tmpConsumerSurface = new ConsumerSurface("test");
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    tmpConsumerSurface->consumer_ = new BufferQueueConsumer(queue);
+
+    uint32_t sequence = 1;
+    int64_t desiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
+    queue->dirtyList_.push_back(sequence);
+    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
+        GSERROR_NO_BUFFER);
 }
 
 /*
@@ -2581,7 +2623,7 @@ HWTEST_F(ConsumerSurfaceTest, DetachBufferFromQueueIsReserveSlot003, TestSize.Le
     }
     ret = cSurface->SetQueueSize(3);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-    
+
     ret = cSurface->SetQueueSize(4);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 

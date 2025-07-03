@@ -354,8 +354,10 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     virtual GSError GetFrontDesiredPresentTimeStamp(
-        [[maybe_unused]] int64_t &desiredPresentTimeStamp, [[maybe_unused]] bool &isAutoTimeStamp) const
+        int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const
     {
+        (void)desiredPresentTimeStamp;
+        (void)isAutoTimeStamp;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue)

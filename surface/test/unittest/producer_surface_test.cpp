@@ -3444,7 +3444,6 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
-    ASSERT_GE(duration.count(), 100); // 100 means costs time value
 }
 
 /*

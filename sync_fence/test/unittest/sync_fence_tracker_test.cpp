@@ -70,6 +70,31 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2
 }
 
 /*
+* Function: TrackFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call TrackFence
+*                  2. check ret
+*/
+HWTEST_F(SyncFenceTrackerTest, TrackFenceTest002, Function | MediumTest | Level2)
+{
+    auto tracker = new SyncFenceTracker("Acquire Fence");
+    sptr<SyncFence> fence = new SyncFence(0);
+    tracker->TrackFence(nullptr, true);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 0);
+ 
+    tracker->isGpuFreq_ = true;
+    tracker->TrackFence(fence, true);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 1);
+ 
+    tracker->isGpuFreq_ = false;
+    tracker->TrackFence(fence, false);
+    EXPECT_EQ(tracker->fencesQueued_.load(), 1);
+    delete tracker;
+}
+
+/*
 * Function: CheckGpuSubhealthEventLimit
 * Type: Function
 * Rank: Important(2)

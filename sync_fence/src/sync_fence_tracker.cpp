@@ -132,6 +132,7 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
     }
     if (isGpuFence_) {
         isGpuFreq_ = OHOS::system::GetBoolParameter("persist.deadline.gpu_freq_enable", true);
+    }
 }
 
 void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)

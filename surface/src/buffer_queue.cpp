@@ -325,7 +325,7 @@ GSError BufferQueue::SetupNewBufferLocked(sptr<SurfaceBuffer> &buffer, sptr<Buff
     BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
-    GSError ret = AllocBuffer(buffer, updateConfig, lock);
+    GSError ret = AllocBuffer(buffer, nullptr, updateConfig, lock);
     if (ret == GSERROR_OK) {
         AddDeletingBuffersLocked(retval.deletingBuffers);
         SetSurfaceBufferHebcMetaLocked(buffer);
@@ -446,10 +446,22 @@ bool BufferQueue::CheckProducerCacheListLocked()
 GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
+    bool isBufferNeedRealloc = false;
+    auto mapIter = bufferQueueCache_.find(retval.sequence);
+    if (mapIter != bufferQueueCache_.end()) {
+        isBufferNeedRealloc = mapIter->second.isBufferNeedRealloc;
+    }
+
     DeleteBufferInCacheNoWaitForAllocatingState(retval.sequence);
 
     sptr<SurfaceBuffer> buffer = nullptr;
-    auto sret = AllocBuffer(buffer, config, lock);
+    GSError sret = GSERROR_OK;
+    if (isBufferNeedRealloc) {
+        sret = AllocBuffer(buffer, retval.buffer, config, lock);
+    } else {
+        sret = AllocBuffer(buffer, nullptr, config, lock);
+    }
+
     if (sret != GSERROR_OK) {
         BLOGE("AllocBuffer failed: %{public}d, uniqueId: %{public}" PRIu64 ".", sret, uniqueId_);
         return sret;
@@ -1106,7 +1118,7 @@ GSError BufferQueue::ReleaseBufferLocked(BufferElement &bufferElement, const spt
     return GSERROR_OK;
 }
 
-GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
+GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SurfaceBuffer>& previousBuffer,
     const BufferRequestConfig &config, std::unique_lock<std::mutex> &lock)
 {
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
@@ -1117,7 +1129,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer,
     int32_t connectedPid = connectedPid_;
     isAllocatingBuffer_ = true;
     lock.unlock();
-    GSError ret = bufferImpl->Alloc(config);
+    GSError ret = bufferImpl->Alloc(config, previousBuffer);
     lock.lock();
     isAllocatingBuffer_ = false;
     isAllocatingBufferCon_.notify_all();
@@ -1879,6 +1891,15 @@ GSError BufferQueue::SetBufferHold(bool hold)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     isBufferHold_ = hold;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetBufferReallocFlag(bool flag)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    for (auto mapIter = bufferQueueCache_.begin(); mapIter != bufferQueueCache_.end(); ++mapIter) {
+        mapIter->second.isBufferNeedRealloc = flag;
+    }
     return GSERROR_OK;
 }
 

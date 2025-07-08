@@ -391,6 +391,11 @@ public:
     {
         (void)hold;
     }
+    virtual GSError SetBufferReallocFlag(bool flag)
+    {
+        (void)flag;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual void SetWindowConfig(const BufferRequestConfig& config)
     {
         (void)config;

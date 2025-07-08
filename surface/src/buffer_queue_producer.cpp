@@ -106,6 +106,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER, UnRegisterPropertyListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, PreAllocBuffersRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_LPP_FD, SetLppShareFdRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -785,6 +786,17 @@ int32_t BufferQueueProducer::SetBufferHoldRemote(MessageParcel &arguments, Messa
 {
     bool hold = arguments.ReadBool();
     GSError sRet = SetBufferHold(hold);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetBufferReallocFlagRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                        MessageOption &option)
+{
+    bool flag = arguments.ReadBool();
+    GSError sRet = SetBufferReallocFlag(flag);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1706,6 +1718,14 @@ GSError BufferQueueProducer::SetBufferHold(bool hold)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->SetBufferHold(hold);
+}
+
+GSError BufferQueueProducer::SetBufferReallocFlag(bool flag)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetBufferReallocFlag(flag);
 }
 
 GSError BufferQueueProducer::SetBufferName(const std::string &bufferName)

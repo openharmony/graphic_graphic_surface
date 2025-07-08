@@ -968,6 +968,14 @@ void ProducerSurface::SetBufferHold(bool hold)
     producer_->SetBufferHold(hold);
 }
 
+GSError ProducerSurface::SetBufferReallocFlag(bool flag)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetBufferReallocFlag(flag);
+}
+
 GSError ProducerSurface::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData>& metaData)
 {
     if (producer_ == nullptr || metaData.size() == 0) {

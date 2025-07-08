@@ -1781,6 +1781,51 @@ HWTEST_F(ProducerSurfaceTest, AcquireLastFlushedBuffer001, TestSize.Level0)
 }
 
 /*
+ * Function: SetBufferReallocFlag
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetBufferReallocFlag and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, SetBufferReallocFlag, Function | MediumTest | Level2)
+{
+    EXPECT_EQ(producer->SetQueueSize(3), OHOS::GSERROR_OK);
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->FlushBuffer(buffer, -1, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<SurfaceBuffer> buffer2;
+    ret = pSurface->RequestBuffer(buffer2, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer3;
+    ret = pSurface->RequestBuffer(buffer3, releaseFence, requestConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t flushFence;
+    ret = csurf->AcquireBuffer(buffer, flushFence, timestamp, damage);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    ret = csurf->ReleaseBuffer(buffer, -1);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    
+    ASSERT_EQ(pSurface->SetBufferReallocFlag(true), OHOS::GSERROR_OK);
+    BufferRequestConfig requestConfigHDR = {
+        .width = 0x200,
+        .height = 0x200,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfigHDR);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_EQ(pSurface->CleanCache(), OHOS::GSERROR_OK);
+}
+
+/*
 * Function: AcquireLastFlushedBuffer and ReleaseLastFlushedBuffer
 * Type: Function
 * Rank: Important(1)
@@ -2317,6 +2362,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, TestSize.Level0)
     ASSERT_EQ(pSurfaceTmp->SetScalingMode(0, scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->SetScalingMode(scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
     pSurfaceTmp->SetBufferHold(false);
+    ASSERT_EQ(pSurfaceTmp->SetBufferReallocFlag(true), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> metaData;
     ASSERT_EQ(pSurfaceTmp->SetMetaData(0, metaData), OHOS::GSERROR_INVALID_ARGUMENTS);
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X ;

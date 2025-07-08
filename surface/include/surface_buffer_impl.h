@@ -33,7 +33,7 @@ public:
     SurfaceBufferImpl(uint32_t seqNum);
     virtual ~SurfaceBufferImpl();
 
-    GSError Alloc(const BufferRequestConfig &config) override;
+    GSError Alloc(const BufferRequestConfig& config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) override;
     GSError Map() override;
     GSError Unmap() override;
     GSError FlushCache() override;

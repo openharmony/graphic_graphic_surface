@@ -297,6 +297,7 @@ HWTEST_F(SurfaceTest, SurfaceTest001, TestSize.Level0)
     EXPECT_EQ(surface->GetDefaultColorGamut(), 0);
     EXPECT_EQ(surface->SetDefaultColorGamut(colorGamut), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->SetBufferName(bufferName), GSERROR_NOT_SUPPORT);
+    EXPECT_EQ(surface->SetBufferReallocFlag(true), GSERROR_NOT_SUPPORT);
 }
 
 /*

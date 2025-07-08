@@ -99,6 +99,11 @@ public:
 
     virtual GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode) = 0;
     virtual GSError SetBufferHold(bool hold) = 0;
+    virtual GSError SetBufferReallocFlag(bool flag)
+    {
+        (void)flag;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError SetBufferName(const std::string &bufferName)
     {
         (void)bufferName;
@@ -299,6 +304,7 @@ protected:
         BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER,
         BUFFER_PRODUCER_PRE_ALLOC_BUFFERS,
         BUFFER_PRODUCER_SET_LPP_FD,
+        BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
     };
 };
 } // namespace OHOS

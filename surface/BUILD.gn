@@ -74,7 +74,7 @@ ohos_shared_library("surface") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_2",
+    "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_3",
     "drivers_interface_display:libdisplay_buffer_proxy_1.0",
     "drivers_interface_display:libdisplay_commontype_proxy_1.0",
     "drivers_interface_display:libdisplay_commontype_proxy_1.1",
@@ -141,7 +141,7 @@ ohos_static_library("surface_static") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_2",
+    "drivers_interface_display:libdisplay_buffer_hdi_impl_v1_3",
     "drivers_interface_display:libdisplay_buffer_proxy_1.0",
     "drivers_interface_display:libdisplay_commontype_proxy_1.0",
     "drivers_interface_display:libdisplay_commontype_proxy_1.1",

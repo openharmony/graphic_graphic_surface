@@ -922,7 +922,7 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, TestSize.Level0)
     {
         std::mutex mutex;
         std::unique_lock<std::mutex> lock(mutex);
-        EXPECT_EQ(bq->AllocBuffer(buffer1, requestConfig, lock), GSERROR_OK);
+        EXPECT_EQ(bq->AllocBuffer(buffer1, nullptr, requestConfig, lock), GSERROR_OK);
     }
     EXPECT_EQ(bq->DetachBuffer(buffer1), GSERROR_OK);
 }

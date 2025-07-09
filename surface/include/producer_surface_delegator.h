@@ -57,7 +57,7 @@ private:
     uint32_t mTransform_ = 0;
     GraphicTransformType mLastTransform_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
     int32_t mAncoDataspace = -1;
-    atomic<bool> mIsNdk{false};
+    std::atomic<bool> mIsNdk{false};
 
     static std::atomic<int32_t> mDisplayRotation_;
 

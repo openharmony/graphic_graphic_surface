@@ -173,7 +173,7 @@ sptr<SurfaceBuffer> ProducerSurfaceDelegator::NdkConvertBuffer(
     return nullptr;
 }
 
-void NdkClearBuffer(int32_t slot, uint32_t seqNum)
+void ProducerSurfaceDelegator::NdkClearBuffer(int32_t slot, uint32_t seqNum)
 {
     mIsNdk = false;
     (void)slot;

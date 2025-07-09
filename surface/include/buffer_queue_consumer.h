@@ -98,6 +98,7 @@ public:
     GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence> &fence);
     GSError SetIsActiveGame(bool isActiveGame);
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
+    GSError SetDropBufferMode(bool enableDrop);
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

@@ -781,4 +781,12 @@ GSError ConsumerSurface::SetLppDrawSource(bool isShbSource, bool isRsSource)
     }
     return consumer_->SetLppDrawSource(isShbSource, isRsSource);
 }
+
+GSError ConsumerSurface::SetDropBufferMode(bool enableDrop)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->SetDropBufferMode(enableDrop);
+}
 } // namespace OHOS

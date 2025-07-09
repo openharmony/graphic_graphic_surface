@@ -382,6 +382,11 @@ public:
         (void)isRsSource;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError SetDropBufferMode(bool enableDrop)
+    {
+        (void)enableDrop;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

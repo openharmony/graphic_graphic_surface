@@ -2659,6 +2659,73 @@ HWTEST_F(ConsumerSurfaceTest, SetMaxQueueSizeAndGetMaxQueueSize001, TestSize.Lev
 }
 
 /*
+* Function: SetDropBufferSwitch001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetDropBufferMode function and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, SetDropBufferSwitch001, TestSize.Level0)
+{
+    sptr<ConsumerSurface> cSurface = new ConsumerSurface("test");
+    cSurface->Init();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    cSurface->consumer_ = nullptr;
+
+    ASSERT_EQ(cSurface->SetDropBufferMode(true), OHOS::SURFACE_ERROR_UNKOWN);
+    cSurface = nullptr;
+}
+
+/*
+* Function: SetDropBufferSwitch002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferToCache and DetachBufferFromCache ret isReserveSlot true function and check
+*/
+HWTEST_F(ConsumerSurfaceTest, SetDropBufferSwitch002, TestSize.Level0)
+{
+    auto cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> cListener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(cListener);
+    auto p = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(p);
+    ASSERT_EQ(cSurface->SetDropBufferMode(true), GSERROR_OK);
+
+    auto ret = cSurface->SetQueueSize(5);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    
+
+    sptr<SurfaceBuffer> buffer[6];
+    int releaseFence = -1;
+    BufferFlushConfig flushConfigTmp = {
+        .damage = {
+            .w = 0x100,
+            .h = 0x100,
+        },
+    };
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGB_888,
+        .usage = BUFFER_USAGE_CPU_READ || BUFFER_USAGE_CPU_WRITE || BUFFER_USAGE_MEM_DMA || BUFFER_USAGE_CPU_HW_BOTH,
+        .timeout = 0,
+    };
+    for (uint32_t i = 0; i < 5; i++) {
+        ret = pSurface->RequestBuffer(buffer[i], releaseFence, config);
+        ASSERT_EQ(ret, GSERROR_OK);
+        ASSERT_NE(buffer[i], nullptr);
+        ret = pSurface->FlushBuffer(buffer[i], -1, flushConfigTmp);
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+
+    pSurface = nullptr;
+    cSurface = nullptr;
+}
+
+/*
  * Function: AcquireBuffer and ReleaseBuffer
  * Type: Function
  * Rank: Important(2)

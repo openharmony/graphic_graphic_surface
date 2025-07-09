@@ -146,7 +146,8 @@ namespace OHOS {
         bufferqueue->CancelBuffer(sequence, bedata);
         sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
         bufferqueue->FlushBuffer(sequence, bedata, syncFence, flushConfig);
-        bufferqueue->DoFlushBuffer(sequence, bedata, syncFence, flushConfig);
+        bool isNeedCallConsumerListener = true;
+        bufferqueue->DoFlushBuffer(sequence, bedata, syncFence, flushConfig, isNeedCallConsumerListener);
         bufferqueue->AcquireBuffer(buffer, syncFence, timestamp, damages);
         bufferqueue->ReleaseBuffer(buffer, syncFence);
         bufferqueue->ListenerBufferReleasedCb(buffer, syncFence);

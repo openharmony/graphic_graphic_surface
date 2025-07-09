@@ -427,4 +427,12 @@ GSError BufferQueueConsumer::SetLppDrawSource(bool isShbSource, bool isRsSource)
     }
     return bufferQueue_->SetLppDrawSource(isShbSource, isRsSource);
 }
+
+GSError BufferQueueConsumer::SetDropBufferMode(bool enableDrop)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetDropBufferMode(enableDrop);
+}
 } // namespace OHOS

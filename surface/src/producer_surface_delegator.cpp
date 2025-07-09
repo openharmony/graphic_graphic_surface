@@ -172,4 +172,11 @@ sptr<SurfaceBuffer> ProducerSurfaceDelegator::NdkConvertBuffer(
     (void)slot;
     return nullptr;
 }
+
+void ProducerSurfaceDelegator::NdkClearBuffer(int32_t slot, uint32_t seqNum)
+{
+    mIsNdk = false;
+    (void)slot;
+    (void)seqNum;
+}
 } // namespace OHOS

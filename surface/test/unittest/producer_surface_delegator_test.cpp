@@ -444,4 +444,21 @@ HWTEST_F(ProducerSurfaceDelegatorTest, NdkConvertBuffer, TestSize.Level0)
     MessageParcel data;
     ASSERT_EQ(qwe->NdkConvertBuffer(data, 0, 0), nullptr);
 }
+
+/*
+ * Function: NdkClearBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call NdkClearBuffer
+ *                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceDelegatorTest, NdkClearBuffer, TestSize.Level0)
+{
+    auto buffer = SurfaceBuffer::Create();
+    int slot = 0;
+    qwe->AddBufferLocked(buffer, slot);
+    qwe->NdkClearBuffer(slot, buffer->GetSeqNum());
+    ASSERT_EQ(qwe->GetSlotLocked(buffer), 0);
+}
 } // namespace OHOS::Rosen

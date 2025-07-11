@@ -321,6 +321,7 @@ using SurfaceBufferUsage = enum {
     BUFFER_USAGE_DRM_REDRAW  = (1ULL << 24),        /**< For drm redraw framebuffer allocate */
     BUFFER_USAGE_GRAPHIC_2D_ACCEL = (1ULL << 25),   /**< 2D graphics accelerator to 3D graphics HW_TEXTURE/HW_RENDER */
     BUFFER_USAGE_PREFER_NO_PADDING = (1ULL << 26),  /**< For no padding buffer, use for CPU | HW_TEXTURE */
+    BUFFER_USAGE_ALLOC_NO_IPC = (1ULL << 27),       /**< For allocmem no ipc binder */
     BUFFER_USAGE_VENDOR_PRI0 = (1ULL << 44),        /**< Reserverd for vendor */
     BUFFER_USAGE_VENDOR_PRI1 = (1ULL << 45),        /**< Reserverd for vendor */
     BUFFER_USAGE_VENDOR_PRI2 = (1ULL << 46),        /**< Reserverd for vendor */

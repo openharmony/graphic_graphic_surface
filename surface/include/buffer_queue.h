@@ -75,6 +75,7 @@ using BufferElement = struct BufferElement {
     int64_t lastAcquireTime;
     int64_t requestTimeNs;
     int64_t flushTimeNs;
+    bool isBufferNeedRealloc = false;
 };
 
 struct BufferSlot {
@@ -168,6 +169,7 @@ public:
     GraphicTransformType GetTransform() const;
 
     GSError SetBufferHold(bool hold);
+    GSError SetBufferReallocFlag(bool flag);
     GSError SetBufferName(const std::string &bufferName);
     inline bool IsBufferHold()
     {
@@ -258,8 +260,8 @@ public:
         sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages);
     GSError SetDropBufferMode(bool enableDrop);
 private:
-    GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const BufferRequestConfig &config,
-        std::unique_lock<std::mutex> &lock);
+    GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
+        const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
     void DeleteBufferInCache(uint32_t sequence, std::unique_lock<std::mutex> &lock);
 
     uint32_t GetUsedSize();

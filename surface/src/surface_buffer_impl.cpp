@@ -24,13 +24,14 @@
 #include <sys/mman.h>
 #include "buffer_log.h"
 #include "buffer_extra_data_impl.h"
+#include "surface_trace.h"
 #include "v1_1/buffer_handle_meta_key_type.h"
 #include "v1_2/display_buffer_type.h"
-#include "v1_2/include/idisplay_buffer.h"
+#include "v1_3/include/idisplay_buffer.h"
 
 namespace OHOS {
 namespace {
-using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_2::IDisplayBuffer>;
+using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_3::IDisplayBuffer>;
 static IDisplayBufferSptr g_displayBuffer;
 static std::mutex g_displayBufferMutex;
 class DisplayBufferDiedRecipient : public OHOS::IRemoteObject::DeathRecipient {
@@ -61,7 +62,7 @@ IDisplayBufferSptr GetOrResetDisplayBuffer()
         return g_displayBuffer;
     }
 
-    g_displayBuffer.reset(OHOS::HDI::Display::Buffer::V1_2::IDisplayBuffer::Get());
+    g_displayBuffer.reset(OHOS::HDI::Display::Buffer::V1_3::IDisplayBuffer::Get());
     if (g_displayBuffer == nullptr) {
         BLOGE("IDisplayBuffer::Get return nullptr.");
         return nullptr;
@@ -166,7 +167,7 @@ bool SurfaceBufferImpl::MetaDataCachedLocked(const uint32_t key, const std::vect
     return false;
 }
 
-GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig& config)
+GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig& config, const sptr<SurfaceBuffer>& previousBuffer)
 {
     IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
     if (displayBuffer == nullptr) {
@@ -186,7 +187,15 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig& config)
     if (debugHebcDisabled) {
         info.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
     }
-    auto dRet = displayBuffer->AllocMem(info, handle_);
+    int32_t dRet = 0;
+    if (previousBuffer != nullptr && previousBuffer->GetBufferHandle() != nullptr) {
+        SURFACE_TRACE_NAME_FMT("Realloc buffer");
+        dRet = displayBuffer->ReAllocMem(info, *(previousBuffer->GetBufferHandle()), handle_);
+        BLOGI("Realloc buffer, %{public}d", dRet);
+    } else {
+        SURFACE_TRACE_NAME_FMT("Alloc buffer");
+        dRet = displayBuffer->AllocMem(info, handle_);
+    }
     if (dRet == GRAPHIC_DISPLAY_SUCCESS && handle_ != nullptr) {
         dRet = displayBuffer->RegisterBuffer(*handle_);
         if (dRet != GRAPHIC_DISPLAY_SUCCESS && dRet != GRAPHIC_DISPLAY_NOT_SUPPORT) {

@@ -719,16 +719,6 @@ GSError BufferClientProducer::SetBufferHold(bool hold)
     return CheckRetval(reply);
 }
 
-GSError BufferClientProducer::SetBufferReallocFlag(bool flag)
-{
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    if (!arguments.WriteBool(flag)) {
-        return GSERROR_BINDER;
-    }
-    SEND_REQUEST(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, arguments, reply, option);
-    return CheckRetval(reply);
-}
-
 GSError BufferClientProducer::SetBufferName(const std::string &bufferName)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);

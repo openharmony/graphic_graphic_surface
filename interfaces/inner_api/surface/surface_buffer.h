@@ -98,22 +98,8 @@ public:
             std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc = nullptr) = 0;
     virtual void SetBufferHandle(BufferHandle *handle) = 0;
 
-    /**
-     * @brief Allocates a surface buffer based on the specified configuration.
-     *
-     * This method allocates a new buffer according to the parameters in the given BufferRequestConfig.
-     * If a previous buffer (`previousBuffer`) is provided, the implementation may attempt to reuse or reallocate
-     * from it to optimize memory usage or performance. If `previousBuffer` is null,
-     * a new buffer is allocated from scratch.
-     * @param config          Buffer configuration including size, format, usage, timeout, color gamut, etc.
-     * @param previousBuffer  Optional previous buffer to be reused or reallocated. If nullptr, no reuse is attempted.
-     * @return Returns:
-     * - GSERROR_OK on successful allocation or reallocation;
-     * - GSERROR_INVALID_ARGUMENTS if the input config is invalid;
-     * - GSERROR_INTERNAL if the internal display buffer is not initialized;
-     * - GSERROR_HDI_ERROR for lower-level allocation or registration failures.
-     */
-    virtual GSError Alloc(const BufferRequestConfig &config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) = 0;
+    // gralloc
+    virtual GSError Alloc(const BufferRequestConfig &config) = 0;
     virtual GSError Map() = 0;
     virtual GSError Unmap() = 0;
     virtual GSError FlushCache() = 0;

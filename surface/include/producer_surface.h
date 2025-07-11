@@ -285,12 +285,6 @@ public:
      */
     void SetBufferHold(bool hold) override;
     /**
-     * @brief Set the Buffer Realloc Flag.
-     * 
-     * @param flag [in] Indicates the switch to bool instance.
-     */
-    GSError SetBufferReallocFlag(bool flag) override;
-    /**
      * @brief Set the User Data for the surface.
      * 
      * @param key [in] Indicates the key of the user data.

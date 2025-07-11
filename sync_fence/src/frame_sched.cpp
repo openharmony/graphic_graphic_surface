@@ -63,6 +63,7 @@ bool FrameSched::LoadLibrary()
     sendFenceIdFunc_ = (SendFenceIdFunc)LoadSymbol("SendFenceId");
     monitorGpuStartFunc_ = (MonitorGpuStartFunc)LoadSymbol("MonitorGpuStart");
     monitorGpuEndFunc_ = (MonitorGpuEndFunc)LoadSymbol("MonitorGpuEnd");
+    isScbSceneFunc_ = (IsScbSceneFunc)LoadSymbol("IsScbScene");
     return true;
 }
 
@@ -76,6 +77,10 @@ void FrameSched::CloseLibrary()
     }
     schedHandle_ = nullptr;
     schedSoLoaded_ = false;
+    sendFenceIdFunc_ = nullptr;
+    monitorGpuStartFunc_ = nullptr;
+    monitorGpuEndFunc_ = nullptr;
+    isScbSceneFunc_ = nullptr;
     LOGI("libframe_ui_intf.so close success!\n");
 }
 
@@ -130,6 +135,16 @@ void FrameSched::MonitorGpuEnd()
         monitorGpuEndFunc_();
     } else {
         LOGE("FrameSched:[MonitorEnd]load MonitorEnd function failed.");
+    }
+}
+
+bool FrameSched::IsScbScene()
+{
+    if (schedSoLoaded_ && isScbSceneFunc_ != nullptr) {
+        return isScbSceneFunc_();
+    } else {
+        LOGE("FrameSched:[IsScbScene]load IsScbScene function failed.");
+        return false;
     }
 }
 

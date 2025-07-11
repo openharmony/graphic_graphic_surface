@@ -142,8 +142,12 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
         return;
     }
     if (isGpuFence_) {
-        bool ret = !traceTag && !isGpuEnable_ && !isGpuFreq_;
-        if (ret) {
+        bool isScbScene = false;
+        if (isGpuFreq_) {
+            isScbScene = Rosen::FrameSched::GetInstance().IsScbScene();
+        }
+        bool needStop = !traceTag && !isGpuEnable_ && !isScbScene;
+        if (needStop) {
             return;
         }
     }

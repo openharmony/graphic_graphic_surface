@@ -27,6 +27,7 @@ using SendFenceIdFunc = void(*)(int);
 using MonitorGpuStartFunc = void(*)(int);
 using MonitorGpuEndFunc = void(*)();
 using SetFrameParamFunc = void(*)(int, int, int, int);
+using IsScbSceneFunc = bool(*)();
 
 class FrameSched {
 public:
@@ -35,6 +36,7 @@ public:
     void SendFenceId(uint32_t fenceId);
     void MonitorGpuStart(uint32_t fenceId);
     void MonitorGpuEnd();
+    bool IsScbScene();
 
 private:
     FrameSched();
@@ -53,6 +55,7 @@ private:
     MonitorGpuStartFunc monitorGpuStartFunc_ = nullptr;
     MonitorGpuEndFunc monitorGpuEndFunc_ = nullptr;
     SetFrameParamFunc setFrameParamFunc_ = nullptr;
+    IsScbSceneFunc isScbSceneFunc_ = nullptr;
 };
 
 } // namespace Rosen

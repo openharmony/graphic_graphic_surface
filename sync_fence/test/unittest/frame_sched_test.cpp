@@ -111,6 +111,33 @@ HWTEST_F(FrameSchedTest, MonitorGpuEnd001, Function | MediumTest | Level2)
 }
 
 /*
+* Function: IsScbScene
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call IsScbScene
+*                  2. check ret
+*/
+HWTEST_F(FrameSchedTest, IsScbScene001, Function | MediumTest | Level2)
+{
+    Rosen::FrameSched frameSched_;
+    frameSched_.isScbSceneFunc_ = nullptr;
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.IsScbScene();
+    EXPECT_EQ(frameSched_.isScbSceneFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
+    frameSched_.IsScbScene();
+    EXPECT_EQ(frameSched_.isScbSceneFunc_, nullptr);
+    frameSched_.LoadLibrary();
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.IsScbScene();
+    EXPECT_NE(frameSched_.isScbSceneFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
+    frameSched_.IsScbScene();
+    EXPECT_NE(frameSched_.isScbSceneFunc_, nullptr);
+}
+
+/*
 * Function: SyncMerge
 * Type: Function
 * Rank: Important(2)

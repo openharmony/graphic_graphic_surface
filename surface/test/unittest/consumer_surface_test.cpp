@@ -2691,6 +2691,7 @@ HWTEST_F(ConsumerSurfaceTest, SetDropBufferSwitch002, TestSize.Level0)
     cSurface->RegisterConsumerListener(cListener);
     auto p = cSurface->GetProducer();
     auto pSurface = Surface::CreateSurfaceAsProducer(p);
+    ASSERT_EQ(cSurface->SetDropBufferMode(false), GSERROR_OK);
     ASSERT_EQ(cSurface->SetDropBufferMode(true), GSERROR_OK);
 
     auto ret = cSurface->SetQueueSize(5);

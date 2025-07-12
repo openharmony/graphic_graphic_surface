@@ -829,9 +829,10 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
                 std::chrono::steady_clock::now().time_since_epoch()).count();
             bufferQueueCache_[sequence].flushTimeNs = endTimeNs - startTimeNs;
         }
-        if (isDropMode_ && dirtyList_.size() != 1) {
+        if ((isDropMode_ && dirtyList_.size() != 1) && !isFirstSetDropModeOpen_) {
             isNeedCallConsumerListener = false;
         }
+        isFirstSetDropModeOpen_ = false;
     }
     return ret;
 }
@@ -2748,6 +2749,9 @@ GSError BufferQueue::SetDropBufferMode(bool enableDrop)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     isDropMode_ = enableDrop;
+    if (enableDrop) {
+        isFirstSetDropModeOpen_ = true;
+    }
     return GSERROR_OK;
 }
 }; // namespace OHOS

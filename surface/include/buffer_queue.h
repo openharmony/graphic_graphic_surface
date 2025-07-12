@@ -402,6 +402,7 @@ private:
     uint32_t maxQueueSize_ = 0;
     bool isActiveGame_ = false;
     bool isDropMode_ = false;
+    bool isFirstSetDropModeOpen_ = false;
 };
 }; // namespace OHOS
 

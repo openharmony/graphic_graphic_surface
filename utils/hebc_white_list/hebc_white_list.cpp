@@ -76,7 +76,6 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
     if (json.empty()) {
         return true;
     }
-
     cJSON *parsed = cJSON_Parse(json.c_str());
     if (parsed == nullptr) {
         BLOGD("cJSON_Parse failed");

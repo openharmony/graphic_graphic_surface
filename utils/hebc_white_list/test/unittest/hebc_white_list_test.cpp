@@ -296,7 +296,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameGraterMaxSize, Function | MediumTest
  * EnvConditions: N/A
  * CaseDescription: 1. preSetup: new hebcWhiteList
  *                     set json with HEBC key
- *                     this AppName is array contains noString and string and max size string
+ *                     this AppName is array contains nonString and string and max size string
  *                  2. operation: ParseJson
  *                  3. result: return Parsonjson true
 *                      hebclist size is json list's size

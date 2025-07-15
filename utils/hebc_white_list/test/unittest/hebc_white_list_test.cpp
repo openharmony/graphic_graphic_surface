@@ -35,7 +35,7 @@ void HebcWhiteListTest::SetUp() {}
 
 void HebcWhiteListTest::TearDown() {}
 
-/*
+/**
  * Function: Check
  * Type: Function
  * Rank: Important(2)
@@ -53,7 +53,7 @@ HWTEST_F(HebcWhiteListTest, Check001, Function | MediumTest | Level2)
     ASSERT_EQ(false, isInHebcList);
 }
 
-/*
+/**
  * Function: GetConfigAbsolutePath
  * Type: Function
  * Rank: Important(2)
@@ -69,7 +69,7 @@ HWTEST_F(HebcWhiteListTest, GetConfigAbsolutePath001, Function | MediumTest | Le
     ASSERT_EQ(false, result.empty());
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -85,7 +85,7 @@ HWTEST_F(HebcWhiteListTest, ParseJson001, Function | MediumTest | Level2)
     ASSERT_EQ(true, hebcWhiteList.ParseJson(emptyJson));
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -101,7 +101,7 @@ HWTEST_F(HebcWhiteListTest, ParseJson002, Function | MediumTest | Level2)
     ASSERT_EQ(false, hebcWhiteList.ParseJson(invalidJson));
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -117,7 +117,7 @@ HWTEST_F(HebcWhiteListTest, ParseJson003, Function | MediumTest | Level2)
     ASSERT_EQ(true, hebcWhiteList.ParseJson(noHebcJson));
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -136,7 +136,7 @@ HWTEST_F(HebcWhiteListTest, ParseJson004, Function | MediumTest | Level2)
     EXPECT_EQ(hebcWhiteList.hebcList_[1], "app2");
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -153,7 +153,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonOtherKey, Function | MediumTest | Level2)
     EXPECT_TRUE(wl.hebcList_.empty());
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -172,7 +172,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonHEBCEmpty, Function | MediumTest | Level2)
     EXPECT_TRUE(wl.hebcList_.empty());
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -190,7 +190,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsArrayExceedMax, Function | MediumT
     std::string json = R"({"HEBC":{"AppName":[)";
     // Assuming this is the maximum size defined in HebcWhiteList
     uint32_t MAX_HEBC_WHITELIST_NUMBER = 10000;
-    for (int i = 0; i < MAX_HEBC_WHITELIST_NUMBER + 2; ++i) {
+    for (uint32_t i = 0; i < MAX_HEBC_WHITELIST_NUMBER + 2; ++i) {
         json += "\"a\",";
     }
     json.pop_back(); // delete ending comma
@@ -200,7 +200,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsArrayExceedMax, Function | MediumT
     EXPECT_LE(list.size(), MAX_HEBC_WHITELIST_NUMBER);
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -224,7 +224,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsArrayContainsNonString, Function |
     EXPECT_EQ(list[1], "b");
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -247,7 +247,7 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsString, Function | MediumTest | Le
     EXPECT_EQ(list[0], "abc");
 }
 
-/*
+/**
  * Function: ParseJson
  * Type: Function
  * Rank: Important(2)
@@ -265,5 +265,52 @@ HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsOtherType, Function | MediumTest |
     std::string json = R"({"HEBC":{"AppName":123}})";
     EXPECT_TRUE(wl.ParseJson(json));
     EXPECT_TRUE(wl.hebcList_.empty());
+}
+
+/**
+ * Function: ParseJson
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetup: new hebcWhiteList
+ *                     set json with HEBC key
+ *                     this AppName's size is 1024
+ *                  2. operation: ParseJson
+ *                  3. result: return Parsonjson true
+ *                     hebclist size is empty
+ */
+HWTEST_F(HebcWhiteListTest, ParseJsonAppNameGraterMaxSize, Function | MediumTest | Level2)
+{
+    HebcWhiteList wl;
+    const uint32_t MAX_APP_NAME_SIZE = 1024;
+    std::string longStr(MAX_APP_NAME_SIZE + 1, 'a');
+    std::string json = "{\"HEBC\":{\"AppName\":\"" + longStr + "\"}}";
+    EXPECT_TRUE(wl.ParseJson(json));
+    EXPECT_TRUE(wl.hebcList_.empty());
+}
+
+/**
+ * Function: ParseJson
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetup: new hebcWhiteList
+ *                     set json with HEBC key
+ *                     this AppName is array contains noString and string and max size string
+ *                  2. operation: ParseJson
+ *                  3. result: return Parsonjson true
+*                      hebclist size is json list's size
+ *                     AppName only Contains String values
+ */
+HWTEST_F(HebcWhiteListTest, ParseJsonAppNameIsArrayContainsMaxSizeString, Function | MediumTest | Level2)
+{
+    HebcWhiteList wl;
+    const uint32_t MAX_APP_NAME_SIZE = 1024;
+    std::string longStr(MAX_APP_NAME_SIZE + 1, 'a');
+    std::string json = "{\"HEBC\":{\"AppName\":[\"a\",123,\"" + longStr + "\"]}}";
+    EXPECT_TRUE(wl.ParseJson(json));
+    auto list = wl.hebcList_;
+    EXPECT_EQ(list.size(), 1);
+    EXPECT_EQ(list[0], "a");
 }
 } // namespace OHOS::Rosen

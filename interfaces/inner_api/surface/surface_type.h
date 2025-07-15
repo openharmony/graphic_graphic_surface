@@ -318,6 +318,7 @@ using SurfaceBufferUsage = enum {
     BUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16),     /**< CPU read often buffer */
     BUFFER_USAGE_CPU_HW_BOTH = (1ULL << 17),        /**< CPU read often buffer */
     BUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),      /**< 512 bytes alignment */
+    BUFFER_USAGE_AUXILLARY_BUFFER0 = (1ULL << 20),  /**< reserved for individual meta size */
     BUFFER_USAGE_DRM_REDRAW  = (1ULL << 24),        /**< For drm redraw framebuffer allocate */
     BUFFER_USAGE_GRAPHIC_2D_ACCEL = (1ULL << 25),   /**< 2D graphics accelerator to 3D graphics HW_TEXTURE/HW_RENDER */
     BUFFER_USAGE_PREFER_NO_PADDING = (1ULL << 26),  /**< For no padding buffer, use for CPU | HW_TEXTURE */

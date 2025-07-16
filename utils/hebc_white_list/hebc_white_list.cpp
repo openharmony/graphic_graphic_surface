@@ -76,7 +76,6 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
     if (json.empty()) {
         return true;
     }
-
     cJSON *parsed = cJSON_Parse(json.c_str());
     if (parsed == nullptr) {
         BLOGD("cJSON_Parse failed");
@@ -95,11 +94,12 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
         return true;
     }
 
-    int appNameCount = 0;
+    uint32_t appNameCount = 0;
     if (appNameJson->type == cJSON_Array) {
         cJSON *item;
         cJSON_ArrayForEach(item, appNameJson) {
-            if (item == nullptr || !cJSON_IsString(item) || item->valuestring == nullptr) {
+            if (item == nullptr || !cJSON_IsString(item) || item->valuestring == nullptr ||
+                strlen(item->valuestring) > MAX_APP_NAME_SIZE) {
                 continue;
             }
             if (++appNameCount > MAX_HEBC_WHITELIST_NUMBER) {
@@ -110,7 +110,8 @@ bool HebcWhiteList::ParseJson(std::string const &json) noexcept
             hebcList_.emplace_back(name);
         }
     } else {
-        if (cJSON_IsString(appNameJson) && appNameJson->valuestring != nullptr) {
+        if (cJSON_IsString(appNameJson) && appNameJson->valuestring != nullptr &&
+            strlen(appNameJson->valuestring) <= MAX_APP_NAME_SIZE) {
             std::string name(appNameJson->valuestring);
             hebcList_.emplace_back(name);
         }

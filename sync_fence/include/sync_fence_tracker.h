@@ -42,6 +42,7 @@ private:
     const std::string threadName_;
     bool isGpuFence_ = false;
     bool isGpuEnable_ = false;
+    bool isGpuFreq_ = false;
     std::shared_ptr<OHOS::AppExecFwk::EventRunner> runner_ = nullptr;
     std::shared_ptr<OHOS::AppExecFwk::EventHandler> handler_ = nullptr;
     std::atomic<uint32_t> fencesQueued_;

@@ -755,7 +755,7 @@ public:
     /**
      * @brief Get the alpha type for the surface.
      *
-     * @param alphaType [in] the alpha typ
+     * @param alphaType [in] the alpha type
      * @return {@link GSERROR_OK} 0 - Success.
      * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
      */

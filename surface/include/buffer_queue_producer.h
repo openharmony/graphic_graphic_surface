@@ -139,6 +139,7 @@ public:
     GSError ConnectStrictly() override;
     GSError DisconnectStrictly() override;
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
+    GSError SetAlphaType(GraphicAlphaType alphaType) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -209,6 +210,7 @@ private:
     int32_t RegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t UnRegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetLppShareFdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetAlphaTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,

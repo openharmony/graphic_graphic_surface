@@ -435,4 +435,12 @@ GSError BufferQueueConsumer::SetDropBufferMode(bool enableDrop)
     }
     return bufferQueue_->SetDropBufferMode(enableDrop);
 }
+
+GSError BufferQueueConsumer::GetAlphaType(GraphicAlphaType &alphaType)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetAlphaType(alphaType);
+}
 } // namespace OHOS

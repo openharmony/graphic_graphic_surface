@@ -3558,4 +3558,25 @@ HWTEST_F(ProducerSurfaceTest, SetLppShareFd001, TestSize.Level0)
     producer->bufferQueue_ = nullptr;
     ASSERT_EQ(pSurfaceTmp->SetLppShareFd(fd, state), OHOS::SURFACE_ERROR_UNKOWN);
 }
+
+/*
+ * Function: SetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetAlphaType
+ */
+HWTEST_F(ProducerSurfaceTest, SetAlphaType, TestSize.Level0)
+{
+    GraphicAlphaType alphaType = GraphicAlphaType::GRAPHIC_ALPHATYPE_OPAQUE;
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<BufferQueueProducer> producer = static_cast<BufferQueueProducer *>((cSurfTmp->GetProducer()).GetRefPtr());
+
+    sptr<IBufferProducer> producer1 = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer1);
+    ASSERT_EQ(pSurfaceTmp->SetAlphaType(alphaType), OHOS::SURFACE_ERROR_UNKOWN);
+
+    pSurfaceTmp->producer_ = producer;
+    ASSERT_NE(pSurfaceTmp->SetAlphaType(alphaType), OHOS::SURFACE_ERROR_UNKOWN);
+}
 }

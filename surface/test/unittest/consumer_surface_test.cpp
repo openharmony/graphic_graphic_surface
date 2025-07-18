@@ -2839,4 +2839,31 @@ HWTEST_F(ConsumerSurfaceTest, SetIsActiveGame001, TestSize.Level0)
     surface_->consumer_ = nullptr;
     surface_ = nullptr;
 }
+
+/*
+ * Function: GetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: GetAlphaType
+ */
+HWTEST_F(ConsumerSurfaceTest, GetAlphaTypeTest, TestSize.Level0)
+{
+    GraphicAlphaType alphaType;
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+
+    // consumer_ is nullptr
+    surface_->consumer_ = nullptr;
+    ASSERT_EQ(surface_->GetAlphaType(alphaType), SURFACE_ERROR_UNKOWN);
+    // consumer_ is not nullptr
+    sptr<BufferQueue> bufferQueue1 = nullptr;
+    surface_->consumer_ = new BufferQueueConsumer(bufferQueue1);
+    ASSERT_EQ(surface_->GetAlphaType(alphaType), SURFACE_ERROR_UNKOWN);
+
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(tmpBq);
+    ASSERT_NE(surface_->GetAlphaType(alphaType), SURFACE_ERROR_UNKOWN);
+    surface_ = nullptr;
+}
 }

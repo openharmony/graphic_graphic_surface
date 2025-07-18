@@ -1405,4 +1405,12 @@ GSError ProducerSurface::SetLppShareFd(int fd, bool state)
 
     return producer_->SetLppShareFd(fd, state);
 }
+
+GSError ProducerSurface::SetAlphaType(GraphicAlphaType alphaType)
+{
+    if (producer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return producer_->SetAlphaType(alphaType);
+}
 } // namespace OHOS

@@ -99,6 +99,7 @@ public:
     GSError SetIsActiveGame(bool isActiveGame);
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
     GSError SetDropBufferMode(bool enableDrop);
+    GSError GetAlphaType(GraphicAlphaType &alphaType);
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

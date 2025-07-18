@@ -843,6 +843,14 @@ public:
      * {@link GSERROR_INVALID_OPERATING} 41201000 - Operate invalid.
      */
     GSError SetLppShareFd(int fd, bool state) override;
+    /**
+     * @brief Set the alpha type for the surface.
+     *
+     * @param alphaType [in] the alpha type
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
+     */
+    GSError SetAlphaType(GraphicAlphaType alphaType) override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);

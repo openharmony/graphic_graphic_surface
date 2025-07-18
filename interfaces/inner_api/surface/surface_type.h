@@ -541,6 +541,13 @@ using GraphicExtDataHandle = struct {
     /**< the reserved data */
     int32_t reserve[0];
 };
+
+using GraphicAlphaType = enum {
+    GRAPHIC_ALPHATYPE_UNKNOWN = 0,
+    GRAPHIC_ALPHATYPE_OPAQUE,
+    GRAPHIC_ALPHATYPE_PREMUL,
+    GRAPHIC_ALPHATYPE_UNPREMUL,
+};
 } // namespace OHOS
 
 #endif // INTERFACES_INNERKITS_SURFACE_SURFACE_TYPE_H

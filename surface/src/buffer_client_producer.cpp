@@ -1054,4 +1054,14 @@ GSError BufferClientProducer::SetLppShareFd(int fd, bool state)
     SEND_REQUEST(BUFFER_PRODUCER_SET_LPP_FD, arguments, reply, option);
     return CheckRetval(reply);
 }
+
+GSError BufferClientProducer::SetAlphaType(GraphicAlphaType alphaType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteInt32(alphaType)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_ALPHA_TYPE, arguments, reply, option);
+    return CheckRetval(reply);
+}
 }; // namespace OHOS

@@ -248,6 +248,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     bool bufferSupportFastCompose = false;
     int64_t frontDesiredPresentTimeStamp = -1;
     bool isAutoTimeStamp = false;
+    GraphicAlphaType alphaType = GraphicAlphaType::GRAPHIC_ALPHATYPE_UNKNOWN;
     ASSERT_EQ(consumer->AcquireBuffer(buffer, fence, timestamp, damages), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->ReleaseBuffer(buffer, fence), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->AttachBufferToQueue(buffer), OHOS::SURFACE_ERROR_UNKOWN);
@@ -290,6 +291,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     ASSERT_EQ(consumer->GetFrontDesiredPresentTimeStamp(
         frontDesiredPresentTimeStamp, isAutoTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->SetDropBufferMode(true), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetAlphaType(alphaType), OHOS::SURFACE_ERROR_UNKOWN);
 }
 
 /*
@@ -360,5 +362,20 @@ HWTEST_F(BufferQueueConsumerTest, SetLppDrawSource001, TestSize.Level0)
 
     consumer->bufferQueue_ = new BufferQueue("test");
     ASSERT_EQ(consumer->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
+}
+
+/*
+ * Function: GetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: get alpha type
+ */
+HWTEST_F(BufferQueueConsumerTest, GetAlphaTypeTest, TestSize.Level0)
+{
+    sptr<BufferQueue> bufferQueue = new BufferQueue("test");
+    sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);
+    GraphicAlphaType alphaType;
+    ASSERT_EQ(consumer->GetAlphaType(alphaType), OHOS::GSERROR_OK);
 }
 }

@@ -107,6 +107,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, PreAllocBuffersRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_LPP_FD, SetLppShareFdRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ALPHA_TYPE, SetAlphaTypeRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -1176,6 +1177,18 @@ int32_t BufferQueueProducer::SetFixedRotationRemote(MessageParcel &arguments,
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::SetAlphaTypeRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    GraphicAlphaType alphaType = static_cast<GraphicAlphaType>(arguments.ReadInt32());
+    auto ret = SetAlphaType(alphaType);
+    if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+
+    return ERR_NONE;
+}
+
 GSError BufferQueueProducer::RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
     RequestBufferReturnValue& retval)
 {
@@ -1927,5 +1940,13 @@ GSError BufferQueueProducer::SetLppShareFd(int fd, bool state)
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetLppShareFd(fd, state);
+}
+
+GSError BufferQueueProducer::SetAlphaType(GraphicAlphaType alphaType)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetAlphaType(alphaType);
 }
 }; // namespace OHOS

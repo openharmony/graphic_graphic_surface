@@ -259,6 +259,8 @@ public:
     GSError AcquireLppBuffer(
         sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages);
     GSError SetDropBufferMode(bool enableDrop);
+    GSError SetAlphaType(GraphicAlphaType alphaType);
+    GSError GetAlphaType(GraphicAlphaType &alphaType);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -403,6 +405,7 @@ private:
     bool isActiveGame_ = false;
     bool isDropMode_ = false;
     bool isFirstSetDropModeOpen_ = false;
+    GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
 };
 }; // namespace OHOS
 

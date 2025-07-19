@@ -238,6 +238,11 @@ public:
         (void)state;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError SetAlphaType(GraphicAlphaType alphaType)
+    {
+        (void)alphaType;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -305,6 +310,7 @@ protected:
         BUFFER_PRODUCER_PRE_ALLOC_BUFFERS,
         BUFFER_PRODUCER_SET_LPP_FD,
         BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
+        BUFFER_PRODUCER_SET_ALPHA_TYPE,
     };
 };
 } // namespace OHOS

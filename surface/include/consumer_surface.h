@@ -752,6 +752,14 @@ public:
      * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
      */
     GSError SetDropBufferMode(bool enableDrop) override;
+    /**
+     * @brief Get the alpha type for the surface.
+     *
+     * @param alphaType [in] the alpha type
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
+     */
+    GSError GetAlphaType(GraphicAlphaType &alphaType) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

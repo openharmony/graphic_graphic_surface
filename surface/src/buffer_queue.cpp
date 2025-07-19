@@ -2754,4 +2754,23 @@ GSError BufferQueue::SetDropBufferMode(bool enableDrop)
     }
     return GSERROR_OK;
 }
+
+GSError BufferQueue::SetAlphaType(GraphicAlphaType alphaType)
+{
+    if (alphaType < GraphicAlphaType::GRAPHIC_ALPHATYPE_UNKNOWN ||
+        alphaType > GraphicAlphaType::GRAPHIC_ALPHATYPE_UNPREMUL) {
+        BLOGE("Set alpha Type: %{public}d failed", alphaType);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    alphaType_ = alphaType;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetAlphaType(GraphicAlphaType &alphaType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    alphaType = alphaType_;
+    return GSERROR_OK;
+}
 }; // namespace OHOS

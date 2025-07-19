@@ -1911,4 +1911,51 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
     tmpBq->lppSkipCount_ = 0;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OK);
 }
+
+/*
+ * Function: SetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call SetAlphaType
+ */
+HWTEST_F(BufferQueueTest, SetAlphaTypeTest, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+    GraphicAlphaType alphaType = static_cast<GraphicAlphaType>(-1);
+    ASSERT_EQ(tmpBq->SetAlphaType(alphaType), OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    alphaType = static_cast<GraphicAlphaType>(0);
+    ASSERT_EQ(tmpBq->SetAlphaType(alphaType), OHOS::GSERROR_OK);
+
+    alphaType = static_cast<GraphicAlphaType>(1);
+    ASSERT_EQ(tmpBq->SetAlphaType(alphaType), OHOS::GSERROR_OK);
+
+    alphaType = static_cast<GraphicAlphaType>(2);
+    ASSERT_EQ(tmpBq->SetAlphaType(alphaType), OHOS::GSERROR_OK);
+
+    alphaType = static_cast<GraphicAlphaType>(3);
+    ASSERT_EQ(tmpBq->SetAlphaType(alphaType), OHOS::GSERROR_OK);
+
+    alphaType = static_cast<GraphicAlphaType>(4);
+    ASSERT_EQ(tmpBq->SetAlphaType(alphaType), OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: GetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call GetAlphaType
+ */
+HWTEST_F(BufferQueueTest, GetAlphaTypeTest, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+    GraphicAlphaType tmpAlphaType = static_cast<GraphicAlphaType>(1);
+    ASSERT_EQ(tmpBq->SetAlphaType(tmpAlphaType), OHOS::GSERROR_OK);
+
+    GraphicAlphaType alphaType;
+    ASSERT_EQ(tmpBq->GetAlphaType(alphaType), OHOS::GSERROR_OK);
+    ASSERT_EQ(alphaType, GraphicAlphaType::GRAPHIC_ALPHATYPE_OPAQUE);
+}
 }

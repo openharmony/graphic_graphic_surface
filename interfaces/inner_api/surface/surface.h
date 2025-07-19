@@ -622,6 +622,16 @@ public:
         (void)fence;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError GetAlphaType(GraphicAlphaType &alphaType)
+    {
+        (void)alphaType;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetAlphaType(GraphicAlphaType alphaType)
+    {
+        (void)alphaType;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
 };

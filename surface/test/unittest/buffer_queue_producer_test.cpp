@@ -723,6 +723,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->SetFixedRotation(-1), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->PreAllocBuffers(config, 0), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetRequestBufferNoblockMode(true), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->SetAlphaType(GraphicAlphaType::GRAPHIC_ALPHATYPE_UNKNOWN), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
 }
@@ -923,5 +924,40 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFd001, TestSize.Level0)
     bqptmp->bufferQueue_ = bqtmp;
     ret = bqptmp->SetLppShareFd(fd, state);
     ASSERT_EQ(ret, GSERROR_TYPE_ERROR);
+}
+
+
+/*
+ * Function: SetAlphaTypeRemote
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call SetAlphaTypeRemote
+ */
+HWTEST_F(BufferQueueProducerTest, SetAlphaTypeRemote, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(1);
+    MessageParcel reply;
+    reply.WriteInt32(2);
+    MessageOption option;
+    int32_t ret = bqp_->SetAlphaTypeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
+ * Function: SetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetAlphaType member function test
+ */
+HWTEST_F(BufferQueueProducerTest, SetAlphaTypeTest, TestSize.Level0)
+{
+    GraphicAlphaType alphaType = GraphicAlphaType::GRAPHIC_ALPHATYPE_OPAQUE;
+    sptr<BufferQueue> bqtmp = new BufferQueue("test");
+    sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
+    int ret = bqptmp->SetAlphaType(alphaType);
+    ASSERT_EQ(ret, GSERROR_OK);
 }
 }

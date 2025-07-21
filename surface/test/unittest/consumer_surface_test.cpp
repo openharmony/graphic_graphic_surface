@@ -2866,4 +2866,27 @@ HWTEST_F(ConsumerSurfaceTest, GetAlphaTypeTest, TestSize.Level0)
     ASSERT_NE(surface_->GetAlphaType(alphaType), SURFACE_ERROR_UNKOWN);
     surface_ = nullptr;
 }
+
+/*
+ * Function: SetIsPriorityAlloc
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsPriorityAlloc and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, SetIsPriorityAlloc001, TestSize.Level0)
+{
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+    bool isPriorityAlloc = false;
+    // consumer_ is nullptr
+    surface_->consumer_ = nullptr;
+    surface_->SetIsPriorityAlloc(isPriorityAlloc);
+    // consumer_ is not nullptr
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    surface_->SetIsPriorityAlloc(isPriorityAlloc);
+    queue = nullptr;
+    surface_->consumer_ = nullptr;
+}
 }

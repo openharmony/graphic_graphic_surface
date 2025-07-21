@@ -1958,4 +1958,104 @@ HWTEST_F(BufferQueueTest, GetAlphaTypeTest, TestSize.Level0)
     ASSERT_EQ(tmpBq->GetAlphaType(alphaType), OHOS::GSERROR_OK);
     ASSERT_EQ(alphaType, GraphicAlphaType::GRAPHIC_ALPHATYPE_OPAQUE);
 }
+
+/*
+ * Function: SetIsPriorityAlloc
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsPriorityAlloc and check value
+ */
+HWTEST_F(BufferQueueTest, SetIsPriorityAlloc001, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    ASSERT_EQ(bqTmp->SetQueueSize(1), GSERROR_OK);
+
+    bqTmp->SetIsPriorityAlloc(true);
+    ASSERT_EQ(bqTmp->isPriorityAlloc_, true);
+    bqTmp->SetIsPriorityAlloc(false);
+    bqTmp = nullptr;
+}
+
+/*
+ * Function: SetIsPriorityAlloc
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsPriorityAlloc and check value
+ */
+HWTEST_F(BufferQueueTest, SetIsPriorityAlloc002, TestSize.Level0)
+{
+    sptr<BufferQueue> bqTest = new BufferQueue("test");
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    bqTest->RegisterConsumerListener(listener);
+
+    IBufferProducer::RequestBufferReturnValue retval;
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    IBufferProducer::RequestBufferReturnValue retval3;
+
+    BufferRequestConfig requestConfigTest = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 5000,
+    };
+    bqTest->SetQueueSize(3);
+    bqTest->SetIsPriorityAlloc(true);
+    // fisrt request buffer
+    GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval.sequence, 0);
+    ASSERT_NE(retval.buffer, nullptr);
+    ASSERT_EQ(bqTest->GetUsedSize(), 1);
+
+    ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval1.sequence, 0);
+    ASSERT_NE(retval1.buffer, nullptr);
+    ASSERT_EQ(bqTest->GetUsedSize(), 2);
+    // used buffer queue size is max
+    ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval2.sequence, 0);
+    ASSERT_NE(retval2.buffer, nullptr);
+    ASSERT_EQ(bqTest->GetUsedSize(), 3);
+    
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bqTest->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bqTest->GetUsedSize(), 3);
+
+    ret = bqTest->FlushBuffer(retval1.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bqTest->GetUsedSize(), 3);
+
+    ret = bqTest->FlushBuffer(retval2.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bqTest->GetUsedSize(), 3);
+
+    ret = bqTest->AcquireBuffer(retval.buffer, retval.fence, timestamp, damages);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+
+    uint8_t *addr2 = reinterpret_cast<uint8_t*>(retval.buffer->GetVirAddr());
+    ASSERT_NE(addr2, nullptr);
+
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    ret = bqTest->ReleaseBuffer(retval.buffer, releaseFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    // reuse
+    ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(retval.sequence, 0);
+    ASSERT_EQ(retval.buffer, nullptr);
+    ASSERT_EQ(bqTest->GetUsedSize(), 3);
+
+    ret = bqTest->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bqTest->GetUsedSize(), 3);
+}
 }

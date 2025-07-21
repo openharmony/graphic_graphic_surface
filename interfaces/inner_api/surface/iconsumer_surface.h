@@ -387,6 +387,11 @@ public:
         (void)enableDrop;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError SetIsPriorityAlloc(bool isPriorityAlloc)
+    {
+        (void)isPriorityAlloc;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

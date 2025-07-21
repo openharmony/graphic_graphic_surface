@@ -21,13 +21,20 @@
 #include <queue>
 #include "sync_fence.h"
 
+namespace ffrt {
+class queue;
+}
+
 namespace OHOS {
 class SyncFenceTracker {
 public:
     explicit SyncFenceTracker(const std::string threadName);
 
     SyncFenceTracker() = delete;
-    ~SyncFenceTracker() = default;
+    ~SyncFenceTracker()
+    {
+        queue_ = nullptr;
+    }
 
     void TrackFence(const sptr<SyncFence>& fence, bool traceTag = true);
     void SetBlurSize(int32_t blurSize);
@@ -43,8 +50,7 @@ private:
     bool isGpuFence_ = false;
     bool isGpuEnable_ = false;
     bool isGpuFreq_ = false;
-    std::shared_ptr<OHOS::AppExecFwk::EventRunner> runner_ = nullptr;
-    std::shared_ptr<OHOS::AppExecFwk::EventHandler> handler_ = nullptr;
+    std::shared_ptr<ffrt::queue> queue_ = nullptr;
     std::atomic<uint32_t> fencesQueued_;
     std::atomic<uint32_t> fencesSignaled_;
     int32_t gpuSubhealthEventNum_ = 0;

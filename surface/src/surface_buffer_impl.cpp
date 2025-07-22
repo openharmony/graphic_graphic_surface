@@ -896,4 +896,14 @@ bool SurfaceBufferImpl::IsReclaimed()
 {
     return isReclaimed_.load();
 }
+
+void SurfaceBufferImpl::SetAndMergeSyncFence(const sptr<SyncFence>& syncFence)
+{
+    (void)syncFence;
+}
+
+sptr<SyncFence> SurfaceBufferImpl::GetSyncFence() const
+{
+    return nullptr;
+}
 } // namespace OHOS

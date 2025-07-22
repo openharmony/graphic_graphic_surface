@@ -22,6 +22,7 @@
 #include "parameters.h"
 #include "hisysevent.h"
 #include "file_ex.h"
+#include "ffrt_inner.h"
 
 #ifndef ROSEN_TRACE_DISABLE
 #include "hitrace_meter.h"
@@ -114,16 +115,8 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
     fencesQueued_(0),
     fencesSignaled_(0)
 {
-    runner_ = OHOS::AppExecFwk::EventRunner::Create(threadName_);
-    handler_ = std::make_shared<OHOS::AppExecFwk::EventHandler>(runner_);
+    queue_ = std::make_shared<ffrt::queue>(threadName_.c_str(), ffrt::queue_attr().qos(ffrt::qos_user_interactive));
 
-#ifdef FENCE_SCHED_ENABLE
-    if (handler_) {
-        handler_->PostTask([]() {
-            QosApply(QosLevel::QOS_USER_INTERACTIVE);
-        });
-    }
-#endif
     if (threadName_.compare(ACQUIRE_FENCE_TASK) == 0) {
         isGpuFence_ = true;
     }
@@ -163,8 +156,8 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
     if (needSendFenceId) {
         Rosen::FrameSched::GetInstance().SendFenceId(fencesQueued_.load());
     }
-    if (handler_) {
-        handler_->PostTask([this, fence, traceTag]() {
+    if (queue_) {
+        queue_->submit([this, fence, traceTag]() {
             if (isGpuFence_ && isGpuEnable_) {
                 Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_CONTAINER_NODE_ID, 0, 0, processedNodeNum_);
                 processedNodeNum_ = 0;
@@ -220,8 +213,8 @@ int32_t SyncFenceTracker::GetFrameRate()
 
 void SyncFenceTracker::ReportEventGpuSubhealth(int32_t duration)
 {
-    if (handler_) {
-        handler_->PostTask([this, duration]() {
+    if (queue_) {
+        queue_->submit([this, duration]() {
             RS_TRACE_NAME_FMT("report GPU_SUBHEALTH_MONITORING");
             auto reportName = "GPU_SUBHEALTH_MONITORING";
             HILOG_DEBUG(LOG_CORE, "report GPU_SUBHEALTH_MONITORING. duration : %{public}"
@@ -279,8 +272,8 @@ int32_t SyncFenceTracker::WaitFence(const sptr<SyncFence>& fence)
 
 void SyncFenceTracker::SetBlurSize(int32_t blurSize)
 {
-    if (handler_) {
-        handler_->PostTask([blurSize]() {
+    if (queue_) {
+        queue_->submit([blurSize]() {
             Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_BLUR_SIZE_ID, 0, 0, blurSize);
         });
     }

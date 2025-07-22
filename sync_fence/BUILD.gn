@@ -90,6 +90,7 @@ ohos_static_library("sync_fence_static") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "ffrt:libffrt",
   ]
 
   if (!is_emulator && !build_ohos_sdk && current_os == "ohos") {

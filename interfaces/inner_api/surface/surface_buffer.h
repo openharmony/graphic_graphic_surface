@@ -222,6 +222,8 @@ public:
     {
         return false;
     }
+    virtual void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) = 0;
+    virtual sptr<SyncFence> GetSyncFence() const = 0;
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

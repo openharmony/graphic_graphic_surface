@@ -534,4 +534,18 @@ HWTEST_F(SurfaceBufferImplTest, ReadFromBufferInfo, TestSize.Level0)
     GSError ret = impl.ReadFromBufferInfo(bufferInfo);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+ * Function: SurfaceBufferSyncFence
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. surfacebuffer add sync fence
+ */
+HWTEST_F(SurfaceBufferImplTest, SurfaceBufferSyncFence, TestSize.Level0)
+{
+    SurfaceBufferImpl buffer;
+    buffer.SetAndMergeSyncFence(nullptr);
+    ASSERT_EQ(buffer.GetSyncFence(), nullptr);
+}
 }

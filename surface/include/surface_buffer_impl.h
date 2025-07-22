@@ -135,6 +135,7 @@ private:
     static inline MemMgrFunctionPtr resumeFunc_ = nullptr;
     static inline int32_t ownPid_ = -1;
     static inline std::atomic<bool> initMemMgrSucceed_ = false;
+    sptr<SyncFence> syncFence_ = nullptr;
 };
 } // namespace OHOS
 

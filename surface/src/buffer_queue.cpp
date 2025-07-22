@@ -1110,7 +1110,14 @@ GSError BufferQueue::ReleaseBufferLocked(BufferElement &bufferElement, const spt
     uint32_t sequence = bufferElement.buffer->GetSeqNum();
     SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
     bufferElement.state = BUFFER_STATE_RELEASED;
-    bufferElement.fence = fence;
+    auto surfaceBufferSyncFence = bufferElement.buffer->GetSyncFence();
+    if (fence != nullptr && surfaceBufferSyncFence != nullptr &&
+        surfaceBufferSyncFence->IsValid()) {
+        bufferElement.fence =
+            SyncFence::MergeFence("SurfaceReleaseFence", surfaceBufferSyncFence, fence);
+    } else {
+        bufferElement.fence = fence;
+    }
     int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
                       std::chrono::steady_clock::now().time_since_epoch())
                       .count();

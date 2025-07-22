@@ -301,6 +301,10 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel005, TestSize.Level0)
     GSError ret = bq->AcquireBuffer(buffer, acquireFence, timestamp, damages);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
+    ASSERT_EQ(buffer->GetSyncFence(), nullptr);
+    buffer->SetAndMergeSyncFence(SyncFence::INVALID_FENCE);
+    ASSERT_NE(buffer->GetSyncFence(), nullptr);
+    ASSERT_FALSE(buffer->GetSyncFence()->IsValid());
     sptr<SyncFence> ReleaseFence = SyncFence::INVALID_FENCE;
     ret = bq->ReleaseBuffer(buffer, ReleaseFence);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -384,7 +388,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel007, TestSize.Level0)
     ASSERT_EQ(retval.buffer, nullptr);
 
     retval.buffer = cache[retval.sequence];
-
+    retval.buffer->SetAndMergeSyncFence(new SyncFence(0));
     sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
     ret = bq->ReleaseBuffer(retval.buffer, releaseFence);
     ASSERT_NE(ret, OHOS::GSERROR_OK);

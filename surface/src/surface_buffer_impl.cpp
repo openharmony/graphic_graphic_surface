@@ -899,11 +899,20 @@ bool SurfaceBufferImpl::IsReclaimed()
 
 void SurfaceBufferImpl::SetAndMergeSyncFence(const sptr<SyncFence>& syncFence)
 {
-    (void)syncFence;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (syncFence == nullptr) {
+        return;
+    }
+    if (syncFence_ != nullptr && syncFence_->IsValid()) {
+        syncFence_ = SyncFence::MergeFence("SurfaceBufferSyncFence", syncFence_, syncFence);
+    } else {
+        syncFence_ = syncFence;
+    }
 }
 
 sptr<SyncFence> SurfaceBufferImpl::GetSyncFence() const
 {
-    return nullptr;
+    std::lock_guard<std::mutex> lock(mutex_);
+    return syncFence_;
 }
 } // namespace OHOS

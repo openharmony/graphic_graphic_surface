@@ -1799,7 +1799,7 @@ HWTEST_F(BufferQueueTest, AcquireLppBuffer001, TestSize.Level0)
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
  
     tmpBq->lppSlotInfo_->readOffset = 0;
-    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset  1;
+    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset + 1;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
  
     tmpBq->lppSlotInfo_->readOffset = 7;

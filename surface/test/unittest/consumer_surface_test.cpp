@@ -2866,4 +2866,28 @@ HWTEST_F(ConsumerSurfaceTest, GetAlphaTypeTest, TestSize.Level0)
     ASSERT_NE(surface_->GetAlphaType(alphaType), SURFACE_ERROR_UNKOWN);
     surface_ = nullptr;
 }
+
+/*
+ * Function: SetLppDrawSource
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: acquire lpp buffer
+ */
+HWTEST_F(ConsumerSurfaceTest, SetLppDrawSource001, TestSize.Level0)
+{
+    bool isShbDrawLpp = false;
+    bool isRsDrawLpp = false;
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+
+    // consumer_ is nullptr
+    surface_->consumer_ = nullptr;
+    ASSERT_EQ(surface_->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), SURFACE_ERROR_UNKOWN);
+    // consumer_ is not nullptr
+    sptr<BufferQueue> bufferQueue1 = nullptr;
+    surface_->consumer_ = new BufferQueueConsumer(bufferQueue1);
+    ASSERT_EQ(surface_->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), SURFACE_ERROR_UNKOWN);
+    surface_ = nullptr;
+}
 }

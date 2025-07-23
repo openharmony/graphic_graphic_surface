@@ -111,7 +111,7 @@ BufferQueue::~BufferQueue()
     for (auto &[id, _] : bufferQueueCache_) {
         OnBufferDeleteForRS(id);
     }
-    SetLppShareFd(lppFd_, false);
+    SetLppShareFd(-1, false);
 }
 
 uint32_t BufferQueue::GetUsedSize()
@@ -2633,20 +2633,15 @@ GSError BufferQueue::AcquireLppBuffer(
     int32_t readOffset = -1;
     if (slotInfo.readOffset < 0 || slotInfo.readOffset >= LPP_SLOT_SIZE || slotInfo.writeOffset < 0 ||
         slotInfo.writeOffset >= LPP_SLOT_SIZE) {
-        BLOGI("AcquireLppBuffer name: slotInfo Parameter validation failed");
+        BLOGW("AcquireLppBuffer name: slotInfo Parameter validation failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    if (!isRsDrawLpp_) {
-        readOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
-    } else {
-        int32_t maxWriteOffset =
-            (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
-        if (slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset) {
-            lppSkipCount_++;
-            return GSERROR_NO_BUFFER;
-        }
-        readOffset = (slotInfo.readOffset + 1) % LPP_SLOT_SIZE;
+    int32_t maxWriteOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+    if (slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset) {
+        lppSkipCount_++;
+        return GSERROR_NO_BUFFER;
     }
+    readOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
     lppSkipCount_ = 0;
     const auto bufferSlot = slotInfo.slot[readOffset];
     lppSlotInfo_->readOffset = readOffset;
@@ -2672,42 +2667,31 @@ GSError BufferQueue::AcquireLppBuffer(
 
 GSError BufferQueue::SetLppShareFd(int fd, bool state)
 {
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
+    if (state) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
         if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO) {
-            BLOGD("SetLppShareFd source is not Lpp");
+            BLOGW("SetLppShareFd source is not Lpp");
             return GSERROR_TYPE_ERROR;
         }
-    }
-    
-    if (state) {
-        std::unique_lock<std::mutex> lock(mutex_);
-        if (lppFd_ != -1) {
-            BLOGD("fd cannot be assigned repeatedly");
-            return GSERROR_INVALID_ARGUMENTS;
+        if (lppSlotInfo_ != nullptr) {
+            munmap(static_cast<void *>(lppSlotInfo_), LPP_SHARED_MEM_SIZE);
+            lppSlotInfo_ = nullptr;
         }
         void *lppPtr = mmap(nullptr, LPP_SHARED_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (lppPtr == nullptr || lppPtr == MAP_FAILED) {
             BLOGW("SetLppShareFd set fd, fd parse error");
-            close(fd);
-            lppFd_ = -1;
             return GSERROR_INVALID_ARGUMENTS;
         }
         lppSlotInfo_ = static_cast<LppSlotInfo *>(lppPtr);
-        lppFd_ = fd;
         BLOGI("SetLppShareFd set fd success");
     } else {
         FlushLppBuffer();
-        std::unique_lock<std::mutex> lock(mutex_);
-        munmap(static_cast<void *>(lppSlotInfo_), sizeof(LppSlotInfo));
-        auto lppFdRet = close(lppFd_);
-        auto fdRet = close(fd);
-        if (lppFdRet == -1 || fdRet == -1) {
-            BLOGI("Failed to close lppFd_ = [%d], fd = [%d]", lppFd_, fd);
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (lppSlotInfo_ != nullptr) {
+            munmap(static_cast<void *>(lppSlotInfo_), LPP_SHARED_MEM_SIZE);
+            lppSlotInfo_ = nullptr;
         }
-        lppSlotInfo_ = nullptr;
         BLOGI("SetLppShareFd remove fd success");
-        lppFd_ = -1;
     }
     return GSERROR_OK;
 }
@@ -2733,6 +2717,8 @@ void BufferQueue::FlushLppBuffer()
 GSError BufferQueue::SetLppDrawSource(bool isShbSource, bool isRsSource)
 {
     std::unique_lock<std::mutex> lock(mutex_);
+    SURFACE_TRACE_NAME_FMT("SetLppDrawSource sourceType: [%d], lppSlotInfo: [%d], lppSkipCount: [%d], isShbSource: [%d]"
+        " ,isRsSource: [%d]", sourceType_,  (lppSlotInfo_ == nullptr), lppSkipCount_, isShbSource, isRsSource);
     if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO || lppSlotInfo_ == nullptr) {
         isRsDrawLpp_ = false;
         return GSERROR_TYPE_ERROR;

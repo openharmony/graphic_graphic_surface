@@ -380,7 +380,7 @@ public:
     {
         (void)isShbSource;
         (void)isRsSource;
-        return GSERROR_NOT_SUPPORT;
+        return SURFACE_ERROR_NOT_SUPPORT;
     }
     virtual GSError SetDropBufferMode(bool enableDrop)
     {

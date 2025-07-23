@@ -761,12 +761,12 @@ HWTEST_F(ProducerSurfaceTest, UserDataChangeListen002, TestSize.Level0)
     sptr<Surface> pSurfaceTestUserData = Surface::CreateSurfaceAsProducer(producerTestUserData);
 
     auto func = [&pSurfaceTestUserData](const std::string& FuncName) {
-        constexpr int32_t RegisterListenerNum = 1000;
-        std::vector<GSError> ret(RegisterListenerNum, OHOS::GSERROR_INVALID_ARGUMENTS);
-        std::string strs[RegisterListenerNum];
+        constexpr int32_t registerListenerNum = 1000;
+        std::vector<GSError> ret(registerListenerNum, OHOS::GSERROR_INVALID_ARGUMENTS);
+        std::string strs[registerListenerNum];
         constexpr int32_t stringLengthMax = 32;
         char str[stringLengthMax] = {};
-        for (int i = 0; i < RegisterListenerNum; i++) {
+        for (int i = 0; i < registerListenerNum; i++) {
             auto secRet = snprintf_s(str, sizeof(str), sizeof(str) - 1, "%s%d", FuncName.c_str(), i);
             ASSERT_GT(secRet, 0);
             strs[i] = str;
@@ -777,12 +777,12 @@ HWTEST_F(ProducerSurfaceTest, UserDataChangeListen002, TestSize.Level0)
         }
 
         if (pSurfaceTestUserData->SetUserData("Regist", FuncName) == OHOS::GSERROR_OK) {
-            for (int i = 0; i < RegisterListenerNum; i++) {
+            for (int i = 0; i < registerListenerNum; i++) {
                 ASSERT_EQ(ret[i], OHOS::GSERROR_OK);
             }
         }
 
-        for (int i = 0; i < RegisterListenerNum; i++) {
+        for (int i = 0; i < registerListenerNum; i++) {
             pSurfaceTestUserData->UnRegisterUserDataChangeListener(strs[i]);
         }
     };

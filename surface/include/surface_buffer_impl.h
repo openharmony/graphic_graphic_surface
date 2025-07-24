@@ -111,6 +111,7 @@ private:
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
     GSError GetImageLayout(void *layout);
     static void InitMemMgrMembers();
+    static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;

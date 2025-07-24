@@ -23,6 +23,7 @@
 #include "egl_data.h"
 #include "native_buffer.h"
 #include "stdint.h"
+#include "sync_fence.h"
 
 struct BufferWrapper {};
 
@@ -103,7 +104,8 @@ public:
     GSError TryReclaim() override;
     GSError TryResumeIfNeeded() override;
     bool IsReclaimed() override;
-
+    void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) override;
+    sptr<SyncFence> GetSyncFence() const override;
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
@@ -133,6 +135,7 @@ private:
     static inline MemMgrFunctionPtr resumeFunc_ = nullptr;
     static inline int32_t ownPid_ = -1;
     static inline std::atomic<bool> initMemMgrSucceed_ = false;
+    sptr<SyncFence> syncFence_ = nullptr;
 };
 } // namespace OHOS
 

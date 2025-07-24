@@ -380,6 +380,24 @@ HWTEST_F(BufferQueueConsumerTest, GetAlphaTypeTest, TestSize.Level0)
 }
 
 /*
+ * Function: AcquireBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: acquire lpp buffer
+ */
+HWTEST_F(BufferQueueConsumerTest, AcqRel003, TestSize.Level0)
+{
+    sptr<BufferQueue> bufferQueue = new BufferQueue("test");
+    sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    ASSERT_EQ(consumer->AcquireBuffer(buffer, acquireFence, timestamp, damages, true), OHOS::GSERROR_TYPE_ERROR);
+}
+
+/*
  * Function: SetIsPriorityAlloc
  * Type: Function
  * Rank: Important(2)

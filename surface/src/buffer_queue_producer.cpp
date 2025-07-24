@@ -665,8 +665,12 @@ int32_t BufferQueueProducer::SetLppShareFdRemote(MessageParcel &arguments, Messa
         return ERR_INVALID_VALUE;
     }
     bool state = arguments.ReadBool();
-    GSError sret = SetLppShareFd(fd, state);
-    reply.WriteInt32(sret);
+    GSError sRet = SetLppShareFd(fd, state);
+    if (!reply.WriteInt32(sRet)) {
+        close(fd);
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    close(fd);
     return ERR_NONE;
 }
 
@@ -1934,6 +1938,7 @@ GSError BufferQueueProducer::SetFixedRotation(int32_t fixedRotation)
     }
     return bufferQueue_->SetFixedRotation(fixedRotation);
 }
+
 GSError BufferQueueProducer::SetLppShareFd(int fd, bool state)
 {
     if (bufferQueue_ == nullptr) {

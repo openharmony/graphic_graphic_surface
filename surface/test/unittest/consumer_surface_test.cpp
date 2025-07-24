@@ -643,12 +643,12 @@ HWTEST_F(ConsumerSurfaceTest, UserDataChangeListen002, TestSize.Level0)
     sptr<IConsumerSurface> csTestUserData = IConsumerSurface::Create();
 
     auto func = [&csTestUserData](const std::string& FuncName) {
-        constexpr int32_t RegisterListenerNum = 1000;
-        std::vector<GSError> ret(RegisterListenerNum, OHOS::GSERROR_INVALID_ARGUMENTS);
-        std::string strs[RegisterListenerNum];
+        constexpr int32_t registerListenerNum = 1000;
+        std::vector<GSError> ret(registerListenerNum, OHOS::GSERROR_INVALID_ARGUMENTS);
+        std::string strs[registerListenerNum];
         constexpr int32_t stringLengthMax = 32;
         char str[stringLengthMax] = {};
-        for (int i = 0; i < RegisterListenerNum; i++) {
+        for (int i = 0; i < registerListenerNum; i++) {
             auto secRet = snprintf_s(str, sizeof(str), sizeof(str) - 1, "%s%d", FuncName.c_str(), i);
             ASSERT_GT(secRet, 0);
             strs[i] = str;
@@ -659,12 +659,12 @@ HWTEST_F(ConsumerSurfaceTest, UserDataChangeListen002, TestSize.Level0)
         }
 
         if (csTestUserData->SetUserData("Regist", FuncName) == OHOS::GSERROR_OK) {
-            for (int i = 0; i < RegisterListenerNum; i++) {
+            for (int i = 0; i < registerListenerNum; i++) {
                 ASSERT_EQ(ret[i], OHOS::GSERROR_OK);
             }
         }
 
-        for (int i = 0; i < RegisterListenerNum; i++) {
+        for (int i = 0; i < registerListenerNum; i++) {
             csTestUserData->UnRegisterUserDataChangeListener(strs[i]);
         }
     };
@@ -2864,6 +2864,30 @@ HWTEST_F(ConsumerSurfaceTest, GetAlphaTypeTest, TestSize.Level0)
     sptr<BufferQueue> tmpBq = new BufferQueue("test");
     surface_->consumer_ = new BufferQueueConsumer(tmpBq);
     ASSERT_NE(surface_->GetAlphaType(alphaType), SURFACE_ERROR_UNKOWN);
+    surface_ = nullptr;
+}
+
+/*
+ * Function: SetLppDrawSource
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: acquire lpp buffer
+ */
+HWTEST_F(ConsumerSurfaceTest, SetLppDrawSource001, TestSize.Level0)
+{
+    bool isShbDrawLpp = false;
+    bool isRsDrawLpp = false;
+    surface_ = new ConsumerSurface("test");
+    ASSERT_NE(surface_, nullptr);
+
+    // consumer_ is nullptr
+    surface_->consumer_ = nullptr;
+    ASSERT_EQ(surface_->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), SURFACE_ERROR_UNKOWN);
+    // consumer_ is not nullptr
+    sptr<BufferQueue> bufferQueue1 = nullptr;
+    surface_->consumer_ = new BufferQueueConsumer(bufferQueue1);
+    ASSERT_EQ(surface_->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), SURFACE_ERROR_UNKOWN);
     surface_ = nullptr;
 }
 

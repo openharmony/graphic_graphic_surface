@@ -301,6 +301,10 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel005, TestSize.Level0)
     GSError ret = bq->AcquireBuffer(buffer, acquireFence, timestamp, damages);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
+    ASSERT_EQ(buffer->GetSyncFence(), nullptr);
+    buffer->SetAndMergeSyncFence(SyncFence::INVALID_FENCE);
+    ASSERT_NE(buffer->GetSyncFence(), nullptr);
+    ASSERT_FALSE(buffer->GetSyncFence()->IsValid());
     sptr<SyncFence> ReleaseFence = SyncFence::INVALID_FENCE;
     ret = bq->ReleaseBuffer(buffer, ReleaseFence);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -384,7 +388,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel007, TestSize.Level0)
     ASSERT_EQ(retval.buffer, nullptr);
 
     retval.buffer = cache[retval.sequence];
-
+    retval.buffer->SetAndMergeSyncFence(new SyncFence(0));
     sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
     ret = bq->ReleaseBuffer(retval.buffer, releaseFence);
     ASSERT_NE(ret, OHOS::GSERROR_OK);
@@ -1748,28 +1752,28 @@ HWTEST_F(BufferQueueTest, ReleaseBufferBySeq001, TestSize.Level0)
 }
 
 /*
- * Function: AcquireLppBufferLock
+ * Function: AcquireLppBuffer
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
- * CaseDescription: call AcquireLppBufferLock
+ * CaseDescription: call AcquireLppBuffer
  */
-HWTEST_F(BufferQueueTest, AcquireLppBufferLock001, TestSize.Level0)
+HWTEST_F(BufferQueueTest, AcquireLppBuffer001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
     sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
     int64_t timestamp = 0;
     std::vector<Rect> damage;
     sptr<BufferQueue> tmpBq = new BufferQueue("test");
-
+ 
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_VIDEO;
     tmpBq->lppSlotInfo_ = nullptr;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_TYPE_ERROR);
-
+ 
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     tmpBq->lppSlotInfo_ = nullptr;
-    ASSERT_EQ(tmpBq->AcquireBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_TYPE_ERROR);
-
+    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_TYPE_ERROR);
+ 
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1,
         .writeOffset = -1,
         .slot = {{.seqId = 100, .timestamp = 1000, .damage = {1, 2, 3, 4}}},
@@ -1779,35 +1783,35 @@ HWTEST_F(BufferQueueTest, AcquireLppBufferLock001, TestSize.Level0)
     
     tmpBq->lppSlotInfo_->readOffset = 9;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
-
+ 
     tmpBq->lppSlotInfo_->readOffset = 0;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
-
+ 
     tmpBq->lppSlotInfo_->writeOffset = 9;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
-
+ 
     tmpBq->lppSlotInfo_->writeOffset = 1;
     tmpBq->isRsDrawLpp_ = false;
     tmpBq->lppBufferCache_.clear();
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
-
+ 
     tmpBq->isRsDrawLpp_ = true;
     tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
-
+ 
     tmpBq->lppSlotInfo_->readOffset = 7;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
-
+ 
     tmpBq->lppSlotInfo_->readOffset = 0;
-    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset;
+    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset + 1;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
-
+ 
     tmpBq->lppSlotInfo_->readOffset = 7;
     tmpBq->lppBufferCache_[100] = SurfaceBuffer::Create();
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_OK);
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
+    std::cout << "AcquireLppBuffer001 End" << std::endl;
 }
-
 /*
  * Function: SetLppShareFd
  * Type: Function
@@ -1818,23 +1822,19 @@ HWTEST_F(BufferQueueTest, AcquireLppBufferLock001, TestSize.Level0)
 HWTEST_F(BufferQueueTest, SetLppShareFd001, TestSize.Level0)
 {
     sptr<BufferQueue> tmpBq = new BufferQueue("test");
-    int fd = 100;
+    int fd = -1;
     bool state = true;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_TYPE_ERROR);
 
-    tmpBq->lppFd_ = -1;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
+    tmpBq->lppSlotInfo_ = nullptr;
     ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_INVALID_ARGUMENTS);
 
     state = false;
     ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_OK);
-
-    tmpBq->lppFd_ = 1;
-    state = true;
-    ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_INVALID_ARGUMENTS);
 }
-
+ 
 /*
  * Function: SetLppShareFd
  * Type: Function
@@ -1846,17 +1846,27 @@ HWTEST_F(BufferQueueTest, SetLppShareFd002, TestSize.Level0)
 {
     sptr<BufferQueue> tmpBq = new BufferQueue("test");
     bool state = true;
-    int fd = static_cast<int>(::open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(060)));
+    int fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
     ASSERT_NE(fd, -1);
     ASSERT_NE(ftruncate(fd, 0x1000), -1);
-
-    tmpBq->lppFd_ = -1;
+ 
+    tmpBq->lppSlotInfo_ = nullptr;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_OK);
     state = false;
     ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_OK);
-}
+    close(fd);
 
+    state = true;
+    fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
+    ASSERT_NE(fd, -1);
+    ASSERT_NE(ftruncate(fd, 0x1000), -1);
+    tmpBq->lppSlotInfo_ = nullptr;
+    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
+    ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_OK);
+    ASSERT_EQ(tmpBq->SetLppShareFd(-1, state), OHOS::GSERROR_INVALID_ARGUMENTS);
+    close(fd);
+}
 /*
  * Function: FlushLppBuffer
  * Type: Function
@@ -1867,8 +1877,9 @@ HWTEST_F(BufferQueueTest, SetLppShareFd002, TestSize.Level0)
 HWTEST_F(BufferQueueTest, FlushLppBuffer001, TestSize.Level0)
 {
     sptr<BufferQueue> tmpBq = new BufferQueue("test");
-    tmpBq->FlushLppBuffer();
     ASSERT_NE(tmpBq, nullptr);
+    tmpBq->FlushLppBuffer();
+    ASSERT_TRUE(tmpBq->dirtyList_.empty());
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0,
         .writeOffset = 1,
@@ -1878,9 +1889,8 @@ HWTEST_F(BufferQueueTest, FlushLppBuffer001, TestSize.Level0)
     tmpBq->isRsDrawLpp_ = false;
     tmpBq->lppBufferCache_[100] = SurfaceBuffer::Create();
     tmpBq->FlushLppBuffer();
-    ASSERT_NE(tmpBq, nullptr);
+    ASSERT_TRUE(tmpBq->dirtyList_.empty());
 }
-
 /*
  * Function: SetLppDrawSource
  * Type: Function
@@ -1895,11 +1905,11 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
     bool isRsDrawLpp = false;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
-
+ 
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     tmpBq->lppSlotInfo_ = nullptr;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
-
+ 
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0,
         .writeOffset = 1,
         .slot = {{.seqId = 100, .timestamp = 1000, .damage = {1, 2, 3, 4}}},
@@ -1907,7 +1917,7 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
         .isStopShbDraw = false};
     tmpBq->lppSkipCount_ = 11;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OUT_OF_RANGE);
-
+ 
     tmpBq->lppSkipCount_ = 0;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OK);
 }

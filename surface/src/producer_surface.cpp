@@ -1403,7 +1403,13 @@ GSError ProducerSurface::SetLppShareFd(int fd, bool state)
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    return producer_->SetLppShareFd(fd, state);
+    int lppFd = dup(fd);
+    if (lppFd == -1) {
+        return GSERROR_NO_MEM;
+    }
+    GSError ret = producer_->SetLppShareFd(lppFd, state);
+    close(lppFd);
+    return ret;
 }
 
 GSError ProducerSurface::SetAlphaType(GraphicAlphaType alphaType)

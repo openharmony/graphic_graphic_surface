@@ -15,7 +15,9 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
 
@@ -874,13 +876,26 @@ HWTEST_F(BufferClientProducerRemoteTest, UnRegisterPropertyListener001, TestSize
  */
 HWTEST_F(BufferClientProducerRemoteTest, SetLppShareFd001, TestSize.Level0)
 {
-    int fd = 100;
+    int fd = -1;
     bool state = false;
     GSError ret = bp->SetLppShareFd(fd, state);
-    ASSERT_EQ(ret, OHOS::GSERROR_TYPE_ERROR);
-
-    fd = -1;
-    ret = bp->SetLppShareFd(fd, state);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+/*
+ * Function: SetLppShareFd
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call SetLppShareFd
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetLppShareFd002, TestSize.Level0)
+{
+    int fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
+    ASSERT_NE(fd, -1);
+    ASSERT_NE(ftruncate(fd, 0x1000), -1);
+    bool state = false;
+    GSError ret = bp->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    close(fd);
 }
 }

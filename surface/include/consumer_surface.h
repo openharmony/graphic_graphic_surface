@@ -741,7 +741,9 @@ public:
      * @param isShbSource [in] sensorhub sends video source
      * @param isRsSource [in] render_service sends video source
      * @return {@link GSERROR_OK} 0 - Success.
-     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     *         {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
+     *         {@link GSERROR_TYPE_ERROR} 41204000 - Inner error.
+     *         {@link GSERROR_OUT_OF_RANGE} 40603000 - Inner error.
      */
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource) override;
     /**

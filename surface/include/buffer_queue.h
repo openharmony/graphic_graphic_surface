@@ -388,7 +388,6 @@ private:
     LppSlotInfo *lppSlotInfo_ = nullptr;
     int32_t lastLppWriteOffset_ = -1;
     bool isRsDrawLpp_ = false;
-    int32_t lppFd_ = 0;
     int32_t lppSkipCount_ = 0;
     // Lpp >>
     int32_t connectedPid_ = 0;

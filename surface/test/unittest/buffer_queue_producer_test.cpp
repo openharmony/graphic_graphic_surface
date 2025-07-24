@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 #include <fcntl.h>
 #include <surface.h>
+#include <sys/mman.h>
 #include <buffer_extra_data_impl.h>
 #include <buffer_queue_producer.h>
 #include "buffer_consumer_listener.h"
@@ -869,19 +870,16 @@ HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote001, TestSize.Level0)
 {
-    int fd = 100;
+    int fd = -1;
     bool state = false;
     MessageParcel arguments;
-    arguments.WriteInterfaceToken(BufferQueueProducer::GetDescriptor());
     arguments.WriteFileDescriptor(fd);
     arguments.WriteBool(state);
     MessageParcel reply;
     MessageOption option;
-    bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
-    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD, arguments, reply, option);
-    EXPECT_EQ(ret, ERR_NONE);
+    int32_t ret = bqp_->SetLppShareFdRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_VALUE);
 }
-
 /*
  * Function: SetLppShareFdRemote
  * Type: Function
@@ -891,19 +889,18 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote002, TestSize.Level0)
 {
-    int fd = -1;
+    int fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
+    ASSERT_NE(fd, -1);
+    ASSERT_NE(ftruncate(fd, 0x1000), -1);
     bool state = false;
     MessageParcel arguments;
-    arguments.WriteInterfaceToken(BufferQueueProducer::GetDescriptor());
     arguments.WriteFileDescriptor(fd);
     arguments.WriteBool(state);
     MessageParcel reply;
     MessageOption option;
-    bqp_->magicNum_ = BufferQueueProducer::MAGIC_INIT;
-    int32_t ret = bqp_->OnRemoteRequest(BufferQueueProducer::BUFFER_PRODUCER_SET_LPP_FD, arguments, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_VALUE);
+    int32_t ret = bqp_->SetLppShareFdRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
 }
-
 /*
  * Function: SetLppShareFd
  * Type: Function
@@ -913,19 +910,31 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFdRemote002, TestSize.Level0)
  */
 HWTEST_F(BufferQueueProducerTest, SetLppShareFd001, TestSize.Level0)
 {
-    int fd = 100;
+    int fd = -1;
     bool state = false;
     sptr<BufferQueue> bqtmp = nullptr;
     sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
-    int ret = bqtmp->SetLppShareFd(fd, state);
+    bqptmp->bufferQueue_ = nullptr;
+    int ret = bqptmp->SetLppShareFd(fd, state);
     ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
-
-    bqtmp = new BufferQueue("test");
-    bqptmp->bufferQueue_ = bqtmp;
-    ret = bqptmp->SetLppShareFd(fd, state);
-    ASSERT_EQ(ret, GSERROR_TYPE_ERROR);
 }
 
+/*
+ * Function: SetLppShareFd
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetLppShareFd member function test
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFd002, TestSize.Level0)
+{
+    int fd = -1;
+    bool state = false;
+    sptr<BufferQueue> bqtmp = new BufferQueue("test");
+    sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
+    int ret = bqptmp->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
 
 /*
  * Function: SetAlphaTypeRemote

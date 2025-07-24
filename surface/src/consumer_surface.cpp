@@ -797,4 +797,12 @@ GSError ConsumerSurface::GetAlphaType(GraphicAlphaType &alphaType)
     }
     return consumer_->GetAlphaType(alphaType);
 }
+
+GSError ConsumerSurface::SetIsPriorityAlloc(bool isPriorityAlloc)
+{
+    if (consumer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->SetIsPriorityAlloc(isPriorityAlloc);
+}
 } // namespace OHOS

@@ -443,4 +443,12 @@ GSError BufferQueueConsumer::GetAlphaType(GraphicAlphaType &alphaType)
     }
     return bufferQueue_->GetAlphaType(alphaType);
 }
+
+GSError BufferQueueConsumer::SetIsPriorityAlloc(bool isPriorityAlloc)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetIsPriorityAlloc(isPriorityAlloc);
+}
 } // namespace OHOS

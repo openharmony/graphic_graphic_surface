@@ -261,6 +261,7 @@ public:
     GSError SetDropBufferMode(bool enableDrop);
     GSError SetAlphaType(GraphicAlphaType alphaType);
     GSError GetAlphaType(GraphicAlphaType &alphaType);
+    GSError SetIsPriorityAlloc(bool isPriorityAlloc);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -330,6 +331,12 @@ private:
     GSError AcquireBufferLocked(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
                                 int64_t &timestamp, std::vector<Rect> &damages);
     void FlushLppBuffer();
+    GSError ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
+        BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
+        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+    GSError ReuseBufferForBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
+        BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
+        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -405,6 +412,7 @@ private:
     bool isDropMode_ = false;
     bool isFirstSetDropModeOpen_ = false;
     GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
+    bool isPriorityAlloc_ = false;
 };
 }; // namespace OHOS
 

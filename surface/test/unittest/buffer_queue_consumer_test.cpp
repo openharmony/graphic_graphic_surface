@@ -378,6 +378,7 @@ HWTEST_F(BufferQueueConsumerTest, GetAlphaTypeTest, TestSize.Level0)
     GraphicAlphaType alphaType;
     ASSERT_EQ(consumer->GetAlphaType(alphaType), OHOS::GSERROR_OK);
 }
+
 /*
  * Function: AcquireBuffer
  * Type: Function
@@ -394,5 +395,24 @@ HWTEST_F(BufferQueueConsumerTest, AcqRel003, TestSize.Level0)
     int64_t timestamp = 0;
     std::vector<Rect> damages;
     ASSERT_EQ(consumer->AcquireBuffer(buffer, acquireFence, timestamp, damages, true), OHOS::GSERROR_TYPE_ERROR);
+}
+
+/*
+ * Function: SetIsPriorityAlloc
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetIsPriorityAlloc and check ret
+ */
+HWTEST_F(BufferQueueConsumerTest, SetIsPriorityAlloc001, TestSize.Level0)
+{
+    bqc->bufferQueue_ = nullptr;
+    // bqc->bufferQueue_ is not nullptr
+    bqc->bufferQueue_ = new BufferQueue("test");
+    bqc->SetIsPriorityAlloc(true);
+    ASSERT_EQ(bqc->bufferQueue_->isPriorityAlloc_, true);
+    bqc->SetIsPriorityAlloc(false);
+    ASSERT_EQ(bqc->bufferQueue_->isPriorityAlloc_, false);
+    bqc->bufferQueue_ = nullptr;
 }
 }

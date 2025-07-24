@@ -762,6 +762,15 @@ public:
      * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
      */
     GSError GetAlphaType(GraphicAlphaType &alphaType) override;
+    /**
+     * @brief Sets whether alloc takes priority over reuse when request buffer
+     * @param isPriorityAlloc [in] Flag indicating whether alloc takes priority over reuse when request buffer:
+     *             - true: Alloc takes priority over reuse
+     *             - false: Reuse takes priority over alloc
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link SURFACE_ERROR_UNKOWN} 50002000 - Inner error.
+     */
+    GSError SetIsPriorityAlloc(bool isPriorityAlloc) override;
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

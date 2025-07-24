@@ -338,6 +338,43 @@ GSError BufferQueue::SetupNewBufferLocked(sptr<SurfaceBuffer> &buffer, sptr<Buff
     return ret;
 }
 
+GSError BufferQueue::ReuseBufferForBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
+    BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
+{
+    waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
+        [this]() { return WaitForCondition(); });
+    if (!GetStatusLocked() && !isBatch_) {
+        SURFACE_TRACE_NAME_FMT("Status wrong, status: %d", GetStatusLocked());
+        BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
+    }
+    // try dequeue from free list again
+    GSError ret = PopFromFreeListLocked(buffer, updateConfig);
+    if (ret == GSERROR_OK) {
+        return ReuseBuffer(updateConfig, bedata, retval, lock);
+    } else if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
+        RequestBufferDebugInfoLocked();
+        return GSERROR_NO_BUFFER;
+    }
+    return ret;
+}
+
+GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
+    BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
+{
+    GSError ret = PopFromDirtyListLocked(buffer);
+    if (ret == GSERROR_OK) {
+        buffer->SetSurfaceBufferColorGamut(config.colorGamut);
+        buffer->SetSurfaceBufferTransform(config.transform);
+        return ReuseBuffer(updateConfig, bedata, retval, lock);
+    } else if (ret == GSERROR_NO_BUFFER) {
+        LogAndTraceAllBufferInBufferQueueCacheLocked();
+        return GSERROR_NO_BUFFER;
+    }
+    return ret;
+}
+
 GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
 {
@@ -359,37 +396,18 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         name_.c_str(), uniqueId_, bufferQueueSize_, detachReserveSlotNum_);
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
-    ret = PopFromFreeListLocked(buffer, updateConfig);
-    if (ret == GSERROR_OK) {
-        return ReuseBuffer(updateConfig, bedata, retval, lock);
-    }
+    if (!(isPriorityAlloc_ && (GetUsedSize() < bufferQueueSize_ - detachReserveSlotNum_))) {
+        ret = PopFromFreeListLocked(buffer, updateConfig);
+        if (ret == GSERROR_OK) {
+            return ReuseBuffer(updateConfig, bedata, retval, lock);
+        }
 
-    // check queue size
-    if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
-        if (!requestBufferNoBlockMode_) {
-            waitReqCon_.wait_for(lock, std::chrono::milliseconds(config.timeout),
-                [this]() { return WaitForCondition(); });
-            if (!GetStatusLocked() && !isBatch_) {
-                SURFACE_TRACE_NAME_FMT("Status wrong, status: %d", GetStatusLocked());
-                BLOGN_FAILURE_RET(GSERROR_NO_CONSUMER);
-            }
-            // try dequeue from free list again
-            ret = PopFromFreeListLocked(buffer, updateConfig);
-            if (ret == GSERROR_OK) {
-                return ReuseBuffer(updateConfig, bedata, retval, lock);
-            } else if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
-                RequestBufferDebugInfoLocked();
-                return GSERROR_NO_BUFFER;
-            }
-        } else {
-            ret = PopFromDirtyListLocked(buffer);
-            if (ret == GSERROR_OK) {
-                buffer->SetSurfaceBufferColorGamut(config.colorGamut);
-                buffer->SetSurfaceBufferTransform(config.transform);
-                return ReuseBuffer(updateConfig, bedata, retval, lock);
-            } else if (ret == GSERROR_NO_BUFFER) {
-                LogAndTraceAllBufferInBufferQueueCacheLocked();
-                return GSERROR_NO_BUFFER;
+        // check queue size
+        if (GetUsedSize() >= bufferQueueSize_ - detachReserveSlotNum_) {
+            if (!requestBufferNoBlockMode_) {
+                return ReuseBufferForBlockMode(buffer, bedata, updateConfig, config, retval, lock);
+            } else {
+                return ReuseBufferForNoBlockMode(buffer, bedata, updateConfig, config, retval, lock);
             }
         }
     }
@@ -2764,6 +2782,13 @@ GSError BufferQueue::GetAlphaType(GraphicAlphaType &alphaType)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     alphaType = alphaType_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetIsPriorityAlloc(bool isPriorityAlloc)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    isPriorityAlloc_ = isPriorityAlloc;
     return GSERROR_OK;
 }
 }; // namespace OHOS

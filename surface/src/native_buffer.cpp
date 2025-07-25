@@ -315,10 +315,8 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         ret = MetadataHelper::SetHDRStaticMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
         OH_NativeBuffer_MetadataType hdrMetadataType = static_cast<OH_NativeBuffer_MetadataType>(*metadata);
-        if (CM_IMAGE_HDR_VIVID_SINGLE == static_cast<uint8_t>(*metadata) + 1) {
-            ret = MetadataHelper::SetHDRMetadataType(sbuffer, CM_IMAGE_HDR_VIVID_SINGLE);
-            return ret == OHOS::GSERROR_HDI_ERROR ? OHOS::SURFACE_ERROR_NOT_SUPPORT :
-                ret == OHOS::SURFACE_ERROR_OK ? OHOS::SURFACE_ERROR_OK : OHOS::SURFACE_ERROR_UNKOWN;
+        if (MetadataHelper::IsImageMetadataType(metadata)) {
+            return MetadataHelper::SetImageHDRMetadataType(sbuffer, metadata);
         }
         if (NATIVE_METADATATYPE_TO_HDI_MAP.find(hdrMetadataType) == NATIVE_METADATATYPE_TO_HDI_MAP.end()) {
             BLOGE("the metadataType is not defined.");

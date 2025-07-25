@@ -49,7 +49,7 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2
     sptr<SyncFence> fence = new SyncFence(0);
     tracker->TrackFence(nullptr, true);
     EXPECT_EQ(tracker->fencesQueued_.load(), 0);
-
+   
     tracker->TrackFence(fence, true);
     EXPECT_EQ(tracker->fencesQueued_.load(), 1);
 
@@ -66,11 +66,6 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2
 
     tracker->TrackFence(fence, false);
     EXPECT_EQ(tracker->fencesQueued_.load(), 4);
-
-    tracker->queue_ = nullptr;
-    tracker->TrackFence(fence, false);
-    EXPECT_EQ(tracker->fencesQueued_.load(), 4);
-
     delete tracker;
 }
 
@@ -88,11 +83,11 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest002, Function | MediumTest | Level2
     sptr<SyncFence> fence = new SyncFence(0);
     tracker->TrackFence(nullptr, true);
     EXPECT_EQ(tracker->fencesQueued_.load(), 0);
-
+ 
     tracker->isGpuFreq_ = true;
     tracker->TrackFence(fence, true);
     EXPECT_EQ(tracker->fencesQueued_.load(), 1);
-
+ 
     tracker->isGpuFreq_ = false;
     tracker->TrackFence(fence, false);
     EXPECT_EQ(tracker->fencesQueued_.load(), 1);
@@ -161,9 +156,9 @@ HWTEST_F(SyncFenceTrackerTest, GetFrameRate001, Function | MediumTest | Level2)
 HWTEST_F(SyncFenceTrackerTest, ReportEventGpuSubhealth001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("ReportEventGpuSubhealth001");
-    EXPECT_NE(tracker->queue_, nullptr);
+    EXPECT_NE(tracker->handler_, nullptr);
     tracker->ReportEventGpuSubhealth(0);
-    tracker->queue_ = nullptr;
+    tracker->handler_ = nullptr;
     tracker->ReportEventGpuSubhealth(0);
     delete tracker;
 }
@@ -215,9 +210,9 @@ HWTEST_F(SyncFenceTrackerTest, WaitFence001, Function | MediumTest | Level2)
 HWTEST_F(SyncFenceTrackerTest, SetBlurSize001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("SetBlurSize001");
-    EXPECT_NE(tracker->queue_, nullptr);
+    EXPECT_NE(tracker->handler_, nullptr);
     tracker->SetBlurSize(0);
-    tracker->queue_ = nullptr;
+    tracker->handler_ = nullptr;
     tracker->SetBlurSize(0);
     delete tracker;
 }
@@ -241,7 +236,7 @@ HWTEST_F(SyncFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest | L
     tracker->isGpuEnable_ = false;
     tracker->SetContainerNodeNum(1);
     EXPECT_EQ(tracker->processedNodeNum_, 1);
-
+    
     delete tracker;
 }
 }

@@ -34,8 +34,7 @@
           "init",
           "ipc",
           "samgr",
-          "selinux_adapter",
-          "ffrt"
+          "selinux_adapter"
         ]
       },
       "build": {

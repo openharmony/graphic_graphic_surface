@@ -80,6 +80,52 @@ HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, TestSize.Level0)
 }
 
 /*
+* Function: GetSeqNum
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new 0xFFFF SurfaceBufferImpl and check SeqNum
+*                  2. new SurfaceBufferImpl again and check GetSeqNum = oldSeq + 1
+ */
+HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease002, TestSize.Level0)
+{
+    // the max seqNum low 16 bit is 0xFFFF
+    uint32_t maxSeqNum = 0xFFFF;
+    std::vector<sptr<SurfaceBuffer>> vecBuffer;
+    for (uint32_t i = 0; i <= maxSeqNum; ++i) {
+        sptr<SurfaceBuffer> newBuffer = new SurfaceBufferImpl();
+        vecBuffer.push_back(newBuffer);
+    }
+    sptr<SurfaceBuffer> maxSeqBuffer = new SurfaceBufferImpl(maxSeqNum);
+    ASSERT_EQ(maxSeqNum, maxSeqBuffer->GetSeqNum() & maxSeqNum);
+    sptr<SurfaceBuffer> increbuffer = new SurfaceBufferImpl();
+    int oldSeq = increbuffer->GetSeqNum();
+    increbuffer = new SurfaceBufferImpl();
+    ASSERT_EQ(oldSeq + 1, increbuffer->GetSeqNum());
+}
+
+/*
+* Function: GenerateSequenceNumber
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl and GetSeqNum
+*                  2. GenerateSequenceNumber seqNumLow and check retval is oldSeq + 1
+*                  3. GenerateSequenceNumber 0xFFFF and check retval is 0
+ */
+HWTEST_F(SurfaceBufferImplTest, GenerateSequenceNumber001, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    uint32_t oldSeq = buffer->GetSeqNum();
+
+    // the max seqNum low 16 bit is 0xFFFF
+    uint32_t maxSeqNum = 0xFFFF;
+    uint32_t seqNumLow = oldSeq & maxSeqNum;
+    ASSERT_EQ((oldSeq + 1) & maxSeqNum, SurfaceBufferImpl::GenerateSequenceNumber(seqNumLow));
+    ASSERT_EQ(0, SurfaceBufferImpl::GenerateSequenceNumber(maxSeqNum));
+}
+
+/*
 * Function: check buffer state
 * Type: Function
 * Rank: Important(2)
@@ -163,6 +209,25 @@ HWTEST_F(SurfaceBufferImplTest, Create001, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     ASSERT_NE(buffer, nullptr);
+}
+
+/*
+* Function: Alloc
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Call SurfaceBuffer::Alloc()
+*                  2. check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, Alloc001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    sptr<SurfaceBuffer> bufferAlloc = new SurfaceBufferImpl();
+    auto sret = bufferAlloc->Alloc(requestConfig, buffer);
+    ASSERT_EQ(sret, OHOS::GSERROR_OK);
+    sptr<SurfaceBuffer> bufferRealloc = new SurfaceBufferImpl();
+    sret = bufferRealloc->Alloc(requestConfig, bufferAlloc);
+    ASSERT_EQ(sret, OHOS::GSERROR_OK);
 }
 
 /*

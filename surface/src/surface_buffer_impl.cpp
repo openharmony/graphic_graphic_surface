@@ -91,7 +91,7 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
     {
-        g_seqNumMutex.lock();
+        std::lock_guard<std::mutex> lock(g_seqNumMutex);
 
         static uint32_t sequence_number_ = 0;
         // 0xFFFF is pid mask. 16 is pid offset.
@@ -101,8 +101,6 @@ SurfaceBufferImpl::SurfaceBufferImpl()
         sequenceNumber_ |= (GenerateSequenceNumber(sequence_number_) & MAX_SEQUENCE_NUM);
     
         InitMemMgrMembers();
-
-        g_seqNumMutex.unlock();
     }
     metaDataCache_.clear();
     bedata_ = new BufferExtraDataImpl;
@@ -112,20 +110,21 @@ SurfaceBufferImpl::SurfaceBufferImpl()
 
 uint32_t SurfaceBufferImpl::GenerateSequenceNumber(uint32_t& seqNum)
 {
-    bool isLoop = false;
+    uint32_t startSeqNum = seqNum;
+    seqNum %= MAX_SEQUENCE_NUM;
     for (; seqNum <= MAX_SEQUENCE_NUM; ++seqNum) {
         if (seqNum == MAX_SEQUENCE_NUM) {
-            if (isLoop) {
-                BLOGE("SurfaceBufferImpl GenerateSequenceNumber failed, no idle seq");
-                break;
-            } else {
-                seqNum = 0;
-                isLoop = true;
-            }
+            seqNum = 0;
         }
 
         if (!g_seqBitset.test(seqNum)) {
             g_seqBitset.set(seqNum);
+            break;
+        }
+
+        if (seqNum == (startSeqNum - 1) % MAX_SEQUENCE_NUM) {
+            BLOGE("SurfaceBufferImpl GenerateSequenceNumber failed, no idle seq");
+            seqNum = startSeqNum;
             break;
         }
     }
@@ -173,10 +172,13 @@ void SurfaceBufferImpl::InitMemMgrMembers()
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 {
     metaDataCache_.clear();
-    g_seqNumMutex.lock();
-    sequenceNumber_ = seqNum;
-    g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
-    g_seqNumMutex.unlock();
+    {
+        std::lock_guard<std::mutex> lock(g_seqNumMutex);
+        sequenceNumber_ = seqNum;
+        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
+            g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
+        }
+    }
     bedata_ = new BufferExtraDataImpl;
     BLOGD("SurfaceBufferImpl ctor, seq: %{public}u", sequenceNumber_);
 }
@@ -184,9 +186,12 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
-    g_seqNumMutex.lock();
-    g_seqBitset.reset(sequenceNumber_ & MAX_SEQUENCE_NUM);
-    g_seqNumMutex.unlock();
+    {
+        std::lock_guard<std::mutex> lock(g_seqNumMutex);
+        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
+            g_seqBitset.reset(sequenceNumber_ & MAX_SEQUENCE_NUM);
+        }
+    }
     FreeBufferHandleLocked();
 }
 

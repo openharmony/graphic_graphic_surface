@@ -28,6 +28,7 @@ extern "C" {
 enum NativeObjectMagic {
     NATIVE_OBJECT_MAGIC_WINDOW = MKMAGIC('W', 'I', 'N', 'D'),
     NATIVE_OBJECT_MAGIC_WINDOW_BUFFER = MKMAGIC('W', 'B', 'U', 'F'),
+    NATIVE_OBJECT_MAGIC_WINDOW_INVALID = MKMAGIC('I', 'V', 'L', 'D'),
 };
 
 // pSurface type is OHOS::sptr<OHOS::Surface>*

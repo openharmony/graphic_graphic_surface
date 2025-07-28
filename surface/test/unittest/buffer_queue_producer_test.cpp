@@ -602,6 +602,24 @@ HWTEST_F(BufferQueueProducerTest, SetBufferHold001, TestSize.Level0)
 }
 
 /*
+* Function: SetBufferReallocFlag
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferReallocFlag
+*                  2. check ret
+*/
+HWTEST_F(BufferQueueProducerTest, SetBufferReallocFlag001, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetBufferReallocFlagRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
 * Function: TransformHint
 * Type: Function
 * Rank: Important(2)
@@ -693,6 +711,7 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->ReleaseLastFlushedBuffer(0), OHOS::SURFACE_ERROR_UNKOWN);
     bqpTmp->OnBufferProducerRemoteDied();
     EXPECT_EQ(bqpTmp->SetBufferHold(false), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->SetBufferReallocFlag(false), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetSdrWhitePointBrightness(1), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetHdrWhitePointBrightness(1), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetSurfaceAppFrameworkType(name), OHOS::GSERROR_INVALID_ARGUMENTS);

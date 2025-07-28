@@ -1011,6 +1011,7 @@ NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), su
 
 NativeWindow::~NativeWindow()
 {
+    magic = NATIVE_OBJECT_MAGIC_WINDOW_INVALID;
     if (surface != nullptr) {
         auto utils = SurfaceUtils::GetInstance();
         utils->RemoveNativeWindow(surface->GetUniqueId());

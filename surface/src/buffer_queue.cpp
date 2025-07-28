@@ -450,6 +450,14 @@ GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
     auto mapIter = bufferQueueCache_.find(retval.sequence);
     if (mapIter != bufferQueueCache_.end()) {
         isBufferNeedRealloc = mapIter->second.isBufferNeedRealloc;
+        if (isBufferNeedRealloc && mapIter->second.fence != nullptr) {
+            // fence wait time 3000ms
+            int32_t ret = mapIter->second.fence->Wait(3000);
+            if (ret < 0) {
+                BLOGE("BufferQueue::ReallocBufferLocked WaitFence timeout 3000ms");
+                isBufferNeedRealloc = false;
+            }
+        }
     }
 
     DeleteBufferInCacheNoWaitForAllocatingState(retval.sequence);

@@ -2715,8 +2715,8 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
         if (lppSlotInfo_ != nullptr) {
             munmap(static_cast<void *>(lppSlotInfo_), LPP_SHARED_MEM_SIZE);
             lppSlotInfo_ = nullptr;
+            BLOGI("SetLppShareFd remove fd success");
         }
-        BLOGI("SetLppShareFd remove fd success");
     }
     return GSERROR_OK;
 }

@@ -196,6 +196,7 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     int32_t requestWidth = window->surface->GetRequestWidth();
     int32_t requestHeight = window->surface->GetRequestHeight();
     OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+    windowConfig.sourceType = GRAPHIC_SDK_TYPE;
     if (requestWidth != 0 && requestHeight != 0) {
         OHOS::BufferRequestConfig config = windowConfig;
         config.width = requestWidth;

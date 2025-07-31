@@ -494,6 +494,11 @@ using GraphicTransformType = enum {
     GRAPHIC_ROTATE_BUTT            /**< Invalid operation */
 };
 
+using GraphicSourceType = enum {
+    GRAPHIC_SDK_TYPE = 0,        /**< sdk type */
+    GRAPHIC_SOURCE_TYPE_BUTT     /**< Invalid operation */
+};
+
 using BufferRequestConfig = struct BufferRequestConfig {
     int32_t width;
     int32_t height;
@@ -503,6 +508,7 @@ using BufferRequestConfig = struct BufferRequestConfig {
     int32_t timeout;
     GraphicColorGamut colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    GraphicSourceType sourceType = GraphicSourceType::GRAPHIC_SOURCE_TYPE_BUTT;
     bool operator ==(const struct BufferRequestConfig &config) const
     {
         return width == config.width && height == config.height &&

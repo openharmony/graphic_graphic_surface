@@ -242,6 +242,11 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
             if (fd > 0) {
                 ioctl(fd, DMA_BUF_SET_TYPE, bufferName_.c_str());
             }
+        } else if (config.sourceType == GRAPHIC_SDK_TYPE) {
+            int fd = retval.buffer->GetFileDescriptor();
+            if (fd > 0) {
+                ioctl(fd, DMA_BUF_SET_TYPE, "sdk");
+            }
         }
     } else {
         auto it = bufferProducerCache_.find(retval.sequence);

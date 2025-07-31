@@ -15,12 +15,16 @@
 
 #include "native_buffer_inner.h"
 
+#include <linux/dma-buf.h>
+#include <sys/ioctl.h>
 #include <cinttypes>
 #include "surface_type.h"
 #include "buffer_log.h"
 #include "native_window.h"
 #include "surface_buffer_impl.h"
 #include "metadata_helper.h"
+
+#define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
 
 using namespace OHOS;
 using namespace HDI::Display::Graphic::Common::V1_0;
@@ -111,6 +115,9 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
     if (err != OHOS::SURFACE_ERROR_OK) {
         BLOGE("NativeBufferReference failed, err: %{public}d.", err);
         return nullptr;
+    }
+    if (bufferImpl->GetBufferHandle() != nullptr && bufferImpl->GetBufferHandle()->fd > 0) {
+        ioctl(bufferImpl->GetBufferHandle()->fd, DMA_BUF_SET_TYPE, "sdk");
     }
     return buffer;
 }

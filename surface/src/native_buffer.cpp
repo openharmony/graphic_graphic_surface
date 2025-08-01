@@ -117,7 +117,7 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
         return nullptr;
     }
     if (bufferImpl->GetBufferHandle() != nullptr && bufferImpl->GetBufferHandle()->fd > 0) {
-        ioctl(bufferImpl->GetBufferHandle()->fd, DMA_BUF_SET_TYPE, "sdk");
+        ioctl(bufferImpl->GetBufferHandle()->fd, DMA_BUF_SET_TYPE, "external");
     }
     return buffer;
 }

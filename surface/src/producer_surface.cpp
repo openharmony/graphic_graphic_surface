@@ -245,7 +245,7 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
         } else if (config.sourceType == GRAPHIC_SDK_TYPE) {
             int fd = retval.buffer->GetFileDescriptor();
             if (fd > 0) {
-                ioctl(fd, DMA_BUF_SET_TYPE, "sdk");
+                ioctl(fd, DMA_BUF_SET_TYPE, "external");
             }
         }
     } else {

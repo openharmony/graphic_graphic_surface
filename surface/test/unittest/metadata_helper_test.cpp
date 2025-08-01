@@ -366,6 +366,22 @@ HWTEST_F(MetadataManagerTest, AdaptiveFOVMetadataTest, Function | SmallTest | Le
     ASSERT_EQ(MetadataHelper::GetAdaptiveFOVMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
 }
 
+/*
+ * Function: MetadataManagerTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test for image metaData
+ */
+HWTEST_F(MetadataManagerTest, SetImageHDRMetadataTypeTest, Function | SmallTest | Level1)
+{
+    uint8_t errorValue = 1;
+    ASSERT_EQ(MetadataHelper::IsImageMetadataType(&errorValue), false);
+    uint8_t value = 4;
+    ASSERT_EQ(MetadataHelper::IsImageMetadataType(&value), true);
+    ASSERT_EQ(MetadataHelper::SetImageHDRMetadataType(buffer_, &value), GSERROR_OK);
+}
+
 #ifdef RS_ENABLE_TV_PQ_METADATA
 /*
  * Function: MetadataManagerTest

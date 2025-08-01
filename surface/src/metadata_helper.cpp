@@ -213,6 +213,20 @@ GSError MetadataHelper::GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer, B
     return ConvertVecToMetadata(cropRect, crop);
 }
 
+GSError MetadataHelper::SetImageHDRMetadataType(sptr<SurfaceBuffer>& buffer, uint8_t* metadata)
+{
+    uint8_t metaDataType = static_cast<uint8_t>(*metadata);
+    GSError ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(metaDataType + 1));
+    return ret == OHOS::GSERROR_HDI_ERROR ? OHOS::SURFACE_ERROR_NOT_SUPPORT :
+        ret == OHOS::SURFACE_ERROR_OK ? OHOS::SURFACE_ERROR_OK : OHOS::SURFACE_ERROR_UNKOWN;
+}
+
+bool MetadataHelper::IsImageMetadataType(uint8_t* metadata)
+{
+    uint8_t metaDataType = static_cast<uint8_t>(*metadata);
+    return (CM_IMAGE_HDR_VIVID_SINGLE == metaDataType + 1);
+}
+
 GSError MetadataHelper::SetAdaptiveFOVMetadata(sptr<SurfaceBuffer>& buffer,
     const std::vector<uint8_t>& adaptiveFOVMetadata)
 {

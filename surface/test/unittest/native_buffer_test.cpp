@@ -420,6 +420,11 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue002, TestSize.Level0)
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
         ASSERT_EQ(ret, GSERROR_INTERNAL);
     }
+    type = 4;
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
+    if (ret != GSERROR_NOT_SUPPORT) {
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
 }
 
 /*

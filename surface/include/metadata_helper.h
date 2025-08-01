@@ -92,6 +92,10 @@ public:
     static GSError GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer,
         HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion& crop);
 
+    static GSError SetImageHDRMetadataType(sptr<SurfaceBuffer>& buffer, uint8_t* metadata);
+
+    static bool IsImageMetadataType(uint8_t* metadata);
+
 #ifdef RS_ENABLE_TV_PQ_METADATA
     using OnSetFieldsFunc = std::function<void(TvPQMetadata &tvPQMetadata)>;
     static GSError SetVideoTVMetadata(sptr<SurfaceBuffer>& buffer, const TvPQMetadata& tvMetadata);

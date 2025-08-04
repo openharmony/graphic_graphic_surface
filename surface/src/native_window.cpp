@@ -192,6 +192,8 @@ int32_t NativeWindowRequestBuffer(OHNativeWindow *window,
     OHOS::sptr<OHOS::SurfaceBuffer> sfbuffer;
     OHOS::sptr<OHOS::SyncFence> releaseFence = OHOS::SyncFence::InvalidFence();
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowRequestBuffer Invalid NaitveWindow");
     int32_t ret;
     int32_t requestWidth = window->surface->GetRequestWidth();
     int32_t requestHeight = window->surface->GetRequestHeight();
@@ -222,6 +224,8 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
     if (window == nullptr || buffer == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowFlushBuffer Invalid NaitveWindow");
 
     OHOS::BufferFlushConfigWithDamages config;
     if ((region.rectNumber <= DAMAGES_MAX_SIZE) && (region.rectNumber > 0) && (region.rects != nullptr)) {
@@ -260,6 +264,8 @@ int32_t GetLastFlushedBuffer(OHNativeWindow *window, OHNativeWindowBuffer **buff
     if (window == nullptr || buffer == nullptr || window->surface == nullptr || fenceFd == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "GetLastFlushedBuffer Invalid NaitveWindow");
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
     OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::InvalidFence();
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, false);
@@ -281,6 +287,8 @@ int32_t NativeWindowAttachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowAttachBuffer Invalid NaitveWindow");
     return window->surface->AttachBufferToQueue(buffer->sfbuffer);
 }
 
@@ -290,6 +298,8 @@ int32_t NativeWindowDetachBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowDetachBuffer Invalid NaitveWindow");
     return window->surface->DetachBufferFromQueue(buffer->sfbuffer);
 }
 
@@ -299,6 +309,8 @@ int32_t NativeWindowCancelBuffer(OHNativeWindow *window, OHNativeWindowBuffer *b
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_INVALID_PARAM, "window surface is null");
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowCancelBuffer Invalid NaitveWindow");
     window->surface->CancelBuffer(buffer->sfbuffer);
     return OHOS::SURFACE_ERROR_OK;
 }
@@ -522,6 +534,8 @@ int32_t NativeWindowHandleOpt(OHNativeWindow *window, int code, ...)
     if (window == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowHandleOpt Invalid NaitveWindow");
     va_list args;
     va_start(args, code);
     InternalHandleNativeWindowOpt(window, code, args);
@@ -590,6 +604,8 @@ int32_t NativeWindowSetScalingMode(OHNativeWindow *window, uint32_t sequence, OH
         scalingMode > OHScalingMode::OH_SCALING_MODE_NO_SCALE_CROP) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowSetScalingMode Invalid NaitveWindow");
     return window->surface->SetScalingMode(sequence, static_cast<ScalingMode>(scalingMode));
 }
 
@@ -600,6 +616,8 @@ int32_t NativeWindowSetScalingModeV2(OHNativeWindow *window, OHScalingModeV2 sca
         scalingMode > OHScalingModeV2::OH_SCALING_MODE_SCALE_FIT_V2) {
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowSetScalingModeV2 Invalid NaitveWindow");
     return window->surface->SetScalingMode(static_cast<ScalingMode>(scalingMode));
 }
 
@@ -610,6 +628,8 @@ int32_t NativeWindowSetMetaData(OHNativeWindow *window, uint32_t sequence, int32
         size <= 0 || size > META_DATA_MAX_SIZE || metaData == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowSetMetaData Invalid NaitveWindow");
 
     std::vector<GraphicHDRMetaData> data(reinterpret_cast<const GraphicHDRMetaData *>(metaData),
                                          reinterpret_cast<const GraphicHDRMetaData *>(metaData) + size);
@@ -624,6 +644,8 @@ int32_t NativeWindowSetMetaDataSet(OHNativeWindow *window, uint32_t sequence, OH
         size <= 0 || size > META_DATA_MAX_SIZE || metaData == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowSetMetaDataSet Invalid NaitveWindow");
     std::vector<uint8_t> data(metaData, metaData + size);
     return window->surface->SetMetaDataSet(sequence, static_cast<GraphicHDRMetadataKey>(key), data);
 }
@@ -633,6 +655,8 @@ int32_t NativeWindowSetTunnelHandle(OHNativeWindow *window, const OHExtDataHandl
     if (window == nullptr || window->surface == nullptr || handle == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowSetTunnelHandle Invalid NaitveWindow");
     return window->surface->SetTunnelHandle(reinterpret_cast<const OHOS::GraphicExtDataHandle*>(handle));
 }
 
@@ -641,6 +665,8 @@ int32_t GetSurfaceId(OHNativeWindow *window, uint64_t *surfaceId)
     if (window == nullptr || window->surface == nullptr || surfaceId == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "GetSurfaceId Invalid NaitveWindow");
 
     *surfaceId = window->surface->GetUniqueId();
     return OHOS::GSERROR_OK;
@@ -721,6 +747,10 @@ void NativeWindowSetBufferHold(OHNativeWindow *window)
     if (window == nullptr || window->surface == nullptr) {
         return;
     }
+    if (GetNativeObjectMagic(window) != NATIVE_OBJECT_MAGIC_WINDOW) {
+        BLOGE("NativeWindowSetBufferHold Invalid NaitveWindow");
+        return;
+    }
     window->surface->SetBufferHold(true);
 }
 
@@ -732,6 +762,8 @@ int32_t NativeWindowWriteToParcel(OHNativeWindow *window, OHIPCParcel *parcel)
     if (parcel == nullptr || parcel->msgParcel == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowWriteToParcel Invalid NaitveWindow");
     sptr<OHOS::Surface> windowSurface = window->surface;
     if (windowSurface == nullptr) {
         BLOGE("windowSurface is nullptr");
@@ -776,6 +808,8 @@ int32_t GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeWindowBuffer **bu
     if (window == nullptr || buffer == nullptr || fenceFd == nullptr || window->surface == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "GetLastFlushedBufferV2 Invalid NaitveWindow");
     OHNativeWindowBuffer *nwBuffer = new OHNativeWindowBuffer();
     OHOS::sptr<OHOS::SyncFence> acquireFence = OHOS::SyncFence::InvalidFence();
     int32_t ret = window->surface->GetLastFlushedBuffer(nwBuffer->sfbuffer, acquireFence, matrix, true);
@@ -966,6 +1000,8 @@ int32_t NativeWindowCleanCache(OHNativeWindow *window)
         BLOGE("windowSurface is nullptr");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
+    BLOGE_CHECK_AND_RETURN_RET(GetNativeObjectMagic(window) == NATIVE_OBJECT_MAGIC_WINDOW,
+        SURFACE_ERROR_INVALID_PARAM, "NativeWindowCleanCache Invalid NaitveWindow");
     return windowSurface->CleanCache();
 }
 

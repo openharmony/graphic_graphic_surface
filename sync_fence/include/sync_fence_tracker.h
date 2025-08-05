@@ -54,8 +54,8 @@ private:
     void Loop(const sptr<SyncFence>& fence, bool traceTag);
     int32_t WaitFence(const sptr<SyncFence>& fence);
     bool CheckGpuSubhealthEventLimit();
-    void ReportEventGpuSubhealth(int32_t duration);
-    inline void UpdateFrameQueue(int32_t startTime);
+    void ReportEventGpuSubhealth(int64_t duration);
+    inline void UpdateFrameQueue(int64_t startTime);
     int32_t GetFrameRate();
 };
 }

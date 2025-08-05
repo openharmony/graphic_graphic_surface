@@ -241,15 +241,15 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
         RS_TRACE_NAME_FMT("Waiting for %s %d", threadName_.c_str(), fenceIndex);
         int32_t result = 0;
         if (isGpuFence_ && traceTag) {
-            int32_t startTimestamp = static_cast<int32_t>(
+            int64_t startTimestamp = static_cast<int64_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count());
             UpdateFrameQueue(startTimestamp);
             result = WaitFence(fence);
-            int32_t endTimestamp = static_cast<int32_t>(
+            int64_t endTimestamp = static_cast<int64_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count());
-            int32_t duration = endTimestamp - startTimestamp;
+            int64_t duration = endTimestamp - startTimestamp;
             HILOG_DEBUG(LOG_CORE, "Waiting for Acquire Fence: %{public}" PRId32 "ms", duration);
             if (duration > GPU_SUBHEALTH_EVENT_THRESHOLD && CheckGpuSubhealthEventLimit()) {
                 ReportEventGpuSubhealth(duration);

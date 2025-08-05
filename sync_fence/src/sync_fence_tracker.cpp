@@ -197,7 +197,7 @@ bool SyncFenceTracker::CheckGpuSubhealthEventLimit()
     return false;
 }
 
-inline void SyncFenceTracker::UpdateFrameQueue(int32_t startTime)
+inline void SyncFenceTracker::UpdateFrameQueue(int64_t startTime)
 {
     if (frameStartTimes_->size() >= FRAME_QUEUE_SIZE_LIMIT) {
         frameStartTimes_->pop();
@@ -207,10 +207,10 @@ inline void SyncFenceTracker::UpdateFrameQueue(int32_t startTime)
 
 int32_t SyncFenceTracker::GetFrameRate()
 {
-    int32_t frameRate = 0;
-    int32_t frameNum = static_cast<int32_t>(frameStartTimes_->size());
+    int64_t frameRate = 0;
+    int64_t frameNum = static_cast<int64_t>(frameStartTimes_->size());
     if (frameNum > 1) {
-        int32_t interval = frameStartTimes_->back() - frameStartTimes_->front();
+        int64_t interval = frameStartTimes_->back() - frameStartTimes_->front();
         if (interval > 0) {
             frameRate = FRAME_PERIOD * (frameNum - 1) / interval;
         }
@@ -218,7 +218,7 @@ int32_t SyncFenceTracker::GetFrameRate()
     return frameRate;
 }
 
-void SyncFenceTracker::ReportEventGpuSubhealth(int32_t duration)
+void SyncFenceTracker::ReportEventGpuSubhealth(int64_t duration)
 {
     if (handler_) {
         handler_->PostTask([this, duration]() {

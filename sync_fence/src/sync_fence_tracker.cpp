@@ -197,7 +197,7 @@ bool SyncFenceTracker::CheckGpuSubhealthEventLimit()
     return false;
 }
 
-inline void SyncFenceTracker::UpdateFrameQueue(int32_t startTime)
+inline void SyncFenceTracker::UpdateFrameQueue(int64_t startTime)
 {
     if (frameStartTimes_->size() >= FRAME_QUEUE_SIZE_LIMIT) {
         frameStartTimes_->pop();
@@ -207,10 +207,10 @@ inline void SyncFenceTracker::UpdateFrameQueue(int32_t startTime)
 
 int32_t SyncFenceTracker::GetFrameRate()
 {
-    int32_t frameRate = 0;
-    int32_t frameNum = static_cast<int32_t>(frameStartTimes_->size());
+    int64_t frameRate = 0;
+    int64_t frameNum = static_cast<int64_t>(frameStartTimes_->size());
     if (frameNum > 1) {
-        int32_t interval = frameStartTimes_->back() - frameStartTimes_->front();
+        int64_t interval = frameStartTimes_->back() - frameStartTimes_->front();
         if (interval > 0) {
             frameRate = FRAME_PERIOD * (frameNum - 1) / interval;
         }
@@ -218,14 +218,14 @@ int32_t SyncFenceTracker::GetFrameRate()
     return frameRate;
 }
 
-void SyncFenceTracker::ReportEventGpuSubhealth(int32_t duration)
+void SyncFenceTracker::ReportEventGpuSubhealth(int64_t duration)
 {
     if (handler_) {
         handler_->PostTask([this, duration]() {
             RS_TRACE_NAME_FMT("report GPU_SUBHEALTH_MONITORING");
             auto reportName = "GPU_SUBHEALTH_MONITORING";
             HILOG_DEBUG(LOG_CORE, "report GPU_SUBHEALTH_MONITORING. duration : %{public}"
-                PRId32, duration);
+                PRId64, duration);
             HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::GRAPHIC, reportName,
                 OHOS::HiviewDFX::HiSysEvent::EventType::STATISTIC, "WAIT_ACQUIRE_FENCE_TIME",
                 duration, "FRAME_RATE", GetFrameRate());
@@ -241,16 +241,16 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
         RS_TRACE_NAME_FMT("Waiting for %s %d", threadName_.c_str(), fenceIndex);
         int32_t result = 0;
         if (isGpuFence_ && traceTag) {
-            int32_t startTimestamp = static_cast<int32_t>(
+            int64_t startTimestamp = static_cast<int64_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count());
             UpdateFrameQueue(startTimestamp);
             result = WaitFence(fence);
-            int32_t endTimestamp = static_cast<int32_t>(
+            int64_t endTimestamp = static_cast<int64_t>(
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count());
-            int32_t duration = endTimestamp - startTimestamp;
-            HILOG_DEBUG(LOG_CORE, "Waiting for Acquire Fence: %{public}" PRId32 "ms", duration);
+            int64_t duration = endTimestamp - startTimestamp;
+            HILOG_DEBUG(LOG_CORE, "Waiting for Acquire Fence: %{public}" PRId64 "ms", duration);
             if (duration > GPU_SUBHEALTH_EVENT_THRESHOLD && CheckGpuSubhealthEventLimit()) {
                 ReportEventGpuSubhealth(duration);
             }

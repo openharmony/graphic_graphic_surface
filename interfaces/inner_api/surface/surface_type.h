@@ -144,6 +144,9 @@ using GraphicPixelFormat = enum {
      * Commonly used in high dynamic range (HDR) rendering to improve color depth while keeping 32-bit alignment.
      */
     GRAPHIC_PIXEL_FMT_RGBA_1010108 = 43,
+    /**< End marker for valid enums, new entries MUST be added above this line */
+    GRAPHIC_PIXEL_FMT_END_OF_VALID,
+    /**< Fixed value strictly corresponding to HDI, cannot be contiguous with normal enums */
     GRAPHIC_PIXEL_FMT_VENDER_MASK = 0X7FFF0000,     /**< vendor mask format */
     GRAPHIC_PIXEL_FMT_BUTT = 0X7FFFFFFF             /**< Invalid pixel format */
 };

@@ -249,15 +249,15 @@ GSError MetadataHelper::GetAdaptiveFOVMetadata(const sptr<SurfaceBuffer>& buffer
         adaptiveFOVMetadata);
 }
 
-GSError MetadataHelper::GetVideoDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
-    std::vector<uint8_t>& videoDynamicMetadata)
+GSError MetadataHelper::GetSDRDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
+    std::vector<uint8_t>& sdrDynamicMetadata)
 {
     if (buffer == nullptr) {
         return GSERROR_NO_BUFFER;
     }
 
     return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_0::ATTRKEY_EXTERNAL_METADATA_002,
-        videoDynamicMetadata);
+        sdrDynamicMetadata);
 }
 
 #ifdef RS_ENABLE_TV_PQ_METADATA

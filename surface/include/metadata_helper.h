@@ -118,8 +118,8 @@ public:
     static GSError GetAdaptiveFOVMetadata(const sptr<SurfaceBuffer>& buffer,
         std::vector<uint8_t>& adaptiveFOVMetadata);
 
-    static GSError GetVideoDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
-        std::vector<uint8_t>& videoDynamicMetadata);
+    static GSError GetSDRDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
+        std::vector<uint8_t>& sdrDynamicMetadata);
 private:
 #ifdef RS_ENABLE_TV_PQ_METADATA
     static GSError UpdateTVMetadataField(sptr<SurfaceBuffer>& buffer, OnSetFieldsFunc func);

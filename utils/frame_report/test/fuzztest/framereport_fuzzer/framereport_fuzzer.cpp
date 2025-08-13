@@ -24,7 +24,7 @@ namespace Rosen {
 namespace {
 const uint8_t* DATA = nullptr;
 size_t g_size = 0;
-size_t g_pos;
+size_t g_pos = 0;
 } // namespace
 
 template<class T>

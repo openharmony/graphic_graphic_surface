@@ -24,7 +24,7 @@ namespace g_fuzzCommon {
 constexpr size_t STR_LEN = 10;
 const uint8_t* g_data = nullptr;
 size_t g_size = 0;
-size_t g_pos;
+size_t g_pos = 0;
 
 
 /*

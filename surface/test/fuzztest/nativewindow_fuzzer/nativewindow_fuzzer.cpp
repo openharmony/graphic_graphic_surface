@@ -37,7 +37,7 @@ namespace OHOS {
         constexpr int DEFAULT_FENCE = 100;
         const uint8_t* g_data = nullptr;
         size_t g_size = 0;
-        size_t g_pos;
+        size_t g_pos = 0;
     }
 
     void HandleOpt(OHNativeWindow *nativeWindow)

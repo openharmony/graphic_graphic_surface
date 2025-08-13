@@ -113,7 +113,7 @@ public:
                         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
-        sptr<SyncFence> fence, const BufferFlushConfigWithDamages& config, bool& isNeedCallConsumerListener);
+        sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config);
 
     GSError GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
         float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, bool needRecordSequence = false);
@@ -258,7 +258,6 @@ public:
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
     GSError AcquireLppBuffer(
         sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages);
-    GSError SetDropBufferMode(bool enableDrop);
     GSError SetAlphaType(GraphicAlphaType alphaType);
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
@@ -314,7 +313,7 @@ private:
         const sptr<SyncFence> &fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
     GSError CheckBufferQueueCacheLocked(uint32_t sequence);
     GSError DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
-        sptr<SyncFence> fence, const BufferFlushConfigWithDamages& config, std::unique_lock<std::mutex>& lock);
+        sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
     GSError SetupNewBufferLocked(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
@@ -409,7 +408,6 @@ private:
     int64_t lastConsumeTime_ = 0;
     uint32_t maxQueueSize_ = 0;
     bool isActiveGame_ = false;
-    bool isDropMode_ = false;
     bool isFirstSetDropModeOpen_ = false;
     GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
     bool isPriorityAlloc_ = false;

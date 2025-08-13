@@ -28,6 +28,31 @@
 
 using namespace g_fuzzCommon;
 namespace OHOS {
+    namespace {
+        const uint8_t* g_data = nullptr;
+        size_t g_size = 0;
+        size_t g_pos = 0;
+    }
+
+    /*
+    * describe: get data from outside untrusted data(g_data) which size is according to sizeof(T)
+    * tips: only support basic type
+    */
+    template<class T>
+    T GetData()
+    {
+        T object {};
+        size_t objectSize = sizeof(object);
+        if (g_data == nullptr || objectSize > g_size - g_pos) {
+            return object;
+        }
+        errno_t ret = memcpy_s(&object, objectSize, g_data + g_pos, objectSize);
+        if (ret != EOK) {
+            return {};
+        }
+        g_pos += objectSize;
+        return object;
+    }
     static constexpr const uint32_t QUESIZE_RANGE = 10;
     static constexpr const uint32_t QUESIZE_MIN = 3;
     static constexpr const uint32_t BUFFERR_ROTATION_TIMES = 500;
@@ -237,6 +262,9 @@ namespace OHOS {
         if (data == nullptr) {
             return false;
         }
+        // initialize
+        g_data = data;
+        g_size = size;
         BufferRotationConcurrentWithAttachBufferAndDetachBufferAndCleanCacheAndGoBackground();
         return true;
     }

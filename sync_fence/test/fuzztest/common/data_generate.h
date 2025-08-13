@@ -23,7 +23,7 @@ namespace g_fuzzCommon {
 constexpr size_t STR_LEN = 10;
 const uint8_t* g_data = nullptr;
 size_t g_size = 0;
-size_t g_pos;
+size_t g_pos = 0;
 
 /*
 * describe: get data from outside untrusted data(g_data) which size is according to sizeof(T)

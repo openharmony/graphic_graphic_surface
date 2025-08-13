@@ -670,6 +670,7 @@ GSError SurfaceBufferImpl::ReadBufferProperty(MessageParcel& parcel)
 
 GSError SurfaceBufferImpl::ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     bufferRequestConfig_ = bufferInfo.bufferRequestConfig;
     surfaceBufferWidth_ = bufferInfo.surfaceBufferWidth;
     surfaceBufferHeight_ = bufferInfo.surfaceBufferHeight;

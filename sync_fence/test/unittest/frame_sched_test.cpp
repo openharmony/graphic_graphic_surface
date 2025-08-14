@@ -64,9 +64,17 @@ HWTEST_F(FrameSchedTest, SendFenceId001, Function | MediumTest | Level2)
     Rosen::FrameSched frameSched_;
     uint32_t fenceId = 1;
     frameSched_.sendFenceIdFunc_ = nullptr;
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.SendFenceId(fenceId);
+    EXPECT_EQ(frameSched_.sendFenceIdFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
     frameSched_.SendFenceId(fenceId);
     EXPECT_EQ(frameSched_.sendFenceIdFunc_, nullptr);
     frameSched_.LoadLibrary();
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.SendFenceId(fenceId);
+    EXPECT_NE(frameSched_.sendFenceIdFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
     frameSched_.SendFenceId(fenceId);
     EXPECT_NE(frameSched_.sendFenceIdFunc_, nullptr);
 }
@@ -84,9 +92,17 @@ HWTEST_F(FrameSchedTest, MonitorGpuStart001, Function | MediumTest | Level2)
     Rosen::FrameSched frameSched_;
     uint32_t fenceId = 1;
     frameSched_.monitorGpuStartFunc_ = nullptr;
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.MonitorGpuStart(fenceId);
+    EXPECT_EQ(frameSched_.monitorGpuStartFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
     frameSched_.MonitorGpuStart(fenceId);
     EXPECT_EQ(frameSched_.monitorGpuStartFunc_, nullptr);
     frameSched_.LoadLibrary();
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.MonitorGpuStart(fenceId);
+    EXPECT_NE(frameSched_.monitorGpuStartFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
     frameSched_.MonitorGpuStart(fenceId);
     EXPECT_NE(frameSched_.monitorGpuStartFunc_, nullptr);
 }
@@ -103,9 +119,17 @@ HWTEST_F(FrameSchedTest, MonitorGpuEnd001, Function | MediumTest | Level2)
 {
     Rosen::FrameSched frameSched_;
     frameSched_.monitorGpuEndFunc_ = nullptr;
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.MonitorGpuEnd();
+    EXPECT_EQ(frameSched_.monitorGpuEndFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
     frameSched_.MonitorGpuEnd();
     EXPECT_EQ(frameSched_.monitorGpuEndFunc_, nullptr);
     frameSched_.LoadLibrary();
+    frameSched_.schedSoLoaded_ = false;
+    frameSched_.MonitorGpuEnd();
+    EXPECT_NE(frameSched_.monitorGpuEndFunc_, nullptr);
+    frameSched_.schedSoLoaded_ = true;
     frameSched_.MonitorGpuEnd();
     EXPECT_NE(frameSched_.monitorGpuEndFunc_, nullptr);
 }

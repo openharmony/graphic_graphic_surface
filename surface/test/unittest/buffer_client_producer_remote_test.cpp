@@ -694,6 +694,20 @@ HWTEST_F(BufferClientProducerRemoteTest, SetBufferhold001, TestSize.Level0)
 }
 
 /*
+* Function: SetBufferReallocFlag
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferReallocFlag and check ret
+* @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetBufferReallocFlag001, TestSize.Level0)
+{
+    EXPECT_EQ(bp->SetBufferReallocFlag(true), GSERROR_OK);
+    EXPECT_EQ(bp->SetBufferReallocFlag(false), GSERROR_OK);
+}
+
+/*
 * Function: SetRequestBufferNoblockMode
 * Type: Function
 * Rank: Important(1)

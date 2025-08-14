@@ -2686,6 +2686,7 @@ GSError BufferQueue::AcquireLppBuffer(
         .w = bufferSlot.damage[2],
         .h = bufferSlot.damage[3],
     }};
+    buffer->SetSurfaceBufferTransform(transform_);
     timestamp = bufferSlot.timestamp;
     return GSERROR_OK;
 }

@@ -113,7 +113,7 @@ void FrameSched::Init()
 
 void FrameSched::SendFenceId(uint32_t fenceId)
 {
-    if (sendFenceIdFunc_ != nullptr) {
+    if (schedSoLoaded_ && sendFenceIdFunc_ != nullptr) {
         sendFenceIdFunc_(fenceId);
     } else {
         LOGE("FrameSched:[SendFenceId]load SendFenceId function failed.");
@@ -122,7 +122,7 @@ void FrameSched::SendFenceId(uint32_t fenceId)
 
 void FrameSched::MonitorGpuStart(uint32_t fenceId)
 {
-    if (monitorGpuStartFunc_ != nullptr) {
+    if (schedSoLoaded_ && monitorGpuStartFunc_ != nullptr) {
         monitorGpuStartFunc_(fenceId);
     } else {
         LOGE("FrameSched:[MonitorStart]load MonitorStart function failed.");
@@ -131,7 +131,7 @@ void FrameSched::MonitorGpuStart(uint32_t fenceId)
 
 void FrameSched::MonitorGpuEnd()
 {
-    if (monitorGpuEndFunc_ != nullptr) {
+    if (schedSoLoaded_ && monitorGpuEndFunc_ != nullptr) {
         monitorGpuEndFunc_();
     } else {
         LOGE("FrameSched:[MonitorEnd]load MonitorEnd function failed.");

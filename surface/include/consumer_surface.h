@@ -747,14 +747,6 @@ public:
      */
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource) override;
     /**
-     * @brief Set the drop mode for the surface.
-     *
-     * @param enableDrop [in] the drop mode
-     * @return {@link GSERROR_OK} 0 - Success.
-     * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
-     */
-    GSError SetDropBufferMode(bool enableDrop) override;
-    /**
      * @brief Get the alpha type for the surface.
      *
      * @param alphaType [in] the alpha type

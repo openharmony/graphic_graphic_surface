@@ -696,14 +696,11 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
         CancelBuffer(sequence, bedata);
         return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
     }
-    bool isNeedCallConsumerListener = true;
-    sret = DoFlushBuffer(sequence, bedata, fence, config, isNeedCallConsumerListener);
+    sret = DoFlushBuffer(sequence, bedata, fence, config);
     if (sret != GSERROR_OK) {
         return sret;
     }
-    if (isNeedCallConsumerListener) {
-        CallConsumerListener();
-    }
+    CallConsumerListener();
 
     if (wpCSurfaceDelegator_ != nullptr) {
         sret = DelegatorQueueBuffer(sequence, fence);
@@ -780,8 +777,8 @@ GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
     return GSERROR_OK;
 }
 
-GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata, sptr<SyncFence> fence,
-    const BufferFlushConfigWithDamages& config, std::unique_lock<std::mutex>& lock)
+GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock)
 {
     auto mapIter = bufferQueueCache_.find(sequence);
     if (mapIter == bufferQueueCache_.end()) {
@@ -837,7 +834,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
 }
 
 GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata,
-    sptr<SyncFence> fence, const BufferFlushConfigWithDamages& config, bool& isNeedCallConsumerListener)
+    sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config)
 {
     SURFACE_TRACE_NAME_FMT("DoFlushBuffer name: %s queueId: %" PRIu64 " seq: %u",
         name_.c_str(), uniqueId_, sequence);
@@ -849,16 +846,10 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
             std::chrono::steady_clock::now().time_since_epoch()).count();
     }
     auto ret = DoFlushBufferLocked(sequence, bedata, fence, config, lock);
-    if (ret == GSERROR_OK) {
-        if (isActiveGame_) {
-            endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::steady_clock::now().time_since_epoch()).count();
-            bufferQueueCache_[sequence].flushTimeNs = endTimeNs - startTimeNs;
-        }
-        if ((isDropMode_ && dirtyList_.size() != 1) && !isFirstSetDropModeOpen_) {
-            isNeedCallConsumerListener = false;
-        }
-        isFirstSetDropModeOpen_ = false;
+    if (ret == GSERROR_OK && isActiveGame_) {
+        endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        bufferQueueCache_[sequence].flushTimeNs = endTimeNs - startTimeNs;
     }
     return ret;
 }
@@ -2762,16 +2753,6 @@ GSError BufferQueue::SetLppDrawSource(bool isShbSource, bool isRsSource)
     }
     lppSlotInfo_->isStopShbDraw = !isShbSource;
     isRsDrawLpp_ = isRsSource;
-    return GSERROR_OK;
-}
-
-GSError BufferQueue::SetDropBufferMode(bool enableDrop)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    isDropMode_ = enableDrop;
-    if (enableDrop) {
-        isFirstSetDropModeOpen_ = true;
-    }
     return GSERROR_OK;
 }
 

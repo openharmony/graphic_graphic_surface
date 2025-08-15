@@ -98,7 +98,6 @@ public:
     GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence> &fence);
     GSError SetIsActiveGame(bool isActiveGame);
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
-    GSError SetDropBufferMode(bool enableDrop);
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
 private:

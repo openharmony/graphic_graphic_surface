@@ -290,7 +290,6 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     ASSERT_EQ(consumer->GetMaxQueueSize(maxQueueSize), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetFrontDesiredPresentTimeStamp(
         frontDesiredPresentTimeStamp, isAutoTimeStamp), OHOS::SURFACE_ERROR_UNKOWN);
-    ASSERT_EQ(consumer->SetDropBufferMode(true), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetAlphaType(alphaType), OHOS::SURFACE_ERROR_UNKOWN);
 }
 

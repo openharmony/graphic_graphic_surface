@@ -382,11 +382,6 @@ public:
         (void)isRsSource;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
-    virtual GSError SetDropBufferMode(bool enableDrop)
-    {
-        (void)enableDrop;
-        return GSERROR_NOT_SUPPORT;
-    }
     virtual GSError SetIsPriorityAlloc(bool isPriorityAlloc)
     {
         (void)isPriorityAlloc;

@@ -58,7 +58,6 @@ namespace OHOS {
         // initialize
         g_data = data;
         g_size = size;
-        g_pos = 0;
 
         int32_t fenceFd = GetData<int32_t>();
         OH_NativeFence_IsValid(fenceFd);

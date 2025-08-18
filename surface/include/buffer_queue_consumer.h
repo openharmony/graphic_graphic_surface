@@ -32,7 +32,6 @@ public:
                                int64_t &timestamp, std::vector<Rect> &damages, bool isLppMode = false);
     GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
                           bool isUsingAutoTimestamp);
-    GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue);
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence);
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer);
@@ -95,8 +94,6 @@ public:
     GSError GetLastConsumeTime(int64_t &lastConsumeTime) const;
     GSError SetMaxQueueSize(uint32_t queueSize);
     GSError GetMaxQueueSize(uint32_t &queueSize) const;
-    GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence> &fence);
-    GSError SetIsActiveGame(bool isActiveGame);
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);

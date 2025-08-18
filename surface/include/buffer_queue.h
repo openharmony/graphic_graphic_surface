@@ -73,8 +73,6 @@ using BufferElement = struct BufferElement {
      * lastAcquireTime is the time when this buffer was acquired last time through AcquireBuffer interface.
      */
     int64_t lastAcquireTime;
-    int64_t requestTimeNs;
-    int64_t flushTimeNs;
     bool isBufferNeedRealloc = false;
 };
 
@@ -122,7 +120,6 @@ public:
                           int64_t &timestamp, std::vector<Rect> &damages);
     GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue, int64_t expectPresentTimestamp,
                           bool isUsingAutoTimestamp);
-    GSError AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue);
     GSError ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence);
 
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut);
@@ -251,9 +248,6 @@ public:
     GSError GetLastConsumeTime(int64_t &lastConsumeTime);
     GSError SetMaxQueueSize(uint32_t queueSize);
     GSError GetMaxQueueSize(uint32_t &queueSize) const;
-    GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence> &fence);
-    GSError ReleaseBufferLocked(BufferElement &ele, const sptr<SyncFence> &fence, std::unique_lock<std::mutex> &lock);
-    GSError SetIsActiveGame(bool isActiveGame);
     GSError SetLppShareFd(int fd, bool state);
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
     GSError AcquireLppBuffer(
@@ -327,8 +321,6 @@ private:
 
     void MarkBufferReclaimableByIdLocked(uint32_t sequence);
     GSError SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std::mutex> &lock);
-    GSError AcquireBufferLocked(sptr<SurfaceBuffer>& buffer, sptr<SyncFence>& fence,
-                                int64_t &timestamp, std::vector<Rect> &damages);
     void FlushLppBuffer();
     GSError ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
         BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
@@ -336,6 +328,7 @@ private:
     GSError ReuseBufferForBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
         BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -407,7 +400,6 @@ private:
     uint32_t detachReserveSlotNum_ = 0;
     int64_t lastConsumeTime_ = 0;
     uint32_t maxQueueSize_ = 0;
-    bool isActiveGame_ = false;
     bool isFirstSetDropModeOpen_ = false;
     GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
     bool isPriorityAlloc_ = false;

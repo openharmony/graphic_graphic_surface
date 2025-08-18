@@ -33,10 +33,6 @@ public:
         sptr<SyncFence> fence;
         int64_t timestamp;
         std::vector<Rect> damages;
-        int64_t desiredPresentTimestamp;
-        int64_t requestTimeNs;
-        int64_t flushTimeNs;
-        bool isAutoTimestamp;
     };
 
     static sptr<IConsumerSurface> Create(std::string name = "noname");
@@ -358,22 +354,6 @@ public:
     {
         (void)desiredPresentTimeStamp;
         (void)isAutoTimeStamp;
-        return SURFACE_ERROR_NOT_SUPPORT;
-    }
-    virtual GSError AcquireBuffer(AcquireBufferReturnValue &returnValue)
-    {
-        (void)returnValue;
-        return SURFACE_ERROR_NOT_SUPPORT;
-    }
-    virtual GSError ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
-    {
-        (void)sequence;
-        (void)fence;
-        return SURFACE_ERROR_NOT_SUPPORT;
-    }
-    virtual GSError SetIsActiveGame(bool isActiveGame)
-    {
-        (void)isActiveGame;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     virtual GSError SetLppDrawSource(bool isShbSource, bool isRsSource)

@@ -2679,12 +2679,17 @@ GSError BufferQueue::AcquireLppBuffer(
     }
     buffer = bufferPtr->second;
     fence = SyncFence::INVALID_FENCE;
-    damages = {{
-        .x = bufferSlot.damage[0],
-        .y = bufferSlot.damage[1],
-        .w = bufferSlot.damage[2],
-        .h = bufferSlot.damage[3],
-    }};
+    damages = {{.x = 0, .y = 0, .w = buffer->GetWidth(), .h = buffer->GetHeight()}};
+    OHOS::HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion crop = {
+        .left = bufferSlot.crop[0],
+        .top = bufferSlot.crop[1],
+        .width = bufferSlot.crop[2],
+        .height = bufferSlot.crop[3],
+    };
+    std::vector<uint8_t> cropRect;
+    if (MetadataHelper::ConvertMetadataToVec(crop, cropRect) == GSERROR_OK) {
+        buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V1_0::ATTRKEY_CROP_REGION, cropRect);
+    }
     buffer->SetSurfaceBufferTransform(transform_);
     timestamp = bufferSlot.timestamp;
     return GSERROR_OK;

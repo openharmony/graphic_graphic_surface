@@ -38,21 +38,4 @@ void AcquireFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag
     }
     tracker_->TrackFence(fence, traceTag);
 }
-
-void AcquireFenceTracker::SetBlurSize(int32_t blurSize)
-{
-    if (tracker_ == nullptr) {
-        return;
-    }
-    tracker_->SetBlurSize(blurSize);
-}
-
-void AcquireFenceTracker::SetContainerNodeNum(int containerNodeNum)
-{
-    if (tracker_ == nullptr) {
-        return;
-    }
-    tracker_->SetContainerNodeNum(containerNodeNum);
-}
-
 } // namespace OHOS

@@ -30,8 +30,6 @@ public:
     ~SyncFenceTracker() = default;
 
     void TrackFence(const sptr<SyncFence>& fence, bool traceTag = true);
-    void SetBlurSize(int32_t blurSize);
-    void SetContainerNodeNum(int containerNodeNum);
 
 private:
     const uint32_t SYNC_TIME_OUT = 3000;
@@ -50,7 +48,6 @@ private:
     int32_t gpuSubhealthEventNum_ = 0;
     int32_t gpuSubhealthEventDay_ = 0;
     std::queue<int32_t> *frameStartTimes_ = new std::queue<int32_t>;
-    int processedNodeNum_ = 0;
     void Loop(const sptr<SyncFence>& fence, bool traceTag);
     int32_t WaitFence(const sptr<SyncFence>& fence);
     bool CheckGpuSubhealthEventLimit();

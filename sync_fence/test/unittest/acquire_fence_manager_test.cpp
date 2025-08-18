@@ -54,39 +54,6 @@ HWTEST_F(AcquireFenceTrackerTest, TrackFence001, Function | MediumTest | Level2)
 }
 
 /*
-* Function: SetBlurSize
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SetBlurSize
-*                  2. check ret
-*/
-HWTEST_F(AcquireFenceTrackerTest, blurSize001, Function | MediumTest | Level2)
-{
-    int32_t blurSize = 10;
-    AcquireFenceTracker::SetBlurSize(blurSize);
-    EXPECT_NE(AcquireFenceTracker::tracker_, nullptr);
-}
-
-/*
-* Function: SetContainerNodeNum
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SetContainerNodeNum
-*                  2. check ret
-*/
-HWTEST_F(AcquireFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest | Level2)
-{
-    int containerNodeNum = 1000;
-    EXPECT_NE(AcquireFenceTracker::tracker_, nullptr);
-    AcquireFenceTracker::tracker_->processedNodeNum_ = 0;
-    AcquireFenceTracker::tracker_->isGpuEnable_ = true;
-    AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
-    EXPECT_EQ(AcquireFenceTracker::tracker_->processedNodeNum_, containerNodeNum);
-}
-
-/*
 * Function: AcquireFenceTracker
 * Type: Function
 * Rank: Important(2)
@@ -99,11 +66,6 @@ HWTEST_F(AcquireFenceTrackerTest, AcquireFenceTracker001, Function | MediumTest 
     sptr<SyncFence> syncFence = new SyncFence(0);
     AcquireFenceTracker::tracker_ = nullptr;
     AcquireFenceTracker::TrackFence(syncFence, true);
-    int32_t blurSize = 10;
-    AcquireFenceTracker::SetBlurSize(blurSize);
-    int containerNodeNum = 1000;
-    AcquireFenceTracker::SetContainerNodeNum(containerNodeNum);
-    EXPECT_EQ(AcquireFenceTracker::tracker_->processedNodeNum_, 0);
 }
 
 /*

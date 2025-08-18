@@ -198,45 +198,4 @@ HWTEST_F(SyncFenceTrackerTest, WaitFence001, Function | MediumTest | Level2)
 
     delete tracker;
 }
-
-/*
-* Function: SetBlurSize
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SetBlurSize
-*                  2. check ret
-*/
-HWTEST_F(SyncFenceTrackerTest, SetBlurSize001, Function | MediumTest | Level2)
-{
-    auto tracker = new SyncFenceTracker("SetBlurSize001");
-    EXPECT_NE(tracker->handler_, nullptr);
-    tracker->SetBlurSize(0);
-    tracker->handler_ = nullptr;
-    tracker->SetBlurSize(0);
-    delete tracker;
-}
-
-/*
-* Function: SetContainerNodeNum
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SetContainerNodeNum
-*                  2. check ret
-*/
-HWTEST_F(SyncFenceTrackerTest, SetContainerNodeNum001, Function | MediumTest | Level2)
-{
-    auto tracker = new SyncFenceTracker("SetContainerNodeNum001");
-    tracker->isGpuEnable_ = true;
-    tracker->processedNodeNum_ = 0;
-    tracker->SetContainerNodeNum(1);
-    EXPECT_EQ(tracker->processedNodeNum_, 1);
-
-    tracker->isGpuEnable_ = false;
-    tracker->SetContainerNodeNum(1);
-    EXPECT_EQ(tracker->processedNodeNum_, 1);
-    
-    delete tracker;
-}
 }

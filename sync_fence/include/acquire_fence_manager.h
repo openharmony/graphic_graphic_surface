@@ -27,8 +27,6 @@ public:
     AcquireFenceTracker() = default;
     ~AcquireFenceTracker();
     static void TrackFence(const sptr<SyncFence>& fence, bool traceTag);
-    static void SetBlurSize(int32_t blurSize);
-    static void SetContainerNodeNum(int containerNodeNum);
 private:
     static SyncFenceTracker* tracker_;
 };

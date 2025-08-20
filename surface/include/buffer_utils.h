@@ -37,7 +37,7 @@ GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd);
 
 bool GetBoolParameter(const std::string &name, const std::string &defaultValue);
 
-void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config);
+bool ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config);
 static inline GSError WriteRequestConfig(MessageParcel &parcel, BufferRequestConfig const &config)
 {
     if (!parcel.WriteInt32(config.width) || !parcel.WriteInt32(config.height) ||

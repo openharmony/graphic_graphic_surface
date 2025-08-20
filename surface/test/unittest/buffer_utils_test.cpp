@@ -222,6 +222,24 @@ HWTEST_F(BufferUtilsTest, SizeLimitTest001, TestSize.Level0)
 }
 
 /*
+ * Function: SizeLimitTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. make size bigger than SURFACE_PARCEL_SIZE_LIMIT and check the ret
+ */
+HWTEST_F(BufferUtilsTest, ReadHDRMetaDataParseErr, TestSize.Level0)
+{
+    MessageParcel parcel;
+    uint32_t size = 1;
+    auto metaData = std::vector<GraphicHDRMetaData>(size);
+    EXPECT_EQ(ReadHDRMetaData(parcel, metaData), GSERROR_BINDER);
+    
+    parcel.WriteInt32(5);
+    EXPECT_EQ(ReadHDRMetaData(parcel, metaData), GSERROR_BINDER);
+}
+
+/*
 * Function: ReadSurfaceProperty
 * Type: Function
 * Rank: Important(2)

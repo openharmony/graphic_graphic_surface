@@ -57,14 +57,16 @@ bool GetBoolParameter(const std::string &name, const std::string &defaultValue)
     return system::GetParameter(name, defaultValue) != "0";
 }
 
-void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
+bool ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
 {
-    config.width = parcel.ReadInt32();
-    config.height = parcel.ReadInt32();
-    config.strideAlignment = parcel.ReadInt32();
-    config.format = parcel.ReadInt32();
-    config.usage = parcel.ReadUint64();
-    config.timeout = parcel.ReadInt32();
+    bool parcelRead = !parcel.ReadInt32(config.width) || !parcel.ReadInt32(config.height) ||
+                      !parcel.ReadInt32(config.strideAlignment) || !parcel.ReadInt32(config.format) ||
+                      !parcel.ReadUint64(config.usage) || !parcel.ReadInt32(config.timeout);
+    if (parcelRead) {
+        BLOGE("parcel read fail.");
+        return false;
+    }
+
     config.colorGamut = static_cast<GraphicColorGamut>(parcel.ReadInt32());
     if (config.colorGamut < GRAPHIC_COLOR_GAMUT_INVALID || config.colorGamut > GRAPHIC_COLOR_GAMUT_DISPLAY_BT2020) {
         config.colorGamut = GRAPHIC_COLOR_GAMUT_INVALID;
@@ -73,6 +75,7 @@ void ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
     if (config.transform < GRAPHIC_ROTATE_NONE || config.transform > GRAPHIC_ROTATE_BUTT) {
         config.transform = GRAPHIC_ROTATE_BUTT;
     }
+    return true;
 }
 
 GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config)
@@ -194,7 +197,10 @@ GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVeri
 
 GSError ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData)
 {
-    uint32_t size = parcel.ReadUint32();
+    uint32_t size = 0;
+    if (!parcel.ReadUint32(size)) {
+        return GSERROR_BINDER;
+    }
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadHDRMetaData size more than limit, size: %{public}u", size);
         return GSERROR_BINDER;
@@ -203,7 +209,9 @@ GSError ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &
     GraphicHDRMetaData data;
     for (uint32_t index = 0; index < size; index++) {
         data.key = static_cast<GraphicHDRMetadataKey>(parcel.ReadUint32());
-        data.value = parcel.ReadFloat();
+        if (!parcel.ReadFloat(data.value)) {
+            return GSERROR_BINDER;
+        }
         metaData.emplace_back(data);
     }
     return GSERROR_OK;
@@ -266,7 +274,10 @@ GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &hand
         BLOGE("handle is null");
         return GSERROR_BINDER;
     }
-    uint32_t reserveInts = parcel.ReadUint32();
+    uint32_t reserveInts = 0;
+    if (!parcel.ReadUint32(reserveInts)) {
+        return GSERROR_BINDER;
+    }
     if (reserveInts > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadExtDataHandle size more than limit, size: %{public}u", reserveInts);
         return GSERROR_BINDER;
@@ -278,7 +289,9 @@ GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &hand
     }
     ReadFileDescriptor(parcel, tunnelHandle->fd);
     for (uint32_t index = 0; index < reserveInts; index++) {
-        tunnelHandle->reserve[index] = parcel.ReadInt32();
+        if (!parcel.ReadInt32(tunnelHandle->reserve[index])) {
+            return GSERROR_BINDER;
+        }
     }
     if (handle->SetHandle(tunnelHandle) != GSERROR_OK) {
         BLOGE("SetHandle failed");

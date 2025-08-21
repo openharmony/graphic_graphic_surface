@@ -190,7 +190,9 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
             std::chrono::steady_clock::now().time_since_epoch()).count();
     }
 
-    ReadRequestConfig(arguments, config);
+    if (!ReadRequestConfig(arguments, config)) {
+        return GSERROR_BINDER;
+    }
 
     GSError sRet = RequestBuffer(config, bedataimpl, retval);
     if (!reply.WriteInt32(sRet)) {
@@ -221,9 +223,12 @@ int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, Mess
     std::vector<sptr<BufferExtraData>> bedataimpls;
     BufferRequestConfig config = {};
     uint32_t num = 0;
-
-    arguments.ReadUint32(num);
-    ReadRequestConfig(arguments, config);
+    if (!arguments.ReadUint32(num)) {
+        return GSERROR_BINDER;
+    }
+    if (!ReadRequestConfig(arguments, config)) {
+        return GSERROR_BINDER;
+    }
     if (num == 0 || num > SURFACE_MAX_QUEUE_SIZE) {
         return ERR_NONE;
     }
@@ -279,6 +284,9 @@ int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
     }
 
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    if (listener == nullptr) {
+        return ERR_INVALID_DATA;
+    }
     GSError sRet = RegisterPropertyListener(listener, info.producerId);
     bool result = HandleDeathRecipient(token);
     if (!reply.WriteInt32((result && sRet == GSERROR_OK) ? GSERROR_OK : SURFACE_ERROR_UNKOWN)) {
@@ -473,7 +481,9 @@ int32_t BufferQueueProducer::AttachBufferRemote(MessageParcel &arguments, Messag
         }
         return ERR_INVALID_DATA;
     }
-    timeOut = arguments.ReadInt32();
+    if (!arguments.ReadInt32(timeOut)) {
+        return GSERROR_BINDER;
+    }
 
     ret = AttachBuffer(buffer, timeOut);
     if (!reply.WriteInt32(ret)) {
@@ -497,7 +507,10 @@ int32_t BufferQueueProducer::GetQueueSizeRemote(MessageParcel &arguments, Messag
 
 int32_t BufferQueueProducer::SetQueueSizeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    uint32_t queueSize = arguments.ReadUint32();
+    uint32_t queueSize = 0;
+    if (!arguments.ReadUint32(queueSize)) {
+        return GSERROR_BINDER;
+    }
     GSError sRet = SetQueueSize(queueSize);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -581,7 +594,10 @@ int32_t BufferQueueProducer::GetUniqueIdRemote(MessageParcel &arguments, Message
 
 int32_t BufferQueueProducer::CleanCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    bool cleanAll = arguments.ReadBool();
+    bool cleanAll = false;
+    if (!arguments.ReadBool(cleanAll)) {
+        return GSERROR_BINDER;
+    }
     uint32_t bufSeqNum = 0;
     GSError result = CleanCache(cleanAll, &bufSeqNum);
     if (!reply.WriteInt32(result)) {
@@ -685,6 +701,9 @@ int32_t BufferQueueProducer::RegisterReleaseListenerBackupRemote(MessageParcel &
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    if (listener == nullptr) {
+        return ERR_INVALID_REPLY;
+    }
     GSError sRet = RegisterReleaseListenerBackup(listener);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -1025,7 +1044,10 @@ int32_t BufferQueueProducer::AcquireLastFlushedBufferRemote(
     sptr<SurfaceBuffer> buffer;
     sptr<SyncFence> fence;
     float matrix[BUFFER_MATRIX_SIZE];
-    bool isUseNewMatrix = arguments.ReadBool();
+    bool isUseNewMatrix = false;
+    if (!arguments.ReadBool(isUseNewMatrix)) {
+        return GSERROR_BINDER;
+    }
     GSError sRet = AcquireLastFlushedBuffer(buffer, fence, matrix, BUFFER_MATRIX_SIZE, isUseNewMatrix);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -1082,7 +1104,9 @@ int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &argumen
     RequestBufferReturnValue retval;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
     BufferRequestConfig config = {};
-    ReadRequestConfig(arguments, config);
+    if (!ReadRequestConfig(arguments, config)) {
+        return GSERROR_BINDER;
+    }
 
     GSError sRet = RequestAndDetachBuffer(config, bedataimpl, retval);
     if (!reply.WriteInt32(sRet)) {
@@ -1227,7 +1251,9 @@ int32_t BufferQueueProducer::PreAllocBuffersRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     BufferRequestConfig config = {};
-    ReadRequestConfig(arguments, config);
+    if (!ReadRequestConfig(arguments, config)) {
+        return GSERROR_BINDER;
+    }
     uint32_t allocBufferCount = arguments.ReadUint32();
     GSError sRet = PreAllocBuffers(config, allocBufferCount);
     if (sRet != GSERROR_OK) {

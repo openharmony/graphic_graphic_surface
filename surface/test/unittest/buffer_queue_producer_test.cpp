@@ -335,20 +335,93 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandle, TestSize.Level0)
 }
 
 /*
-* Function: SetTunnelHandleRemote
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelHandleRemote
-* 4. check ret
-*/
+ * Function: SetTunnelHandleRemote
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelHandleRemote
+ * 4. check ret
+ */
 HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote, TestSize.Level0)
 {
     MessageParcel arguments;
-    arguments.WriteInt32(5);
+    arguments.WriteBool(true);
     MessageParcel reply;
     reply.WriteInt32(6);
     MessageOption option;
+    int32_t ret = bqp_->SetTunnelHandleRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: SetTunnelHandleRemoteErr001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelHandleRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemoteErr001, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(true);
+
+    MessageParcel reply;
+    MessageOption option;
+
+    uint32_t reserveInts = 5;
+    reply.WriteInt32(reserveInts);
+    int32_t ret = bqp_->SetTunnelHandleRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: SetTunnelHandleRemoteErr002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelHandleRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemoteErr002, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(true);
+
+    MessageParcel reply;
+    MessageOption option;
+
+    uint32_t reserveInts = 5;
+    reply.WriteInt32(reserveInts);
+    for (uint32_t i = 0; i < reserveInts; i++) {
+        arguments.WriteInt32(6);
+    }
+    int32_t ret = bqp_->SetTunnelHandleRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: SetTunnelHandleRemoteOk
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelHandleRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemoteOk, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(true);
+
+    MessageParcel reply;
+    MessageOption option;
+
+    uint32_t reserveInts = 5;
+    arguments.WriteInt32(reserveInts);
+    for (uint32_t i = 0; i < reserveInts; i++) {
+        arguments.WriteInt32(6);
+    }
+    arguments.WriteInt32(5);
     int32_t ret = bqp_->SetTunnelHandleRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
 }
@@ -987,5 +1060,176 @@ HWTEST_F(BufferQueueProducerTest, SetAlphaTypeTest, TestSize.Level0)
     sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
     int ret = bqptmp->SetAlphaType(alphaType);
     ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+ * Function: RequestBufferRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBufferRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, RequestBufferRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RequestBufferRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: RequestBuffersRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffersRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, RequestBuffersRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(5);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RequestBuffersRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: RequestBuffersRemoteParseErr001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestBuffersRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, RequestBuffersRemoteParseErr001, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RequestBuffersRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: AttachBufferRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AttachBufferRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, AttachBufferRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(5);
+    arguments.WriteBool(true);
+    // reserveFds, reserveInts
+    arguments.WriteInt32(1);
+    arguments.WriteInt32(1);
+    // handle: width, stride, height, size, format, usage, phyAddr
+    for (uint32_t i =  0; i < 6; i++) {
+        arguments.WriteInt32(1);
+    }
+    arguments.WriteInt64(0x100);
+    arguments.WriteBool(true);
+    arguments.WriteBool(true);
+    int fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
+    arguments.WriteFileDescriptor(fd);
+    arguments.WriteFileDescriptor(fd);
+    arguments.WriteInt32(1);
+
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->AttachBufferRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: SetQueueSizeRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetQueueSizeRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, SetQueueSizeRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetQueueSizeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: CleanCacheRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call CleanCacheRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, CleanCacheRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->CleanCacheRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: AcquireLastFlushedBufferRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AcquireLastFlushedBufferRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, AcquireLastFlushedBufferRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->AcquireLastFlushedBufferRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: RequestAndDetachBufferRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RequestAndDetachBufferRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, RequestAndDetachBufferRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RequestAndDetachBufferRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
+ * Function: PreAllocBuffersRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call PreAllocBuffersRemote
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, PreAllocBuffersRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->PreAllocBuffersRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
 }
 }

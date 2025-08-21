@@ -290,6 +290,7 @@ GSError ReadExtDataHandle(MessageParcel &parcel, sptr<SurfaceTunnelHandle> &hand
     ReadFileDescriptor(parcel, tunnelHandle->fd);
     for (uint32_t index = 0; index < reserveInts; index++) {
         if (!parcel.ReadInt32(tunnelHandle->reserve[index])) {
+            FreeExtDataHandle(tunnelHandle);
             return GSERROR_BINDER;
         }
     }

@@ -3604,4 +3604,42 @@ HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeak, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_TRUE(surface_->bufferTypeLeak_ == bufferTypeLeak);
 }
+
+/*
+* Function: SetBufferTypeLeakAndRequesBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: set bufferTypeLeak.
+*                  2. operation: call RequestBuffer.
+*                  3. result: start calling RequestBuffer and return GSERROR_OK.
+*/
+HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakAndRequesBuffer, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+
+    pSurfaceTmpTest->SetBufferTypeLeak("test");
+    ASSERT_TRUE(pSurfaceTmpTest->bufferTypeLeak_ == "test");
+    
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+        .sourceType = GRAPHIC_SOURCE_TYPE_BUTT,
+    };
+
+    sptr<SurfaceBuffer> buffer1;
+    int releaseFence = -1;
+    GSError ret = pSurfaceTmpTest->RequestBuffer(buffer1, releaseFence, requestConfig);
+    std::cout << "get buffer1: " << buffer1 << std::endl;
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer1, nullptr);
+}
 }

@@ -32,6 +32,7 @@
 #include "acquire_fence_manager.h"
 
 #define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
+#define DMA_BUF_SET_LEAK_TYPE _IOW(DMA_BUF_BASE, 5, const char *)
 
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
@@ -245,7 +246,12 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
         } else if (config.sourceType == GRAPHIC_SDK_TYPE) {
             int fd = retval.buffer->GetFileDescriptor();
             if (fd > 0) {
-                ioctl(fd, DMA_BUF_SET_TYPE, "external");
+                ioctl(fd, DMA_BUF_SET_LEAK_TYPE, "external");
+            }
+        } else if (bufferTypeLeak_ != "") {
+            int fd = retval.buffer->GetFileDescriptor();
+            if (fd > 0) {
+                ioctl(fd, DMA_BUF_SET_LEAK_TYPE, bufferTypeLeak_.c_str());
             }
         }
     } else {
@@ -1423,5 +1429,11 @@ GSError ProducerSurface::SetAlphaType(GraphicAlphaType alphaType)
         return SURFACE_ERROR_UNKOWN;
     }
     return producer_->SetAlphaType(alphaType);
+}
+
+GSError ProducerSurface::SetBufferTypeLeak(const std::string &bufferTypeLeak)
+{
+    bufferTypeLeak_ = bufferTypeLeak;
+    return GSERROR_OK;
 }
 } // namespace OHOS

@@ -3589,4 +3589,19 @@ HWTEST_F(ProducerSurfaceTest, SetAlphaType, TestSize.Level0)
     pSurfaceTmp->producer_ = producer;
     ASSERT_NE(pSurfaceTmp->SetAlphaType(alphaType), OHOS::SURFACE_ERROR_UNKOWN);
 }
+
+/*
+ * Function: SetBufferTypeLeak
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetBufferTypeLeak
+ */
+HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeak, TestSize.Level0)
+{
+    std::string bufferTypeLeak = "bufferTypeLeak";
+    GSError ret = surface_->SetBufferTypeLeak(bufferTypeLeak);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_TRUE(surface_->bufferTypeLeak_ == bufferTypeLeak);
+}
 }

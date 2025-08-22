@@ -24,7 +24,7 @@
 #include "surface_buffer_impl.h"
 #include "metadata_helper.h"
 
-#define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
+#define DMA_BUF_SET_LEAK_TYPE _IOW(DMA_BUF_BASE, 5, const char *)
 
 using namespace OHOS;
 using namespace HDI::Display::Graphic::Common::V1_0;
@@ -117,7 +117,7 @@ OH_NativeBuffer* OH_NativeBuffer_Alloc(const OH_NativeBuffer_Config* config)
         return nullptr;
     }
     if (bufferImpl->GetBufferHandle() != nullptr && bufferImpl->GetBufferHandle()->fd > 0) {
-        ioctl(bufferImpl->GetBufferHandle()->fd, DMA_BUF_SET_TYPE, "external");
+        ioctl(bufferImpl->GetBufferHandle()->fd, DMA_BUF_SET_LEAK_TYPE, "external");
     }
     return buffer;
 }

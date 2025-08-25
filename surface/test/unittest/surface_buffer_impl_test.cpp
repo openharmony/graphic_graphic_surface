@@ -584,23 +584,6 @@ HWTEST_F(SurfaceBufferImplTest, InitMemMgrMembers001, TestSize.Level0)
 }
 
 /*
- * Function: ReadFromBufferInfo
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. define a ReadFromBufferInfo object
- *                  2. call ReadFromBufferInfo and check value
- *                  3. call ReadFromBufferInfo again and check value
- */
-HWTEST_F(SurfaceBufferImplTest, ReadFromBufferInfo, TestSize.Level0)
-{
-    RSBufferInfo bufferInfo;
-    SurfaceBufferImpl impl;
-    GSError ret = impl.ReadFromBufferInfo(bufferInfo);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-/*
  * Function: SurfaceBufferSyncFence
  * Type: Function
  * Rank: Important(2)

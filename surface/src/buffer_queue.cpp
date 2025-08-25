@@ -421,20 +421,8 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
     if (wpCSurfaceDelegator_ != nullptr) {
         return DelegatorDequeueBuffer(wpCSurfaceDelegator_, config, bedata, retval);
     }
-    int64_t startTimeNs = 0;
-    int64_t endTimeNs = 0;
-    if (isActiveGame_) {
-        startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-    }
     std::unique_lock<std::mutex> lock(mutex_);
-    auto ret = RequestBufferLocked(config, bedata, retval, lock);
-    if (ret == GSERROR_OK && isActiveGame_) {
-        endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        bufferQueueCache_[retval.sequence].requestTimeNs = endTimeNs - startTimeNs;
-    }
-    return ret;
+    return RequestBufferLocked(config, bedata, retval, lock);
 }
 
 GSError BufferQueue::SetProducerCacheCleanFlag(bool flag)
@@ -839,19 +827,7 @@ GSError BufferQueue::DoFlushBuffer(uint32_t sequence, sptr<BufferExtraData> beda
     SURFACE_TRACE_NAME_FMT("DoFlushBuffer name: %s queueId: %" PRIu64 " seq: %u",
         name_.c_str(), uniqueId_, sequence);
     std::unique_lock<std::mutex> lock(mutex_);
-    int64_t startTimeNs = 0;
-    int64_t endTimeNs = 0;
-    if (isActiveGame_) {
-        startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-    }
-    auto ret = DoFlushBufferLocked(sequence, bedata, fence, config, lock);
-    if (ret == GSERROR_OK && isActiveGame_) {
-        endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        bufferQueueCache_[sequence].flushTimeNs = endTimeNs - startTimeNs;
-    }
-    return ret;
+    return DoFlushBufferLocked(sequence, bedata, fence, config, lock);
 }
 
 void BufferQueue::SetDesiredPresentTimestampAndUiTimestamp(uint32_t sequence, int64_t desiredPresentTimestamp,
@@ -896,15 +872,9 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCacheLocked()
 GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    return AcquireBufferLocked(buffer, fence, timestamp, damages);
-}
-
-GSError BufferQueue::AcquireBufferLocked(sptr<SurfaceBuffer> &buffer,
-    sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
-{
     SURFACE_TRACE_NAME_FMT("AcquireBuffer name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
     // dequeue from dirty list
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = PopFromDirtyListLocked(buffer);
     if (ret == GSERROR_OK) {
         uint32_t sequence = buffer->GetSeqNum();
@@ -983,20 +953,6 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
     return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
 }
 
-GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    GSError ret = AcquireBufferLocked(returnValue.buffer, returnValue.fence,
-        returnValue.timestamp, returnValue.damages);
-    if (ret != GSERROR_OK) {
-        return ret;
-    }
-    auto bufferElement = bufferQueueCache_[returnValue.buffer->GetSeqNum()];
-    returnValue.isAutoTimestamp = bufferElement.isAutoTimestamp;
-    returnValue.desiredPresentTimestamp = bufferElement.desiredPresentTimestamp;
-    return GSERROR_OK;
-}
-
 void BufferQueue::DropFirstDirtyBuffer(BufferElement &frontBufferElement, BufferElement &secondBufferElement,
                                        int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
                                        std::vector<BufferAndFence> &dropBuffers)
@@ -1069,27 +1025,6 @@ void BufferQueue::OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuff
     }
 }
 
-GSError BufferQueue::ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
-{
-    sptr<SurfaceBuffer> buffer = nullptr;
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        auto mapIter = bufferQueueCache_.find(sequence);
-        if (mapIter == bufferQueueCache_.end()) {
-            LogAndTraceAllBufferInBufferQueueCacheLocked();
-            return SURFACE_ERROR_BUFFER_NOT_INCACHE;
-        }
-        BufferElement& bufferElement = mapIter->second;
-        buffer = bufferElement.buffer;
-        auto ret = ReleaseBufferLocked(bufferElement, fence, lock);
-        if (ret != GSERROR_OK) {
-            return ret;
-        }
-    }
-    ListenerBufferReleasedCb(buffer, fence);
-    return GSERROR_OK;
-}
-
 GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence)
 {
     if (buffer == nullptr) {
@@ -1097,6 +1032,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     }
 
     uint32_t sequence = buffer->GetSeqNum();
+    SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
     {
         std::unique_lock<std::mutex> lock(mutex_);
         auto mapIter = bufferQueueCache_.find(sequence);
@@ -1106,47 +1042,41 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
             OnBufferDeleteCbForHardwareThreadLocked(buffer);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
-        auto ret = ReleaseBufferLocked(mapIter->second, fence, lock);
-        if (ret != GSERROR_OK) {
-            return ret;
+
+        const auto &state = mapIter->second.state;
+        if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
+            SURFACE_TRACE_NAME_FMT("invalid state: %u", state);
+            BLOGD("invalid state: %{public}d, uniqueId: %{public}" PRIu64 ".", state, uniqueId_);
+            return SURFACE_ERROR_BUFFER_STATE_INVALID;
         }
+
+        mapIter->second.state = BUFFER_STATE_RELEASED;
+
+        // merge surface buffer syncFence and releaseFence
+        auto surfaceBufferSyncFence = mapIter->second.buffer->GetSyncFence();
+        if (fence == nullptr) {
+            mapIter->second.fence = surfaceBufferSyncFence;
+        } else if (surfaceBufferSyncFence != nullptr && surfaceBufferSyncFence->IsValid()) {
+            mapIter->second.fence =
+                SyncFence::MergeFence("SurfaceReleaseFence", surfaceBufferSyncFence, fence);
+        } else {
+            mapIter->second.fence = fence;
+        }
+        mapIter->second.buffer->SetAndMergeSyncFence(nullptr);
+
+        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        lastConsumeTime_ = now - mapIter->second.lastAcquireTime;
+
+        if (mapIter->second.isDeleting) {
+            DeleteBufferInCache(sequence, lock);
+        } else {
+            freeList_.push_back(sequence);
+        }
+        waitReqCon_.notify_all();
+        waitAttachCon_.notify_all();
     }
     ListenerBufferReleasedCb(buffer, fence);
-    return GSERROR_OK;
-}
-
-GSError BufferQueue::ReleaseBufferLocked(BufferElement &bufferElement, const sptr<SyncFence> &fence,
-    std::unique_lock<std::mutex> &lock)
-{
-    const auto &state = bufferElement.state;
-    if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
-        SURFACE_TRACE_NAME_FMT("invalid state: %u", state);
-        BLOGD("invalid state: %{public}d, uniqueId: %{public}" PRIu64 ".", state, uniqueId_);
-        return SURFACE_ERROR_BUFFER_STATE_INVALID;
-    }
-    uint32_t sequence = bufferElement.buffer->GetSeqNum();
-    SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
-    bufferElement.state = BUFFER_STATE_RELEASED;
-    auto surfaceBufferSyncFence = bufferElement.buffer->GetSyncFence();
-    if (fence != nullptr && surfaceBufferSyncFence != nullptr &&
-        surfaceBufferSyncFence->IsValid()) {
-        bufferElement.fence =
-            SyncFence::MergeFence("SurfaceReleaseFence", surfaceBufferSyncFence, fence);
-    } else {
-        bufferElement.fence = fence;
-    }
-    int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                      std::chrono::steady_clock::now().time_since_epoch())
-                      .count();
-    lastConsumeTime_ = now - bufferElement.lastAcquireTime;
-
-    if (bufferElement.isDeleting) {
-        DeleteBufferInCache(sequence, lock);
-    } else {
-        freeList_.push_back(sequence);
-    }
-    waitReqCon_.notify_all();
-    waitAttachCon_.notify_all();
     return GSERROR_OK;
 }
 
@@ -2629,18 +2559,10 @@ GSError BufferQueue::SetMaxQueueSize(uint32_t queueSize)
     }
     return GSERROR_OK;
 }
-
 GSError BufferQueue::GetMaxQueueSize(uint32_t &queueSize) const
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     queueSize = maxQueueSize_;
-    return GSERROR_OK;
-}
-
-GSError BufferQueue::SetIsActiveGame(bool isActiveGame)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    isActiveGame_ = isActiveGame;
     return GSERROR_OK;
 }
 
@@ -2782,3 +2704,4 @@ GSError BufferQueue::SetIsPriorityAlloc(bool isPriorityAlloc)
     return GSERROR_OK;
 }
 }; // namespace OHOS
+

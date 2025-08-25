@@ -49,14 +49,6 @@ GSError BufferQueueConsumer::AcquireBuffer(IConsumerSurface::AcquireBufferReturn
     return bufferQueue_->AcquireBuffer(returnValue, expectPresentTimestamp, isUsingAutoTimestamp);
 }
 
-GSError BufferQueueConsumer::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue)
-{
-    if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
-    }
-    return bufferQueue_->AcquireBuffer(returnValue);
-}
-
 GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     if (bufferQueue_ == nullptr) {
@@ -65,21 +57,6 @@ GSError BufferQueueConsumer::ReleaseBuffer(sptr<SurfaceBuffer>& buffer, const sp
     return bufferQueue_->ReleaseBuffer(buffer, fence);
 }
 
-GSError BufferQueueConsumer::ReleaseBuffer(uint32_t sequence, const sptr<SyncFence>& fence)
-{
-    if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
-    }
-    return bufferQueue_->ReleaseBuffer(sequence, fence);
-}
-
-GSError BufferQueueConsumer::SetIsActiveGame(bool isActiveGame)
-{
-    if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
-    }
-    return bufferQueue_->SetIsActiveGame(isActiveGame);
-}
 GSError BufferQueueConsumer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {

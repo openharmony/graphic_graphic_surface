@@ -294,57 +294,6 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
 }
 
 /*
- * Function: AcquireBuffer
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call AcquireBuffer and check ret
- */
-HWTEST_F(BufferQueueConsumerTest, AcquireBufferByReturnValue, TestSize.Level0)
-{
-    sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
-    GSError ret = bqc->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), nullptr);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    bqc->bufferQueue_ = nullptr;
-    IConsumerSurface::AcquireBufferReturnValue returnValue;
-    ret = bqc->AcquireBuffer(returnValue);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
-}
-
-/*
- * Function: ReleaseBuffer
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call ReleaseBuffer and check ret
- */
-HWTEST_F(BufferQueueConsumerTest, ReleaseBufferBySeq, TestSize.Level0)
-{
-    bqc->bufferQueue_ = nullptr;
-    uint32_t sequence = 0;
-    sptr<SyncFence> fence = nullptr;
-    GSError ret = bqc->ReleaseBuffer(sequence, fence);
-    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
-}
-
-/*
- * Function: SetIsActiveGame
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call SetIsActiveGame and check ret
- */
-HWTEST_F(BufferQueueConsumerTest, SetIsActiveGame001, TestSize.Level0)
-{
-    bqc->bufferQueue_ = nullptr;
-    bqc->SetIsActiveGame(false);
-    // bqc->bufferQueue_ is not nullptr
-    bqc->bufferQueue_ = new BufferQueue("test");
-    bqc->SetIsActiveGame(false);
-    bqc->bufferQueue_ = nullptr;
-}
-
-/*
  * Function: SetLppDrawSource
  * Type: Function
  * Rank: Important(2)

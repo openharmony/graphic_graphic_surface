@@ -305,7 +305,6 @@ HWTEST_F(BufferClientProducerRemoteTest, ReqFlu001, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
-    bp->SetTransform(GraphicTransformType::GRAPHIC_ROTATE_90);
     ret = bp->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 

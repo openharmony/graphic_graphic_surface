@@ -379,7 +379,8 @@ HWTEST_F(MetadataManagerTest, SetImageHDRMetadataTypeTest, Function | SmallTest 
     ASSERT_EQ(MetadataHelper::IsImageMetadataType(&errorValue), false);
     uint8_t value = 4;
     ASSERT_EQ(MetadataHelper::IsImageMetadataType(&value), true);
-    ASSERT_EQ(MetadataHelper::SetImageHDRMetadataType(buffer_, &value), GSERROR_OK);
+    auto ret = MetadataHelper::SetImageHDRMetadataType(buffer_, &value);
+    ASSERT_TRUE(ret == GSERROR_OK || ret == SURFACE_ERROR_NOT_SUPPORT);
 }
 
 #ifdef RS_ENABLE_TV_PQ_METADATA

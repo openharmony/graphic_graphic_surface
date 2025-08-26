@@ -1777,7 +1777,8 @@ HWTEST_F(BufferQueueTest, SetLppShareFd002, TestSize.Level0)
     bool state = true;
     int fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
     ASSERT_NE(fd, -1);
-    ASSERT_NE(ftruncate(fd, 0x1000), -1);
+    int64_t fileSize = static_cast<int64_t>(tmpBq->GetUniqueId() & 0xFFFFFFFF) * (0x10000);
+    ASSERT_NE(ftruncate(fd, fileSize), -1);
  
     tmpBq->lppSlotInfo_ = nullptr;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
@@ -1789,7 +1790,7 @@ HWTEST_F(BufferQueueTest, SetLppShareFd002, TestSize.Level0)
     state = true;
     fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
     ASSERT_NE(fd, -1);
-    ASSERT_NE(ftruncate(fd, 0x1000), -1);
+    ASSERT_NE(ftruncate(fd, fileSize), -1);
     tmpBq->lppSlotInfo_ = nullptr;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     ASSERT_EQ(tmpBq->SetLppShareFd(fd, state), OHOS::GSERROR_OK);

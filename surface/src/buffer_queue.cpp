@@ -59,7 +59,7 @@ constexpr int32_t MIN_FIXED_ROTATION = -1;
 constexpr int32_t MAX_FIXED_ROTATION = 1;
 constexpr int32_t LPP_SLOT_SIZE = 8;
 constexpr int32_t MAX_LPP_SKIP_COUNT = 10;
-static const size_t LPP_SHARED_MEM_SIZE = 0x1000;
+static const size_t LPP_SHARED_MEM_SIZE = 0x3000;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -2624,7 +2624,8 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
             munmap(static_cast<void *>(lppSlotInfo_), LPP_SHARED_MEM_SIZE);
             lppSlotInfo_ = nullptr;
         }
-        void *lppPtr = mmap(nullptr, LPP_SHARED_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        int64_t instanceId = static_cast<int64_t>(uniqueId_ & 0xFFFFFFFF) * (0x1000);
+        void *lppPtr = mmap(nullptr, LPP_SHARED_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, instanceId);
         if (lppPtr == nullptr || lppPtr == MAP_FAILED) {
             BLOGW("SetLppShareFd set fd, fd parse error");
             return GSERROR_INVALID_ARGUMENTS;

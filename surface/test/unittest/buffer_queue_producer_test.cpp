@@ -1232,4 +1232,27 @@ HWTEST_F(BufferQueueProducerTest, PreAllocBuffersRemoteParseErr, TestSize.Level0
     int32_t ret = bqp_->PreAllocBuffersRemote(arguments, reply, option);
     EXPECT_EQ(ret, GSERROR_BINDER);
 }
+
+/*
+ * Function: GetAvailableBufferCount
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: GetAvailableBufferCount member function test
+ */
+HWTEST_F(BufferQueueProducerTest, GetAvailableBufferCount001, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> bqtmp1 = nullptr;
+    sptr<BufferQueueProducer> bqptmp1 = new BufferQueueProducer(bqtmp1);
+    uint32_t count = 0;
+    EXPECT_EQ(bqptmp1->GetAvailableBufferCount(count), GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(count, 0);
+
+    sptr<BufferQueue> bqtmp2 = new BufferQueue("test");
+    bqtmp2->dirtyList_.clear();
+    bqtmp2->dirtyList_ = {1, 2, 3, 4, 5};
+    sptr<BufferQueueProducer> bqptmp2 = new BufferQueueProducer(bqtmp2);
+    EXPECT_EQ(bqptmp2->GetAvailableBufferCount(count), GSERROR_OK);
+    EXPECT_EQ(count, bqtmp2->dirtyList_.size());
+}
 }

@@ -636,6 +636,18 @@ public:
         (void)bufferTypeLeak;
         return GSERROR_NOT_SUPPORT;
     }
+    /**
+     * @brief Get the Available Buffer Count from the surface.
+     * @param count [out] The Available Buffer Count of the surface.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     *         {@link SURFACE_ERROR_NOT_SUPPORT} 50102000 - Not surport usage.
+     */
+    virtual GSError GetAvailableBufferCount(uint32_t &count)
+    {
+        (void)count;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
 };

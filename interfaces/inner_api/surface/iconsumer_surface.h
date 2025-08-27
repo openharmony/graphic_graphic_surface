@@ -367,6 +367,11 @@ public:
         (void)isPriorityAlloc;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError GetAvailableBufferCount(uint32_t &count)
+    {
+        (void)count;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

@@ -857,6 +857,14 @@ public:
     * @return Returns the error code of the set of bufferTypeLeak.
     */
     GSError SetBufferTypeLeak(const std::string &bufferTypeLeak) override;
+    /**
+     * @brief Get the Available Buffer Count from the surface.
+     * @param count [out] The Available Buffer Count of the surface.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     *         {@link SURFACE_ERROR_NOT_SUPPORT} 50102000 - Not surport usage.
+     */
+    GSError GetAvailableBufferCount(uint32_t &count) override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);

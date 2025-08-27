@@ -140,6 +140,7 @@ public:
     GSError DisconnectStrictly() override;
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
+    GSError GetAvailableBufferCount(uint32_t &count) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);

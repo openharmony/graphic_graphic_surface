@@ -852,10 +852,10 @@ public:
      */
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
     /**
-    * @brief Set a buffer type leak.
-    * @param bufferTypeLeak Indicates the bufferTypeLeak to be set.
-    * @return Returns the error code of the set of bufferTypeLeak.
-    */
+     * @brief Set a buffer type leak.
+     * @param bufferTypeLeak Indicates the bufferTypeLeak to be set.
+     * @return Returns the error code of the set of bufferTypeLeak.
+     */
     GSError SetBufferTypeLeak(const std::string &bufferTypeLeak) override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
@@ -903,7 +903,7 @@ private:
     sptr<SurfaceBuffer> preCacheBuffer_ = nullptr;
     sptr<SurfaceBuffer> mLockedBuffer_ = nullptr;
     Region region_ = {.rects = nullptr, .rectNumber = 0};
-    std::string bufferTypeLeak_ = "";
+    std::string bufferTypeLeak_;
 };
 } // namespace OHOS
 

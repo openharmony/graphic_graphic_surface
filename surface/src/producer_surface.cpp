@@ -250,7 +250,7 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
             }
         }
         
-        if (bufferTypeLeak_ != "") {
+        if (!bufferTypeLeak_.empty()) {
             int fd = retval.buffer->GetFileDescriptor();
             if (fd > 0) {
                 ioctl(fd, DMA_BUF_SET_LEAK_TYPE, bufferTypeLeak_.c_str());

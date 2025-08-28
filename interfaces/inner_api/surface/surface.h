@@ -627,10 +627,10 @@ public:
         return GSERROR_NOT_SUPPORT;
     }
     /**
-    * @brief Set a buffer type leak.
-    * @param bufferTypeLeak Indicates the bufferTypeLeak to be set.
-    * @return Returns the error code of the set of bufferTypeLeak.
-    */
+     * @brief Set a buffer type leak.
+     * @param bufferTypeLeak Indicates the bufferTypeLeak to be set.
+     * @return Returns the error code of the set of bufferTypeLeak.
+     */
     virtual GSError SetBufferTypeLeak(const std::string &bufferTypeLeak)
     {
         (void)bufferTypeLeak;

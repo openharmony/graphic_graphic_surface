@@ -1084,6 +1084,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
     const BufferRequestConfig &config, std::unique_lock<std::mutex> &lock)
 {
     sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
+    bufferImpl->ChangeSeqNumWithConnectPid(connectedPid_);
     uint32_t sequence = bufferImpl->GetSeqNum();
     SURFACE_TRACE_NAME_FMT("AllocBuffer name: %s queueId: %" PRIu64 ", config width: %d height: %d usage: %llu format:"
         " %d id: %u", name_.c_str(), uniqueId_, config.width, config.height, config.usage, config.format, sequence);
@@ -2467,6 +2468,7 @@ void BufferQueue::AllocBuffers(const BufferRequestConfig &config, uint32_t alloc
         allocBufferCount, config.width, config.height, config.format, config.usage);
     for (uint32_t i = 0; i < allocBufferCount; i++) {
         sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
+        bufferImpl->ChangeSeqNumWithConnectPid(connectedPid_);
         uint32_t sequence = bufferImpl->GetSeqNum();
 
         GSError ret = bufferImpl->Alloc(config);

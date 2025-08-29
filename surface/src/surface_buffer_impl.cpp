@@ -88,6 +88,16 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
     return surfaceBufferImpl;
 }
 
+bool SurfaceBuffer::CheckSeqNumExist(uint32_t sequence)
+{
+    std::lock_guard<std::mutex> lock(g_seqNumMutex);
+    if ((sequence & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
+        return g_seqBitset.test(sequence & MAX_SEQUENCE_NUM);
+    }
+
+    return false;
+}
+
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
     {
@@ -99,7 +109,14 @@ SurfaceBufferImpl::SurfaceBufferImpl()
         // 0xFFFF is seqnum mask.
         sequence_number_++;
         sequenceNumber_ |= (GenerateSequenceNumber(sequence_number_) & MAX_SEQUENCE_NUM);
-    
+
+        static uint64_t nextId = 0;
+        nextId++;
+        // 0xFFFF is pid mask. 48 is pid offset.
+        bufferId_ = ((static_cast<uint64_t>(getpid()) & 0xFFFF) << 48);
+        // 0xFFFFFF is nextId mask.
+        bufferId_ |= (nextId & 0xFFFFFF);
+
         InitMemMgrMembers();
     }
     metaDataCache_.clear();
@@ -176,6 +193,9 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
         sequenceNumber_ = seqNum;
         if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
+            if (g_seqBitset.test(sequenceNumber_ & MAX_SEQUENCE_NUM)) {
+                BLOGE("SurfaceBufferImpl error, sequence is exist, seq: %{public}u", sequenceNumber_);
+            }
             g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
         }
     }
@@ -901,4 +921,21 @@ sptr<SyncFence> SurfaceBufferImpl::GetSyncFence() const
     std::lock_guard<std::mutex> lock(mutex_);
     return syncFence_;
 }
+
+void SurfaceBufferImpl::ChangeSeqNumWithConnectPid(int32_t connectPid)
+{
+    if (connectPid <= 0) {
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(g_seqNumMutex);
+    // 16 is pid offset.
+    sequenceNumber_ = ((connectPid & MAX_SEQUENCE_NUM) << 16) | (sequenceNumber_ & MAX_SEQUENCE_NUM);
+}
+
+uint64_t SurfaceBufferImpl::GetBufferId()
+{
+    return bufferId_;
+}
+
 } // namespace OHOS

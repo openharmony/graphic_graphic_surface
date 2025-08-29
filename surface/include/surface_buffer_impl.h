@@ -103,6 +103,8 @@ public:
     bool IsReclaimed() override;
     void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) override;
     sptr<SyncFence> GetSyncFence() const override;
+    void ChangeSeqNumWithConnectPid(int32_t connectPid) override;
+    uint64_t GetBufferId() override;
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
@@ -112,6 +114,7 @@ private:
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;
+    uint64_t bufferId_ = UINT64_MAX;
     sptr<BufferExtraData> bedata_ = nullptr;
     sptr<EglData> eglData_ = nullptr;
     GraphicColorGamut surfaceBufferColorGamut_ = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;

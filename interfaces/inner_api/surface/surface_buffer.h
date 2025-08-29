@@ -139,6 +139,7 @@ public:
     virtual OH_NativeBuffer* SurfaceBufferToNativeBuffer() = 0;
 
     static sptr<SurfaceBuffer> Create();
+    static bool CheckSeqNumExist(uint32_t sequence);
 
     virtual GSError WriteBufferRequestConfig(MessageParcel &parcel)
     {
@@ -198,6 +199,14 @@ public:
     }
     virtual void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) = 0;
     virtual sptr<SyncFence> GetSyncFence() const = 0;
+    virtual void ChangeSeqNumWithConnectPid(int32_t connectPid)
+    {
+        (void)connectPid;
+    }
+    virtual uint64_t GetBufferId()
+    {
+        return 0;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

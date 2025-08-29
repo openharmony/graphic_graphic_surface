@@ -45,8 +45,6 @@ namespace {
 #undef LOG_TAG
 #define LOG_TAG "SyncFence"
 
-constexpr int FRAME_SET_BLUR_SIZE_ID = 100007;
-constexpr int FRAME_SET_CONTAINER_NODE_ID = 100008;
 const std::string ACQUIRE_FENCE_TASK = "Acquire Fence";
 
 #ifdef FENCE_SCHED_ENABLE
@@ -165,10 +163,6 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
     }
     if (handler_) {
         handler_->PostTask([this, fence, traceTag]() {
-            if (isGpuFence_ && isGpuEnable_) {
-                Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_CONTAINER_NODE_ID, 0, 0, processedNodeNum_);
-                processedNodeNum_ = 0;
-            }
             Loop(fence, traceTag);
         });
         fencesQueued_.fetch_add(1);
@@ -275,21 +269,5 @@ int32_t SyncFenceTracker::WaitFence(const sptr<SyncFence>& fence)
         Rosen::FrameSched::GetInstance().MonitorGpuEnd();
     }
     return result;
-}
-
-void SyncFenceTracker::SetBlurSize(int32_t blurSize)
-{
-    if (handler_) {
-        handler_->PostTask([blurSize]() {
-            Rosen::FrameSched::GetInstance().SetFrameParam(FRAME_SET_BLUR_SIZE_ID, 0, 0, blurSize);
-        });
-    }
-}
-
-void SyncFenceTracker::SetContainerNodeNum(int containerNodeNum)
-{
-    if (isGpuEnable_) {
-        processedNodeNum_ += containerNodeNum;
-    }
 }
 } // namespace OHOS

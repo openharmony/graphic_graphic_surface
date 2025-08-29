@@ -137,6 +137,9 @@ GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<Su
     GSError ret = GSERROR_OK;
     sequence = parcel.ReadUint32();
     if (parcel.ReadBool()) {
+        if (SurfaceBuffer::CheckSeqNumExist(sequence)) {
+            BLOGE("sequence is invalid: %{public}u", sequence);
+        }
         buffer = new SurfaceBufferImpl(sequence);
         ret = buffer->ReadFromMessageParcel(parcel, readSafeFdFunc);
     }

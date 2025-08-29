@@ -72,6 +72,7 @@ HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease001, TestSize.Level0)
 
     buffer = new SurfaceBufferImpl();
     ASSERT_EQ(oldSeq + 1, buffer->GetSeqNum());
+    ASSERT_NE(0, buffer->GetBufferId());
 
     buffer->SetConsumerAttachBufferFlag(false);
     ASSERT_EQ(buffer->GetConsumerAttachBufferFlag(), false);
@@ -102,6 +103,42 @@ HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease002, TestSize.Level0)
     int oldSeq = increbuffer->GetSeqNum();
     increbuffer = new SurfaceBufferImpl();
     ASSERT_EQ(oldSeq + 1, increbuffer->GetSeqNum());
+}
+
+/*
+ * Function: CheckSeqNumExist
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and CheckSeqNumExist
+ */
+HWTEST_F(SurfaceBufferImplTest, CheckSeqNumExist001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> bufferTemp = new SurfaceBufferImpl();
+    sptr<SurfaceBuffer> bufferSeqExist = new SurfaceBufferImpl(bufferTemp->GetSeqNum());
+    ASSERT_EQ(SurfaceBuffer::CheckSeqNumExist(bufferTemp->GetSeqNum()), true);
+    // the max seqNum low 16 bit is 0xFFFF
+    uint32_t maxSeqNum = 0xFFFF;
+    ASSERT_EQ(SurfaceBuffer::CheckSeqNumExist(maxSeqNum), false);
+}
+
+/*
+ * Function: ChangeSeqNumWithConnectPid
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and ChangeSeqNumWithConnectPid
+ */
+HWTEST_F(SurfaceBufferImplTest, ChangeSeqNumWithConnectPid001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> bufferTemp = new SurfaceBufferImpl();
+    int oldSeq = bufferTemp->GetSeqNum();
+    bufferTemp->ChangeSeqNumWithConnectPid(0);
+    ASSERT_EQ(oldSeq, bufferTemp->GetSeqNum());
+    // the max seqNum low 16 bit is 0xFFFF
+    uint32_t maxSeqNum = 0xFFFF;
+    bufferTemp->ChangeSeqNumWithConnectPid(maxSeqNum);
+    ASSERT_EQ((maxSeqNum << 16) | (oldSeq & maxSeqNum), bufferTemp->GetSeqNum());
 }
 
 /*

@@ -355,6 +355,7 @@ HWTEST_F(BufferQueueConsumerTest, AcqRel003, TestSize.Level0)
 HWTEST_F(BufferQueueConsumerTest, SetIsPriorityAlloc001, TestSize.Level0)
 {
     bqc->bufferQueue_ = nullptr;
+    ASSERT_EQ(bqc->SetIsPriorityAlloc(true), OHOS::SURFACE_ERROR_UNKOWN);
     // bqc->bufferQueue_ is not nullptr
     bqc->bufferQueue_ = new BufferQueue("test");
     bqc->SetIsPriorityAlloc(true);

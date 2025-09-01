@@ -307,7 +307,6 @@ GSError MetadataHelper::GetVideoTVMetadata(const sptr<SurfaceBuffer>& buffer, Tv
     buffer->SetBufferHandle(buffer->GetBufferHandle());
     auto ret = buffer->GetMetadata(ATTRKEY_VIDEO_TV_PQ, tvMetadataVec);
     if (ret != GSERROR_OK) {
-        BLOGE("tvMetadata GetMetadata failed %{public}d! id = %{public}d", ret, buffer->GetSeqNum());
         return ret;
     }
     return ConvertVecToMetadata(tvMetadataVec, tvMetadata);

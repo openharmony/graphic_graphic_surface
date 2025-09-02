@@ -199,10 +199,6 @@ public:
     }
     virtual void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) = 0;
     virtual sptr<SyncFence> GetSyncFence() const = 0;
-    virtual void ChangeSeqNumWithConnectPid(int32_t connectPid)
-    {
-        (void)connectPid;
-    }
     virtual uint64_t GetBufferId()
     {
         return 0;

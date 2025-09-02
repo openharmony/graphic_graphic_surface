@@ -35,7 +35,9 @@ using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_3::IDi
 static IDisplayBufferSptr g_displayBuffer;
 static std::mutex g_displayBufferMutex;
 static std::mutex g_seqNumMutex;
+static constexpr uint32_t PID_BIT = 16;
 static constexpr uint32_t MAX_SEQUENCE_NUM = 0xFFFF;
+static constexpr uint64_t NEXTID_MASK_48BIT = 0XFFFFFFFFFFFF;
 static std::bitset<MAX_SEQUENCE_NUM> g_seqBitset(0);
 class DisplayBufferDiedRecipient : public OHOS::IRemoteObject::DeathRecipient {
 public:
@@ -104,18 +106,16 @@ SurfaceBufferImpl::SurfaceBufferImpl()
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
 
         static uint32_t sequence_number_ = 0;
-        // 0xFFFF is pid mask. 16 is pid offset.
-        sequenceNumber_ = (static_cast<uint32_t>(getpid()) & 0xFFFF) << 16;
-        // 0xFFFF is seqnum mask.
+        // 0xFFFF is pid mask. 16 is pid offset.sequenceNumber_ high 16bit is pid, low 16bit is Auto-increment id
+        sequenceNumber_ = (static_cast<uint32_t>(getpid()) & 0xFFFF) << PID_BIT;
         sequence_number_++;
         sequenceNumber_ |= (GenerateSequenceNumber(sequence_number_) & MAX_SEQUENCE_NUM);
 
         static uint64_t nextId = 0;
         nextId++;
-        // 0xFFFF is pid mask. 48 is pid offset.
+        // 0xFFFF is pid mask. 48 is pid offset.bufferId_ high 16bit is pid, low 16bit is Auto-increment id
         bufferId_ = ((static_cast<uint64_t>(getpid()) & 0xFFFF) << 48);
-        // 0xFFFFFF is nextId mask.
-        bufferId_ |= (nextId & 0xFFFFFF);
+        bufferId_ |= (nextId & NEXTID_MASK_48BIT);
 
         InitMemMgrMembers();
     }
@@ -192,9 +192,9 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
         sequenceNumber_ = seqNum;
-        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
+        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
             if (g_seqBitset.test(sequenceNumber_ & MAX_SEQUENCE_NUM)) {
-                BLOGE("SurfaceBufferImpl error, sequence is exist, seq: %{public}u", sequenceNumber_);
+                BLOGW("SurfaceBufferImpl error, sequence is exist, seq: %{public}u", sequenceNumber_);
             }
             g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
         }
@@ -208,7 +208,7 @@ SurfaceBufferImpl::~SurfaceBufferImpl()
     BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
-        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
+        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
             g_seqBitset.reset(sequenceNumber_ & MAX_SEQUENCE_NUM);
         }
     }
@@ -920,17 +920,6 @@ sptr<SyncFence> SurfaceBufferImpl::GetSyncFence() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return syncFence_;
-}
-
-void SurfaceBufferImpl::ChangeSeqNumWithConnectPid(int32_t connectPid)
-{
-    if (connectPid <= 0) {
-        return;
-    }
-
-    std::lock_guard<std::mutex> lock(g_seqNumMutex);
-    // 16 is pid offset.
-    sequenceNumber_ = ((connectPid & MAX_SEQUENCE_NUM) << 16) | (sequenceNumber_ & MAX_SEQUENCE_NUM);
 }
 
 uint64_t SurfaceBufferImpl::GetBufferId()

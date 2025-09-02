@@ -103,7 +103,6 @@ public:
     bool IsReclaimed() override;
     void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) override;
     sptr<SyncFence> GetSyncFence() const override;
-    void ChangeSeqNumWithConnectPid(int32_t connectPid) override;
     uint64_t GetBufferId() override;
 private:
     void FreeBufferHandleLocked();

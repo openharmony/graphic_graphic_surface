@@ -123,25 +123,6 @@ HWTEST_F(SurfaceBufferImplTest, CheckSeqNumExist001, TestSize.Level0)
 }
 
 /*
- * Function: ChangeSeqNumWithConnectPid
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. new SurfaceBufferImpl and ChangeSeqNumWithConnectPid
- */
-HWTEST_F(SurfaceBufferImplTest, ChangeSeqNumWithConnectPid001, TestSize.Level0)
-{
-    sptr<SurfaceBuffer> bufferTemp = new SurfaceBufferImpl();
-    int oldSeq = bufferTemp->GetSeqNum();
-    bufferTemp->ChangeSeqNumWithConnectPid(0);
-    ASSERT_EQ(oldSeq, bufferTemp->GetSeqNum());
-    // the max seqNum low 16 bit is 0xFFFF
-    uint32_t maxSeqNum = 0xFFFF;
-    bufferTemp->ChangeSeqNumWithConnectPid(maxSeqNum);
-    ASSERT_EQ((maxSeqNum << 16) | (oldSeq & maxSeqNum), bufferTemp->GetSeqNum());
-}
-
-/*
 * Function: GenerateSequenceNumber
 * Type: Function
 * Rank: Important(2)

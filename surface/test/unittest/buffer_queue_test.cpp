@@ -15,7 +15,6 @@
 #include <fcntl.h>
 #include <map>
 #include <sys/mman.h>
-#include <vector>
 #include <gtest/gtest.h>
 #include <surface.h>
 #include <buffer_extra_data_impl.h>
@@ -72,6 +71,14 @@ void BufferQueueTest::SetUpTestCase()
 void BufferQueueTest::TearDownTestCase()
 {
     bq = nullptr;
+    bedata = nullptr;
+    csurface1 = nullptr;
+    surfaceDelegator = nullptr;
+    for (auto it : cache) {
+        it.second = nullptr;
+    }
+    cache.clear();
+    sleep(2);
 }
 
 /*

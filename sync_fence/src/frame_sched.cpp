@@ -23,13 +23,18 @@
 
 namespace OHOS {
 namespace Rosen {
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD001404
+#undef LOG_TAG
+#define LOG_TAG "FrameSched"
+#define B_CPRINTF(func, fmt, ...) \
+    func(LOG_CORE, "%{public}s: " fmt, __func__, ##__VA_ARGS__)
 
-static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, 0xD001404, "FrameSched" };
-#define LOGF(...) (void)OHOS::HiviewDFX::HiLog::Fatal(LOG_LABEL, __VA_ARGS__)
-#define LOGE(...) (void)OHOS::HiviewDFX::HiLog::Error(LOG_LABEL, __VA_ARGS__)
-#define LOGW(...) (void)OHOS::HiviewDFX::HiLog::Warn(LOG_LABEL, __VA_ARGS__)
-#define LOGI(...) (void)OHOS::HiviewDFX::HiLog::Info(LOG_LABEL, __VA_ARGS__)
-#define LOGD(...) (void)OHOS::HiviewDFX::HiLog::Debug(LOG_LABEL, __VA_ARGS__)
+#define LOGD(fmt, ...) B_CPRINTF(HILOG_DEBUG, fmt, ##__VA_ARGS__)
+#define LOGI(fmt, ...) B_CPRINTF(HILOG_INFO, fmt, ##__VA_ARGS__)
+#define LOGW(fmt, ...) B_CPRINTF(HILOG_WARN, fmt, ##__VA_ARGS__)
+#define LOGE(fmt, ...) B_CPRINTF(HILOG_ERROR, fmt, ##__VA_ARGS__)
+#define LOGF(fmt, ...) B_CPRINTF(HILOG_FATAL, fmt, ##__VA_ARGS__)
 
 const std::string FRAME_AWARE_SO_PATH = "libframe_ui_intf.z.so";
 
@@ -107,7 +112,7 @@ void FrameSched::Init()
     if (initFunc_ != nullptr) {
         initFunc_();
     } else {
-        LOGE("FrameSched:[Init]load Init function failed.");
+        LOGE("load Init function failed.");
     }
 }
 
@@ -116,7 +121,7 @@ void FrameSched::SendFenceId(uint32_t fenceId)
     if (schedSoLoaded_ && sendFenceIdFunc_ != nullptr) {
         sendFenceIdFunc_(fenceId);
     } else {
-        LOGE("FrameSched:[SendFenceId]load SendFenceId function failed.");
+        LOGE("load SendFenceId function failed.");
     }
 }
 
@@ -134,7 +139,7 @@ void FrameSched::MonitorGpuEnd()
     if (schedSoLoaded_ && monitorGpuEndFunc_ != nullptr) {
         monitorGpuEndFunc_();
     } else {
-        LOGE("FrameSched:[MonitorEnd]load MonitorEnd function failed.");
+        LOGE("load MonitorEnd function failed.");
     }
 }
 
@@ -143,7 +148,7 @@ bool FrameSched::IsScbScene()
     if (schedSoLoaded_ && isScbSceneFunc_ != nullptr) {
         return isScbSceneFunc_();
     } else {
-        LOGE("FrameSched:[IsScbScene]load IsScbScene function failed.");
+        LOGE("load IsScbScene function failed.");
         return false;
     }
 }
@@ -156,7 +161,7 @@ void FrameSched::SetFrameParam(int requestId, int load, int schedFrameNum, int v
     if (setFrameParamFunc_ != nullptr) {
         setFrameParamFunc_(requestId, load, schedFrameNum, value);
     } else {
-        LOGE("FrameSched:[SetFrameParam]load MonitorEnd function failed.");
+        LOGE("load MonitorEnd function failed.");
     }
 }
 } // namespace Rosen

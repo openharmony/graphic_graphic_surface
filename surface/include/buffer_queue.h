@@ -79,7 +79,7 @@ using BufferElement = struct BufferElement {
 struct BufferSlot {
     uint32_t seqId;
     int64_t timestamp;
-    int32_t damage[4];
+    int32_t crop[4];
 };
 
 struct LppSlotInfo {

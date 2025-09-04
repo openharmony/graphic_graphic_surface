@@ -1705,7 +1705,7 @@ HWTEST_F(BufferQueueTest, AcquireLppBuffer001, TestSize.Level0)
  
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1,
         .writeOffset = -1,
-        .slot = {{.seqId = 100, .timestamp = 1000, .damage = {1, 2, 3, 4}}},
+        .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
         .frameRate = 30,
         .isStopShbDraw = false};
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -1813,7 +1813,7 @@ HWTEST_F(BufferQueueTest, FlushLppBuffer001, TestSize.Level0)
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0,
         .writeOffset = 1,
-        .slot = {{.seqId = 100, .timestamp = 1000, .damage = {1, 2, 3, 4}}},
+        .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
         .frameRate = 30,
         .isStopShbDraw = false};
     tmpBq->isRsDrawLpp_ = false;
@@ -1842,7 +1842,7 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
  
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0,
         .writeOffset = 1,
-        .slot = {{.seqId = 100, .timestamp = 1000, .damage = {1, 2, 3, 4}}},
+        .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
         .frameRate = 30,
         .isStopShbDraw = false};
     tmpBq->lppSkipCount_ = 11;

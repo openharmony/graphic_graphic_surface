@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace Rosen {
 #undef LOG_DOMAIN
-#define LOG_DOMAIN 0xD001400
+#define LOG_DOMAIN 0xD001404
 #undef LOG_TAG
 #define LOG_TAG "FrameSched"
 #define B_CPRINTF(func, fmt, ...) \

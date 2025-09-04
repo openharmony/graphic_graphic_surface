@@ -33,7 +33,7 @@ using namespace OHOS::HiviewDFX;
 
 namespace {
 #undef LOG_DOMAIN
-#define LOG_DOMAIN 0xD001400
+#define LOG_DOMAIN 0xD001404
 #undef LOG_TAG
 #define LOG_TAG "SyncFence"
 

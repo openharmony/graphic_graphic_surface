@@ -199,7 +199,7 @@ inline void SyncFenceTracker::UpdateFrameQueue(int64_t startTime)
     frameStartTimes_->push(startTime);
 }
 
-int32_t SyncFenceTracker::GetFrameRate()
+int64_t SyncFenceTracker::GetFrameRate()
 {
     int64_t frameRate = 0;
     int64_t frameNum = static_cast<int64_t>(frameStartTimes_->size());

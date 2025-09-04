@@ -47,7 +47,7 @@ private:
     std::atomic<uint32_t> fencesSignaled_;
     int32_t gpuSubhealthEventNum_ = 0;
     int32_t gpuSubhealthEventDay_ = 0;
-    std::queue<int32_t> *frameStartTimes_ = new std::queue<int32_t>;
+    std::queue<int64_t> *frameStartTimes_ = new std::queue<int64_t>;
     void Loop(const sptr<SyncFence>& fence, bool traceTag);
     int32_t WaitFence(const sptr<SyncFence>& fence);
     bool CheckGpuSubhealthEventLimit();

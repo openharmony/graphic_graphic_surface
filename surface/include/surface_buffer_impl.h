@@ -129,6 +129,7 @@ private:
     Rect crop_ = {0, 0, 0, 0};
     std::atomic<bool> isBufferDeleteFromCache = false;
     std::atomic<bool> isReclaimed_ = false;
+    std::atomic<bool> isSeqNumExist_ = false;
     using MemMgrFunctionPtr = int32_t(*)(int32_t, int32_t);
     static inline void *libMemMgrClientHandle_ = nullptr;
     static inline MemMgrFunctionPtr reclaimFunc_ = nullptr;

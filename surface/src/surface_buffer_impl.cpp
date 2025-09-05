@@ -194,6 +194,7 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
         sequenceNumber_ = seqNum;
         if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
             if (g_seqBitset.test(sequenceNumber_ & MAX_SEQUENCE_NUM)) {
+                isSeqNumExist_.store(true);
                 BLOGW("SurfaceBufferImpl error, sequence is exist, seq: %{public}u", sequenceNumber_);
             }
             g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
@@ -208,7 +209,8 @@ SurfaceBufferImpl::~SurfaceBufferImpl()
     BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
-        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
+        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid() &&
+            !isSeqNumExist_) {
             g_seqBitset.reset(sequenceNumber_ & MAX_SEQUENCE_NUM);
         }
     }

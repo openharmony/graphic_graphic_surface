@@ -132,13 +132,11 @@ public:
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
-
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
     virtual GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) = 0;
 
     virtual GSError SetSurfaceAppFrameworkType(std::string appFrameworkType) = 0;
     virtual GSError GetSurfaceAppFrameworkType(std::string &appFrameworkType) = 0;
-
     virtual GSError SetHdrWhitePointBrightness(float brightness) = 0;
     virtual GSError SetSdrWhitePointBrightness(float brightness) = 0;
     virtual GSError AcquireLastFlushedBuffer(sptr<SurfaceBuffer> &buffer, sptr<SyncFence> &fence,
@@ -309,8 +307,8 @@ protected:
         BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER,
         BUFFER_PRODUCER_PRE_ALLOC_BUFFERS,
         BUFFER_PRODUCER_SET_LPP_FD,
-        BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
         BUFFER_PRODUCER_SET_ALPHA_TYPE,
+        BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
     };
 };
 } // namespace OHOS

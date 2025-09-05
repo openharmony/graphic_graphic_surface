@@ -679,6 +679,23 @@ HWTEST_F(BufferClientProducerRemoteTest, AcquireAndReleaseLastFlushedBuffer001, 
 }
 
 /*
+* Function: AttachAndDetachBuffer
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBufferFromQueue and check the ret
+*                  2. call DetachBufferFromQueue and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, Function | MediumTest | Level2)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = bp->AttachBufferToQueue(buffer);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
+    ret = bp->DetachBufferFromQueue(buffer);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: SetBufferhold
 * Type: Function
 * Rank: Important(1)
@@ -732,23 +749,6 @@ HWTEST_F(BufferClientProducerRemoteTest, SetWhitePointBrightness001, TestSize.Le
 {
     EXPECT_EQ(bp->SetHdrWhitePointBrightness(1), GSERROR_OK);
     EXPECT_EQ(bp->SetSdrWhitePointBrightness(1), GSERROR_OK);
-}
-
-/*
-* Function: AttachAndDetachBuffer
-* Type: Function
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. call AttachBufferFromQueue and check the ret
-*                  2. call DetachBufferFromQueue and check the ret
- */
-HWTEST_F(BufferClientProducerRemoteTest, AcquireLastFlushedBuffer001, TestSize.Level0)
-{
-    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
-    GSError ret = bp->AttachBufferToQueue(buffer);
-    ASSERT_NE(ret, OHOS::GSERROR_OK);
-    ret = bp->DetachBufferFromQueue(buffer);
-    ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
 
 /*
@@ -853,7 +853,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.L
 *                  2. operation: clents sends config to producer
 *                  3. result: All server-side asynchronous execution results return sucess
 */
-HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, TestSize.Level0)
+HWTEST_F(BufferClientProducerRemoteTest, PreAllocBuffers001, Function | MediumTest | Level2)
 {
     BufferRequestConfig requestConfigTmp = {
         .width = 0x100,

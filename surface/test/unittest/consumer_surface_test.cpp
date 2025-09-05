@@ -2193,98 +2193,6 @@ HWTEST_F(ConsumerSurfaceTest, AttachBufferToQueueMemLeak, TestSize.Level0)
 }
 
 /*
-* Function: GetLastFlushedDesiredPresentTimeStamp
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call GetLastFlushedDesiredPresentTimeStamp and check ret
-*/
-HWTEST_F(ConsumerSurfaceTest, GetLastFlushedDesiredPresentTimeStamp001, TestSize.Level0)
-{
-    int64_t lastFlushedDesiredPresentTimeStamp = -1;
-    ASSERT_EQ(cs->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp), GSERROR_OK);
-}
-
-/**
- * Function: GetFrontDesiredPresentTimeStamp001
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
- */
-HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp001, Function | MediumTest | Level2)
-{
-    int64_t desiredPresentTimeStamp = -1;
-    bool isAutoTimeStamp = false;
-    bq->dirtyList_.clear();
-    bq->bufferQueueCache_.clear();
-    ASSERT_EQ(bq->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp), GSERROR_NO_BUFFER);
-}
-
-/**
- * Function: GetFrontDesiredPresentTimeStamp002
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
- */
-HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp002, Function | MediumTest | Level2)
-{
-    sptr<ConsumerSurface> tmpConsumerSurface = new ConsumerSurface("test");
-    int64_t desiredPresentTimeStamp = -1;
-    bool isAutoTimeStamp = false;
-    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
-        SURFACE_ERROR_UNKOWN);
-
-    sptr<BufferQueue> queue = nullptr;
-    tmpConsumerSurface->consumer_ = new BufferQueueConsumer(queue);
-    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
-        SURFACE_ERROR_UNKOWN);
-}
-
-/**
- * Function: GetFrontDesiredPresentTimeStamp003
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
- */
-HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp003, Function | MediumTest | Level2)
-{
-    sptr<ConsumerSurface> tmpConsumerSurface = new ConsumerSurface("test");
-    sptr<BufferQueue> queue = new BufferQueue("test");
-    tmpConsumerSurface->consumer_ = new BufferQueueConsumer(queue);
-
-    uint32_t sequence = 1;
-    int64_t desiredPresentTimeStamp = -1;
-    bool isAutoTimeStamp = false;
-    queue->dirtyList_.push_back(sequence);
-    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
-        GSERROR_NO_BUFFER);
-}
-
-/*
-* Function: GetBufferSupportFastCompose
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call GetBufferSupportFastCompose and check ret
-*/
-HWTEST_F(ConsumerSurfaceTest, GetBufferSupportFastCompose001, TestSize.Level0)
-{
-    bool supportFastCompose = false;
-    bool supportFastComposeStoreValue = false;
-    sptr<BufferQueue> queue = new BufferQueue("test");
-    surface_->consumer_ = new BufferQueueConsumer(queue);
-    surface_->isFirstBuffer_.store(true);
-    ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
-    ASSERT_EQ(surface_->isFirstBuffer_.load(), false);
-    surface_->supportFastCompose_.store(supportFastComposeStoreValue);
-    ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
-    ASSERT_EQ(supportFastCompose, supportFastComposeStoreValue);
-}
-
-/*
 * Function: GetBufferCacheConfig001
 * Type: Function
 * Rank: Important(2)
@@ -2340,6 +2248,98 @@ HWTEST_F(ConsumerSurfaceTest, GetBufferCacheConfig001, TestSize.Level0)
     pSurface->CleanCache(true);
     ret = cSurface->GetBufferCacheConfig(buffer, cacheConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_BUFFER_NOT_INCACHE);
+}
+
+/*
+* Function: GetLastFlushedDesiredPresentTimeStamp
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetLastFlushedDesiredPresentTimeStamp and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetLastFlushedDesiredPresentTimeStamp001, Function | MediumTest | Level2)
+{
+    int64_t lastFlushedDesiredPresentTimeStamp = -1;
+    ASSERT_EQ(cs->GetLastFlushedDesiredPresentTimeStamp(lastFlushedDesiredPresentTimeStamp), GSERROR_OK);
+}
+
+/**
+ * Function: GetFrontDesiredPresentTimeStamp001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp001, Function | MediumTest | Level2)
+{
+    int64_t desiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
+    bq->dirtyList_.clear();
+    bq->bufferQueueCache_.clear();
+    ASSERT_EQ(bq->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp), GSERROR_NO_BUFFER);
+}
+
+/**
+ * Function: GetFrontDesiredPresentTimeStamp002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp002, Function | MediumTest | Level2)
+{
+    sptr<ConsumerSurface>  tmpConsumerSurface = new ConsumerSurface("test");
+    int64_t desiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
+    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
+        SURFACE_ERROR_UNKOWN);
+
+    sptr<BufferQueue> queue = nullptr;
+    tmpConsumerSurface->consumer_ = new BufferQueueConsumer(queue);
+    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
+        SURFACE_ERROR_UNKOWN);
+}
+
+/**
+ * Function: GetFrontDesiredPresentTimeStamp003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetFrontDesiredPresentTimeStamp and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, GetFrontDesiredPresentTimeStamp003, Function | MediumTest | Level2)
+{
+    sptr<ConsumerSurface>  tmpConsumerSurface = new ConsumerSurface("test");
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    tmpConsumerSurface->consumer_ = new BufferQueueConsumer(queue);
+
+    uint32_t sequence = 1;
+    int64_t desiredPresentTimeStamp = -1;
+    bool isAutoTimeStamp = false;
+    queue->dirtyList_.push_back(sequence);
+    EXPECT_EQ(tmpConsumerSurface->GetFrontDesiredPresentTimeStamp(desiredPresentTimeStamp, isAutoTimeStamp),
+        GSERROR_NO_BUFFER);
+}
+
+/*
+* Function: GetBufferSupportFastCompose
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetBufferSupportFastCompose and check ret
+*/
+HWTEST_F(ConsumerSurfaceTest, GetBufferSupportFastCompose001, Function | MediumTest | Level2)
+{
+    bool supportFastCompose = false;
+    bool supportFastComposeStoreValue = false;
+    sptr<BufferQueue> queue = new BufferQueue("test");
+    surface_->consumer_ = new BufferQueueConsumer(queue);
+    surface_->isFirstBuffer_.store(true);
+    ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
+    ASSERT_EQ(surface_->isFirstBuffer_.load(), false);
+    surface_->supportFastCompose_.store(supportFastComposeStoreValue);
+    ASSERT_EQ(surface_->GetBufferSupportFastCompose(supportFastCompose), GSERROR_OK);
+    ASSERT_EQ(supportFastCompose, supportFastComposeStoreValue);
 }
 
 /*

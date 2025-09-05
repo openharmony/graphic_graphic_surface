@@ -106,8 +106,8 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_UNREGISTER_PROPERTY_LISTENER, UnRegisterPropertyListenerRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_PRE_ALLOC_BUFFERS, PreAllocBuffersRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_LPP_FD, SetLppShareFdRemote),
-    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ALPHA_TYPE, SetAlphaTypeRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -187,7 +187,7 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
     isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
     if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+                std::chrono::steady_clock::now().time_since_epoch()).count();
     }
 
     if (!ReadRequestConfig(arguments, config)) {
@@ -210,7 +210,7 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
 
     if (isActiveGame) {
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+                std::chrono::steady_clock::now().time_since_epoch()).count();
         Rosen::FrameReport::GetInstance().SetDequeueBufferTime(name_, (endTimeNs - startTimeNs));
     }
 
@@ -328,7 +328,7 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
     isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
     if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+                std::chrono::steady_clock::now().time_since_epoch()).count();
     }
 
     sequence = arguments.ReadUint32();
@@ -349,7 +349,7 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
     if (isActiveGame) {
         uint64_t uniqueId = GetUniqueId();
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+                std::chrono::steady_clock::now().time_since_epoch()).count();
         Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
         Rosen::FrameReport::GetInstance().Report(name_);
     }

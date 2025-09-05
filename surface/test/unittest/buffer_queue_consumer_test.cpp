@@ -294,6 +294,21 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
 }
 
 /*
+ * Function: GetAlphaType
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: get alpha type
+ */
+HWTEST_F(BufferQueueConsumerTest, GetAlphaTypeTest, TestSize.Level0)
+{
+    sptr<BufferQueue> bufferQueue = new BufferQueue("test");
+    sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);
+    GraphicAlphaType alphaType;
+    ASSERT_EQ(consumer->GetAlphaType(alphaType), OHOS::GSERROR_OK);
+}
+
+/*
  * Function: SetLppDrawSource
  * Type: Function
  * Rank: Important(2)
@@ -311,22 +326,6 @@ HWTEST_F(BufferQueueConsumerTest, SetLppDrawSource001, TestSize.Level0)
     consumer->bufferQueue_ = new BufferQueue("test");
     ASSERT_EQ(consumer->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
 }
-
-/*
- * Function: GetAlphaType
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: get alpha type
- */
-HWTEST_F(BufferQueueConsumerTest, GetAlphaTypeTest, TestSize.Level0)
-{
-    sptr<BufferQueue> bufferQueue = new BufferQueue("test");
-    sptr<BufferQueueConsumer> consumer = new BufferQueueConsumer(bufferQueue);
-    GraphicAlphaType alphaType;
-    ASSERT_EQ(consumer->GetAlphaType(alphaType), OHOS::GSERROR_OK);
-}
-
 /*
  * Function: AcquireBuffer
  * Type: Function

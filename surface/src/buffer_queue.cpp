@@ -684,6 +684,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
         CancelBuffer(sequence, bedata);
         return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
     }
+
     sret = DoFlushBuffer(sequence, bedata, fence, config);
     if (sret != GSERROR_OK) {
         return sret;
@@ -1067,7 +1068,6 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
         lastConsumeTime_ = now - mapIter->second.lastAcquireTime;
-
         if (mapIter->second.isDeleting) {
             DeleteBufferInCache(sequence, lock);
         } else {
@@ -1077,6 +1077,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         waitAttachCon_.notify_all();
     }
     ListenerBufferReleasedCb(buffer, fence);
+
     return GSERROR_OK;
 }
 
@@ -1087,6 +1088,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
     uint32_t sequence = bufferImpl->GetSeqNum();
     SURFACE_TRACE_NAME_FMT("AllocBuffer name: %s queueId: %" PRIu64 ", config width: %d height: %d usage: %llu format:"
         " %d id: %u", name_.c_str(), uniqueId_, config.width, config.height, config.usage, config.format, sequence);
+
     ScalingMode scalingMode = scalingMode_;
     int32_t connectedPid = connectedPid_;
     isAllocatingBuffer_ = true;

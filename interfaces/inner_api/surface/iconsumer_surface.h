@@ -349,17 +349,16 @@ public:
         (void)queueSize;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
-    virtual GSError GetFrontDesiredPresentTimeStamp(
-        int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const
-    {
-        (void)desiredPresentTimeStamp;
-        (void)isAutoTimeStamp;
-        return SURFACE_ERROR_NOT_SUPPORT;
-    }
     virtual GSError SetLppDrawSource(bool isShbSource, bool isRsSource)
     {
         (void)isShbSource;
         (void)isRsSource;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const
+    {
+        (void)desiredPresentTimeStamp;
+        (void)isAutoTimeStamp;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     virtual GSError SetIsPriorityAlloc(bool isPriorityAlloc)

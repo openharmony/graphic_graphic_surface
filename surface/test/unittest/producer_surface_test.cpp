@@ -1581,7 +1581,7 @@ HWTEST_F(ProducerSurfaceTest, SurfaceSourceType002, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetSurfaceAppFrameworkType and check ret
 *                  2. call GetSurfaceAppFrameworkType and check ret
-*/
+ */
 HWTEST_F(ProducerSurfaceTest, SurfaceAppFrameworkType001, TestSize.Level0)
 {
     std::string type = "test";
@@ -1900,19 +1900,6 @@ HWTEST_F(ProducerSurfaceTest, SetGlobalAlpha001, TestSize.Level0)
     alpha = 255;
     ret = pSurface->SetGlobalAlpha(alpha);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-/*
-* Function: IsInHebcWhiletList
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call IsInHebcWhiletList and check ret
-*/
-HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, TestSize.Level0)
-{
-    bool isInHebcList = pSurface->IsInHebcList();
-    ASSERT_EQ(isInHebcList, false);
 }
 
 /*
@@ -2288,6 +2275,19 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffersNoListener, TestSize.Level0)
 }
 
 /*
+* Function: IsInHebcWhiletList
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call IsInHebcWhiletList and check ret
+*/
+HWTEST_F(ProducerSurfaceTest, IsInHebcWhiletList001, Function | MediumTest | Level2)
+{
+    bool isInHebcList = pSurface->IsInHebcList();
+    ASSERT_EQ(isInHebcList, false);
+}
+
+/*
 * Function: ProducerSurfaceParameterNull
 * Type: Function
 * Rank: Important(2)
@@ -2588,7 +2588,7 @@ HWTEST_F(ProducerSurfaceTest, PropertyChangeCallback001, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call ResetPropertyListenerInner  and check ret
 */
-HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, Function | MediumTest | Level2)
 {
     sptr<IBufferProducer> producer_ = nullptr;
     GSError ret = surface_->ResetPropertyListenerInner(0);
@@ -2604,7 +2604,7 @@ HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner001, TestSize.Level0)
 *                  2. operation: producer sends valid config to bufferQueue then RequestBuffer
 *                  3. result: bufferQueue return GSERROR_OK
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, Function | MediumTest | Level2)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2648,7 +2648,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest1, TestSize.Level0)
 *                  2. operation: producer sends valid config to bufferQueue
 *                  3. result: bufferQueue return GSERROR_OK
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, Function | MediumTest | Level2)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2684,7 +2684,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest2, TestSize.Level0)
 *                  2. operation: producer sends non-zero allocBufferCount config to bufferQueue then RequestBuffer
 *                  3. result: calls RequestBuffer return ok, calls RequestBuffer return buffer queue full
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, Function | MediumTest | Level2)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2724,7 +2724,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest3, TestSize.Level0)
 * EnvConditions: N/A
 * CaseDescription: 1. call PreAllocBuffers and check ret
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, Function | MediumTest | Level2)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2767,7 +2767,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest4, TestSize.Level0)
 *                  2. operation: calls PreAllocBuffers, then calls PreAllocBuffers with new valid config
 *                  3. result: calls PreAllocBuffers return ok, calls RequestBuffer return ok
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, Function | MediumTest | Level2)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
@@ -2818,7 +2818,7 @@ HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest5, TestSize.Level0)
 *                  2. operation: calls PreAllocBuffers with invalid allocBufferCount/width/height/format config
 *                  3. result: calls PreAllocBuffers return ok, calls RequestBuffer return ok
 */
-HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest6, TestSize.Level0)
+HWTEST_F(ProducerSurfaceTest, PreAllocBuffersTest6, Function | MediumTest | Level2)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();

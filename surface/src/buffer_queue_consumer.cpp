@@ -318,6 +318,14 @@ uint32_t BufferQueueConsumer::GetAvailableBufferCount() const
     return bufferQueue_->GetAvailableBufferCount();
 }
 
+GSError BufferQueueConsumer::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->GetBufferCacheConfig(buffer, config);
+}
+
 GSError BufferQueueConsumer::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const
 {
     if (bufferQueue_ == nullptr) {
@@ -341,14 +349,6 @@ GSError BufferQueueConsumer::GetBufferSupportFastCompose(bool &bufferSupportFast
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->GetBufferSupportFastCompose(bufferSupportFastCompose);
-}
-
-GSError BufferQueueConsumer::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
-{
-    if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
-    }
-    return bufferQueue_->GetBufferCacheConfig(buffer, config);
 }
 
 GSError BufferQueueConsumer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber)

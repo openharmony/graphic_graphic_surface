@@ -2168,7 +2168,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_DestroyNativeWindowBuffer002, TestSiz
  *                  2. operation: request buffer and alloc buffer
  *                  3. result: request buffer and alloc buffer success
  */
-HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, TestSize.Level0)
+HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, Function | MediumTest | Level1)
 {
     sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
@@ -2208,12 +2208,12 @@ HWTEST_F(NativeWindowTest, NativeWindowSetUsageAndFormat, TestSize.Level0)
 }
 
 /*
-* Function: GetNativeObjectMagic
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call Func With Invalid NativeWindow
-*                  2. check ret
+ * Function: GetNativeObjectMagic
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Func With Invalid NativeWindow
+ *                  2. check ret
  */
 HWTEST_F(NativeWindowTest, InvalidNativewindow001, TestSize.Level0)
 {
@@ -2264,12 +2264,12 @@ HWTEST_F(NativeWindowTest, InvalidNativewindow001, TestSize.Level0)
 }
 
 /*
-* Function: GetNativeObjectMagic
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call Func With Invalid NativeWindow
-*                  2. check ret
+ * Function: GetNativeObjectMagic
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Func With Invalid NativeWindow
+ *                  2. check ret
  */
 HWTEST_F(NativeWindowTest, InvalidNativewindow002, TestSize.Level0)
 {
@@ -2317,12 +2317,12 @@ HWTEST_F(NativeWindowTest, InvalidNativewindow002, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeWindow_NativeWindowRequestBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeWindow_NativeWindowRequestBuffer by abnormal input
-*                  2. check ret
+ * Function: OH_NativeWindow_NativeWindowRequestBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeWindow_NativeWindowRequestBuffer by abnormal input
+ *                  2. check ret
  */
 HWTEST_F(NativeWindowTest, DisconnectStrictly001, TestSize.Level0)
 {

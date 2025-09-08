@@ -61,6 +61,7 @@ void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInf
 GSError WriteVerifyAllocInfo(MessageParcel &parcel, const std::vector<BufferVerifyAllocInfo> &infos);
 
 GSError ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &metaData);
+
 GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMetaData> &metaData);
 
 GSError ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData);
@@ -111,8 +112,8 @@ static inline GSError BufferUtilUnRegisterPropertyListener(uint64_t producerId,
     return GSERROR_OK;
 }
 
-static inline bool isBufferUtilPresentTimestampReady(int64_t desiredPresentTimestamp,
-    int64_t expectPresentTimestamp)
+static inline bool isBufferUtilPresentTimestampReady(const int64_t& desiredPresentTimestamp,
+    const int64_t& expectPresentTimestamp)
 {
     if (desiredPresentTimestamp <= expectPresentTimestamp) {
         return true;

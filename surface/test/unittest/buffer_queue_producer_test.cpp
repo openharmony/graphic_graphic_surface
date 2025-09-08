@@ -944,7 +944,7 @@ HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, TestSize.
 * EnvConditions: N/A
 * CaseDescription: GetProducerInitInfoRemote member function test
  */
-HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, TestSize.Level0)
+HWTEST_F(BufferQueueProducerTest, GetProducerInitInfoRemote001, Function | MediumTest | Level2)
 {
     MessageParcel arguments;
     arguments.WriteBool(false);
@@ -1010,7 +1010,6 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFd001, TestSize.Level0)
     int ret = bqptmp->SetLppShareFd(fd, state);
     ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
-
 /*
  * Function: SetLppShareFd
  * Type: Function

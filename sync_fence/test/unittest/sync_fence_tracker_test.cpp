@@ -129,10 +129,10 @@ HWTEST_F(SyncFenceTrackerTest, CheckGpuSubhealthEventLimit001, Function | Medium
 HWTEST_F(SyncFenceTrackerTest, GetFrameRate001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("GetFrameRate001");
-    int32_t frameRate = tracker->GetFrameRate();
+    int64_t frameRate = tracker->GetFrameRate();
     EXPECT_EQ(frameRate, 0);
 
-    for (int32_t i = 0; i < 2; i++) {
+    for (int64_t i = 0; i < 2; i++) {
         tracker->frameStartTimes_->push(1);
     }
     frameRate = tracker->GetFrameRate();

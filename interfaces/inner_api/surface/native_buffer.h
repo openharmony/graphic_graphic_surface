@@ -401,7 +401,10 @@ typedef enum OH_NativeBuffer_MetadataType {
     OH_VIDEO_HDR_HLG,      /**< HLG */
     OH_VIDEO_HDR_HDR10,    /**< HDR10 */
     OH_VIDEO_HDR_VIVID,    /**< HDR VIVID */
-    OH_VIDEO_NONE          /**< NONE Metadata */
+    OH_IMAGE_HDR_VIVID_DUAL,   /**< HDR VIVID DUAL */
+    OH_IMAGE_HDR_VIVID_SINGLE, /**< HDR VIVID SINGLE */
+    OH_VIDEO_NONE              /**< NONE Metadata, as the enumeration expands, the value of NONE will increase,
+                                and it is not allowed to use devil numbers instead of NONE enumeration. */
 } OH_NativeBuffer_MetadataType;
 
 /**

@@ -3679,4 +3679,28 @@ HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakAndRequesBuffer, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_NE(buffer1, nullptr);
 }
+
+/*
+ * Function: GetAvailableBufferCount
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: GetAvailableBufferCount member function test
+ */
+HWTEST_F(ProducerSurfaceTest, GetAvailableBufferCount001, TestSize.Level0)
+{
+    sptr<IBufferProducer> producer1 = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp1 = new ProducerSurface(producer1);
+    uint32_t count = 0;
+    ASSERT_EQ(pSurfaceTmp1->GetAvailableBufferCount(count), GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(count, 0);
+
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferProducer> producer2 = cSurfTmp->GetProducer();
+    sptr<BufferQueueProducer> bufferQueueProducer = static_cast<BufferQueueProducer *>(producer2.GetRefPtr());
+    bufferQueueProducer->bufferQueue_->dirtyList_ = {1, 2, 3, 4, 5};
+    sptr<ProducerSurface> pSurfaceTmp2 = new ProducerSurface(producer2);
+    ASSERT_EQ(pSurfaceTmp2->GetAvailableBufferCount(count), GSERROR_OK);
+    ASSERT_EQ(count, bufferQueueProducer->bufferQueue_->dirtyList_.size());
+}
 }

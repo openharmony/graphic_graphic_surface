@@ -25,6 +25,7 @@
 #include "surface_utils.h"
 #include "sync_fence.h"
 #include "ipc_inner_object.h"
+#include "isurface_aps_plugin.h"
 #include "external_window.h"
 #include "hebc_white_list.h"
 #include "metadata_helper.h"
@@ -119,6 +120,14 @@ OHNativeWindow* CreateNativeWindowFromSurface(void* pSurface)
     auto utils = SurfaceUtils::GetInstance();
     utils->AddNativeWindow(nativeWindow->surface->GetUniqueId(), nativeWindow);
     nativeWindow->surface->SetWptrNativeWindowToPSurface(nativeWindow);
+    auto &apsPlugin = OHOS::ISurfaceApsPlugin::LoadPlugin();
+    if (apsPlugin != nullptr) {
+        uint32_t queueSize = apsPlugin->InitSurface(nativeWindow->surface->GetName());
+        if (queueSize != 0) {
+            nativeWindow->surface->SetQueueSize(queueSize);
+            BLOGD("set queueSize: %d", queueSize);
+        }
+    }
     return nativeWindow;
 }
 
@@ -256,6 +265,12 @@ int32_t NativeWindowFlushBuffer(OHNativeWindow *window, OHNativeWindowBuffer *bu
     config.desiredPresentTimestamp = window->desiredPresentTimestamp;
     OHOS::sptr<OHOS::SyncFence> acquireFence = new OHOS::SyncFence(fenceFd);
     int32_t ret = window->surface->FlushBuffer(buffer->sfbuffer, acquireFence, config);
+    auto &apsPlugin = OHOS::ISurfaceApsPlugin::LoadPlugin();
+    if (apsPlugin != nullptr) {
+        uint32_t availableBufferCount = 0;
+        window->surface->GetAvailableBufferCount(availableBufferCount);
+        apsPlugin->OnFlushBuffer(window->surface->GetName(), availableBufferCount);
+    }
     if (ret != OHOS::GSError::SURFACE_ERROR_OK) {
         BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
             ret, window->surface->GetUniqueId());

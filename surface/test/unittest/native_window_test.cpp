@@ -24,6 +24,7 @@
 #include "sync_fence.h"
 #include "ipc_inner_object.h"
 #include "ipc_cparcel.h"
+#include "isurface_aps_plugin.h"
 
 using namespace std;
 using namespace testing;
@@ -34,6 +35,17 @@ class BufferConsumerListener : public IBufferConsumerListener {
 public:
     void OnBufferAvailable() override
     {
+    }
+};
+
+class ApsPluginMock : public ISurfaceApsPlugin {
+private:
+    uint32_t queueSize = 0;
+
+public:
+    uint32_t InitSurface(const std::string &surfaceName) override
+    {
+        return queueSize;
     }
 };
 
@@ -2011,6 +2023,74 @@ HWTEST_F(NativeWindowTest, NativeWindowReadWriteWindow001, TestSize.Level0)
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
     OH_IPCParcel_Destroy(parcel1);
     OH_IPCParcel_Destroy(parcel2);
+}
+
+/*
+ * Function: CreateNativeWindowFromSurface
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: CreateNativeWindowFromSurface and SetQueueSize apsplugin is nullptr
+ * @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(NativeWindowTest, CreateNativeWindowFromSurface_SetQueueSize001, TestSize.Level0)
+{
+    using namespace OHOS;
+    sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
+    sptr<OHOS::IBufferProducer> producer = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    ISurfaceApsPlugin::LoadPlugin();
+    ISurfaceApsPlugin::instance_ = nullptr;
+    OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
+    ASSERT_EQ(ISurfaceApsPlugin::LoadApsFunc(), nullptr);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindow);
+}
+
+/*
+ * Function: CreateNativeWindowFromSurface
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: CreateNativeWindowFromSurface and SetQueueSize queueSize = 0
+ * @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(NativeWindowTest, CreateNativeWindowFromSurface_SetQueueSize002, TestSize.Level0)
+{
+    using namespace OHOS;
+    sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
+    sptr<OHOS::IBufferProducer> producer = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    sptr<ApsPluginMock> mockPlugin = new ApsPluginMock();
+    ISurfaceApsPlugin::LoadPlugin();
+    ISurfaceApsPlugin::instance_ = mockPlugin;
+    mockPlugin->queueSize = 0;
+    OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
+    ASSERT_NE(ISurfaceApsPlugin::LoadApsFunc(), nullptr);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindow);
+}
+
+/*
+ * Function: CreateNativeWindowFromSurface
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: CreateNativeWindowFromSurface and SetQueueSize queueSize = 6
+ * @tc.require: issueI5GMZN issueI5IWHW
+ */
+HWTEST_F(NativeWindowTest, CreateNativeWindowFromSurface_SetQueueSize003, TestSize.Level0)
+{
+    using namespace OHOS;
+    sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
+    sptr<OHOS::IBufferProducer> producer = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    sptr<ApsPluginMock> mockPlugin = new ApsPluginMock();
+    ISurfaceApsPlugin::LoadPlugin();
+    ISurfaceApsPlugin::instance_ = mockPlugin;
+    mockPlugin->queueSize = 6;
+    OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
+    ASSERT_NE(ISurfaceApsPlugin::LoadApsFunc(), nullptr);
+    ASSERT_EQ(cSurface->GetQueueSize(), mockPlugin->queueSize);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindow);
 }
 
 /*

@@ -1436,6 +1436,15 @@ uint32_t BufferQueueProducer::GetQueueSize()
     return bufferQueue_->GetQueueSize();
 }
 
+GSError BufferQueueProducer::GetAvailableBufferCount(uint32_t &count)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    count = bufferQueue_->GetAvailableBufferCount();
+    return GSERROR_OK;
+}
+
 GSError BufferQueueProducer::SetQueueSize(uint32_t queueSize)
 {
     if (bufferQueue_ == nullptr) {

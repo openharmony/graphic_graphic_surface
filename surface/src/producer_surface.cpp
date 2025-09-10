@@ -534,6 +534,14 @@ uint32_t ProducerSurface::GetQueueSize()
     return producer_->GetQueueSize();
 }
 
+GSError ProducerSurface::GetAvailableBufferCount(uint32_t &count)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->GetAvailableBufferCount(count);
+}
+
 GSError ProducerSurface::SetQueueSize(uint32_t queueSize)
 {
     if (producer_ == nullptr) {

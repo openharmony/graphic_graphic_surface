@@ -67,6 +67,8 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
     {OH_VIDEO_HDR_HLG, CM_VIDEO_HLG},
     {OH_VIDEO_HDR_HDR10, CM_VIDEO_HDR10},
     {OH_VIDEO_HDR_VIVID, CM_VIDEO_HDR_VIVID},
+    {OH_IMAGE_HDR_VIVID_DUAL, CM_IMAGE_HDR_VIVID_DUAL},
+    {OH_IMAGE_HDR_VIVID_SINGLE, CM_IMAGE_HDR_VIVID_SINGLE},
 };
 
 static OH_NativeBuffer* OH_NativeBufferFromSurfaceBuffer(SurfaceBuffer* buffer)
@@ -322,9 +324,6 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         ret = MetadataHelper::SetHDRStaticMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
         OH_NativeBuffer_MetadataType hdrMetadataType = static_cast<OH_NativeBuffer_MetadataType>(*metadata);
-        if (MetadataHelper::IsImageMetadataType(metadata)) {
-            return MetadataHelper::SetImageHDRMetadataType(sbuffer, metadata);
-        }
         if (NATIVE_METADATATYPE_TO_HDI_MAP.find(hdrMetadataType) == NATIVE_METADATATYPE_TO_HDI_MAP.end()) {
             BLOGE("the metadataType is not defined.");
             return OHOS::SURFACE_ERROR_INVALID_PARAM;

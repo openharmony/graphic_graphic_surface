@@ -275,7 +275,6 @@ GSError MetadataHelper::SetVideoTVMetadata(sptr<SurfaceBuffer>& buffer, const Tv
         BLOGE("tvMetadata ConvertMetadataToVec failed");
         return ret;
     }
-    buffer->SetBufferHandle(buffer->GetBufferHandle());
     auto ret1 = buffer->SetMetadata(ATTRKEY_VIDEO_TV_PQ, tvMetadataVec);
     if (ret1 != GSERROR_OK) {
         BLOGE("tvMetadata SetMetadata failed %{public}d! id = %{public}d", ret1, buffer->GetSeqNum());
@@ -290,7 +289,6 @@ GSError MetadataHelper::GetVideoTVMetadata(const sptr<SurfaceBuffer>& buffer, Tv
         return GSERROR_NO_BUFFER;
     }
     std::vector<uint8_t> tvMetadataVec;
-    buffer->SetBufferHandle(buffer->GetBufferHandle());
     auto ret = buffer->GetMetadata(ATTRKEY_VIDEO_TV_PQ, tvMetadataVec);
     if (ret != GSERROR_OK) {
         return ret;
@@ -300,7 +298,7 @@ GSError MetadataHelper::GetVideoTVMetadata(const sptr<SurfaceBuffer>& buffer, Tv
 
 GSError MetadataHelper::SetSceneTag(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [value](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.sceneTag = value;
         BLOGD("tvMetadata sceneTag = %{public}u", tvPQMetadata.sceneTag);
     });
@@ -308,7 +306,7 @@ GSError MetadataHelper::SetSceneTag(sptr<SurfaceBuffer>& buffer, unsigned char v
 
 GSError MetadataHelper::SetUIFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [value](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.uiFrameCnt = value;
         BLOGD("tvMetadata uiFrameCnt = %{public}u", tvPQMetadata.uiFrameCnt);
     });
@@ -316,7 +314,7 @@ GSError MetadataHelper::SetUIFrameCount(sptr<SurfaceBuffer>& buffer, unsigned ch
 
 GSError MetadataHelper::SetVideoFrameCount(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [value](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.vidFrameCnt = value;
         BLOGD("tvMetadata vidFrameCnt = %{public}u", tvPQMetadata.vidFrameCnt);
     });
@@ -324,7 +322,7 @@ GSError MetadataHelper::SetVideoFrameCount(sptr<SurfaceBuffer>& buffer, unsigned
 
 GSError MetadataHelper::SetVideoFrameRate(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [value](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.vidFps = value;
         BLOGD("tvMetadata vidFps = %{public}u", tvPQMetadata.vidFps);
     });
@@ -332,7 +330,7 @@ GSError MetadataHelper::SetVideoFrameRate(sptr<SurfaceBuffer>& buffer, unsigned 
 
 GSError MetadataHelper::SetVideoTVInfo(sptr<SurfaceBuffer>& buffer, const TvVideoWindow& tvVideoWindow)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [tvVideoWindow](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.vidWinX = tvVideoWindow.x;
         tvPQMetadata.vidWinY = tvVideoWindow.y;
         tvPQMetadata.vidWinWidth = tvVideoWindow.width;
@@ -347,7 +345,7 @@ GSError MetadataHelper::SetVideoTVInfo(sptr<SurfaceBuffer>& buffer, const TvVide
 GSError MetadataHelper::SetVideoDecoderHigh(sptr<SurfaceBuffer>& buffer, unsigned short vidVdhWidth,
     unsigned short vidVdhHeight)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [vidVdhWidth, vidVdhHeight](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.vidVdhWidth = vidVdhWidth;
         tvPQMetadata.vidVdhHeight = vidVdhHeight;
         BLOGD("tvPQMetadata vidVdhWidth = %{public}u, tvPQMetadata vidVdhHeight = %{public}u",
@@ -357,7 +355,7 @@ GSError MetadataHelper::SetVideoDecoderHigh(sptr<SurfaceBuffer>& buffer, unsigne
 
 GSError MetadataHelper::SetVideoTVScaleMode(sptr<SurfaceBuffer>& buffer, unsigned char value)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [value](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.scaleMode = value;
         BLOGD("tvMetadata scaleMode = %{public}u", tvPQMetadata.scaleMode);
     });
@@ -365,7 +363,7 @@ GSError MetadataHelper::SetVideoTVScaleMode(sptr<SurfaceBuffer>& buffer, unsigne
 
 GSError MetadataHelper::SetVideoTVDpPixelFormat(sptr<SurfaceBuffer>& buffer, unsigned int value)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [value](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.dpPixFmt = value;
         BLOGD("tvMetadata dpPixFmt = %{public}u", tvPQMetadata.dpPixFmt);
     });
@@ -374,7 +372,7 @@ GSError MetadataHelper::SetVideoTVDpPixelFormat(sptr<SurfaceBuffer>& buffer, uns
 GSError MetadataHelper::SetVideoColorimetryHdr(sptr<SurfaceBuffer>& buffer, unsigned char hdr,
     unsigned char colorimetry)
 {
-    return UpdateTVMetadataField(buffer, [=](TvPQMetadata &tvPQMetadata) {
+    return UpdateTVMetadataField(buffer, [hdr, colorimetry](TvPQMetadata &tvPQMetadata) {
         tvPQMetadata.colorimetry = colorimetry;
         tvPQMetadata.hdr = hdr;
         BLOGD("Colorimetry = %{public}u, HDR = %{public}u", tvPQMetadata.colorimetry, tvPQMetadata.hdr);

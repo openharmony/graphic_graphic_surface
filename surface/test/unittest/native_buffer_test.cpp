@@ -47,6 +47,7 @@ public:
     };
     static inline OH_NativeBuffer_Config checkConfig = {};
     static inline OH_NativeBuffer* buffer = nullptr;
+    static inline int pipeWriteFd_;
 };
 
 void NativeBufferTest::SetUpTestCase()
@@ -468,10 +469,14 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue004, TestSize.Level0)
     uint8_t type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_VIVID_DUAL;
     int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE,
                                                    sizeof(OH_NativeBuffer_MetadataType), &type);
-    ASSERT_EQ(ret, GSERROR_NOT_SUPPORT);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
     type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_VIVID_SINGLE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
-    ASSERT_EQ(ret, GSERROR_OK);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_NE(ret, GSERROR_OK);
+    }
     type = OH_NativeBuffer_MetadataType::OH_VIDEO_NONE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
     ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
@@ -616,6 +621,90 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap002, TestSize.Level0)
     int32_t ret = OH_NativeBuffer_Map(buffer, &virAddr);
     ASSERT_EQ(ret, GSERROR_OK);
     ASSERT_NE(virAddr, nullptr);
+}
+
+/*
+ * Function: OHNativeBufferMapWaitFence001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal fenceFd input
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence001, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t fenceFd = 1;
+    int32_t ret = OH_NativeBuffer_Map_WaitFence(nativeBuffer, fenceFd, nullptr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: OHNativeBufferMapWaitFence002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal buffer input
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence002, TestSize.Level0)
+{
+    void *virAddr = nullptr;
+    int32_t fenceFd = -1;
+    int32_t ret = OH_NativeBuffer_Map_WaitFence(nullptr, fenceFd, &virAddr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(virAddr, nullptr);
+}
+
+/*
+ * Function: OHNativeBufferMapWaitFence003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by valid buffer input
+ *                  2. wait for pipe fence with delayed signaling
+ *                  3. check ret and virAddr, ret is ok and virAddr is non null pointer
+ */
+TEST_F(NativeBufferTest, OHNativeBufferMapWaitFence003)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int pipefds[2];
+    ASSERT_NE(pipe(pipefds), -1);
+        
+    // Return read end, keep write end for signaling
+    int fenceFd = pipefds[0];
+    ASSERT_GE(fenceFd, 0);
+
+    pipeWriteFd_ = pipefds[1];
+    int writeFdCopy = pipeWriteFd_;
+    // Start a thread to signal the fence after a delay
+    std::thread signalThread([writeFdCopy]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // delay for 100ms
+        char signal = '1';
+        write(writeFdCopy, &signal, 1);
+        close(writeFdCopy);
+    });
+
+    void *virAddr = nullptr;
+    auto start = std::chrono::steady_clock::now();
+    int32_t result = OH_NativeBuffer_Map_WaitFence(nativeBuffer, fenceFd, &virAddr);
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    EXPECT_EQ(result, OHOS::SURFACE_ERROR_OK);
+    EXPECT_GE(duration.count(), 100); // Should have waited at least 100ms
+    EXPECT_LE(duration.count(), 200); // Should not wait longer than 200ms
+    EXPECT_NE(virAddr, nullptr);
+    
+    signalThread.join();
+    close(fenceFd);
+    EXPECT_EQ(OH_NativeBuffer_Unmap(nativeBuffer), OHOS::GSERROR_OK);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
 
 /*

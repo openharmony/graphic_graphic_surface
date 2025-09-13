@@ -173,6 +173,24 @@ int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr)
     return ret;
 }
 
+int32_t OH_NativeBuffer_Map_WaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, void **virAddr)
+{
+    if (buffer == nullptr || virAddr == nullptr || fenceFd < 0) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    int32_t ret = sbuffer->Map();
+    if (ret == OHOS::SURFACE_ERROR_OK) {
+        *virAddr = sbuffer->GetVirAddr();
+    } else {
+        BLOGE("Map failed, ret:%{public}d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    sptr<SyncFence> syncFence = sptr<SyncFence>(new SyncFence(fenceFd));
+    syncFence->Wait(-1);
+    return ret;
+}
+
 int32_t OH_NativeBuffer_Unmap(OH_NativeBuffer *buffer)
 {
     if (buffer == nullptr) {

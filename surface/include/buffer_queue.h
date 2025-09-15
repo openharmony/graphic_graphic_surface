@@ -79,12 +79,20 @@ using BufferElement = struct BufferElement {
 struct BufferSlot {
     uint32_t seqId;
     int64_t timestamp;
+    /**
+     * Lpp Buffer cropping area, processing rpr video
+     * [left, top, width, height]
+     */
     int32_t crop[4];
+    bool isRsUsing = false;
 };
 
 struct LppSlotInfo {
     int32_t readOffset = -1;
     int32_t writeOffset = -1;
+    /**
+     * The order of using lpp buffer, Similar to dirtyList variable.
+     */
     BufferSlot slot[8];
     int32_t frameRate = 0;
     bool isStopShbDraw = false;
@@ -328,7 +336,8 @@ private:
     GSError ReuseBufferForBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
         BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
-
+    void SetLppBufferConfig(sptr<SurfaceBuffer> &buffer, std::vector<Rect> &damages, const BufferSlot &slot);
+    bool CheckLppFenceLocked();
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -383,11 +392,13 @@ private:
     std::string requestBufferStateStr_;
     std::string acquireBufferStateStr_;
     // << Lpp
-    std::map<uint32_t, sptr<SurfaceBuffer>> lppBufferCache_;
+    std::unordered_map<uint32_t, BufferSlot*> lppFenceMap_;
     LppSlotInfo *lppSlotInfo_ = nullptr;
     int32_t lastLppWriteOffset_ = -1;
+    int64_t lastLppWriteTimestamp_ = -1;
     bool isRsDrawLpp_ = false;
     int32_t lppSkipCount_ = 0;
+    int32_t lastRsToShbWriteOffset_ = -1;
     // Lpp >>
     int32_t connectedPid_ = 0;
     bool isAllocatingBuffer_ = false;

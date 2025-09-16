@@ -2147,6 +2147,7 @@ void BufferQueue::DumpCache(std::string &result)
         BufferElement element = it->second;
         if (BufferStateStrs.find(element.state) != BufferStateStrs.end()) {
             result += "        sequence = " + std::to_string(it->first) +
+                ", bufferId = " + std::to_string(element.buffer->GetBufferId()) +
                 ", state = " + std::to_string(element.state) +
                 ", timestamp = " + std::to_string(element.timestamp);
         }

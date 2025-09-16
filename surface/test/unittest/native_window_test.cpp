@@ -2042,7 +2042,7 @@ HWTEST_F(NativeWindowTest, CreateNativeWindowFromSurface_SetQueueSize001, TestSi
     ISurfaceApsPlugin::LoadPlugin();
     ISurfaceApsPlugin::instance_ = nullptr;
     OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
-    ASSERT_EQ(ISurfaceApsPlugin::LoadApsFunc(), nullptr);
+    ASSERT_EQ(ISurfaceApsPlugin::LoadPlugin(), nullptr);
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
 }
 
@@ -2065,7 +2065,7 @@ HWTEST_F(NativeWindowTest, CreateNativeWindowFromSurface_SetQueueSize002, TestSi
     ISurfaceApsPlugin::instance_ = mockPlugin;
     mockPlugin->queueSize = 0;
     OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
-    ASSERT_NE(ISurfaceApsPlugin::LoadApsFunc(), nullptr);
+    ASSERT_NE(ISurfaceApsPlugin::LoadPlugin(), nullptr);
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
 }
 
@@ -2086,10 +2086,11 @@ HWTEST_F(NativeWindowTest, CreateNativeWindowFromSurface_SetQueueSize003, TestSi
     sptr<ApsPluginMock> mockPlugin = new ApsPluginMock();
     ISurfaceApsPlugin::LoadPlugin();
     ISurfaceApsPlugin::instance_ = mockPlugin;
-    mockPlugin->queueSize = 6;
+    mockPlugin->queueSize = 65;
+    uint32_t queueSize = pSurface->GetQueueSize();
     OHNativeWindow* nativeWindow = CreateNativeWindowFromSurface(&pSurface);
-    ASSERT_NE(ISurfaceApsPlugin::LoadApsFunc(), nullptr);
-    ASSERT_EQ(cSurface->GetQueueSize(), mockPlugin->queueSize);
+    ASSERT_NE(ISurfaceApsPlugin::LoadPlugin(), nullptr);
+    ASSERT_EQ(cSurface->GetQueueSize(), queueSize);
     OH_NativeWindow_DestroyNativeWindow(nativeWindow);
 }
 

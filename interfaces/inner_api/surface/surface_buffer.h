@@ -123,8 +123,16 @@ public:
     virtual GSError ListMetadataKeys(std::vector<uint32_t>& keys) = 0;
     virtual GSError EraseMetadataKey(uint32_t key) = 0;
 
-    virtual void SetCropMetadata(const Rect& crop) = 0;
-    virtual bool GetCropMetadata(Rect& crop) = 0;
+    virtual void SetCropMetadata(const Rect& crop)
+    {
+        (void)crop;
+    }
+
+    virtual bool GetCropMetadata(Rect& crop)
+    {
+        (void)crop;
+        return false;
+    }
 
     static SurfaceBuffer* NativeBufferToSurfaceBuffer(OH_NativeBuffer* buffer)
     {
@@ -151,7 +159,10 @@ public:
         (void)parcel;
         return GSERROR_OK;
     };
-    virtual BufferRequestConfig GetBufferRequestConfig() const = 0;
+    virtual BufferRequestConfig GetBufferRequestConfig() const
+    {
+        return {};
+    }
     virtual void SetBufferRequestConfig(const BufferRequestConfig &config)
     {
         (void)config;

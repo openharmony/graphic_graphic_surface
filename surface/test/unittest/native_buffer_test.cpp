@@ -470,12 +470,12 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue004, TestSize.Level0)
     int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE,
                                                    sizeof(OH_NativeBuffer_MetadataType), &type);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
-        ASSERT_NE(ret, GSERROR_OK);
+        ASSERT_EQ(ret, GSERROR_OK);
     }
     type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_VIVID_SINGLE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
-        ASSERT_NE(ret, GSERROR_OK);
+        ASSERT_EQ(ret, GSERROR_OK);
     }
     type = OH_NativeBuffer_MetadataType::OH_VIDEO_NONE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);

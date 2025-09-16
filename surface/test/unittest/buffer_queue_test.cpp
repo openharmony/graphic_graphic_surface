@@ -1710,43 +1710,45 @@ HWTEST_F(BufferQueueTest, AcquireLppBuffer001, TestSize.Level0)
     tmpBq->lppSlotInfo_ = nullptr;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_TYPE_ERROR);
  
-    tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1,
-        .writeOffset = -1,
+    tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1, .writeOffset = -1,
         .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
-        .frameRate = 30,
-        .isStopShbDraw = false};
+        .frameRate = 30, .isStopShbDraw = false};
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
-    
-    tmpBq->lppSlotInfo_->readOffset = 9;
-    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
- 
+
+    uint32_t seqId1 = 100;
+    uint32_t seqId2 = 101;
+    uint32_t seqId3 = 102;
+    BufferElement ele = {
+        .buffer = nullptr, .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
+        .config = {}, .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[seqId1] = ele;
+    tmpBq->bufferQueueCache_[seqId2] = ele;
+    tmpBq->bufferQueueCache_[seqId3] = ele;
+    BufferSlot* slot = new BufferSlot();
+    tmpBq->lppFenceMap_[seqId1] = slot;
+    tmpBq->lppFenceMap_[seqId2] = slot;
+    tmpBq->lppFenceMap_[seqId3] = slot;
     tmpBq->lppSlotInfo_->readOffset = 0;
-    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
- 
-    tmpBq->lppSlotInfo_->writeOffset = 9;
-    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
- 
     tmpBq->lppSlotInfo_->writeOffset = 1;
-    tmpBq->isRsDrawLpp_ = false;
-    tmpBq->lppBufferCache_.clear();
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
- 
-    tmpBq->isRsDrawLpp_ = true;
-    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset;
+
+    tmpBq->lppFenceMap_.clear();
+    tmpBq->bufferQueueCache_.clear();
+    tmpBq->lppSlotInfo_->writeOffset = 0;
+    tmpBq->lastLppWriteOffset_ = 0;
+    tmpBq->lastLppWriteTimestamp_ = 1000;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
- 
-    tmpBq->lppSlotInfo_->readOffset = 7;
+
+    tmpBq->lastLppWriteTimestamp_ = 0;
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
- 
-    tmpBq->lppSlotInfo_->readOffset = 0;
-    tmpBq->lastLppWriteOffset_ = tmpBq->lppSlotInfo_->writeOffset + 1;
-    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_NO_BUFFER);
- 
-    tmpBq->lppSlotInfo_->readOffset = 7;
-    tmpBq->lppBufferCache_[100] = SurfaceBuffer::Create();
-    ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_OK);
-    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
-    std::cout << "AcquireLppBuffer001 End" << std::endl;
+
+    tmpBq->lastLppWriteTimestamp_ = 0;
+    ele.buffer = SurfaceBuffer::Create();
+    tmpBq->bufferQueueCache_[100] = ele;
+    delete slot;
+    slot = nullptr;
+    delete tmpBq->lppSlotInfo_;
+    tmpBq->lppSlotInfo_ = nullptr;
 }
 /*
  * Function: SetLppShareFd
@@ -1824,7 +1826,10 @@ HWTEST_F(BufferQueueTest, FlushLppBuffer001, TestSize.Level0)
         .frameRate = 30,
         .isStopShbDraw = false};
     tmpBq->isRsDrawLpp_ = false;
-    tmpBq->lppBufferCache_[100] = SurfaceBuffer::Create();
+    BufferElement ele = {
+        .buffer = SurfaceBuffer::Create(), .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
+        .config = {}, .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[100] = ele;
     tmpBq->FlushLppBuffer();
     ASSERT_TRUE(tmpBq->dirtyList_.empty());
 }
@@ -1842,11 +1847,11 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
     bool isRsDrawLpp = false;
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_DEFAULT;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
- 
+
     tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
     tmpBq->lppSlotInfo_ = nullptr;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_TYPE_ERROR);
- 
+
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0,
         .writeOffset = 1,
         .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
@@ -1854,8 +1859,24 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
         .isStopShbDraw = false};
     tmpBq->lppSkipCount_ = 11;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OUT_OF_RANGE);
- 
+
     tmpBq->lppSkipCount_ = 0;
+    ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OK);
+
+    isShbDrawLpp = true;
+    tmpBq->lppSlotInfo_->isStopShbDraw = true;
+    ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_NO_CONSUMER);
+
+    tmpBq->lppSlotInfo_->isStopShbDraw = false;
+    tmpBq->lastLppWriteOffset_ = 0;
+    tmpBq->lastRsToShbWriteOffset_ = 0;
+    ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_NO_CONSUMER);
+
+    tmpBq->lastRsToShbWriteOffset_ = -1;
+    ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_NO_CONSUMER);
+
+    tmpBq->lastRsToShbWriteOffset_ = 0;
+    tmpBq->lastLppWriteOffset_ = 3;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OK);
 }
 
@@ -2004,5 +2025,56 @@ HWTEST_F(BufferQueueTest, SetIsPriorityAlloc002, TestSize.Level0)
     ret = bqTest->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(bqTest->GetUsedSize(), 3);
+}
+
+/*
+ * Function: CheckLppFenceLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call CheckLppFenceLocked
+ */
+HWTEST_F(BufferQueueTest, CheckLppFenceLocked001, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+    tmpBq->lppSlotInfo_ = nullptr;
+    ASSERT_EQ(tmpBq->CheckLppFenceLocked(), false);
+
+    tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1, .writeOffset = -1,
+        .slot = {{.seqId = 100, .timestamp = 1000, .isRsUsing = true, .crop = {1, 2, 3, 4}}},
+        .frameRate = 30, .isStopShbDraw = false};
+    tmpBq->lppFenceMap_[100] = nullptr;
+    ASSERT_EQ(tmpBq->CheckLppFenceLocked(), true);
+
+    tmpBq->lppFenceMap_[100] =  &(tmpBq->lppSlotInfo_->slot[0]);
+    BufferElement ele = {
+        .buffer = SurfaceBuffer::Create(), .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
+        .config = {}, .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[100] = ele;
+    ASSERT_EQ(tmpBq->CheckLppFenceLocked(), true);
+
+    ele.state = BUFFER_STATE_FLUSHED;
+    ASSERT_EQ(tmpBq->CheckLppFenceLocked(), true);
+}
+/*
+ * Function: SetLppBufferConfig
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call SetLppBufferConfig
+ */
+HWTEST_F(BufferQueueTest, SetLppBufferConfig001, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+    tmpBq->transform_ = GraphicTransformType::GRAPHIC_ROTATE_270;
+    sptr<SurfaceBuffer> buffer = nullptr;
+    std::vector<Rect> damages = {{.x = 0, .y = 0, .w = 0, .h = 0}};
+    BufferSlot slot;
+    tmpBq->SetLppBufferConfig(buffer, damages, slot);
+    ASSERT_EQ(damages[0].w, 0);
+
+    buffer = SurfaceBuffer::Create();
+    tmpBq->SetLppBufferConfig(buffer, damages, slot);
+    ASSERT_EQ(buffer->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
 }
 }

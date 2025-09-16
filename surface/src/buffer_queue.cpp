@@ -60,6 +60,7 @@ constexpr int32_t MAX_FIXED_ROTATION = 1;
 constexpr int32_t LPP_SLOT_SIZE = 8;
 constexpr int32_t MAX_LPP_SKIP_COUNT = 10;
 static const size_t LPP_SHARED_MEM_SIZE = 0x3000;
+static const size_t MAX_LPP_ACQUIRE_BUFFER_SIZE = 2;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -1169,13 +1170,11 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
             it->second.isPreAllocBuffer, sequence, uniqueId_);
         if (it->second.isPreAllocBuffer) {
             bufferQueueCache_.erase(it);
-            lppBufferCache_.erase(sequence);
             DeleteFreeListCacheLocked(sequence);
             return;
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(it);
-        lppBufferCache_.erase(sequence);
         deletingList_.push_back(sequence);
     }
 }
@@ -1289,9 +1288,6 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
     }
     AttachBufferUpdateBufferInfo(buffer, needMap);
     bufferQueueCache_[sequence] = ele;
-    if (sourceType_ == OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO) {
-        lppBufferCache_[sequence] = buffer;
-    }
     return GSERROR_OK;
 }
 
@@ -1320,7 +1316,6 @@ GSError BufferQueue::DetachBufferFromQueueLocked(uint32_t sequence, InvokerType 
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(sequence);
-        lppBufferCache_.erase(sequence);
     } else {
         if (mapIter->second.state != BUFFER_STATE_ACQUIRED) {
             BLOGE("seq: %{public}u, state: %{public}d, uniqueId: %{public}" PRIu64 ".",
@@ -1430,7 +1425,6 @@ GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)
     }
     OnBufferDeleteForRS(sequence);
     bufferQueueCache_.erase(sequence);
-    lppBufferCache_.erase(sequence);
     return GSERROR_OK;
 }
 
@@ -1632,7 +1626,6 @@ void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock)
     }
     bufferQueueCache_.clear();
     freeList_.clear();
-    lppBufferCache_.clear();
     dirtyList_.clear();
     deletingList_.clear();
 }
@@ -2360,7 +2353,6 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
                 }
             }
             bufferQueueCache_.erase(sequence);
-            lppBufferCache_.erase(sequence);
             return ret;
         }
     }
@@ -2578,46 +2570,98 @@ GSError BufferQueue::AcquireLppBuffer(
         return GSERROR_TYPE_ERROR;
     }
     SURFACE_TRACE_NAME_FMT("AcquireLppBuffer name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
-    const auto slotInfo = *lppSlotInfo_;
-    int32_t readOffset = -1;
-    if (slotInfo.readOffset < 0 || slotInfo.readOffset >= LPP_SLOT_SIZE || slotInfo.writeOffset < 0 ||
-        slotInfo.writeOffset >= LPP_SLOT_SIZE) {
+    bool isVerifyFailed = lppSlotInfo_->readOffset < 0 || lppSlotInfo_->readOffset >= LPP_SLOT_SIZE ||
+                          lppSlotInfo_->writeOffset < 0 || lppSlotInfo_->writeOffset >= LPP_SLOT_SIZE;
+    if (isVerifyFailed) {
         BLOGW("AcquireLppBuffer name: slotInfo Parameter validation failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    int32_t maxWriteOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
-    if (slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset) {
-        lppSkipCount_++;
+    if (!CheckLppFenceLocked()) {
+        SURFACE_TRACE_NAME("AcquireLppBuffer no buffer available");
         return GSERROR_NO_BUFFER;
     }
-    readOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+    int32_t readOffset = -1;
+    readOffset = (lppSlotInfo_->writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+    const auto slotInfo = *lppSlotInfo_;
+    int32_t maxWriteOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+    bool noBufferUpdate = slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset &&
+                          slotInfo.slot[lastLppWriteOffset_].timestamp == lastLppWriteTimestamp_;
+    if (noBufferUpdate) {
+        SURFACE_TRACE_NAME("AcquireLppBuffer no buffer update");
+        return GSERROR_NO_BUFFER;
+    }
+    lppSlotInfo_->slot[readOffset].isRsUsing = true;
     lppSkipCount_ = 0;
     const auto bufferSlot = slotInfo.slot[readOffset];
     lppSlotInfo_->readOffset = readOffset;
     lastLppWriteOffset_ = slotInfo.writeOffset;
+    lastLppWriteTimestamp_ = slotInfo.slot[lastLppWriteOffset_].timestamp;
     uint32_t seqId = bufferSlot.seqId;
-
-    auto bufferPtr = lppBufferCache_.find(seqId);
-    if (bufferPtr == lppBufferCache_.end()) {
+ 
+    auto mapIter = bufferQueueCache_.find(seqId);
+    if (mapIter == bufferQueueCache_.end()) {
+        lppSlotInfo_->slot[readOffset].isRsUsing = false;
         SURFACE_TRACE_NAME_FMT("AcquireLppBuffer buffer cache no find buffer, seqId = [%d]", seqId);
         return GSERROR_NO_BUFFER;
     }
-    buffer = bufferPtr->second;
+    lppFenceMap_[seqId] = &(lppSlotInfo_->slot[readOffset]);
+    buffer = mapIter->second.buffer;
+    mapIter->second.state = BUFFER_STATE_ACQUIRED;
     fence = SyncFence::INVALID_FENCE;
+    timestamp = bufferSlot.timestamp;
+    SetLppBufferConfig(buffer, damages, bufferSlot);
+    SURFACE_TRACE_NAME_FMT("AcquireLppBuffer success seqId = [%d]", seqId);
+    return GSERROR_OK;
+}
+
+void BufferQueue::SetLppBufferConfig(sptr<SurfaceBuffer> &buffer, std::vector<Rect> &damages, const BufferSlot &slot)
+{
+    if (buffer == nullptr) {
+        return;
+    }
     damages = {{.x = 0, .y = 0, .w = buffer->GetWidth(), .h = buffer->GetHeight()}};
     OHOS::HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion crop = {
-        .left = bufferSlot.crop[0],
-        .top = bufferSlot.crop[1],
-        .width = bufferSlot.crop[2],
-        .height = bufferSlot.crop[3],
-    };
+        .left = slot.crop[0], .top = slot.crop[1], .width = slot.crop[2], .height = slot.crop[3]};
     std::vector<uint8_t> cropRect;
     if (MetadataHelper::ConvertMetadataToVec(crop, cropRect) == GSERROR_OK) {
         buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V1_0::ATTRKEY_CROP_REGION, cropRect);
     }
     buffer->SetSurfaceBufferTransform(transform_);
-    timestamp = bufferSlot.timestamp;
-    return GSERROR_OK;
+}
+
+bool BufferQueue::CheckLppFenceLocked()
+{
+    if (lppSlotInfo_ == nullptr) {
+        lppFenceMap_.clear();
+        return false;
+    }
+    for (auto lppFenceIter = lppFenceMap_.begin(); lppFenceIter != lppFenceMap_.end();) {
+        BufferSlot* slot = lppFenceIter->second;
+        uint32_t seqId = lppFenceIter->first;
+        auto mapIter = bufferQueueCache_.find(seqId);
+        bool isBufferNotFound = slot == nullptr || mapIter == bufferQueueCache_.end();
+        if (isBufferNotFound) {
+            lppFenceIter = lppFenceMap_.erase(lppFenceIter);
+            continue;
+        }
+        int32_t bufferState = mapIter->second.state;
+        auto fence = mapIter->second.fence;
+        bool isUnreleasableFence = bufferState == BUFFER_STATE_ACQUIRED ||
+            (bufferState == BUFFER_STATE_RELEASED && fence != nullptr && fence->Get() != -1 && fence->Wait(0) != 0);
+        if (isUnreleasableFence) {
+            lppFenceIter++;
+            continue;
+        }
+        slot->isRsUsing = false;
+        lppFenceIter = lppFenceMap_.erase(lppFenceIter);
+    }
+    for (auto &slot : lppSlotInfo_->slot) {
+        uint32_t seqId = slot.seqId;
+        if (lppFenceMap_.find(seqId) == lppFenceMap_.end() && slot.isRsUsing) {
+            slot.isRsUsing = false;
+        }
+    }
+    return lppFenceMap_.size() <= MAX_LPP_ACQUIRE_BUFFER_SIZE;
 }
 
 GSError BufferQueue::SetLppShareFd(int fd, bool state)
@@ -2649,6 +2693,9 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
             BLOGI("SetLppShareFd remove fd success");
         }
     }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    lppFenceMap_.clear();
+    CheckLppFenceLocked();
     return GSERROR_OK;
 }
 
@@ -2674,16 +2721,46 @@ GSError BufferQueue::SetLppDrawSource(bool isShbSource, bool isRsSource)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     SURFACE_TRACE_NAME_FMT("SetLppDrawSource sourceType: [%d], lppSlotInfo: [%d], lppSkipCount: [%d], isShbSource: [%d]"
-        " ,isRsSource: [%d]", sourceType_,  (lppSlotInfo_ == nullptr), lppSkipCount_, isShbSource, isRsSource);
+        " ,isRsSource: [%d]", sourceType_, (lppSlotInfo_ == nullptr), lppSkipCount_, isShbSource, isRsSource);
     if (sourceType_ != OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO || lppSlotInfo_ == nullptr) {
         isRsDrawLpp_ = false;
         return GSERROR_TYPE_ERROR;
     }
     if (lppSkipCount_ >= MAX_LPP_SKIP_COUNT) {
+        lppSlotInfo_->isStopShbDraw = true;
         return GSERROR_OUT_OF_RANGE;
     }
+
+    bool isLppLayer = isShbSource;
+    bool isLastLppLayer = !lppSlotInfo_->isStopShbDraw;
     lppSlotInfo_->isStopShbDraw = !isShbSource;
     isRsDrawLpp_ = isRsSource;
+
+    // unirender
+    if (!isLppLayer) {
+        lastRsToShbWriteOffset_ = -1;
+        return GSERROR_OK;
+    }
+
+    // first lpp
+    if (!isLastLppLayer && isLppLayer) {
+        lastRsToShbWriteOffset_ = lastLppWriteOffset_;
+        return GSERROR_NO_CONSUMER;
+    }
+
+    // from lpp to lpp
+    int32_t shbFrameCount = 0;
+    if (lastRsToShbWriteOffset_ != -1) {
+        shbFrameCount = (lastLppWriteOffset_ - lastRsToShbWriteOffset_ + LPP_SLOT_SIZE) % LPP_SLOT_SIZE;
+    }
+
+    SURFACE_TRACE_NAME_FMT("SetLppDrawSource shbFrameCount = %d", shbFrameCount);
+    if (shbFrameCount <= MAX_LPP_ACQUIRE_BUFFER_SIZE) {
+        return GSERROR_NO_CONSUMER;
+    }
+    // When the LPP count exceeds two frames, forcibly release the Fence.
+    lppFenceMap_.clear();
+    CheckLppFenceLocked();
     return GSERROR_OK;
 }
 

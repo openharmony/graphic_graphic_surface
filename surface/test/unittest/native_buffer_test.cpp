@@ -628,7 +628,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap002, TestSize.Level0)
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
- * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal fenceFd input
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal virAddr input
  *                  2. check ret
  */
 HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence001, TestSize.Level0)
@@ -726,6 +726,26 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence004, TestSize.Level0)
     ASSERT_EQ(virAddr, nullptr);
     delete sBuffer;
     sBuffer = nullptr;
+}
+
+/*
+ * Function: OHNativeBufferMapWaitFence005
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal fenceFd input
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence005, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t fenceFd = -1;
+    void *virAddr = nullptr;
+    int32_t ret = OH_NativeBuffer_Map_WaitFence(nativeBuffer, fenceFd, &virAddr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
 
 /*

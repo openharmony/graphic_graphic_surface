@@ -429,7 +429,7 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
-            BLOGE("Attach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
+            BLOGE("Attach buffer %{public}u, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
@@ -449,7 +449,7 @@ GSError ProducerSurface::DetachBufferFromQueue(sptr<SurfaceBuffer> buffer, bool 
         std::lock_guard<std::mutex> lockGuard(mutex_);
         auto it = bufferProducerCache_.find(buffer->GetSeqNum());
         if (it == bufferProducerCache_.end()) {
-            BLOGE("Detach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
+            BLOGE("Detach buffer %{public}u, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_NOT_INCACHE;
         }
         bufferProducerCache_.erase(it);
@@ -1260,7 +1260,7 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
-            BLOGE("Attach buffer %{public}d, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
+            BLOGE("Attach buffer %{public}u, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
@@ -1340,7 +1340,7 @@ GSError ProducerSurface::ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& 
 GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region,
                                                    sptr<SurfaceBuffer>& buffer)
 {
-    SURFACE_TRACE_NAME_FMT("ProducerSurfaceLockBuffer width: %u, height: %u", config.width, config.height);
+    SURFACE_TRACE_NAME_FMT("ProducerSurfaceLockBuffer width: %d, height: %d", config.width, config.height);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     // native buffer is locked
     if (mLockedBuffer_ != nullptr) {

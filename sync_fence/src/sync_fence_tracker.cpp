@@ -150,13 +150,13 @@ void SyncFenceTracker::TrackFence(const sptr<SyncFence>& fence, bool traceTag)
         }
     }
     if (fence->SyncFileReadTimestamp() != SyncFence::FENCE_PENDING_TIMESTAMP) {
-        RS_TRACE_NAME_FMT("%s %d has signaled", threadName_.c_str(), fencesQueued_.load());
+        RS_TRACE_NAME_FMT("%s %u has signaled", threadName_.c_str(), fencesQueued_.load());
         fencesQueued_.fetch_add(1);
         fencesSignaled_.fetch_add(1);
         return;
     }
 
-    RS_TRACE_NAME_FMT("%s %d", threadName_.c_str(), fencesQueued_.load());
+    RS_TRACE_NAME_FMT("%s %u", threadName_.c_str(), fencesQueued_.load());
     bool needSendFenceId = threadName_ == ACQUIRE_FENCE_TASK && isGpuFreq_;
     if (needSendFenceId) {
         Rosen::FrameSched::GetInstance().SendFenceId(fencesQueued_.load());
@@ -232,7 +232,7 @@ void SyncFenceTracker::Loop(const sptr<SyncFence>& fence, bool traceTag)
     uint32_t fenceIndex = 0;
     fenceIndex = fencesSignaled_.load();
     {
-        RS_TRACE_NAME_FMT("Waiting for %s %d", threadName_.c_str(), fenceIndex);
+        RS_TRACE_NAME_FMT("Waiting for %s %u", threadName_.c_str(), fenceIndex);
         int32_t result = 0;
         if (isGpuFence_ && traceTag) {
             int64_t startTimestamp = static_cast<int64_t>(

@@ -1933,7 +1933,7 @@ bool BufferQueueProducer::CheckIsAlive()
 {
     static const bool isBeta = system::GetParameter("const.logsystem.versiontype", "") == "beta";
     if (magicNum_ != MAGIC_INIT) {
-        BLOGE("report to HiViewOcean magicNum %{public}d", magicNum_);
+        BLOGE("report to HiViewOcean magicNum %{public}u", magicNum_);
         if (isBeta) {
             raise(42);  // 42 : report to HiViewOcean
         }

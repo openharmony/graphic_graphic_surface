@@ -184,7 +184,7 @@ GSError BufferQueue::CheckRequestConfig(const BufferRequestConfig &config)
 {
     if (config.colorGamut <= GraphicColorGamut::GRAPHIC_COLOR_GAMUT_INVALID ||
         config.colorGamut > GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_BT2020 + 1) {
-        BLOGW("colorGamut is %{public}d, uniqueId: %{public}" PRIu64 ".",
+        BLOGW("colorGamut is %{public}u, uniqueId: %{public}" PRIu64 ".",
             static_cast<uint32_t>(config.colorGamut), uniqueId_);
         return GSERROR_INVALID_ARGUMENTS;
     }
@@ -758,7 +758,7 @@ GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
         name_.c_str(), uniqueId_, sequence);
     std::lock_guard<std::mutex> lockGuard(mutex_);
     if (acquireLastFlushedBufSequence_ == INVALID_SEQUENCE || acquireLastFlushedBufSequence_ != sequence) {
-        BLOGE("ReleaseLastFlushedBuffer lastFlushBuffer:%{public}d sequence:%{public}d, uniqueId: %{public}" PRIu64,
+        BLOGE("ReleaseLastFlushedBuffer lastFlushBuffer:%{public}d sequence:%{public}u, uniqueId: %{public}" PRIu64,
             acquireLastFlushedBufSequence_, sequence, uniqueId_);
         return SURFACE_ERROR_BUFFER_STATE_INVALID;
     }
@@ -777,7 +777,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     }
     if (mapIter->second.isDeleting) {
         DeleteBufferInCache(sequence, lock);
-        BLOGD("DoFlushBuffer delete seq: %{public}d, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+        BLOGD("DoFlushBuffer delete seq: %{public}u, uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
         CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
         return GSERROR_OK;
     }
@@ -856,7 +856,7 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCacheLocked()
 {
     std::map<BufferState, int32_t> bufferState;
     for (auto &[id, ele] : bufferQueueCache_) {
-        SURFACE_TRACE_NAME_FMT("acquire buffer id: %d state: %d desiredPresentTimestamp: %" PRId64
+        SURFACE_TRACE_NAME_FMT("acquire buffer id: %u state: %d desiredPresentTimestamp: %" PRId64
             " isAotuTimestamp: %d", id, ele.state, ele.desiredPresentTimestamp, ele.isAutoTimestamp);
         bufferState[ele.state] += 1;
     }
@@ -928,7 +928,7 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             && frontDesiredPresentTimestamp <= expectPresentTimestamp) {
             BufferElement& frontBufferElement = bufferQueueCache_[*frontSequence];
             if (++frontSequence == dirtyList_.end()) {
-                BLOGD("Buffer seq(%{public}d) is the last buffer, do acquire.", dirtyList_.front());
+                BLOGD("Buffer seq(%{public}u) is the last buffer, do acquire.", dirtyList_.front());
                 break;
             }
             BufferElement& secondBufferElement = bufferQueueCache_[*frontSequence];
@@ -1452,7 +1452,7 @@ GSError BufferQueue::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<S
 GSError BufferQueue::SetQueueSizeLocked(uint32_t queueSize, std::unique_lock<std::mutex> &lock)
 {
     if (maxQueueSize_ != 0 && queueSize > maxQueueSize_) {
-        BLOGD("queueSize(%{public}d) max than maxQueueSize_(%{public}d), uniqueId: %{public}" PRIu64,
+        BLOGD("queueSize(%{public}u) max than maxQueueSize_(%{public}d), uniqueId: %{public}" PRIu64,
             queueSize, maxQueueSize_, uniqueId_);
         queueSize = maxQueueSize_;
     }
@@ -2241,7 +2241,7 @@ void BufferQueue::DumpCurrentFrameLayer()
     }
 
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    uint8_t cnt = 0;
+    uint32_t cnt = 0;
     for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
         BufferElement element = it->second;
         if (element.state != BUFFER_STATE_ACQUIRED) {
@@ -2252,7 +2252,7 @@ void BufferQueue::DumpCurrentFrameLayer()
             DumpToFileAsync(GetRealPid(), name_, element.buffer);
         }
     }
-    BLOGD("BufferQueue::DumpCurrentFrameLayer dump %{public}d buffer", cnt);
+    BLOGD("BufferQueue::DumpCurrentFrameLayer dump %{public}u buffer", cnt);
 }
 
 bool BufferQueue::GetStatusLocked() const
@@ -2458,7 +2458,7 @@ GSError BufferQueue::SetFixedRotation(int32_t fixedRotation)
 void BufferQueue::AllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount,
     std::map<uint32_t, sptr<SurfaceBuffer>> &surfaceBufferCache)
 {
-    SURFACE_TRACE_NAME_FMT("AllocBuffers allocBufferCount %u width %d height %d format %d usage %d",
+    SURFACE_TRACE_NAME_FMT("AllocBuffers allocBufferCount %u width %d height %d format %d usage %" PRIu64 "",
         allocBufferCount, config.width, config.height, config.format, config.usage);
     for (uint32_t i = 0; i < allocBufferCount; i++) {
         sptr<SurfaceBuffer> bufferImpl = new SurfaceBufferImpl();
@@ -2498,7 +2498,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
         std::lock_guard<std::mutex> lockGuard(mutex_);
         for (auto iter = surfaceBufferCache.begin(); iter != surfaceBufferCache.end(); ++iter) {
             if (bufferQueueCache_.size() >= bufferQueueSize_- detachReserveSlotNum_) {
-                BLOGW("CacheSize: %{public}zu, QueueSize: %{public}d, allocBufferCount: %{public}zu,"
+                BLOGW("CacheSize: %{public}zu, QueueSize: %{public}u, allocBufferCount: %{public}zu,"
                    " queId: %{public}" PRIu64, bufferQueueCache_.size(), bufferQueueSize_,
                    surfaceBufferCache.size(), uniqueId_);
                 return SURFACE_ERROR_OUT_OF_RANGE;
@@ -2601,7 +2601,7 @@ GSError BufferQueue::AcquireLppBuffer(
     auto mapIter = bufferQueueCache_.find(seqId);
     if (mapIter == bufferQueueCache_.end()) {
         lppSlotInfo_->slot[readOffset].isRsUsing = false;
-        SURFACE_TRACE_NAME_FMT("AcquireLppBuffer buffer cache no find buffer, seqId = [%d]", seqId);
+        SURFACE_TRACE_NAME_FMT("AcquireLppBuffer buffer cache no find buffer, seqId = [%u]", seqId);
         return GSERROR_NO_BUFFER;
     }
     lppFenceMap_[seqId] = &(lppSlotInfo_->slot[readOffset]);

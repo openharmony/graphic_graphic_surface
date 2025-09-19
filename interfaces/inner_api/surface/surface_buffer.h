@@ -147,7 +147,6 @@ public:
     virtual OH_NativeBuffer* SurfaceBufferToNativeBuffer() = 0;
 
     static sptr<SurfaceBuffer> Create();
-    static bool CheckSeqNumExist(uint32_t sequence);
 
     virtual GSError WriteBufferRequestConfig(MessageParcel &parcel)
     {
@@ -226,7 +225,7 @@ struct SurfaceProperty {
 };
 
 using OnReleaseFunc = std::function<GSError(sptr<SurfaceBuffer> &)>;
-using OnDeleteBufferFunc = std::function<void(int32_t)>;
+using OnDeleteBufferFunc = std::function<void(uint64_t)>;
 using OnReleaseFuncWithFence = std::function<GSError(const sptr<SurfaceBuffer>&, const sptr<SyncFence>&)>;
 using OnUserDataChangeFunc = std::function<void(const std::string& key, const std::string& value)>;
 using OnPropertyChangeFunc = std::function<GSError(const SurfaceProperty&)>;

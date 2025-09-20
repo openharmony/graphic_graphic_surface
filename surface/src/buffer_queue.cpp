@@ -1023,7 +1023,7 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
 void BufferQueue::OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const
 {
     if (onBufferDeleteForRSHardwareThread_ != nullptr) {
-        onBufferDeleteForRSHardwareThread_(buffer->GetSeqNum());
+        onBufferDeleteForRSHardwareThread_(buffer->GetBufferId());
     }
 }
 
@@ -1141,14 +1141,15 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
 void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
 {
     auto buffer = bufferQueueCache_[sequence].buffer;
-    if (buffer) {
-        buffer->SetBufferDeleteFromCacheFlag(true);
+    if (buffer == nullptr) {
+        return;
     }
+    buffer->SetBufferDeleteFromCacheFlag(true);
     if (onBufferDeleteForRSMainThread_ != nullptr) {
-        onBufferDeleteForRSMainThread_(sequence);
+        onBufferDeleteForRSMainThread_(buffer->GetBufferId());
     }
     if (onBufferDeleteForRSHardwareThread_ != nullptr) {
-        onBufferDeleteForRSHardwareThread_(sequence);
+        onBufferDeleteForRSHardwareThread_(buffer->GetBufferId());
     }
 }
 

@@ -147,7 +147,6 @@ public:
     virtual OH_NativeBuffer* SurfaceBufferToNativeBuffer() = 0;
 
     static sptr<SurfaceBuffer> Create();
-    static bool CheckSeqNumExist(uint32_t sequence);
 
     virtual GSError WriteBufferRequestConfig(MessageParcel &parcel)
     {

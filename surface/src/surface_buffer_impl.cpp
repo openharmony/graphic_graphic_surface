@@ -91,16 +91,6 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
     return surfaceBufferImpl;
 }
 
-bool SurfaceBuffer::CheckSeqNumExist(uint32_t sequence)
-{
-    std::lock_guard<std::mutex> lock(g_seqNumMutex);
-    if ((sequence & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
-        return g_seqBitset.test(sequence & MAX_SEQUENCE_NUM);
-    }
-
-    return false;
-}
-
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
     {
@@ -195,7 +185,6 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
         if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
             if (g_seqBitset.test(sequenceNumber_ & MAX_SEQUENCE_NUM)) {
                 isSeqNumExist_.store(true);
-                BLOGW("SurfaceBufferImpl error, sequence is exist, seq: %{public}u", sequenceNumber_);
             }
             g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
         }

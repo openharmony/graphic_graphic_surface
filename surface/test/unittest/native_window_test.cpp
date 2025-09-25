@@ -2703,4 +2703,26 @@ HWTEST_F(NativeWindowTest, NativeWindowUnlockAndFlushBuffer002, TestSize.Level0)
     ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
     OH_NativeWindow_DestroyNativeWindow(window);
 }
+
+/*
+ * Function: ConvertColorSpaceTypeToNativeBufferColorSpace
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSet: call ConvertColorSpaceTypeToNativeBufferColorSpace with valid colorSpaceType.
+ *                  2. operation: convert colorSpaceType
+ *                  3. result: convert colorSpaceType success
+ */
+HWTEST_F(NativeWindowTest, ConvertColorSpaceTypeToNativeBufferColorSpace001, TestSize.Level0)
+{
+    int32_t colorSpaceType = 0;
+    OH_NativeBuffer_ColorSpace colorSpace;
+    int32_t ret = ConvertColorSpaceTypeToNativeBufferColorSpace(colorSpaceType, &colorSpace);
+    ASSERT_EQ(ret, SURFACE_ERROR_OK);
+    ASSERT_EQ(colorSpace, OH_COLORSPACE_NONE);
+
+    colorSpaceType = -1;
+    ret = ConvertColorSpaceTypeToNativeBufferColorSpace(colorSpaceType, &colorSpace);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
 }

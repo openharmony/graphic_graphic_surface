@@ -104,7 +104,7 @@ int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWi
  * @return Returns the error code of the request of unlock.
  */
 int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window);
-
+int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH_NativeBuffer_ColorSpace* colorSpace);
 #ifdef __cplusplus
 }
 #endif

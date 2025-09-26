@@ -2725,4 +2725,114 @@ HWTEST_F(NativeWindowTest, ConvertColorSpaceTypeToNativeBufferColorSpace001, Tes
     ret = ConvertColorSpaceTypeToNativeBufferColorSpace(colorSpaceType, &colorSpace);
     ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
+
+/*
+* Function: OH_NativeWindow_PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_PreAllocBuffers by abnormal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindow_PreAllocBuffers001, TestSize.Level0)
+{
+    ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nullptr, 1), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nativeWindow, 0), OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: OH_NativeWindow_PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_PreAllocBuffers by normal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindow_PreAllocBuffers002, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+    pSurfaceTmp->SetRequestWidthAndHeight(0, 0);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+    ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nativeWindowTmp, 1), OHOS::GSERROR_OK);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
+}
+
+/*
+* Function: OH_NativeWindow_PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_PreAllocBuffers by normal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindow_PreAllocBuffers003, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+    pSurfaceTmp->SetRequestWidthAndHeight(100, 100);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+    ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nativeWindowTmp, 1), OHOS::GSERROR_OK);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
+}
+
+/*
+* Function: OH_NativeWindow_PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_PreAllocBuffers by normal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindow_PreAllocBuffers004, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+    pSurfaceTmp->SetRequestWidthAndHeight(0, 100);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+    ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nativeWindowTmp, 1), OHOS::GSERROR_OK);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
+}
+
+/*
+* Function: OH_NativeWindow_PreAllocBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_PreAllocBuffers by normal input
+*                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, NativeWindow_PreAllocBuffers005, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+    pSurfaceTmp->SetRequestWidthAndHeight(100, 0);
+
+    NativeWindow *nativeWindowTmp = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ASSERT_NE(nativeWindowTmp, nullptr);
+    SetNativeWindowConfig(nativeWindowTmp);
+    ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nativeWindowTmp, 1), OHOS::GSERROR_OK);
+    OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
+}
 }

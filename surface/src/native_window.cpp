@@ -1049,6 +1049,29 @@ int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH
     return OHOS::SURFACE_ERROR_UNKOWN;
 }
 
+int32_t NativeWindow_PreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt)
+{
+    if (window == nullptr || allocBufferCnt == 0) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null.");
+
+    OHOS::BufferRequestConfig windowConfig = window->surface->GetWindowConfig();
+    int32_t requestWidth = window->surface->GetRequestWidth();
+    int32_t requestHeight = window->surface->GetRequestHeight();
+    windowConfig.sourceType = GRAPHIC_SDK_TYPE;
+    if (requestWidth != 0 && requestHeight != 0) {
+        windowConfig.width = requestWidth;
+        windowConfig.height = requestHeight;
+    }
+    int32_t ret = window->surface->PreAllocBuffers(windowConfig, allocBufferCnt);
+    if (ret != OHOS::GSError::SURFACE_ERROR_OK) {
+        BLOGE("PreAllocBuffers ret:%{public}d.", ret);
+        return ret;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
 NativeWindow::NativeWindow() : NativeWindowMagic(NATIVE_OBJECT_MAGIC_WINDOW), surface(nullptr)
 {
 }
@@ -1113,3 +1136,4 @@ WEAK_ALIAS(NativeWindowWriteToParcel, OH_NativeWindow_WriteToParcel);
 WEAK_ALIAS(NativeWindowReadFromParcel, OH_NativeWindow_ReadFromParcel);
 WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
 WEAK_ALIAS(NativeWindowCleanCache, OH_NativeWindow_CleanCache);
+WEAK_ALIAS(NativeWindow_PreAllocBuffers, OH_NativeWindow_PreAllocBuffers);

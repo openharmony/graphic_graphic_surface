@@ -787,6 +787,19 @@ int32_t OH_NativeWindow_GetLastFlushedBufferV2(OHNativeWindow *window, OHNativeW
  * @version 1.0
  */
 int32_t OH_NativeWindow_CleanCache(OHNativeWindow *window);
+
+/**
+ * @brief PreAlloc <b>OHNativeWindowBuffer</b> of this <b>OHNativeWindow</b>
+ * This interface is a non-thread-safe type interface.\n
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
+ * @param allocBufferCnt Indicates the count of <b>OHNativeWindowBuffers</b>
+ * @return Returns an error code, 0 is success, otherwise, failed.
+ * @since 22
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_PreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt);
 #ifdef __cplusplus
 }
 #endif

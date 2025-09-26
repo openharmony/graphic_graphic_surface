@@ -105,6 +105,7 @@ int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWi
  */
 int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window);
 int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH_NativeBuffer_ColorSpace* colorSpace);
+int32_t NativeWindow_PreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt);
 #ifdef __cplusplus
 }
 #endif

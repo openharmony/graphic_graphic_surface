@@ -1049,7 +1049,7 @@ int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH
     return OHOS::SURFACE_ERROR_UNKOWN;
 }
 
-int32_t NativeWindow_PreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt)
+int32_t NativeWindowPreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt)
 {
     if (window == nullptr || allocBufferCnt == 0) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
@@ -1136,4 +1136,4 @@ WEAK_ALIAS(NativeWindowWriteToParcel, OH_NativeWindow_WriteToParcel);
 WEAK_ALIAS(NativeWindowReadFromParcel, OH_NativeWindow_ReadFromParcel);
 WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
 WEAK_ALIAS(NativeWindowCleanCache, OH_NativeWindow_CleanCache);
-WEAK_ALIAS(NativeWindow_PreAllocBuffers, OH_NativeWindow_PreAllocBuffers);
+WEAK_ALIAS(NativeWindowPreAllocBuffers, OH_NativeWindow_PreAllocBuffers);

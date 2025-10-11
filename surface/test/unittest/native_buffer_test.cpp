@@ -628,7 +628,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap002, TestSize.Level0)
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
- * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal virAddr input
+ * CaseDescription: 1. call OH_NativeBuffer_MapWaitFence by abnormal virAddr input
  *                  2. check ret
  */
 HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence001, TestSize.Level0)

@@ -179,7 +179,7 @@ std::vector<SyncPointInfo> SyncFence::GetFenceInfo()
         return {};
     }
     if (arg.num_fences <= 0 || arg.num_fences > MAX_FENCE_NUM) {
-        UTILS_LOGD("GetFenceInfo arg.num_fences failed, num_fences: %{public}d", arg.num_fences);
+        UTILS_LOGD("GetFenceInfo arg.num_fences failed, num_fences: %{public}u", arg.num_fences);
         return {};
     }
     auto sizeMax = std::numeric_limits<size_t>::max();

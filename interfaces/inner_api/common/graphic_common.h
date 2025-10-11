@@ -30,43 +30,45 @@ namespace OHOS {
 #include "graphic_common_c.h"
 
 #ifdef __cplusplus
-namespace {
-const std::map<GSError, std::string> GSErrorStrs = {
-    {GSERROR_OK,                    "<200 ok>"},
-    {GSERROR_INVALID_ARGUMENTS,     "<400 invalid arguments>"},
-    {GSERROR_NO_PERMISSION,         "<403 no permission>"},
-    {GSERROR_CONNOT_CONNECT_SAMGR,  "<404 connot connect to samgr>"},
-    {GSERROR_CONNOT_CONNECT_SERVER, "<404 connot connect to server>"},
-    {GSERROR_CONNOT_CONNECT_WESTON, "<404 connot connect to weston>"},
-    {GSERROR_NO_BUFFER,             "<406 no buffer>"},
-    {GSERROR_NO_ENTRY,              "<406 no entry>"},
-    {GSERROR_OUT_OF_RANGE,          "<406 out of range>"},
-    {GSERROR_NO_SCREEN,             "<406 no screen>"},
-    {GSERROR_NO_BUFFER_READY,       "<406 no buffer ready>"},
-    {GSERROR_INVALID_OPERATING,     "<412 invalid operating>"},
-    {GSERROR_NO_CONSUMER,           "<412 no consumer>"},
-    {GSERROR_NOT_INIT,              "<412 not init>"},
-    {GSERROR_TYPE_ERROR,            "<412 type error>"},
-    {GSERROR_CONSUMER_IS_CONNECTED, "<412 consumer is connected>"},
-    {GSERROR_BUFFER_STATE_INVALID,  "<412 buffer state invalid>"},
-    {GSERROR_BUFFER_IS_INCACHE,     "<412 buffer is incache>"},
-    {GSERROR_BUFFER_QUEUE_FULL,     "<412 buffer queue full>"},
-    {GSERROR_BUFFER_NOT_INCACHE,    "<412 buffer not in cache>"},
-    {GSERROR_CONSUMER_DISCONNECTED, "<412 consumer disconnected>"},
-    {GSERROR_CONSUMER_UNREGISTER_LISTENER, "<412 consumer unregister listener>"},
-    {GSERROR_API_FAILED,            "<500 api call failed>"},
-    {GSERROR_INTERNAL,              "<500 internal error>"},
-    {GSERROR_NO_MEM,                "<500 no memory>"},
-    {GSERROR_PROXY_NOT_INCLUDE,     "<500 proxy not include>"},
-    {GSERROR_SERVER_ERROR,          "<500 server occur error>"},
-    {GSERROR_ANIMATION_RUNNING,     "<500 animation is running>"},
-    {GSERROR_HDI_ERROR,             "<500 hdi error>"},
-    {GSERROR_NOT_IMPLEMENT,         "<501 not implement>"},
-    {GSERROR_NOT_SUPPORT,           "<501 not support>"},
-    {GSERROR_BINDER,                "<504 binder occur error>"},
-    {GSERROR_EGL_STATE_UNKOWN,      "<600 egl state unknown>"},
-    {GSERROR_EGL_API_FAILED,        "<600 egl api falied>"},
-};
+inline const char *GSErrorBaseStr(GSError base)
+{
+    switch (base) {
+        case GSERROR_OK:                    return "<200 ok>";
+        case GSERROR_INVALID_ARGUMENTS:     return "<400 invalid arguments>";
+        case GSERROR_NO_PERMISSION:         return "<403 no permission>";
+        case GSERROR_CONNOT_CONNECT_SAMGR:  return "<404 connot connect to samgr>";
+        case GSERROR_CONNOT_CONNECT_SERVER: return "<404 connot connect to server>";
+        case GSERROR_CONNOT_CONNECT_WESTON: return "<404 connot connect to weston>";
+        case GSERROR_NO_BUFFER:             return "<406 no buffer>";
+        case GSERROR_NO_ENTRY:              return "<406 no entry>";
+        case GSERROR_OUT_OF_RANGE:          return "<406 out of range>";
+        case GSERROR_NO_SCREEN:             return "<406 no screen>";
+        case GSERROR_NO_BUFFER_READY:       return "<406 no buffer ready>";
+        case GSERROR_INVALID_OPERATING:     return "<412 invalid operating>";
+        case GSERROR_NO_CONSUMER:           return "<412 no consumer>";
+        case GSERROR_NOT_INIT:              return "<412 not init>";
+        case GSERROR_TYPE_ERROR:            return "<412 type error>";
+        case GSERROR_CONSUMER_IS_CONNECTED: return "<412 consumer is connected>";
+        case GSERROR_BUFFER_STATE_INVALID:  return "<412 buffer state invalid>";
+        case GSERROR_BUFFER_IS_INCACHE:     return "<412 buffer is incache>";
+        case GSERROR_BUFFER_QUEUE_FULL:     return "<412 buffer queue full>";
+        case GSERROR_BUFFER_NOT_INCACHE:    return "<412 buffer not in cache>";
+        case GSERROR_CONSUMER_DISCONNECTED: return "<412 consumer disconnected>";
+        case GSERROR_CONSUMER_UNREGISTER_LISTENER: return "<412 consumer unregister listener>";
+        case GSERROR_API_FAILED:            return "<500 api call failed>";
+        case GSERROR_INTERNAL:              return "<500 internal error>";
+        case GSERROR_NO_MEM:                return "<500 no memory>";
+        case GSERROR_PROXY_NOT_INCLUDE:     return "<500 proxy not include>";
+        case GSERROR_SERVER_ERROR:          return "<500 server occur error>";
+        case GSERROR_ANIMATION_RUNNING:     return "<500 animation is running>";
+        case GSERROR_HDI_ERROR:             return "<500 hdi error>";
+        case GSERROR_NOT_IMPLEMENT:         return "<501 not implement>";
+        case GSERROR_NOT_SUPPORT:           return "<501 not support>";
+        case GSERROR_BINDER:                return "<504 binder occur error>";
+        case GSERROR_EGL_STATE_UNKOWN:      return "<600 egl state unknown>";
+        case GSERROR_EGL_API_FAILED:        return "<600 egl api falied>";
+        default:                            return nullptr;
+    }
 }
 
 inline std::string LowErrorStrSpecial(GSError err)
@@ -101,11 +103,11 @@ inline std::string LowErrorStr(GSError lowerr)
 inline std::string GSErrorStr(GSError err)
 {
     GSError diff = static_cast<GSError>(err % LOWERROR_MAX);
-    auto it = GSErrorStrs.find(static_cast<GSError>(err - diff));
-    if (it == GSErrorStrs.end()) {
+    const char *base = GSErrorBaseStr(static_cast<GSError>(err - diff));
+    if (base == nullptr) {
         return "<GSError error index out of range>";
     }
-    return it->second + LowErrorStr(diff);
+    return std::string(base) + LowErrorStr(diff);
 }
 
 inline std::string SurfaceErrorStr(GSError err)

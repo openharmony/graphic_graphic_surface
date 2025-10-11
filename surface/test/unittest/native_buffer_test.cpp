@@ -470,12 +470,12 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue004, TestSize.Level0)
     int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE,
                                                    sizeof(OH_NativeBuffer_MetadataType), &type);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
-        ASSERT_NE(ret, GSERROR_OK);
+        ASSERT_EQ(ret, GSERROR_OK);
     }
     type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_VIVID_SINGLE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
     if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
-        ASSERT_NE(ret, GSERROR_OK);
+        ASSERT_EQ(ret, GSERROR_OK);
     }
     type = OH_NativeBuffer_MetadataType::OH_VIDEO_NONE;
     ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
@@ -628,7 +628,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap002, TestSize.Level0)
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
- * CaseDescription: 1. call OH_NativeBuffer_MapWaitFence by abnormal virAddr input
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal virAddr input
  *                  2. check ret
  */
 HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence001, TestSize.Level0)
@@ -704,6 +704,47 @@ TEST_F(NativeBufferTest, OHNativeBufferMapWaitFence003)
     signalThread.join();
     close(fenceFd);
     EXPECT_EQ(OH_NativeBuffer_Unmap(nativeBuffer), OHOS::GSERROR_OK);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: OHNativeBufferMapWaitFence004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal buffer input
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence004, TestSize.Level0)
+{
+    sptr<OHOS::SurfaceBuffer> sBuffer = SurfaceBuffer::Create();
+    OH_NativeBuffer* nativeBuffer = sBuffer->SurfaceBufferToNativeBuffer();
+    void *virAddr = nullptr;
+    int32_t fenceFd = 1;
+    int32_t ret = OH_NativeBuffer_Map_WaitFence(nativeBuffer, fenceFd, &virAddr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(virAddr, nullptr);
+    delete sBuffer;
+    sBuffer = nullptr;
+}
+
+/*
+ * Function: OHNativeBufferMapWaitFence005
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_Map_WaitFence by abnormal fenceFd input
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OHNativeBufferMapWaitFence005, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t fenceFd = -1;
+    void *virAddr = nullptr;
+    int32_t ret = OH_NativeBuffer_Map_WaitFence(nativeBuffer, fenceFd, &virAddr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
 

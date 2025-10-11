@@ -38,6 +38,7 @@ static std::mutex g_seqNumMutex;
 static constexpr uint32_t PID_BIT = 16;
 static constexpr uint32_t MAX_SEQUENCE_NUM = 0xFFFF;
 static constexpr uint64_t NEXTID_MASK_48BIT = 0XFFFFFFFFFFFF;
+static uint64_t g_nextId = 0;
 static std::bitset<MAX_SEQUENCE_NUM> g_seqBitset(0);
 class DisplayBufferDiedRecipient : public OHOS::IRemoteObject::DeathRecipient {
 public:
@@ -90,16 +91,6 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
     return surfaceBufferImpl;
 }
 
-bool SurfaceBuffer::CheckSeqNumExist(uint32_t sequence)
-{
-    std::lock_guard<std::mutex> lock(g_seqNumMutex);
-    if ((sequence & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM) {
-        return g_seqBitset.test(sequence & MAX_SEQUENCE_NUM);
-    }
-
-    return false;
-}
-
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
     {
@@ -111,11 +102,10 @@ SurfaceBufferImpl::SurfaceBufferImpl()
         sequence_number_++;
         sequenceNumber_ |= (GenerateSequenceNumber(sequence_number_) & MAX_SEQUENCE_NUM);
 
-        static uint64_t nextId = 0;
-        nextId++;
+        g_nextId++;
         // 0xFFFF is pid mask. 48 is pid offset.bufferId_ high 16bit is pid, low 16bit is Auto-increment id
         bufferId_ = ((static_cast<uint64_t>(getpid()) & 0xFFFF) << 48);
-        bufferId_ |= (nextId & NEXTID_MASK_48BIT);
+        bufferId_ |= (g_nextId & NEXTID_MASK_48BIT);
 
         InitMemMgrMembers();
     }
@@ -195,10 +185,13 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
         if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
             if (g_seqBitset.test(sequenceNumber_ & MAX_SEQUENCE_NUM)) {
                 isSeqNumExist_.store(true);
-                BLOGW("SurfaceBufferImpl error, sequence is exist, seq: %{public}u", sequenceNumber_);
             }
             g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
         }
+        g_nextId++;
+        // 0xFFFF is pid mask. 48 is pid offset.bufferId_ high 16bit is pid, low 16bit is Auto-increment id
+        bufferId_ = ((static_cast<uint64_t>(getpid()) & 0xFFFF) << 48);
+        bufferId_ |= (g_nextId & NEXTID_MASK_48BIT);
     }
     bedata_ = new BufferExtraDataImpl;
     BLOGD("SurfaceBufferImpl ctor, seq: %{public}u", sequenceNumber_);

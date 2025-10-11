@@ -106,23 +106,6 @@ HWTEST_F(SurfaceBufferImplTest, NewSeqIncrease002, TestSize.Level0)
 }
 
 /*
- * Function: CheckSeqNumExist
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. new SurfaceBufferImpl and CheckSeqNumExist
- */
-HWTEST_F(SurfaceBufferImplTest, CheckSeqNumExist001, TestSize.Level0)
-{
-    sptr<SurfaceBuffer> bufferTemp = new SurfaceBufferImpl();
-    sptr<SurfaceBuffer> bufferSeqExist = new SurfaceBufferImpl(bufferTemp->GetSeqNum());
-    ASSERT_EQ(SurfaceBuffer::CheckSeqNumExist(bufferTemp->GetSeqNum()), true);
-    // the max seqNum low 16 bit is 0xFFFF
-    uint32_t maxSeqNum = 0xFFFF;
-    ASSERT_EQ(SurfaceBuffer::CheckSeqNumExist(maxSeqNum), false);
-}
-
-/*
 * Function: GenerateSequenceNumber
 * Type: Function
 * Rank: Important(2)

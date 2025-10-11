@@ -865,6 +865,13 @@ public:
      *         {@link SURFACE_ERROR_NOT_SUPPORT} 50102000 - Not surport usage.
      */
     GSError GetAvailableBufferCount(uint32_t &count) override;
+    /**
+     * @brief Set the game upscaling processing function.
+     *        Setting processor to nullptr will disable upscaling processing.
+     * @param processor Indicates the bufferTypeLeak to be set.
+     * @return Returns the error code of the set of processor.
+     */
+    GSError SetGameUpscaleProcessor(GameUpscaleProcessor processor) override;
 private:
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);

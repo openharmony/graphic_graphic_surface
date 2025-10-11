@@ -3703,4 +3703,24 @@ HWTEST_F(ProducerSurfaceTest, GetAvailableBufferCount001, TestSize.Level0)
     ASSERT_EQ(pSurfaceTmp2->GetAvailableBufferCount(count), GSERROR_OK);
     ASSERT_EQ(count, bufferQueueProducer->bufferQueue_->dirtyList_.size());
 }
+
+/*
+ * Function: SetGameUpscaleProcessor
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetGameUpscaleProcessor
+ */
+void TestGameUpascaleProcessor(int32_t *width, int32_t *height)
+{
+}
+HWTEST_F(ProducerSurfaceTest, SetGameUpscaleProcessor, TestSize.Level0)
+{
+    GSError result = pSurface->SetGameUpscaleProcessor(TestGameUpascaleProcessor);
+    ASSERT_EQ(result, GSERROR_OK);
+    ASSERT_NE(pSurface->gameUpscaleProcessor_, nullptr);
+    result = pSurface->SetGameUpscaleProcessor(nullptr);
+    ASSERT_EQ(result, GSERROR_OK);
+    ASSERT_EQ(pSurface->gameUpscaleProcessor_, nullptr);
+}
 }

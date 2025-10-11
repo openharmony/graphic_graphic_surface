@@ -1034,6 +1034,17 @@ int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window)
     return window->surface->ProducerSurfaceUnlockAndFlushBuffer();
 }
 
+int32_t NativeWindowSetGameUpscaleProcessor(OHNativeWindow *window, void (*processor)(int32_t *, int32_t *))
+{
+    if (window == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    
+    BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null.");
+    GameUpscaleProcessor gameUpscaleProcessor = static_cast<GameUpscaleProcessor>(processor);
+    return window->surface->SetGameUpscaleProcessor(gameUpscaleProcessor);
+}
+
 int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH_NativeBuffer_ColorSpace* colorSpace)
 {
     CM_ColorSpaceType colorSpaceEnumType = static_cast<CM_ColorSpaceType>(colorSpaceType);

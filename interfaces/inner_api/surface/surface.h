@@ -25,6 +25,9 @@
 #include "surface_tunnel_handle.h"
 
 namespace OHOS {
+
+typedef void (*GameUpscaleProcessor)(int32_t *width, int32_t *height);
+
 class Surface : public RefBase {
 public:
     static sptr<Surface> CreateSurfaceAsConsumer(std::string name = "noname");
@@ -648,8 +651,20 @@ public:
         (void)count;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    /**
+     * @brief Set the game upscaling processing function.
+     *        Setting processor to nullptr will disable upscaling processing.
+     * @param processor Indicates the processor to be set.
+     * @return Returns the error code of the set of processor.
+     */
+    virtual GSError SetGameUpscaleProcessor(GameUpscaleProcessor processor)
+    {
+        (void)processor;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
+    GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;
 };
 } // namespace OHOS
 

@@ -403,8 +403,7 @@ typedef enum OH_NativeBuffer_MetadataType {
     OH_VIDEO_HDR_VIVID,    /**< HDR VIVID */
     OH_IMAGE_HDR_VIVID_DUAL,   /**< HDR VIVID DUAL */
     OH_IMAGE_HDR_VIVID_SINGLE, /**< HDR VIVID SINGLE */
-    OH_VIDEO_NONE              /**< NONE Metadata, as the enumeration expands, the value of NONE will increase,
-                                and it is not allowed to use devil numbers instead of NONE enumeration. */
+    OH_VIDEO_NONE              /**< NONE Metadata */
 } OH_NativeBuffer_MetadataType;
 
 /**
@@ -534,23 +533,6 @@ void OH_NativeBuffer_GetConfig(OH_NativeBuffer *buffer, OH_NativeBuffer_Config* 
 int32_t OH_NativeBuffer_Map(OH_NativeBuffer *buffer, void **virAddr);
 
 /**
- * @brief Provide direct cpu access to the OH_NativeBuffer in the process's address space and wait fence.
- * If the interface returns OK, fenceFd does not need to be closed by the developer.
- * Otherwise, the developer needs to close the fenceFd.
- *
- * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
- * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
- * @param fenceFd Indicates the pointer to a file descriptor handle.
- * @param virAddr Indicates the address of the <b>OH_NativeBuffer</b> in virtual memory.
- * @return {@link NATIVE_ERROR_OK} 0 - Success.
- * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or virAddr is NULL or invalid fenceFd.
- * {@link SURFACE_ERROR_UNKOWN} 50002000 - map failed.
- * @since 22
- * @version 1.0
- */
-int32_t OH_NativeBuffer_Map_WaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, void **virAddr);
-
-/**
  * @brief Remove direct cpu access ability of the OH_NativeBuffer in the process's address space.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
@@ -658,6 +640,23 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
  */
 int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t *size, uint8_t **metadata);
+
+/**
+ * @brief Provide direct cpu access to the OH_NativeBuffer in the process's address space and wait fence.
+ * If the interface returns OK, fenceFd does not need to be closed by the developer.
+ * Otherwise, the developer needs to close the fenceFd.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param fenceFd Indicates the pointer to a file descriptor handle.
+ * @param virAddr Indicates the address of the <b>OH_NativeBuffer</b> in virtual memory.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or virAddr is NULL or invalid fenceFd.
+ * {@link SURFACE_ERROR_UNKOWN} 50002000 - map failed.
+ * @since 22
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, void **virAddr);
 #ifdef __cplusplus
 }
 #endif

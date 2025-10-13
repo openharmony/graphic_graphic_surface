@@ -329,6 +329,8 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
             return OHOS::SURFACE_ERROR_INVALID_PARAM;
         }
         ret = MetadataHelper::SetHDRMetadataType(sbuffer, NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
+    } else if (metadataKey == OH_REGION_OF_INTEREST_METADATA) {
+        ret = MetadataHelper::SetROIMetadata(sbuffer, mD);
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;

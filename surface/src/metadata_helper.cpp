@@ -213,6 +213,16 @@ GSError MetadataHelper::GetCropRectMetadata(const sptr<SurfaceBuffer>& buffer, B
     return ConvertVecToMetadata(cropRect, crop);
 }
 
+GSError MetadataHelper::SetROIMetadata(sptr<SurfaceBuffer>& buffer, const std::vector<uint8_t>& roiMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+ 
+    return buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V2_1::ATTRKEY_ROI_METADATA, roiMetadata);
+}
+ 
+
 GSError MetadataHelper::SetAdaptiveFOVMetadata(sptr<SurfaceBuffer>& buffer,
     const std::vector<uint8_t>& adaptiveFOVMetadata)
 {

@@ -459,7 +459,7 @@ typedef struct {
 } OH_NativeBuffer_StaticMetadata;
 
 /**
- * @brief Indicates the descriptive information of a native buffer, 
+ * @brief Indicates the descriptive information of a native buffer,
  *  such as HDR metadata, ROI metadata, etc.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer

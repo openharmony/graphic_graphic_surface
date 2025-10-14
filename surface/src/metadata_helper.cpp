@@ -16,7 +16,7 @@
 #include "metadata_helper.h"
 #include "buffer_log.h"
 
-#include "v2_1/buffer_handle_meta_key_type.h"
+#include "v2_2/buffer_handle_meta_key_type.h"
 
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 
@@ -219,9 +219,8 @@ GSError MetadataHelper::SetROIMetadata(sptr<SurfaceBuffer>& buffer, const std::v
         return GSERROR_NO_BUFFER;
     }
  
-    return buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V2_1::ATTRKEY_ROI_METADATA, roiMetadata);
+    return buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V2_2::ATTRKEY_ROI_METADATA, roiMetadata);
 }
- 
 
 GSError MetadataHelper::SetAdaptiveFOVMetadata(sptr<SurfaceBuffer>& buffer,
     const std::vector<uint8_t>& adaptiveFOVMetadata)

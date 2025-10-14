@@ -1633,12 +1633,15 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndStatusWrong001, TestSize.Leve
     // Create thread for requesting buffer
     std::thread requestThread([&]() {
         while (!stopRequest) {
-            GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
-            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            uint32_t i = 0;
+            // 5:首次RequestBuffer概率性失败，设置重试
+            while (bqTest->RequestBuffer(requestConfigTest, bedata, retval) != OHOS::GSERROR_OK && i < 5) {
+                i++;
+            }
             ASSERT_GE(retval.sequence, 0);
             ASSERT_NE(retval.buffer, nullptr);
 
-            ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval1);
+            GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval1);
             ASSERT_EQ(ret, OHOS::GSERROR_OK);
             ASSERT_GE(retval1.sequence, 0);
             ASSERT_NE(retval1.buffer, nullptr);

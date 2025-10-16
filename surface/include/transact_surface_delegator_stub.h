@@ -45,6 +45,7 @@ protected:
 
 private:
     int32_t SendSelfProxy();
+    int32_t SendSelfProxyWithVersion();
     sptr<IRemoteObject> client_ = nullptr;
 };
 } // namespace OHOS

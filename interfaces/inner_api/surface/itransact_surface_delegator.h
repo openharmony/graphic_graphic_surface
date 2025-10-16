@@ -37,6 +37,7 @@ protected:
         DETACHBUFFER = 7,
         NDKFLUSHBUFFER = 11,
         GETNDKVERSION = 23,
+        SET_CLIENT_WITH_VERSION = 24,
     };
 };
 } // namespace OHOS

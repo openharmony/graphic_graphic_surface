@@ -145,6 +145,11 @@ void ProducerSurfaceDelegator::SetDisplayRotation(int32_t rotation)
     mDisplayRotation_.store(rotation);
 }
 
+void ProducerSurfaceDelegator::SetAncoGraphicVersion(uint32_t version)
+{
+    (void)version;
+}
+
 void ProducerSurfaceDelegator::UpdateBufferTransform()
 {
 }

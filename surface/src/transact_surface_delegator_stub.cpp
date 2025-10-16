@@ -35,6 +35,11 @@ int32_t TransactSurfaceDelegatorStub::SendSelfProxy()
     return ERR_NONE;
 }
 
+int32_t TransactSurfaceDelegatorStub::SendSelfProxyWithVersion()
+{
+    return ERR_NONE;
+}
+
 int32_t TransactSurfaceDelegatorStub::SendMessage(int32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {

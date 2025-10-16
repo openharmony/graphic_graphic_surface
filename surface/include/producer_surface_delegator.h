@@ -46,6 +46,7 @@ public:
     int32_t OnNdkFlushBuffer(MessageParcel& data, MessageParcel& reply);
 
     static void SetDisplayRotation(int32_t rotation);
+    static void SetAncoGraphicVersion(uint32_t version);
 
 private:
     std::map<int32_t, std::vector<sptr<SurfaceBuffer>>> map_;

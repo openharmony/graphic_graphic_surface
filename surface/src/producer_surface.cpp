@@ -163,7 +163,13 @@ GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                        sptr<SyncFence>& fence, BufferRequestConfig& config)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    return RequestBufferLocked(buffer, fence, config);
+    if (gameUpscaleProcessor_ != nullptr) {
+        BufferRequestConfig upscaled = config;
+        gameUpscaleProcessor_(&upscaled.width, &upscaled.height);
+        return RequestBufferLocked(buffer, fence, upscaled);
+    } else {
+        return RequestBufferLocked(buffer, fence, config);
+    }
 }
 
 GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
@@ -1444,6 +1450,13 @@ GSError ProducerSurface::SetAlphaType(GraphicAlphaType alphaType)
 GSError ProducerSurface::SetBufferTypeLeak(const std::string &bufferTypeLeak)
 {
     bufferTypeLeak_ = bufferTypeLeak;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::SetGameUpscaleProcessor(GameUpscaleProcessor processor)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    gameUpscaleProcessor_ = processor;
     return GSERROR_OK;
 }
 } // namespace OHOS

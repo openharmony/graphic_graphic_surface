@@ -2835,4 +2835,41 @@ HWTEST_F(NativeWindowTest, NativeWindow_PreAllocBuffers005, TestSize.Level0)
     ASSERT_EQ(OH_NativeWindow_PreAllocBuffers(nativeWindowTmp, 1), OHOS::GSERROR_OK);
     OH_NativeWindow_DestroyNativeWindow(nativeWindowTmp);
 }
+
+/*
+* Function: NativeWindowSetGameUpscaleProcessor
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NativeWindowSetGameUpscaleProcessor with normal paramters and check ret
+*/
+void TestGameUpascaleProcessor(int32_t *width, int32_t *height)
+{
+}
+HWTEST_F(NativeWindowTest, NativeWindowSetGameUpscaleProcessor001, TestSize.Level0)
+{
+    OHNativeWindow* window = new OHNativeWindow();
+    ASSERT_NE(window, nullptr);
+
+    void (*processor)(int32_t *, int32_t *) = TestGameUpascaleProcessor;
+
+    int32_t ret = NativeWindowSetGameUpscaleProcessor(nullptr, processor);
+    ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
+    ret = NativeWindowSetGameUpscaleProcessor(window, processor);
+    ASSERT_EQ(ret, SURFACE_ERROR_ERROR);
+    delete window;
+
+    sptr<OHOS::IConsumerSurface> cSurfaceTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfaceTmp->RegisterConsumerListener(listenerTmp);
+    sptr<OHOS::IBufferProducer> producerTmp = cSurfaceTmp->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTmp = Surface::CreateSurfaceAsProducer(producerTmp);
+    window = OH_NativeWindow_CreateNativeWindow(&pSurfaceTmp);
+    ret = NativeWindowSetGameUpscaleProcessor(window, processor);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = NativeWindowSetGameUpscaleProcessor(window, nullptr);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    OH_NativeWindow_DestroyNativeWindow(window);
+}
 }

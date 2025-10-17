@@ -483,6 +483,29 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue004, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue by roi input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue005, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 60;
+    uint8_t outbuff[len];
+    for (int i = 0; i < 60; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, len, outbuff);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
 * Function: OH_NativeBuffer_GetMetadataValue
 * Type: Function
 * Rank: Important(2)

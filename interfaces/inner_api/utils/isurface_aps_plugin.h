@@ -66,12 +66,6 @@ public:
         (void)surfaceName;
         (void)count;
     }
-
-    virtual float GetApsSdrRatio(const std::string &pkgName)
-    {
-        (void)pkgName;
-        return 1.0f;
-    }
 };
 }  // namespace OHOS
 

@@ -30,6 +30,8 @@
 #include "metadata_helper.h"
 #include "sync_fence_tracker.h"
 #include "acquire_fence_manager.h"
+#include "isurface_aps_plugin.h"
+#include "surface_aps_sdr_utils.h"
 
 #define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
 #define DMA_BUF_SET_LEAK_TYPE _IOW(DMA_BUF_BASE, 5, const char *)
@@ -39,6 +41,8 @@ namespace OHOS {
 constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
 constexpr int32_t FORCE_GLOBAL_ALPHA_MAX = 255;
 constexpr int32_t DAMAGES_MAX_SIZE = 1000;
+constexpr float DEFAULT_SDR_RATIO = 1.0f;
+const std::string XCOMPONENT_BUFFER_NAME = "xcomponent";
 sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 {
     if (producer == nullptr) {
@@ -72,8 +76,10 @@ ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
     windowConfig_.timeout = 3000;          // default timeout is 3000 ms
     windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    SurfaceApsSdrUtils::GetSdrRatio(initInfo_.appName, sdrRatio_);
     BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
-        " %{public}d.", initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList);
+          " %{public}d, sdrRatio is %{public}f.",
+          initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList, sdrRatio_);
 }
 
 ProducerSurface::~ProducerSurface()
@@ -1085,6 +1091,12 @@ void ProducerSurface::SetWindowConfig(const BufferRequestConfig& config)
 void ProducerSurface::SetWindowConfigWidthAndHeight(int32_t width, int32_t height)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (sdrRatio_ > (std::numeric_limits<float>::epsilon()) &&
+        (DEFAULT_SDR_RATIO - sdrRatio_) > (std::numeric_limits<float>::epsilon()) &&
+        bufferName_ == XCOMPONENT_BUFFER_NAME) {
+        SurfaceApsSdrUtils::CalcWidthAndHeightBySdrRatio(width, height, GetDefaultWidth(), GetDefaultHeight(),
+            sdrRatio_);
+    }
     windowConfig_.width = width;
     windowConfig_.height = height;
 }

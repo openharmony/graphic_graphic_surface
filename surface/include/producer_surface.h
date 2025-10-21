@@ -919,6 +919,7 @@ private:
     sptr<SurfaceBuffer> mLockedBuffer_ = nullptr;
     Region region_ = {.rects = nullptr, .rectNumber = 0};
     std::string bufferTypeLeak_;
+    float sdrRatio_ = 0.f;
 };
 } // namespace OHOS
 

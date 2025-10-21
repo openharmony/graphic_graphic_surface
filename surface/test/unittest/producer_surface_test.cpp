@@ -1451,6 +1451,48 @@ HWTEST_F(ProducerSurfaceTest, WindowConfig002, TestSize.Level0)
 }
 
 /*
+* Function: SetWindowConfigWidthAndHeight
+ * Type: Function
+ * Rank: Important(1)
+ * EnvConditions: N/A
+* CaseDescription: 1. sdrRatio and bufferName is satisfied
+                   2. only sdrRatio is satisfied
+                   3. only bufferName is satisfied
+                   4. sdrRatio and bufferName is not satisfied
+ * @tc.require: issue844
+  */
+HWTEST_F(ProducerSurfaceTest, SetWindowConfigWidthAndHeight, TestSize.Level0)
+{
+    surface_->sdrRatio_ = 0.5f;
+    surface_->bufferName_ = "xcomponent";
+    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
+    auto configGet = surface_->GetWindowConfig();
+    ASSERT_EQ(requestConfig.width, configGet.width);
+    ASSERT_EQ(requestConfig.height, configGet.height);
+
+    surface_->sdrRatio_ = 0.5f;
+    surface_->bufferName_ = "NULL";
+    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
+    configGet = surface_->GetWindowConfig();
+    ASSERT_EQ(requestConfig.width, configGet.width);
+    ASSERT_EQ(requestConfig.height, configGet.height);
+
+    surface_->sdrRatio_ = -2.0f;
+    surface_->bufferName_ = "xcomponent";
+    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
+    configGet = surface_->GetWindowConfig();
+    ASSERT_EQ(requestConfig.width, configGet.width);
+    ASSERT_EQ(requestConfig.height, configGet.height);
+
+    surface_->sdrRatio_ = -2.0f;
+    surface_->bufferName_ = "NUULL";
+    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
+    configGet = surface_->GetWindowConfig();
+    ASSERT_EQ(requestConfig.width, configGet.width);
+    ASSERT_EQ(requestConfig.height, configGet.height);
+}
+
+/*
 * Function: AttachBuffer
 * Type: Function
 * Rank: Important(1)

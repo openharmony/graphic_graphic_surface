@@ -283,6 +283,25 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     return SURFACE_ERROR_OK;
 }
 
+GSError ProducerSurface::AddCacheLocked(sptr<SurfaceBuffer> &attachedBuffer)
+{
+    // add attachedBuffer to cache
+    if (attachedBuffer == nullptr) {
+        BLOGE("attachedBuffer is nullptr, uniqueId: %{public}" PRIu64 ".", queueId_);
+        return SURFACE_ERROR_UNKOWN;
+    }
+    auto sequence = attachedBuffer->GetSeqNum();
+    auto it = bufferProducerCache_.find(sequence);
+    if (it == bufferProducerCache_.end()) {
+        if (GetQueueSize() <= static_cast<uint32_t>(bufferProducerCache_.size())) {
+            bufferProducerCache_.clear();
+        }
+        bufferProducerCache_[sequence] = attachedBuffer;
+        ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
+    }
+    return SURFACE_ERROR_OK;
+}
+
 GSError ProducerSurface::RequestBuffers(std::vector<sptr<SurfaceBuffer>>& buffers,
     std::vector<sptr<SyncFence>>& fences, BufferRequestConfig& config)
 {
@@ -484,7 +503,12 @@ GSError ProducerSurface::AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeO
         return GSERROR_INVALID_ARGUMENTS;
     }
 
-    return producer_->AttachBuffer(buffer, timeOut);
+    auto ret = producer_->AttachBuffer(buffer, timeOut);
+    if (ret == GSERROR_OK) {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        AddCacheLocked(buffer);
+    }
+    return ret;
 }
 
 GSError ProducerSurface::DetachBuffer(sptr<SurfaceBuffer>& buffer)

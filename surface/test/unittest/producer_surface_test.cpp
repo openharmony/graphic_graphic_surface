@@ -1530,6 +1530,23 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer002, TestSize.Level0)
 }
 
 /*
+* Function: AttachBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call AttachBuffer twice
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, AttachBuffer003, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->AttachBuffer(buffer, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = surface_->AttachBuffer(buffer, 0);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: RegisterSurfaceDelegator000
 * Type: Function
 * Rank: Important(1)
@@ -3764,5 +3781,46 @@ HWTEST_F(ProducerSurfaceTest, SetGameUpscaleProcessor, TestSize.Level0)
     result = pSurface->SetGameUpscaleProcessor(nullptr);
     ASSERT_EQ(result, GSERROR_OK);
     ASSERT_EQ(pSurface->gameUpscaleProcessor_, nullptr);
+}
+
+/*
+ * Function: AddCacheLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: AddCacheLocked
+ */
+HWTEST_F(ProducerSurfaceTest, AddCacheLocked001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    GSError ret = surface_->AddCacheLocked(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ret = surface_->AddCacheLocked(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    buffer = nullptr;
+    ret = surface_->AddCacheLocked(buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+}
+ 
+/*
+ * Function: AddCacheLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: AddCacheLocked
+ */
+HWTEST_F(ProducerSurfaceTest, AddCacheLocked002, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
+    sptr<SurfaceBuffer> buffer2 = SurfaceBuffer::Create();
+    sptr<SurfaceBuffer> buffer3 = SurfaceBuffer::Create();
+    surface_->CleanCache(true);
+    surface_->SetQueueSize(3);
+    GSError ret = surface_->AddCacheLocked(buffer1);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ret = surface_->AddCacheLocked(buffer2);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ret = surface_->AddCacheLocked(buffer3);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
 }
 }

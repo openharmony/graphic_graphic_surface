@@ -303,7 +303,7 @@ HWTEST_F(MetadataManagerTest, ROIMetadataTest, Function | SmallTest | Level1)
     std::string roiRects = "64,64-128,128=-10;256,256-320,320=10;";
     const uint8_t* data = reinterpret_cast<const uint8_t*>(roiRects.c_str());
     std::vector<uint8_t> metadataSet = vector<uint8_t>(data, data + roiRects.size());
- 
+
     auto retSet = MetadataHelper::SetROIMetadata(buffer_, metadataSet);
     ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
     ASSERT_EQ(MetadataHelper::SetROIMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);

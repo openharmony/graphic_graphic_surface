@@ -178,6 +178,7 @@ public:
     GSError SetBufferName(const std::string &bufferName);
     inline bool IsBufferHold()
     {
+        std::unique_lock<std::mutex> lock(mutex_);
         return isBufferHold_;
     }
     GSError SetScalingMode(uint32_t sequence, ScalingMode scalingMode);

@@ -148,6 +148,7 @@ ohos_static_library("surface_static") {
     "drivers_interface_display:libdisplay_commontype_proxy_1.1",
     "drivers_interface_display:libdisplay_commontype_proxy_2.0",
     "drivers_interface_display:libdisplay_commontype_proxy_2.1",
+    "drivers_interface_display:libdisplay_commontype_proxy_2.2",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hitrace:hitrace_meter",

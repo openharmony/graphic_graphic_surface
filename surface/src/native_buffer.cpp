@@ -25,6 +25,9 @@
 #include "metadata_helper.h"
 
 #define DMA_BUF_SET_LEAK_TYPE _IOW(DMA_BUF_BASE, 5, const char *)
+namespace {
+    constexpr int32_t ROI_METADATA_CAPACITY = 256;
+}
 
 using namespace OHOS;
 using namespace HDI::Display::Graphic::Common::V1_0;
@@ -330,7 +333,8 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         }
         ret = MetadataHelper::SetHDRMetadataType(sbuffer, NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
     } else if (metadataKey == OH_REGION_OF_INTEREST_METADATA) {
-        ret = MetadataHelper::SetROIMetadata(sbuffer, mD);
+        std::vector<uint8_t> mDRoi(metadata, metadata + ROI_METADATA_CAPACITY);
+        ret = MetadataHelper::SetROIMetadata(sbuffer, mDRoi);
     } else {
         BLOGE("the metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_UNKOWN;

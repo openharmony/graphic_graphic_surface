@@ -283,11 +283,11 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     return SURFACE_ERROR_OK;
 }
 
-GSError ProducerSurface::AddCacheLocked(sptr<SurfaceBuffer> &attachedBuffer)
+GSError ProducerSurface::AddCacheLocked(sptr<SurfaceBuffer>& attachedBuffer)
 {
     // add attachedBuffer to cache
     if (attachedBuffer == nullptr) {
-        BLOGE("attachedBuffer is nullptr, uniqueId: %{public}" PRIu64 ".", queueId_);
+        BLOGE("attachedBuffer is nullptr, queueId: %{public}" PRIu64 ".", queueId_);
         return SURFACE_ERROR_UNKOWN;
     }
     auto sequence = attachedBuffer->GetSeqNum();

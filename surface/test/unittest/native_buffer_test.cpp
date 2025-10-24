@@ -502,7 +502,9 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue005, TestSize.Level0)
         outbuff[i] = static_cast<uint8_t>(i);
     }
     int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, len, outbuff);
-    ASSERT_EQ(ret, GSERROR_OK);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set metadata
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
 }
 
 /*

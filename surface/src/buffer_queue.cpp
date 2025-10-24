@@ -2502,7 +2502,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
                 BLOGW("CacheSize: %{public}zu, QueueSize: %{public}u, allocBufferCount: %{public}zu,"
                    " queId: %{public}" PRIu64, bufferQueueCache_.size(), bufferQueueSize_,
                    surfaceBufferCache.size(), uniqueId_);
-                return SURFACE_ERROR_OUT_OF_RANGE;
+                return SURFACE_ERROR_BUFFER_QUEUE_FULL;
             }
             BufferElement ele = {
                 .buffer = iter->second,

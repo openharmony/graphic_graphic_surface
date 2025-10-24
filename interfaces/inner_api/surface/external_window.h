@@ -800,6 +800,37 @@ int32_t OH_NativeWindow_CleanCache(OHNativeWindow *window);
  * @version 1.0
  */
 int32_t OH_NativeWindow_PreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt);
+
+/**
+ * @brief Requests an <b>OHNativeWindowBuffer</b> through an <b>OHNativeWindow</b> instance for content production,\n
+ * and lock the <b>OHNativeWindowBuffer</b>, the interface needs to be paired with\n
+ * <b>OH_NativeWindow_UnlockAndFlushBuffer</b> for use, after lock, it must be unlocked in order to relock,\n
+ * repeatedly lock or unlock will return an illegal operation error code, the interface supports rendering images\n
+ * directly through memory read and write on the CPU.
+ * This interface is a non-thread-safe type interface.\n
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
+ * @param region Indicates the info of the dirty region.
+ * @param buffer Indicates the pointer to a <b>NativeWindowBuffer</b> instance.
+ * @return Returns an error code, 0 is success, otherwise, failed.
+ * @since 23
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_LockBuffer(OHNativeWindow* window, Region region, OHNativeWindowBuffer** buffer);
+
+/**
+ * @brief Flushes the <b>OHNativeWindowBuffer</b> filled with the content to the buffer queue through an \n
+ * <b>OHNativeWindow</b> instance for content consumption, and unlock the <b>OHNativeWindowBuffer</b>.
+ * This interface is a non-thread-safe type interface.\n
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
+ * @return Returns an error code, 0 is success, otherwise, failed.
+ * @since 23
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_UnlockAndFlushBuffer(OHNativeWindow* window);
 #ifdef __cplusplus
 }
 #endif

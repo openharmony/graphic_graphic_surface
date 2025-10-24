@@ -879,7 +879,7 @@ private:
     void CleanAllLocked(uint32_t *bufSeqNum);
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
-    GSError AddCacheLocked(sptr<SurfaceBuffer> &attachedBuffer);
+    GSError AddCacheLocked(sptr<SurfaceBuffer>& attachedBuffer);
     GSError SetMetadataValue(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
     void SetBufferConfigLocked(sptr<BufferExtraData>& bedataimpl,

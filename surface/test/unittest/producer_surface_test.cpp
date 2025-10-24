@@ -1539,10 +1539,11 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer002, TestSize.Level0)
  */
 HWTEST_F(ProducerSurfaceTest, AttachBuffer003, TestSize.Level0)
 {
+    pSurface->CleanCache(true);
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
-    GSError ret = surface_->AttachBuffer(buffer, 0);
+    GSError ret = pSurface->AttachBuffer(buffer, 0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ret = surface_->AttachBuffer(buffer, 0);
+    ret = pSurface->AttachBuffer(buffer, 0);
     ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
 
@@ -3792,6 +3793,7 @@ HWTEST_F(ProducerSurfaceTest, SetGameUpscaleProcessor, TestSize.Level0)
  */
 HWTEST_F(ProducerSurfaceTest, AddCacheLocked001, TestSize.Level0)
 {
+    surface_->CleanCache(true);
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     GSError ret = surface_->AddCacheLocked(buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);

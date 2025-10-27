@@ -2080,4 +2080,28 @@ HWTEST_F(BufferQueueTest, SetLppBufferConfig001, TestSize.Level0)
     tmpBq->SetLppBufferConfig(buffer, damages, slot);
     ASSERT_EQ(buffer->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
 }
+
+/**
+ * Function: IsCached
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call IsCached
+ */
+HWTEST_F(BufferQueueTest, IsCached001, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+    auto buffer = SurfaceBuffer::Create();
+    auto bufferSeqNum = buffer->GetSeqNum();
+    EXPECT_FALSE(tmpBq->IsCached(bufferSeqNum));
+
+    BufferElement ele = {
+        .buffer = buffer,
+        .state = BUFFER_STATE_ACQUIRED,
+        .isDeleting = false,
+        .config = {},
+        .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[bufferSeqNum] = ele;
+    EXPECT_TRUE(tmpBq->IsCached(bufferSeqNum));
+}
 }

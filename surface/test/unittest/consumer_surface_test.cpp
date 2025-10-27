@@ -2731,4 +2731,32 @@ HWTEST_F(ConsumerSurfaceTest, SetIsPriorityAlloc001, TestSize.Level0)
     queue = nullptr;
     surface_->consumer_ = nullptr;
 }
+
+/**
+ * Function: IsCached
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call IsCached and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, IsCached001, TestSize.Level0)
+{
+    auto cSurface = IConsumerSurface::Create("test");
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(listener);
+    auto producer = cSurface->GetProducer();
+    auto pSurface = Surface::CreateSurfaceAsProducer(producer);
+    int fence = -1;
+
+    auto buffer = SurfaceBuffer::Create();
+    EXPECT_FALSE(cSurface->IsCached(buffer->GetSeqNum()));
+
+    GSError ret = pSurface->RequestBuffer(buffer, fence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_TRUE(cSurface->IsCached(buffer->GetSeqNum()));
+
+    auto cSurface2 = new ConsumerSurface("test2");
+    cSurface2->consumer_ = nullptr;
+    EXPECT_FALSE(cSurface2->IsCached(buffer->GetSeqNum()));
+}
 }

@@ -420,4 +420,12 @@ GSError BufferQueueConsumer::SetIsPriorityAlloc(bool isPriorityAlloc)
     }
     return bufferQueue_->SetIsPriorityAlloc(isPriorityAlloc);
 }
+
+bool BufferQueueConsumer::IsCached(uint32_t bufferSeqNum) const
+{
+    if (bufferQueue_ == nullptr) {
+        return false;
+    }
+    return bufferQueue_->IsCached(bufferSeqNum);
+}
 } // namespace OHOS

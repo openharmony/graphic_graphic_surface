@@ -773,4 +773,12 @@ GSError ConsumerSurface::SetIsPriorityAlloc(bool isPriorityAlloc)
     }
     return consumer_->SetIsPriorityAlloc(isPriorityAlloc);
 }
+
+bool ConsumerSurface::IsCached(uint32_t bufferSeqNum) const
+{
+    if (consumer_ == nullptr) {
+        return false;
+    }
+    return consumer_->IsCached(bufferSeqNum);
+}
 } // namespace OHOS

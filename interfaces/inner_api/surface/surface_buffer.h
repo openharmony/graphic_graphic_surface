@@ -47,6 +47,17 @@ using ProducerInitInfo = struct {
     sptr<IProducerListener> propertyListener; // register callback in ctor
     int32_t transformHint;
 };
+
+enum class BufferDeletedFlag : uint32_t {
+    DELETED_FROM_CACHE = 1 << 0,
+    DELETED_FROM_RS = 1 << 1
+};
+
+constexpr BufferDeletedFlag operator&(BufferDeletedFlag lhs, BufferDeletedFlag rhs)
+{
+    return static_cast<BufferDeletedFlag>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+}
+
 class SurfaceBuffer : public RefBase {
 public:
     virtual BufferHandle *GetBufferHandle() const = 0;
@@ -187,11 +198,19 @@ public:
     {
         return SCALING_MODE_SCALE_TO_WINDOW;
     }
-    virtual void SetBufferDeleteFromCacheFlag(const bool &flag)
+    virtual void SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag)
     {
-        (void) flag;
+        (void)bufferDeletedFlag;
     }
-    virtual bool GetBufferDeleteFromCacheFlag() const
+    virtual BufferDeletedFlag GetBufferDeletedFlag() const
+    {
+        return static_cast<BufferDeletedFlag>(0);
+    }
+    virtual void ClearBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag)
+    {
+        (void)bufferDeletedFlag;
+    }
+    virtual bool IsBufferDeleted() const
     {
         return false;
     }

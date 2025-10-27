@@ -404,24 +404,35 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, TestSize.Level0)
     ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
 }
 
-/*
-* Function: SetBufferDeleteFromCacheFlag&GetBufferDeleteFromCacheFlag
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. new SurfaceBufferImpl
-*                  2. call GetBufferDeleteFromCacheFlag and check default is false
-*                  3. call SetBufferDeleteFromCacheFlag and GetBufferDeleteFromCacheFlag and check ret
-*                  4. repeatly call SetBufferDeleteFromCacheFlag and GetBufferDeleteFromCacheFlag and check ret
+/**
+ * Function: SetBufferDeletedFlag & GetBufferDeletedFlag & ClearBufferDeletedFlag & IsBufferDeleted
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. call GetBufferDeletedFlag and check ret
+ *                  3. call SetBufferDeletedFlag and GetBufferDeletedFlag and check ret
+ *                  4. repeatly call SetBufferDeletedFlag and GetBufferDeletedFlag and check ret
  */
-HWTEST_F(SurfaceBufferImplTest, BufferDeleteFromCacheFlag001, TestSize.Level0)
+HWTEST_F(SurfaceBufferImplTest, BufferDeletedFlag001, TestSize.Level0)
 {
     buffer = new SurfaceBufferImpl();
-    ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), false);
-    buffer->SetBufferDeleteFromCacheFlag(true);
-    ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), true);
-    buffer->SetBufferDeleteFromCacheFlag(false);
-    ASSERT_EQ(buffer->GetBufferDeleteFromCacheFlag(), false);
+    EXPECT_EQ(buffer->GetBufferDeletedFlag(), static_cast<OHOS::BufferDeletedFlag>(0));
+    EXPECT_FALSE(buffer->IsBufferDeleted());
+
+    buffer->SetBufferDeletedFlag(OHOS::BufferDeletedFlag::DELETED_FROM_CACHE);
+    EXPECT_EQ(buffer->GetBufferDeletedFlag(), OHOS::BufferDeletedFlag::DELETED_FROM_CACHE);
+    EXPECT_TRUE(buffer->IsBufferDeleted());
+
+    buffer->ClearBufferDeletedFlag(OHOS::BufferDeletedFlag::DELETED_FROM_CACHE);
+    EXPECT_FALSE(buffer->IsBufferDeleted());
+
+    buffer->SetBufferDeletedFlag(OHOS::BufferDeletedFlag::DELETED_FROM_RS);
+    EXPECT_EQ(buffer->GetBufferDeletedFlag(), OHOS::BufferDeletedFlag::DELETED_FROM_RS);
+    EXPECT_TRUE(buffer->IsBufferDeleted());
+
+    buffer->ClearBufferDeletedFlag(OHOS::BufferDeletedFlag::DELETED_FROM_RS);
+    EXPECT_FALSE(buffer->IsBufferDeleted());
 }
 
 /*

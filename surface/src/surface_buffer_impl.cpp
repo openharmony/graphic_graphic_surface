@@ -829,14 +829,24 @@ ScalingMode SurfaceBufferImpl::GetSurfaceBufferScalingMode() const
     return scalingMode_;
 }
 
-void SurfaceBufferImpl::SetBufferDeleteFromCacheFlag(const bool &flag)
+void SurfaceBufferImpl::SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag)
 {
-    isBufferDeleteFromCache = flag;
+    bufferDeletedFlag_.fetch_or(static_cast<uint32_t>(bufferDeletedFlag), std::memory_order_relaxed);
 }
 
-bool SurfaceBufferImpl::GetBufferDeleteFromCacheFlag() const
+BufferDeletedFlag SurfaceBufferImpl::GetBufferDeletedFlag() const
 {
-    return isBufferDeleteFromCache;
+    return static_cast<BufferDeletedFlag>(bufferDeletedFlag_.load(std::memory_order_relaxed));
+}
+
+void SurfaceBufferImpl::ClearBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag)
+{
+    bufferDeletedFlag_.fetch_and(~static_cast<uint32_t>(bufferDeletedFlag), std::memory_order_relaxed);
+}
+
+bool SurfaceBufferImpl::IsBufferDeleted() const
+{
+    return bufferDeletedFlag_.load() != 0;
 }
 
 GSError SurfaceBufferImpl::TryReclaim()

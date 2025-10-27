@@ -363,4 +363,32 @@ HWTEST_F(BufferQueueConsumerTest, SetIsPriorityAlloc001, TestSize.Level0)
     ASSERT_EQ(bqc->bufferQueue_->isPriorityAlloc_, false);
     bqc->bufferQueue_ = nullptr;
 }
+
+/**
+ * Function: IsCached
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call IsCached and check ret
+ */
+HWTEST_F(BufferQueueConsumerTest, IsCached001, TestSize.Level0)
+{
+    auto buffer = SurfaceBuffer::Create();
+    auto bufferSeqNum = buffer->GetSeqNum();
+    bqc->bufferQueue_ = nullptr;
+    EXPECT_FALSE(bqc->IsCached(bufferSeqNum));
+
+    bqc->bufferQueue_ = new BufferQueue("test");
+    EXPECT_FALSE(bqc->IsCached(bufferSeqNum));
+
+    BufferElement ele = {
+        .buffer = buffer,
+        .state = BUFFER_STATE_ACQUIRED,
+        .isDeleting = false,
+        .config = {},
+        .fence = SyncFence::InvalidFence()};
+    bqc->bufferQueue_->bufferQueueCache_[bufferSeqNum] = ele;
+    EXPECT_TRUE(bqc->IsCached(bufferSeqNum));
+    bqc->bufferQueue_ = nullptr;
+}
 }

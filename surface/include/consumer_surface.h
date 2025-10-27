@@ -734,6 +734,15 @@ public:
      * {@link SURFACE_ERROR_UNKOWN} 50002000 - Inner error.
      */
     GSError SetIsPriorityAlloc(bool isPriorityAlloc) override;
+    /**
+     * @brief Checks if the buffer is in cache
+     *
+     * @param bufferId [in] Buffer identifier to query
+     * @return true Buffer exists in cache.
+     * @return false Buffer not found in cache.
+     */
+    bool IsCached(uint32_t bufferSeqNum) const override;
+
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

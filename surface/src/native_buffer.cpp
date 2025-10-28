@@ -72,6 +72,8 @@ static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type> NA
     {OH_VIDEO_HDR_VIVID, CM_VIDEO_HDR_VIVID},
     {OH_IMAGE_HDR_VIVID_DUAL, CM_IMAGE_HDR_VIVID_DUAL},
     {OH_IMAGE_HDR_VIVID_SINGLE, CM_IMAGE_HDR_VIVID_SINGLE},
+    {OH_IMAGE_HDR_ISO_DUAL, CM_IMAGE_HDR_ISO_DUAL},
+    {OH_IMAGE_HDR_ISO_SINGLE, CM_IMAGE_HDR_ISO_SINGLE},
 };
 
 static OH_NativeBuffer* OH_NativeBufferFromSurfaceBuffer(SurfaceBuffer* buffer)

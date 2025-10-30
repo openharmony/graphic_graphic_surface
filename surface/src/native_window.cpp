@@ -1148,3 +1148,5 @@ WEAK_ALIAS(NativeWindowReadFromParcel, OH_NativeWindow_ReadFromParcel);
 WEAK_ALIAS(GetLastFlushedBufferV2, OH_NativeWindow_GetLastFlushedBufferV2);
 WEAK_ALIAS(NativeWindowCleanCache, OH_NativeWindow_CleanCache);
 WEAK_ALIAS(NativeWindowPreAllocBuffers, OH_NativeWindow_PreAllocBuffers);
+WEAK_ALIAS(NativeWindowLockBuffer, OH_NativeWindow_LockBuffer);
+WEAK_ALIAS(NativeWindowUnlockAndFlushBuffer, OH_NativeWindow_UnlockAndFlushBuffer);

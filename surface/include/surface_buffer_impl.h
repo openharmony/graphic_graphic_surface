@@ -95,8 +95,10 @@ public:
     GSError GetPlanesInfo(void **planesInfo) override;
     void SetSurfaceBufferScalingMode(const ScalingMode &scalingMode) override;
     ScalingMode GetSurfaceBufferScalingMode() const override;
-    void SetBufferDeleteFromCacheFlag(const bool &flag) override;
-    bool GetBufferDeleteFromCacheFlag() const  override;
+    void SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag) override;
+    BufferDeletedFlag GetBufferDeletedFlag() const override;
+    void ClearBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag) override;
+    bool IsBufferDeleted() const override;
 
     GSError TryReclaim() override;
     GSError TryResumeIfNeeded() override;
@@ -127,7 +129,7 @@ private:
     bool isConsumerAttachBufferFlag_ = false;
     std::map<uint32_t, std::vector<uint8_t>> metaDataCache_;
     Rect crop_ = {0, 0, 0, 0};
-    std::atomic<bool> isBufferDeleteFromCache = false;
+    std::atomic<uint32_t> bufferDeletedFlag_ = 0;
     std::atomic<bool> isReclaimed_ = false;
     std::atomic<bool> isSeqNumExist_ = false;
     using MemMgrFunctionPtr = int32_t(*)(int32_t, int32_t);

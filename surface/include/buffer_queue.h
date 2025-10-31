@@ -264,6 +264,7 @@ public:
     GSError SetAlphaType(GraphicAlphaType alphaType);
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
+    bool IsCached(uint32_t bufferSeqNum) const;
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);

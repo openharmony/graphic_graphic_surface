@@ -1144,7 +1144,7 @@ void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
     if (buffer == nullptr) {
         return;
     }
-    buffer->SetBufferDeleteFromCacheFlag(true);
+    buffer->SetBufferDeletedFlag(BufferDeletedFlag::DELETED_FROM_CACHE);
     if (onBufferDeleteForRSMainThread_ != nullptr) {
         onBufferDeleteForRSMainThread_(buffer->GetBufferId());
     }
@@ -2789,6 +2789,12 @@ GSError BufferQueue::SetIsPriorityAlloc(bool isPriorityAlloc)
     std::lock_guard<std::mutex> lockGuard(mutex_);
     isPriorityAlloc_ = isPriorityAlloc;
     return GSERROR_OK;
+}
+
+bool BufferQueue::IsCached(uint32_t bufferSeqNum) const
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return bufferQueueCache_.find(bufferSeqNum) != bufferQueueCache_.end();
 }
 }; // namespace OHOS
 

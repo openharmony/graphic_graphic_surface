@@ -97,6 +97,7 @@ public:
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource);
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
+    bool IsCached(uint32_t bufferSeqNum) const;
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

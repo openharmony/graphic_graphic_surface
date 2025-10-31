@@ -371,6 +371,11 @@ public:
         (void)count;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual bool IsCached(uint32_t bufferSeqNum) const
+    {
+        (void)bufferSeqNum;
+        return false;
+    }
 protected:
     IConsumerSurface() = default;
 };

@@ -949,7 +949,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote002, TestSize.Le
 HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
-    arguments.WritUint64(0);
+    arguments.WriteUint64(0);
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->UnRegisterPropertyListenerRemote(arguments, reply, option);

@@ -646,11 +646,11 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    int64_t id = -1;
-    if (!arguments.ReadInt64(id)) {
+    uint64_t producerId = -1;
+    if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
-    auto pid = static_cast<pid_t>(id);
+    auto pid = static_cast<pid_t>(producerId);
     GSError sRet = RegisterPropertyListener(listener, pid);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -661,11 +661,11 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
 int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    int64_t pid = -1;
-    if (!arguments.ReadInt64(pid)) {
+    uint64_t producerId = -1;
+    if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
-    auto id = static_cast<pid_t>(pid);
+    auto id = static_cast<pid_t>(producerId);
     GSError sRet = UnRegisterPropertyListener(id);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;

@@ -37,7 +37,7 @@
 namespace OHOS {
 namespace {
 constexpr int32_t BUFFER_MATRIX_SIZE = 16;
-constexpr uint64_t MAXIMUM_INVALID_ID = std::numeric_limits<uint64_>::max();
+constexpr uint64_t MAXIMUM_INVALID_ID = std::numeric_limits<uint64_t>::max();
 } // namespace
 
 const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,

@@ -931,6 +931,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote002, TestSize.Le
 {
     MessageParcel arguments;
     auto surfaceDelegator = ProducerSurfaceDelegator::Create();
+    EXPECT_NE(surfaceDelegator, nullptr);
     arguments.WriteRemoteObject(surfaceDelegator->AsObject());
     arguments.WriteUint64(0);
     MessageParcel reply;
@@ -950,6 +951,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote003, TestSize.Le
 {
     MessageParcel arguments;
     auto surfaceDelegator = ProducerSurfaceDelegator::Create();
+    EXPECT_NE(surfaceDelegator, nullptr);
     arguments.WriteRemoteObject(surfaceDelegator->AsObject());
     arguments.WriteBool(false);
     MessageParcel reply;

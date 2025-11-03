@@ -650,8 +650,7 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
     if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
-    auto pid = static_cast<pid_t>(producerId);
-    GSError sRet = RegisterPropertyListener(listener, pid);
+    GSError sRet = RegisterPropertyListener(listener, producerId);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -665,8 +664,7 @@ int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arg
     if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
-    auto id = static_cast<pid_t>(producerId);
-    GSError sRet = UnRegisterPropertyListener(id);
+    GSError sRet = UnRegisterPropertyListener(producerId);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }

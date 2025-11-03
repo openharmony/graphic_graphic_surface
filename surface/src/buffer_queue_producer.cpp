@@ -16,9 +16,10 @@
 #include "buffer_queue_producer.h"
 
 #include <cinttypes>
+#include <csignal>
+#include <limits>
 #include <mutex>
 #include <set>
-#include <csignal>
 
 #include "buffer_extra_data_impl.h"
 #include "buffer_log.h"
@@ -36,6 +37,7 @@
 namespace OHOS {
 namespace {
 constexpr int32_t BUFFER_MATRIX_SIZE = 16;
+constexpr uint64_t MAXIMUM_INVALID_ID = std::numeric_limits<uint64_>::max();
 } // namespace
 
 const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
@@ -646,7 +648,7 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    uint64_t producerId = -1;
+    uint64_t producerId = MAXIMUM_INVALID_ID;
     if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
@@ -660,7 +662,7 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
 int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    uint64_t producerId = -1;
+    uint64_t producerId = MAXIMUM_INVALID_ID;
     if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }

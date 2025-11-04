@@ -921,6 +921,46 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, TestSize.Le
 }
 
 /*
+* Function: RegisterPropertyListenerRemote002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: RegisterPropertyListenerRemote002 member function test
+ */
+HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote002, TestSize.Level0)
+{
+    MessageParcel arguments;
+    auto surfaceDelegator = ProducerSurfaceDelegator::Create();
+    EXPECT_NE(surfaceDelegator, nullptr);
+    arguments.WriteRemoteObject(surfaceDelegator->AsObject());
+    arguments.WriteUint64(0);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RegisterPropertyListenerRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
+* Function: RegisterPropertyListenerRemote003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: RegisterPropertyListenerRemote003 member function test
+ */
+HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote003, TestSize.Level0)
+{
+    MessageParcel arguments;
+    auto surfaceDelegator = ProducerSurfaceDelegator::Create();
+    EXPECT_NE(surfaceDelegator, nullptr);
+    arguments.WriteRemoteObject(surfaceDelegator->AsObject());
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RegisterPropertyListenerRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_REPLY);
+}
+
+/*
 * Function: UnRegisterPropertyListenerRemote
 * Type: Function
 * Rank: Important(2)
@@ -930,11 +970,28 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, TestSize.Le
 HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote001, TestSize.Level0)
 {
     MessageParcel arguments;
-    arguments.WriteInt64(0);
+    arguments.WriteUint64(0);
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->UnRegisterPropertyListenerRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
+}
+
+/*
+* Function: UnRegisterPropertyListenerRemote002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: UnRegisterPropertyListenerRemote member function test
+ */
+HWTEST_F(BufferQueueProducerTest, UnRegisterPropertyListenerRemote002, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->UnRegisterPropertyListenerRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_REPLY);
 }
 
 /*

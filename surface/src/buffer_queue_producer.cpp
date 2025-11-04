@@ -16,9 +16,10 @@
 #include "buffer_queue_producer.h"
 
 #include <cinttypes>
+#include <csignal>
+#include <limits>
 #include <mutex>
 #include <set>
-#include <csignal>
 
 #include "buffer_extra_data_impl.h"
 #include "buffer_log.h"
@@ -36,6 +37,7 @@
 namespace OHOS {
 namespace {
 constexpr int32_t BUFFER_MATRIX_SIZE = 16;
+constexpr uint64_t MAXIMUM_INVALID_ID = std::numeric_limits<uint64_t>::max();
 } // namespace
 
 const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
@@ -646,12 +648,11 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    int64_t id = -1;
-    if (!arguments.ReadInt64(id)) {
+    uint64_t producerId = MAXIMUM_INVALID_ID;
+    if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
-    auto pid = static_cast<pid_t>(id);
-    GSError sRet = RegisterPropertyListener(listener, pid);
+    GSError sRet = RegisterPropertyListener(listener, producerId);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -661,12 +662,11 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
 int32_t BufferQueueProducer::UnRegisterPropertyListenerRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
-    int64_t pid = -1;
-    if (!arguments.ReadInt64(pid)) {
+    uint64_t producerId = MAXIMUM_INVALID_ID;
+    if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
     }
-    auto id = static_cast<pid_t>(pid);
-    GSError sRet = UnRegisterPropertyListener(id);
+    GSError sRet = UnRegisterPropertyListener(producerId);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }

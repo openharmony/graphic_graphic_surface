@@ -23,6 +23,8 @@
 #include "native_window.h"
 #include "surface_buffer_impl.h"
 #include "metadata_helper.h"
+#include "ipc_inner_object.h"
+#include "buffer_utils.h"
 
 #define DMA_BUF_SET_LEAK_TYPE _IOW(DMA_BUF_BASE, 5, const char *)
 namespace {
@@ -438,4 +440,75 @@ int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, v
     sptr<SyncFence> syncFence = sptr<SyncFence>(new SyncFence(fenceFd));
     syncFence->Wait(-1);
     return ret;
+}
+
+int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parcel)
+{
+    if (parcel == nullptr || parcel->msgParcel == nullptr || buffer == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<SurfaceBuffer> bufferImpl = SurfaceBuffer::NativeBufferToSurfaceBuffer(buffer);
+    return WriteSurfaceBufferImpl(*(parcel->msgParcel), bufferImpl->GetSeqNum(), bufferImpl);
+}
+
+int32_t OH_NativeBuffer_ReadFromParcel(OHIPCParcel* parcel, OH_NativeBuffer** buffer)
+{
+    if (parcel == nullptr || parcel->msgParcel == nullptr || buffer == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    uint32_t sequence;
+    sptr<SurfaceBuffer> sfBuffer = nullptr;
+    GSError ret = ReadSurfaceBufferImpl(*(parcel->msgParcel), sequence, sfBuffer);
+    if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("Read parcel failed, ret:%{public}d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    *buffer = OH_NativeBufferFromSurfaceBuffer(sfBuffer);
+    int32_t err = OH_NativeBuffer_Reference(*buffer);
+    if (err != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("NativeBufferReference failed, err: %{public}d.", err);
+        return err;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeBuffer_IsSupported(OH_NativeBuffer_Config config, bool* isSupported)
+{
+    if (isSupported == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    if (config.width <= 0 || config.height <= 0 || config.format >= GRAPHIC_PIXEL_FMT_BUTT) {
+        BLOGE("Config is invalid.");
+        *isSupported = false;
+    } else {
+        *isSupported = true;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeBuffer_MapAndGetConfig(OH_NativeBuffer* buffer, void** virAddr, OH_NativeBuffer_Config* config)
+{
+    if (buffer == nullptr || virAddr == nullptr || config == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    if (sbuffer == nullptr) {
+        BLOGE("Convert failed.");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    int32_t ret = sbuffer->Map();
+    if (ret == OHOS::SURFACE_ERROR_OK) {
+        *virAddr = sbuffer->GetVirAddr();
+    } else {
+        BLOGE("Map failed, ret:%{public}d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+
+    config->width = sbuffer->GetWidth();
+    config->height = sbuffer->GetHeight();
+    config->format = sbuffer->GetFormat();
+    config->usage = sbuffer->GetUsage();
+    config->stride = sbuffer->GetStride();
+
+    return OHOS::SURFACE_ERROR_OK;
 }

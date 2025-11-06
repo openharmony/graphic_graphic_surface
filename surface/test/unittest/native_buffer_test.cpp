@@ -21,6 +21,9 @@
 #include "native_window.h"
 #include "surface_type.h"
 #include "graphic_common_c.h"
+#include <fcntl.h>
+#include "ipc_cparcel.h"
+#include "ipc_inner_object.h"
 
 using namespace std;
 using namespace testing;
@@ -1036,5 +1039,376 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, TestSize.Level0)
     pSurface = nullptr;
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
+}
+
+
+/*
+* Function: OH_NativeBuffer_WriteToParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_WriteToParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel001, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    ASSERT_EQ(OH_NativeBuffer_WriteToParcel(nativeBuffer, parcel), GSERROR_OK);
+    OH_IPCParcel_Destroy(parcel);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_WriteToParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. nativeBuffer is nullptr, call OH_NativeBuffer_WriteToParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel002, TestSize.Level0)
+{
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    ASSERT_EQ(OH_NativeBuffer_WriteToParcel(nullptr, parcel), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+* Function: OH_NativeBuffer_WriteToParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_WriteToParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel003, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    ASSERT_EQ(OH_NativeBuffer_WriteToParcel(nativeBuffer, nullptr), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_WriteToParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_WriteToParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel004, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel = nullptr;
+    ASSERT_EQ(OH_NativeBuffer_WriteToParcel(nativeBuffer, parcel), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    OH_IPCParcel_Destroy(parcel);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_ReadFromParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_ReadFromParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel001, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel->WriteInt32(5);
+    parcel->msgParcel->WriteBool(true);
+    // reserveFds, reserveInts
+    parcel->msgParcel->WriteUint32(1);
+    parcel->msgParcel->WriteUint32(1);
+    // handle: width, stride, height, size, format
+    for (uint32_t i = 0; i < 5; i++) {
+        parcel->msgParcel->WriteInt32(1);
+    }
+    parcel->msgParcel->WriteUint64(1);  // usage (uint64)
+    parcel->msgParcel->WriteUint64(0x100); // phyAddr (uint64)
+    parcel->msgParcel->WriteBool(true);
+    int fd = open("/dev/lpptest", O_RDWR | O_CREAT, static_cast<mode_t>(0600));
+    parcel->msgParcel->WriteFileDescriptor(fd);
+    // reserveFds对应的文件描述符
+    for (uint32_t i = 0; i < 1; i++) {
+        parcel->msgParcel->WriteFileDescriptor(fd);
+    }
+    close(fd);
+    // reserveInts对应的整数值
+    for (uint32_t j = 0; j < 1; j++) {
+        parcel->msgParcel->WriteInt32(1);
+    }
+
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, &nativeBuffer), GSERROR_OK);
+    ASSERT_NE(nativeBuffer, nullptr);
+    
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+* Function: OH_NativeBuffer_ReadFromParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. nativeBuffer is nullptr, call OH_NativeBuffer_ReadFromParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel002, TestSize.Level0)
+{
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, nullptr), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+* Function: OH_NativeBuffer_ReadFromParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_ReadFromParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel003, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(nullptr, &nativeBuffer), OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: OH_NativeBuffer_ReadFromParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_ReadFromParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel004, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel = nullptr;
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, &nativeBuffer), OHOS::SURFACE_ERROR_INVALID_PARAM);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+* Function: OH_NativeBuffer_ReadFromParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. ReadSurfaceBufferImpl fail, call OH_NativeBuffer_ReadFromParcel
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel005, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel->WriteInt32(5);
+    parcel->msgParcel->WriteBool(true);
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, &nativeBuffer), OHOS::SURFACE_ERROR_UNKOWN);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+* Function: OH_NativeBuffer_IsSupported
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. isSupported is nullptr, call OH_NativeBuffer_IsSupported
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported001, TestSize.Level0)
+{
+    OH_NativeBuffer_Config config;
+    int32_t ret = OH_NativeBuffer_IsSupported(config, nullptr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: OH_NativeBuffer_IsSupported
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. width is invalid, call OH_NativeBuffer_IsSupported
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported002, TestSize.Level0)
+{
+    OH_NativeBuffer_Config config;
+    config.height = 0x001;
+    bool isSupported = false;
+    int32_t ret = OH_NativeBuffer_IsSupported(config, &isSupported);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(isSupported, false);
+}
+
+/*
+* Function: OH_NativeBuffer_IsSupported
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. height is invalid, call OH_NativeBuffer_IsSupported
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported003, TestSize.Level0)
+{
+    OH_NativeBuffer_Config config;
+    config.width = 0x001;
+    bool isSupported = false;
+    int32_t ret = OH_NativeBuffer_IsSupported(config, &isSupported);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(isSupported, false);
+}
+
+/*
+* Function: OH_NativeBuffer_IsSupported
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. format is invalid, call OH_NativeBuffer_IsSupported
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported004, TestSize.Level0)
+{
+    OH_NativeBuffer_Config config;
+    config.width = 0x001;
+    config.height = 0x001;
+    config.format = static_cast<int32_t>(GRAPHIC_PIXEL_FMT_BUTT);
+    bool isSupported = false;
+    int32_t ret = OH_NativeBuffer_IsSupported(config, &isSupported);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(isSupported, false);
+}
+
+/*
+* Function: OH_NativeBuffer_IsSupported
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. config is valid, call OH_NativeBuffer_IsSupported
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported005, TestSize.Level0)
+{
+    OH_NativeBuffer_Config config;
+    config.width = 0x001;
+    config.height = 0x001;
+    config.format = static_cast<int32_t>(GRAPHIC_PIXEL_FMT_RGBA_1010108);
+    bool isSupported = false;
+    int32_t ret = OH_NativeBuffer_IsSupported(config, &isSupported);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(isSupported, true);
+}
+
+/*
+* Function: OH_NativeBuffer_MapAndGetConfig
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. nativeBuffer、virAddr、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig001, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    void *virAddr = nullptr;
+    OH_NativeBuffer_Config testConfig = {};
+    int32_t ret = OH_NativeBuffer_MapAndGetConfig(nativeBuffer, &virAddr, &testConfig);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(testConfig.width, config.width);
+    ASSERT_EQ(testConfig.height, config.height);
+    ASSERT_EQ(testConfig.format, config.format);
+    ASSERT_EQ(testConfig.usage, config.usage);
+
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_MapAndGetConfig
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. nativeBuffer is nullptr, virAddr、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig002, TestSize.Level0)
+{
+    void *virAddr = nullptr;
+    OH_NativeBuffer_Config testConfig = {};
+    int32_t ret = OH_NativeBuffer_MapAndGetConfig(nullptr, &virAddr, &testConfig);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: OH_NativeBuffer_MapAndGetConfig
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. virAddr is nullptr, nativeBuffer、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig003, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+    OH_NativeBuffer_Config testConfig = {};
+    int32_t ret = OH_NativeBuffer_MapAndGetConfig(nativeBuffer, nullptr, &testConfig);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_MapAndGetConfig
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. nativeBuffer, virAddr is valid, call OH_NativeBuffer_MapAndGetConfig
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig004, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+    void *virAddr = nullptr;
+    int32_t ret = OH_NativeBuffer_MapAndGetConfig(nativeBuffer, &virAddr, nullptr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: OH_NativeBuffer_MapAndGetConfig
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. map fail, call OH_NativeBuffer_MapAndGetConfig
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig005, TestSize.Level0)
+{
+    sptr<OHOS::SurfaceBuffer> sBuffer = SurfaceBuffer::Create();
+    OH_NativeBuffer* nativeBuffer = sBuffer->SurfaceBufferToNativeBuffer();
+
+    void *virAddr = nullptr;
+    OH_NativeBuffer_Config testConfig;
+    int32_t ret = OH_NativeBuffer_MapAndGetConfig(nativeBuffer, &virAddr, &testConfig);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(virAddr, nullptr);
+    ASSERT_NE(testConfig.width, config.width);
+    ASSERT_NE(testConfig.height, config.height);
+    ASSERT_NE(testConfig.format, config.format);
+    ASSERT_NE(testConfig.usage, config.usage);
+    delete sBuffer;
+    sBuffer = nullptr;
 }
 }

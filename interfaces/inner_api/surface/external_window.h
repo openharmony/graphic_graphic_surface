@@ -812,7 +812,7 @@ int32_t OH_NativeWindow_PreAllocBuffers(OHNativeWindow *window, uint32_t allocBu
  * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
  * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
  * @param region Indicates the info of the dirty region.
- * @param buffer Indicates the pointer to a <b>NativeWindowBuffer</b> instance.
+ * @param buffer Indicates the pointer to an <b>OHNativeWindowBuffer</b> pointer.
  * @return Returns an error code, 0 is success, otherwise, failed.
  * @since 23
  * @version 1.0

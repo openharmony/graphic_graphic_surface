@@ -49,6 +49,14 @@ typedef struct OH_NativeBuffer OH_NativeBuffer;
 typedef struct NativeWindowBuffer OHNativeWindowBuffer;
 
 /**
+ * @brief Defines the ipc parcel.
+ *
+ * @since 23
+ * @version 1.0
+ */
+typedef struct OHIPCParcel OHIPCParcel;
+
+/**
  * @brief Indicates the usage of a native buffer.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
@@ -327,6 +335,63 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
  * @version 1.0
  */
 int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, void **virAddr);
+
+/**
+ * @brief Serialize <b>OH_NativeBuffer</b> object to the serialized <b>OHIPCParcel</b> object.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or parcel is NULL.
+ * @since 23
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parcel);
+
+/**
+ * @brief Deserialize data from the serialized <b>OHIPCParcel</b> object and rebuild <b>OH_NativeBuffer</b> object.
+ * This interface will cause an increase in the reference count of the <b>OH_NativeBuffer</b> instance.
+ * This interface needs to be used in conjunction with <b>OH_NativeBuffer_Unreference</b>,\n
+ * otherwise memory leaks will occur.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - parcel or buffer is NULL.
+ * @since 23
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_ReadFromParcel(OHIPCParcel* parcel, OH_NativeBuffer** buffer);
+
+/**
+ * @brief Check whether the system supports the <b>NativeBufferConfig</b>.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param isSupported Indicates whether the system supports the <b>NativeBufferConfig</b>.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - isSupported is NULL.
+ * @since 23
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_IsSupported(OH_NativeBuffer_Config config, bool* isSupported);
+
+/**
+ * @brief Provide direct cpu access to the <b>OH_NativeBuffer</b> in the process's address space,\n
+ * and return a <b>NativeBufferConfig<b> of the <b>OH_NativeBuffer</b>.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param virAddr Indicates the address of the <b>OH_NativeBuffer</b> in virtual memory.
+ * @param config Indicates the pointer to the <b>NativeBufferConfig</b> of the buffer.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or virAddr or config is NULL or invalid fenceFd.
+ * @since 23
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_MapAndGetConfig(OH_NativeBuffer* buffer, void** virAddr, OH_NativeBuffer_Config* config);
 #ifdef __cplusplus
 }
 #endif

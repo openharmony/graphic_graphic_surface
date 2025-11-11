@@ -2530,6 +2530,7 @@ void BufferQueue::MarkBufferReclaimableByIdLocked(uint32_t sequence)
             int32_t ret = ioctl(buffer->GetFileDescriptor(), DMA_BUF_SET_TYPE, "last_buffer");
             BLOGI("MarkBufferReclaimable fd=%{public}d, type=last_buffer, ret=%{public}d",
                 buffer->GetFileDescriptor(), ret);
+            buffer->TryReclaim();
         }
     }
 }

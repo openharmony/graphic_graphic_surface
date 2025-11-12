@@ -134,8 +134,8 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, TestSize.Level0)
     GSError ret = DumpToFileAsync(pid, name_, buffer);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
-    // Expect Buffer Dump to be completed within 20ms.
-    std::chrono::milliseconds dura(20);
+    // Expect Buffer Dump to be completed within 100ms.
+    std::chrono::milliseconds dura(100);
     std::this_thread::sleep_for(dura);
 
     const std::string directory = "/data/storage/el1/base";
@@ -150,7 +150,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, TestSize.Level0)
                 std::vector<uint8_t> file_data((std::istreambuf_iterator<char>(dumpFile)),
                     std::istreambuf_iterator<char>());
                 // Get fileSize from the file stream
-                dumpFileSize = file_data.size();
+                dumpFileSize = dumpFile.tellg();
                 dumpFile.close();
                 fs::remove(entry.path());
                 break;

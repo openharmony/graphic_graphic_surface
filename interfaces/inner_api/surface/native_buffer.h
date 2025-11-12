@@ -357,7 +357,7 @@ int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parc
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
  * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
- * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> pointer.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
  * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - parcel or buffer is NULL.
  * @since 23
@@ -369,7 +369,7 @@ int32_t OH_NativeBuffer_ReadFromParcel(OHIPCParcel* parcel, OH_NativeBuffer** bu
  * @brief Check whether the system supports the <b>NativeBufferConfig</b>.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
- * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param config Indicates the <b>NativeBufferConfig</b> of the buffer.
  * @param isSupported Indicates whether the system supports the <b>NativeBufferConfig</b>.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
  * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - isSupported is NULL.

@@ -34,7 +34,7 @@ T GetData()
 {
     T object {};
     size_t objectSize = sizeof(object);
-    if (g_data == nullptr || objectSize > g_size - g_pos) {
+    if (g_data == nullptr || g_pos >= g_size || objectSize > g_size - g_pos) {
         return object;
     }
     auto ret = memcpy_s(&object, objectSize, g_data + g_pos, objectSize);

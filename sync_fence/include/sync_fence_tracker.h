@@ -55,5 +55,26 @@ private:
     inline void UpdateFrameQueue(int64_t startTime);
     int64_t GetFrameRate();
 };
+
+class SyncFenceTrackerManager {
+public:
+    static std::shared_ptr<SyncFenceTracker> GetSyncFenceTracker(const std::string& name, uint32_t screenId)
+    {
+        auto it = trackers_.find(screenId);
+        if (it == trackers_.end()) {
+            return CreateSyncFenceTracker(name, screenId);
+        } else {
+            return it->second;
+        }
+    }
+private:
+    static std::shared_ptr<SyncFenceTracker> CreateSyncFenceTracker(const std::string& name, uint32_t screenId)
+    {
+        auto tracker = std::make_shared<SyncFenceTracker>(name);
+        trackers_[screenId] = tracker;
+        return tracker;
+    }
+    static inline std::unordered_map<uint32_t, std::shared_ptr<SyncFenceTracker>> trackers_;
+};
 }
 #endif // UTILS_INCLUDE_SYNC_FENCE_TRACKER_H

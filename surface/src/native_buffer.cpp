@@ -320,7 +320,6 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     int32_t size, uint8_t *metadata)
 {
     if (buffer == nullptr || metadata == nullptr || size <= 0) {
-        BLOGE("the colorSpace does not support it.");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);

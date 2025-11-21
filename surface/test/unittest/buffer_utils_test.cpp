@@ -145,13 +145,8 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, TestSize.Level0)
         // Traverse the directory and find the dump file.
         for (const auto& entry : fs::recursive_directory_iterator(directory)) {
             if (entry.is_regular_file() && entry.path().filename().string().find(prefix) == 0) {
-                // Open the file to create a stream
-                std::ifstream dumpFile(entry.path(), std::ios::binary);
-                std::vector<uint8_t> file_data((std::istreambuf_iterator<char>(dumpFile)),
-                    std::istreambuf_iterator<char>());
-                // Get fileSize from the file stream
-                dumpFileSize = dumpFile.tellg();
-                dumpFile.close();
+                // Get fileSize
+                dumpFileSize = fs::file_size(entry.path());
                 fs::remove(entry.path());
                 break;
             }

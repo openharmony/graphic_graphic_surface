@@ -38,6 +38,7 @@ ohos_fuzztest("NativeBufferFuzzTest") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "ipc:ipc_capi",
     "ipc:ipc_single",
   ]
 }

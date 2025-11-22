@@ -521,6 +521,52 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue005, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue006, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 100;
+    uint8_t outbuff[len];
+    for (int i = 0; i < 100; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i);
+    }
+    uint8_t type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_VIVID_DUAL;
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE,
+                                                   sizeof(OH_NativeBuffer_MetadataType), &type);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_VIVID_SINGLE;
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_ISO_DUAL;
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    type = OH_NativeBuffer_MetadataType::OH_IMAGE_HDR_ISO_SINGLE;
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    type = OH_NativeBuffer_MetadataType::OH_VIDEO_NONE;
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_METADATA_TYPE, sizeof(OH_NativeBuffer_MetadataType), &type);
+    ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
+}
+
+
+/*
 * Function: OH_NativeBuffer_GetMetadataValue
 * Type: Function
 * Rank: Important(2)
@@ -631,6 +677,59 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue003, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_GetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetMetadataValue
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_GetMetadataValue004, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 129;
+    uint8_t outbuff[len];
+    for (int i = 0; i < 129; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_STATIC_METADATA, len, outbuff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    int32_t buffSize = 0;
+    uint8_t *buff;
+    ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_STATIC_METADATA, &buffSize, &buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        if (buff != nullptr) {
+            ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
+            delete[] buff;
+            buff = nullptr;
+        }
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, len, outbuff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, &buffSize, &buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        if (buff != nullptr) {
+            ASSERT_EQ(memcmp(outbuff, buff, 60), 0);
+            delete[] buff;
+            buff = nullptr;
+        }
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_GetMetadataValue(buffer, static_cast<OH_NativeBuffer_MetadataKey>(-1), &buffSize, &buff);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_INTERNAL);
+    }
+}
+
+/*
 * Function: OH_NativeBuffer_Map
 * Type: Function
 * Rank: Important(2)
@@ -659,6 +758,22 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMap002, TestSize.Level0)
     int32_t ret = OH_NativeBuffer_Map(buffer, &virAddr);
     ASSERT_EQ(ret, GSERROR_OK);
     ASSERT_NE(virAddr, nullptr);
+}
+
+/*
+* Function: OH_NativeBuffer_Map
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_Map
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferMap003, TestSize.Level0)
+{
+    void *virAddr = nullptr;
+    int32_t ret = OH_NativeBuffer_Map(nullptr, &virAddr);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(virAddr, nullptr);
 }
 
 /*
@@ -1041,6 +1156,65 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, TestSize.Level0)
     nativeWindowBuffer = nullptr;
 }
 
+
+/*
+* Function: OH_NativeBuffer_MapPlanes
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_MapPlanes
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes004, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurface = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurface->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producer = cSurface->GetProducer();
+    sptr<OHOS::Surface> pSurface = Surface::CreateSurfaceAsProducer(producer);
+    int32_t fence;
+    sptr<OHOS::SurfaceBuffer> sBuffer = nullptr;
+    BufferRequestConfig requestConfig = {.width = 0x100, .height = 0x100, .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_YCBCR_420_SP,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA, .timeout = 0};
+    pSurface->SetQueueSize(4);
+    int32_t formatType = GRAPHIC_PIXEL_FMT_YCBCR_420_SP;
+    NativeWindow* nativeWindow;
+    NativeWindowBuffer* nativeWindowBuffer;
+    requestConfig.format = formatType;
+    pSurface->RequestBuffer(sBuffer, fence, requestConfig);
+    nativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurface);
+    ASSERT_NE(nativeWindow, nullptr);
+    nativeWindowBuffer = OH_NativeWindow_CreateNativeWindowBufferFromSurfaceBuffer(&sBuffer);
+    ASSERT_NE(nativeWindowBuffer, nullptr);
+    OH_NativeBuffer* nativeBuffer = OH_NativeBufferFromNativeWindowBuffer(nativeWindowBuffer);
+    ASSERT_NE(nativeBuffer, nullptr);
+    OH_NativeBuffer* nativeBufferTmp = nullptr;
+    for (int32_t i = 0; i < 10000; i++) {
+        int32_t ret = OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBufferTmp);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_EQ(nativeBuffer, nativeBufferTmp);
+    }
+    void *virAddr = nullptr;
+    OH_NativeBuffer_Planes outPlanes;
+    clock_t startTime, endTime;
+    startTime = clock();
+    for (int32_t i = 0; i < 10000; i++) {
+        int32_t ret = OH_NativeBuffer_MapPlanes(nativeBuffer, &virAddr, &outPlanes);
+        if (ret != GSERROR_HDI_ERROR) {
+            ASSERT_EQ(ret, OHOS::GSERROR_OK);
+            ASSERT_NE(virAddr, nullptr);
+        }
+    }
+    endTime = clock();
+    cout << "OH_NativeBuffer_MapPlanes 10000 times cost time: " << (endTime - startTime) << "ms" << endl;
+    sBuffer = nullptr;
+    cSurface = nullptr;
+    producer = nullptr;
+    pSurface = nullptr;
+    nativeWindow = nullptr;
+    nativeWindowBuffer = nullptr;
+}
 
 /*
 * Function: OH_NativeBuffer_WriteToParcel

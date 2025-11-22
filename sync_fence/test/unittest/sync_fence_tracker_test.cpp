@@ -198,4 +198,15 @@ HWTEST_F(SyncFenceTrackerTest, WaitFence001, Function | MediumTest | Level2)
 
     delete tracker;
 }
+
+HWTEST_F(SyncFenceTrackerTest, GetSyncFenceTrackerTest, Function | MediumTest | Level2)
+{
+    auto tracker = std::make_shared<SyncFenceTracker>("test1");
+    uint32_t screenId = 0;
+    SyncFenceTrackerManager::trackers_[screenId] = tracker;
+    auto ret = SyncFenceTrackerManager::GetSyncFenceTracker("test1", 0);
+    ASSERT_NE(ret, nullptr);
+    ret = SyncFenceTrackerManager::GetSyncFenceTracker("test2", 1);
+    ASSERT_NE(ret, nullptr);
+}
 }

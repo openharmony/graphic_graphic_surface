@@ -22,6 +22,8 @@
 #include "native_buffer.h"
 #include "native_window.h"
 #include "native_buffer_inner.h"
+#include "ipc_cparcel.h"
+#include "ipc_inner_object.h"
 
 using namespace g_fuzzCommon;
 
@@ -60,6 +62,16 @@ namespace OHOS {
         OH_NativeBuffer_MapPlanes(buffer, &getVirAddr, &outPlanes);
         OH_NativeBuffer *nativeBuffer;
         OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBuffer);
+        OHIPCParcel *parcel = OH_IPCParcel_Create();
+        OH_NativeBuffer_WriteToParcel(nativeBuffer, parcel);
+        OH_NativeBuffer *outBuffer;
+        OH_NativeBuffer_ReadFromParcel(parcel, &outBuffer);
+        OH_IPCParcel_Destroy(parcel);
+        bool isSupported = false;
+        OH_NativeBuffer_IsSupported(config, &isSupported);
+        void *virAddr1 = nullptr;
+        OH_NativeBuffer_Config testConfig = {};
+        OH_NativeBuffer_MapAndGetConfig(nativeBuffer, &virAddr1, &testConfig);
         OH_NativeBuffer_ColorSpace getColorSpace;
         OH_NativeBuffer_GetColorSpace(buffer, &getColorSpace);
         OH_NativeBuffer_MetadataKey metadataKey = GetData<OH_NativeBuffer_MetadataKey>();

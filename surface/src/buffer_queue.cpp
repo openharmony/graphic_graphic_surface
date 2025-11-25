@@ -886,7 +886,6 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             std::chrono::steady_clock::now().time_since_epoch()).count();
         Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
     }
-    
     // dequeue from dirty list
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = PopFromDirtyListLocked(buffer);

@@ -124,6 +124,11 @@ void FrameReport::SetQueueBufferTime(uint64_t uniqueId, const std::string& layer
     activelyUniqueId_.store(uniqueId);
 }
 
+void FrameReport::SetAcquireBufferSysTime(int64_t acquireBufferSysTime)
+{
+    acquireBufferSysTime_.store(acquireBufferSysTime);
+}
+
 void FrameReport::SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum)
 {
     pendingBufferNum_.store(pendingBufferNum);
@@ -196,11 +201,12 @@ void FrameReport::Report(const std::string& layerName)
     char msg[REPORT_BUFFER_SIZE] = { 0 };
     int32_t ret = sprintf_s(msg, sizeof(msg),
                             "{\"dequeueBufferTime\":\"%d\",\"queueBufferTime\":\"%d\",\"pendingBufferNum\":\"%d\","
-                            "\"swapBufferTime\":\"%d\", \"skipHint\":\"%d\"}",
+                            "\"swapBufferTime\":\"%d\", \"acquireBufferSysTime\":\"%lld\", \"skipHint\":\"%d\"}",
                             static_cast<int32_t>(dequeueBufferTime_.load() / THOUSAND_COUNT),
                             static_cast<int32_t>(queueBufferTime_.load() / THOUSAND_COUNT),
                             pendingBufferNum_.load(),
                             static_cast<int32_t>(lastSwapBufferTime_.load() / THOUSAND_COUNT),
+                            acquireBufferSysTime_.load(),
                             SKIP_HINT_STATUS);
     if (ret == -1) {
         return;

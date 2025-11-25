@@ -180,6 +180,20 @@ HWTEST_F(FrameReportTest, SetQueueBufferTime001, Function | MediumTest | Level2)
 }
 
 /*
+* Function: SetAcquireBufferSysTime
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetAcquireBufferSysTime
+*                  2. check ret
+ */
+HWTEST_F(FrameReportTest, SetAcquireBufferSysTime001, Function | MediumTest | Level2)
+{
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(FRT_GAME_BUFFER_TIME);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() == FRT_GAME_BUFFER_TIME);
+}
+
+/*
 * Function: SetPendingBufferNum
 * Type: Function
 * Rank: Important(2)

@@ -76,6 +76,9 @@ bool DoSetGameScene(const uint8_t* data, size_t size)
 
     Rosen::FrameReport::GetInstance().Report(layerName);
 
+    int64_t acquireBufferSysTime = GetData<int64_t>();
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(acquireBufferSysTime);
+
     return true;
 }
 } // namespace Rosen

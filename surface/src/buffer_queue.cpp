@@ -39,6 +39,7 @@
 #include "surface_utils.h"
 #include "surface_trace.h"
 #include "v2_0/buffer_handle_meta_key_type.h"
+#include "frame_report.h"
 
 #define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
 
@@ -819,6 +820,12 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         DumpToFileAsync(GetRealPid(), name_, mapIter->second.buffer);
     }
 
+    if (Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(uniqueId_)) {
+        BLOGE("SetPendingBufferNum :%{public}u, uniqueId:%{public}" PRIu64 ".", 
+            static_cast<int32_t>(dirtyList_.size()), uniqueId_);
+        Rosen::FrameReport::GetInstance().SetPendingBufferNum("", static_cast<int32_t>(dirtyList_.size()));
+    }
+
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
 }
@@ -875,6 +882,13 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
 {
     SURFACE_TRACE_NAME_FMT("AcquireBuffer name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
+    // record game acquire buffer time
+    if (Rosen::FrameReport::GetInstance().HasGameScene()) {
+        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
+    }
+    
     // dequeue from dirty list
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = PopFromDirtyListLocked(buffer);

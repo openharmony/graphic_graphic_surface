@@ -820,7 +820,6 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         DumpToFileAsync(GetRealPid(), name_, mapIter->second.buffer);
     }
     if (Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(uniqueId_)) {
-        BLOGI("SetPendingBufferNum :%{public}u, uniqueId:%{public}" PRIu64 ".", static_cast<int32_t>(dirtyList_.size()), uniqueId_);
         Rosen::FrameReport::GetInstance().SetPendingBufferNum("", static_cast<int32_t>(dirtyList_.size()));
     }
 

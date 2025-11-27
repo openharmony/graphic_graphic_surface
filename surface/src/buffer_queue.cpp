@@ -819,9 +819,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         fence->Wait(-1);
         DumpToFileAsync(GetRealPid(), name_, mapIter->second.buffer);
     }
-    if (Rosen::FrameReport::GetInstance().IsActiveGameWithUniqueId(uniqueId_)) {
-        Rosen::FrameReport::GetInstance().SetPendingBufferNum("", static_cast<int32_t>(dirtyList_.size()));
-    }
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(uniqueId_, "", static_cast<int32_t>(dirtyList_.size()));
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
@@ -896,11 +894,9 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
         // record game acquire buffer time
-        if (Rosen::FrameReport::GetInstance().HasGameScene()) {
-            int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::steady_clock::now().time_since_epoch()).count();
-            Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
-        }
+        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCacheLocked();
     }

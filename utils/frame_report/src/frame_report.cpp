@@ -126,12 +126,16 @@ void FrameReport::SetQueueBufferTime(uint64_t uniqueId, const std::string& layer
 
 void FrameReport::SetAcquireBufferSysTime(int64_t acquireBufferSysTime)
 {
-    acquireBufferSysTime_.store(acquireBufferSysTime);
+    if (HasGameScene()){
+        acquireBufferSysTime_.store(acquireBufferSysTime);
+    }  
 }
 
-void FrameReport::SetPendingBufferNum(const std::string& layerName, int32_t pendingBufferNum)
+void FrameReport::SetPendingBufferNum(uint64_t uniqueId, const std::string& layerName, int32_t pendingBufferNum)
 {
-    pendingBufferNum_.store(pendingBufferNum);
+    if (IsActiveGameWithUniqueId(uniqueId)) {
+        pendingBufferNum_.store(pendingBufferNum);
+    }   
 }
 
 void FrameReport::LoadLibrary()

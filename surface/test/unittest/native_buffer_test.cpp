@@ -1485,6 +1485,25 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported005, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_IsSupported
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. config is valid, call OH_NativeBuffer_IsSupported
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported006, TestSize.Level0)
+{
+    OH_NativeBuffer_Config config;
+    config.width = 0x001;
+    config.height = 0x001;
+    config.format = -1;
+    bool isSupported = false;
+    int32_t ret = OH_NativeBuffer_IsSupported(config, &isSupported);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(isSupported, false);
+}
+/*
 * Function: OH_NativeBuffer_MapAndGetConfig
 * Type: Function
 * Rank: Important(2)

@@ -894,9 +894,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
         // record game acquire buffer time
-        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
+        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCacheLocked();
     }

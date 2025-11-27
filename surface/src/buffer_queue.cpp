@@ -879,12 +879,6 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
     sptr<SyncFence> &fence, int64_t &timestamp, std::vector<Rect> &damages)
 {
     SURFACE_TRACE_NAME_FMT("AcquireBuffer name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
-    // record game acquire buffer time
-    if (Rosen::FrameReport::GetInstance().HasGameScene()) {
-        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
-    }
     // dequeue from dirty list
     std::lock_guard<std::mutex> lockGuard(mutex_);
     GSError ret = PopFromDirtyListLocked(buffer);
@@ -901,6 +895,12 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u desiredPresentTimestamp: %" PRId64 " isAotuTimestamp: %d",
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
+        // record game acquire buffer time
+        if (Rosen::FrameReport::GetInstance().HasGameScene()) {
+            int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+            Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(now);
+        }
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCacheLocked();
     }

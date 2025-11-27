@@ -477,7 +477,7 @@ int32_t OH_NativeBuffer_IsSupported(OH_NativeBuffer_Config config, bool* isSuppo
     if (isSupported == nullptr) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    if (config.width <= 0 || config.height <= 0 || config.format >= GRAPHIC_PIXEL_FMT_BUTT) {
+    if (config.width <= 0 || config.height <= 0 || config.format < 0 || config.format >= GRAPHIC_PIXEL_FMT_BUTT) {
         BLOGE("Config is invalid.");
         *isSupported = false;
     } else {

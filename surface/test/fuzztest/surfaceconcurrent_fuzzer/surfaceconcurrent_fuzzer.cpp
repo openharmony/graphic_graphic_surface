@@ -43,7 +43,7 @@ namespace OHOS {
     {
         T object {};
         size_t objectSize = sizeof(object);
-        if (g_data == nullptr || objectSize > g_size - g_pos) {
+        if (g_data == nullptr || g_pos >= g_size || objectSize > g_size - g_pos) {
             return object;
         }
         errno_t ret = memcpy_s(&object, objectSize, g_data + g_pos, objectSize);
@@ -148,6 +148,18 @@ namespace OHOS {
         }
     };
 
+    uint32_t GetSafeUint32Data(uint32_t minVal, uint32_t maxVal)
+    {
+        if (g_size - g_pos >= sizeof(uint32_t)) {
+            uint32_t value = GetData<uint32_t>();
+            return value % (maxVal - minVal + 1) + minVal;
+        } else {
+            // 数据不足时生成伪随机值
+            static std::atomic<uint32_t> counter = 0;
+            return (counter++ % (maxVal - minVal + 1)) + minVal;
+        }
+    }
+
 /*
 * CaseDescription: 1. preSetup: create two surface（surfaceA and surfaceB）
 *                  2. operation: While surfaceA and surfaceB are rotating the buffer, the producer of surfaceA detaches
@@ -182,9 +194,8 @@ namespace OHOS {
         sptr<IBufferProducer> producerClientB = cSurfaceB->GetProducer();
         sptr<Surface> pSurfaceB = Surface::CreateSurfaceAsProducer(producerClientB);
 
-        //init
-        uint32_t queueSize = GetData<uint32_t>();
-        queueSize = queueSize % QUESIZE_RANGE + QUESIZE_MIN;
+        // init
+        uint32_t queueSize = GetSafeUint32Data(QUESIZE_MIN, QUESIZE_MIN + QUESIZE_RANGE - 1);
         pSurfaceA->SetQueueSize(queueSize);
         pSurfaceB->SetQueueSize(queueSize);
         std::cout<<"Queue size: "<< queueSize <<std::endl;

@@ -192,14 +192,14 @@ HWTEST_F(FrameReportTest, SetQueueBufferTime001, Function | MediumTest | Level2)
 HWTEST_F(FrameReportTest, SetAcquireBufferSysTime001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID_NOT, FRT_GAME_SCHED);
-    //NOT GAME
-    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(FRT_GAME_BUFFER_TIME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() != FRT_GAME_BUFFER_TIME);
+    // NOT GAME
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() == 0);
 
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
-    //IS GAME
-    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime(FRT_GAME_BUFFER_TIME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() == FRT_GAME_BUFFER_TIME);
+    // IS GAME
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() != 0);
 }
 
 /*

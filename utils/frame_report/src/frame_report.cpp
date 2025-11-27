@@ -124,10 +124,12 @@ void FrameReport::SetQueueBufferTime(uint64_t uniqueId, const std::string& layer
     activelyUniqueId_.store(uniqueId);
 }
 
-void FrameReport::SetAcquireBufferSysTime(int64_t acquireBufferSysTime)
+void FrameReport::SetAcquireBufferSysTime()
 {
     if (HasGameScene()){
-        acquireBufferSysTime_.store(acquireBufferSysTime);
+        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        acquireBufferSysTime_.store(now);
     }  
 }
 

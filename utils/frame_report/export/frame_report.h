@@ -39,7 +39,7 @@ public:
     void SetLastSwapBufferTime(int64_t lastSwapBufferTime);
     void SetDequeueBufferTime(const std::string& layerName, int64_t dequeueBufferTime);
     void SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime);
-    void SetAcquireBufferSysTime(int64_t acquireBufferSysTime);
+    void SetAcquireBufferSysTime();
     void SetPendingBufferNum(uint64_t uniqueId, const std::string& layerName, int32_t pendingBufferNum);
     void Report(const std::string& layerName);
 

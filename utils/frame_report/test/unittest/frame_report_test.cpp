@@ -214,7 +214,7 @@ HWTEST_F(FrameReportTest, SetPendingBufferNum001, Function | MediumTest | Level2
 {
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME_EMPTY,
                                                          FRT_GAME_BUFFER_TIME);
-    Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_GAME_UNIQUEID_NOT, FRT_SURFACE_NAME_EMPTY, 
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_GAME_UNIQUEID_NOT, FRT_SURFACE_NAME_EMPTY,
                                                           FRT_GAME_BUFFER_TIME);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() != FRT_GAME_BUFFER_TIME);
     

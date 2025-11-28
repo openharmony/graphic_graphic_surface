@@ -72,9 +72,11 @@ bool DoSetGameScene(const uint8_t* data, size_t size)
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, layerName, queueBufferTime);
 
     int64_t pendingBufferNum = GetData<int64_t>();
-    Rosen::FrameReport::GetInstance().SetPendingBufferNum(layerName, pendingBufferNum);
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(uniqueId, layerName, pendingBufferNum);
 
     Rosen::FrameReport::GetInstance().Report(layerName);
+
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
 
     return true;
 }

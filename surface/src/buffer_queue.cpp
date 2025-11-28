@@ -39,6 +39,7 @@
 #include "surface_utils.h"
 #include "surface_trace.h"
 #include "v2_0/buffer_handle_meta_key_type.h"
+#include "frame_report.h"
 
 #define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
 
@@ -818,6 +819,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         fence->Wait(-1);
         DumpToFileAsync(GetRealPid(), name_, mapIter->second.buffer);
     }
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(uniqueId_, "", static_cast<int32_t>(dirtyList_.size()));
 
     CountTrace(HITRACE_TAG_GRAPHIC_AGP, name_, static_cast<int32_t>(dirtyList_.size()));
     return GSERROR_OK;
@@ -891,6 +893,8 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u desiredPresentTimestamp: %" PRId64 " isAotuTimestamp: %d",
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
+        // record game acquire buffer time
+        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCacheLocked();
     }

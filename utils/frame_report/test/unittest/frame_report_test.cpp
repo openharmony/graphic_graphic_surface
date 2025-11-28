@@ -21,8 +21,10 @@ using namespace testing::ext;
 namespace {
     static const int32_t FRT_GAME_ERROR_PID = -1;
     static const int32_t FRT_GAME_PID = 1024;
+    static const int32_t FRT_GAME_PID_NOT = 0;
     static const int32_t FRT_GAME_ERROR_UNIQUEID = -1;
     static const int32_t FRT_GAME_UNIQUEID = 1024;
+    static const int32_t FRT_GAME_UNIQUEID_NOT = 1023;
     static const int32_t FRT_GAME_ERROR_STATE = -1;
     static const int32_t FRT_GAME_BACKGROUND = 0;
     static const int32_t FRT_GAME_FOREGROUND = 1;
@@ -180,6 +182,27 @@ HWTEST_F(FrameReportTest, SetQueueBufferTime001, Function | MediumTest | Level2)
 }
 
 /*
+* Function: SetAcquireBufferSysTime
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetAcquireBufferSysTime
+*                  2. check ret
+ */
+HWTEST_F(FrameReportTest, SetAcquireBufferSysTime001, Function | MediumTest | Level2)
+{
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID_NOT, FRT_GAME_SCHED);
+    // NOT GAME
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() == 0);
+
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    // IS GAME
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() != 0);
+}
+
+/*
 * Function: SetPendingBufferNum
 * Type: Function
 * Rank: Important(2)
@@ -189,10 +212,13 @@ HWTEST_F(FrameReportTest, SetQueueBufferTime001, Function | MediumTest | Level2)
  */
 HWTEST_F(FrameReportTest, SetPendingBufferNum001, Function | MediumTest | Level2)
 {
-    Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_SURFACE_NAME_EMPTY, FRT_GAME_BUFFER_TIME);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() == FRT_GAME_BUFFER_TIME);
+    Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME_EMPTY,
+                                                         FRT_GAME_BUFFER_TIME);
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_GAME_UNIQUEID_NOT, FRT_SURFACE_NAME_EMPTY,
+                                                          FRT_GAME_BUFFER_TIME);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() != FRT_GAME_BUFFER_TIME);
     
-    Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
+    Rosen::FrameReport::GetInstance().SetPendingBufferNum(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().pendingBufferNum_.load() == FRT_GAME_BUFFER_TIME);
 }
 

@@ -614,4 +614,25 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferSyncFence001, TestSize.Level0)
     ASSERT_NE(buffer.GetSyncFence(), nullptr);
     ASSERT_EQ(buffer.GetSyncFence()->Get(), 0);
 }
+/*
+ * Function: GetFlushedTimestamp
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetFlushTimestamp and GetFlushedTimestamp
+ */
+HWTEST_F(SurfaceBufferImplTest, GetFlushedTimestampCorrectnessTest, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> bufferTmp = new SurfaceBufferImpl();
+    uint64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    uint64_t flushedTimestamp = bufferTmp->GetFlushedTimestamp();
+    ASSERT_EQ(flushedTimestamp, 0);
+
+    bufferTmp->SetFlushTimestamp(now);
+    std::cout << "now = " << now << std::endl;
+    flushedTimestamp = bufferTmp->GetFlushedTimestamp();
+    std::cout << "flushedTimestamp = " << flushedTimestamp << std::endl;
+    ASSERT_EQ(flushedTimestamp, now);
+}
 }

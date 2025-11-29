@@ -803,6 +803,8 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     mapIter->second.state = BUFFER_STATE_FLUSHED;
     mapIter->second.fence = fence;
     mapIter->second.damages = config.damages;
+    mapIter->second.buffer->SetFlushTimestamp(std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count());
     dirtyList_.push_back(sequence);
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;

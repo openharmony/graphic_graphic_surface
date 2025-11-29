@@ -106,6 +106,8 @@ public:
     void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) override;
     sptr<SyncFence> GetSyncFence() const override;
     uint64_t GetBufferId() override;
+    uint64_t GetFlushedTimestamp() const override;
+    void SetFlushTimestamp(uint64_t timestamp) override;
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
@@ -139,6 +141,7 @@ private:
     static inline int32_t ownPid_ = -1;
     static inline std::atomic<bool> initMemMgrSucceed_ = false;
     sptr<SyncFence> syncFence_ = nullptr;
+    std::atomic<uint64_t> lastFlushedTime_ = 0;
 };
 } // namespace OHOS
 

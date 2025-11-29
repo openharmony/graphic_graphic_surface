@@ -931,5 +931,12 @@ uint64_t SurfaceBufferImpl::GetBufferId()
 {
     return bufferId_;
 }
-
+uint64_t SurfaceBufferImpl::GetFlushedTimestamp() const
+{
+    return lastFlushedTime_.load();
+}
+void SurfaceBufferImpl::SetFlushTimestamp(uint64_t timestamp)
+{
+    lastFlushedTime_.store(timestamp);
+}
 } // namespace OHOS

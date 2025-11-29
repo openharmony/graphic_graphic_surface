@@ -232,6 +232,15 @@ public:
     {
         return 0;
     }
+    virtual uint64_t GetFlushedTimestamp() const
+    {
+        return 0;
+    }
+    virtual void SetFlushTimestamp(uint64_t timestamp)
+    {
+        (void)timestamp;
+        return;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

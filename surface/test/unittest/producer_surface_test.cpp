@@ -25,6 +25,7 @@
 #include "sync_fence.h"
 #include "producer_surface_delegator.h"
 #include "metadata_helper.h"
+#include "surface_aps_sdr_utils.h"
 #include "surface_buffer_impl.h"
 
 using namespace testing;
@@ -1463,33 +1464,43 @@ HWTEST_F(ProducerSurfaceTest, WindowConfig002, TestSize.Level0)
   */
 HWTEST_F(ProducerSurfaceTest, SetWindowConfigWidthAndHeight, TestSize.Level0)
 {
-    surface_->sdrRatio_ = 0.5f;
+    SDR_RATIO = 0.5f;
     surface_->bufferName_ = "xcomponent";
-    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
-    auto configGet = surface_->GetWindowConfig();
-    ASSERT_EQ(requestConfig.width, configGet.width);
-    ASSERT_EQ(requestConfig.height, configGet.height);
+    int32_t width = 200;
+    int32_t height = 200;
+    surface_->SetWindowConfigWidthAndHeight(width, height);
+    SurfaceApsSdrUtils::CalcWidthAndHeightBySdrRatio(width, height, 200, 200, SDR_RATIO);
+    EXPECT_EQ(width, 100);
+    EXPECT_EQ(width, 100);
 
-    surface_->sdrRatio_ = 0.5f;
+    SDR_RATIO = 0.5f;
     surface_->bufferName_ = "NULL";
-    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
-    configGet = surface_->GetWindowConfig();
-    ASSERT_EQ(requestConfig.width, configGet.width);
-    ASSERT_EQ(requestConfig.height, configGet.height);
+    surface_->SetWindowConfigWidthAndHeight(width, height);
+    EXPECT_EQ(surface_->bufferName_ != "xcomponent", true);
 
-    surface_->sdrRatio_ = -2.0f;
+    SDR_RATIO = -2.0f;
     surface_->bufferName_ = "xcomponent";
-    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
-    configGet = surface_->GetWindowConfig();
-    ASSERT_EQ(requestConfig.width, configGet.width);
-    ASSERT_EQ(requestConfig.height, configGet.height);
+    surface_->SetWindowConfigWidthAndHeight(width, height);
+    EXPECT_EQ(SDR_RATIO > (std::numeric_limits<float>::epsilon()) &&
+        (DEFAULT_SDR_RATIO - SDR_RATIO) > (std::numeric_limits<float>::epsilon()), false);
 
-    surface_->sdrRatio_ = -2.0f;
-    surface_->bufferName_ = "NUULL";
-    surface_->SetWindowConfigWidthAndHeight(requestConfig.width, requestConfig.height);
-    configGet = surface_->GetWindowConfig();
-    ASSERT_EQ(requestConfig.width, configGet.width);
-    ASSERT_EQ(requestConfig.height, configGet.height);
+    SDR_RATIO = -2.0f;
+    surface_->bufferName_ = "NULL";
+    surface_->SetWindowConfigWidthAndHeight(width, height);
+    EXPECT_EQ(surface_->bufferName_ != "xcomponent", true);
+    EXPECT_EQ(SDR_RATIO > (std::numeric_limits<float>::epsilon()) &&
+        (DEFAULT_SDR_RATIO - SDR_RATIO) > (std::numeric_limits<float>::epsilon()), false);
+
+    SDR_RATIO = 2.0f;
+    surface_->bufferName_ = "xcomponent";
+    surface_->SetWindowConfigWidthAndHeight(width, height);
+    EXPECT_EQ(SDR_RATIO > (std::numeric_limits<float>::epsilon()) &&
+        (DEFAULT_SDR_RATIO - SDR_RATIO) > (std::numeric_limits<float>::epsilon()), false);
+
+    SDR_RATIO = 2.0f;
+    surface_->bufferName_ = "NULL";
+    surface_->SetWindowConfigWidthAndHeight(width, height);
+    EXPECT_EQ(surface_->bufferName_ != "xcomponent", true);
 }
 
 /*

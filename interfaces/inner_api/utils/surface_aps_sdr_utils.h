@@ -21,7 +21,9 @@
 #include "isurface_aps_plugin.h"
 
 namespace OHOS {
+constexpr float DEFAULT_SDR_RATIO = 1.0f;
 constexpr float FLOAT_ZERO_TOLERANCE = 1e-6f;
+static inline float SDR_RATIO = DEFAULT_SDR_RATIO;
 class SurfaceApsSdrUtils {
 public:
     static void CalcWidthAndHeightBySdrRatio(int32_t& width, int32_t& height, int32_t defaultWidth,
@@ -52,12 +54,17 @@ public:
                     width, height, minScaleFactor);
             }
             BLOGD("CalcWidthAndHeightBySdrRatio current scene not need to use sdrRatio");
+        } else {
+            width = static_cast<int32_t>(width * sdrRatio);
+            height = static_cast<int32_t>(height * sdrRatio);
+            BLOGI("CalcWidthAndHeightBySdrRatio defaultSize is invalid, use inputSize to calc:%{public}d * %{public}d",
+                width, height);
         }
     }
 
     static void GetSdrRatio(const std::string &pkgName, float &sdrRatio)
     {
-        if (std::fabs(sdrRatio) < FLOAT_ZERO_TOLERANCE) {
+        if (std::fabs(sdrRatio - DEFAULT_SDR_RATIO) < FLOAT_ZERO_TOLERANCE) {
             auto &apsPlugin = OHOS::ISurfaceApsPlugin::LoadPlugin();
             if (apsPlugin != nullptr) {
                 BLOGD("ProducerSurface::GetSdrRatio apsPlugin is not nullptr");

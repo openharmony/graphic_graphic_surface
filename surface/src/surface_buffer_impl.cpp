@@ -374,6 +374,7 @@ void SurfaceBufferImpl::FreeBufferHandleLocked()
 {
     metaDataCache_.clear();
     if (handle_) {
+        SURFACE_TRACE_NAME_FMT("FreeBufferHandle buffer_size: %d", handle_->size);
         IDisplayBufferSptr displayBuffer = GetDisplayBuffer();
         if (displayBuffer == nullptr) {
             FreeBufferHandle(handle_);

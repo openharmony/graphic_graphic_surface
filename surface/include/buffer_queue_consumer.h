@@ -39,6 +39,7 @@ public:
 
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer);
     GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<Surface> cSurface);
+    GSError UnregisterSurfaceDelegator();
 
     bool QueryIfBufferAvailable();
 

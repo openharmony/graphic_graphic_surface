@@ -22,8 +22,17 @@
 #include <surface.h>
 
 #include "buffer_queue_producer.h"
+#include "delegator_mock.h"
+#define PRIVATE PUBLIC
+#include "buffer_queue.h"
+#include "delegator_adapter.h"
+#undef PRIVATE
 #include "consumer_surface.h"
 #include "consumer_surface_delegator.h"
+#include "iconsumer_surface.h"
+#include "ibuffer_consumer_listener.h"
+#include "producer_surface.h"
+#include "remote_object_mock.h"
 #include "sync_fence.h"
 
 using namespace testing;
@@ -32,14 +41,11 @@ using namespace testing::ext;
 namespace OHOS::Rosen {
 class ConsumerSurfaceDelegatorTest : public testing::Test {
 public:
-    static void SetUpTestCase();
-    static void TearDownTestCase();
+    void SetUp();
+    void TearDown();
 
-    static inline sptr<ConsumerSurfaceDelegator> consumerDelegator = nullptr;
     static inline sptr<BufferExtraData> bedata = nullptr;
     static inline sptr<SurfaceBuffer> buffer = nullptr;
-    static inline sptr<BufferQueue> bq = nullptr;
-
     static inline BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -50,20 +56,111 @@ public:
     };
 };
 
-void ConsumerSurfaceDelegatorTest::SetUpTestCase()
+void ConsumerSurfaceDelegatorTest::SetUp()
 {
-    consumerDelegator = ConsumerSurfaceDelegator::Create();
     bedata = new OHOS::BufferExtraDataImpl;
     buffer = SurfaceBuffer::Create();
-    bq = new BufferQueue("test");
+    DelegatorAdapter::GetInstance().funcMap_.clear();
 }
 
-void ConsumerSurfaceDelegatorTest::TearDownTestCase()
+void ConsumerSurfaceDelegatorTest::TearDown()
 {
-    consumerDelegator = nullptr;
     bedata = nullptr;
     buffer = nullptr;
-    bq = nullptr;
+    DelegatorAdapter::GetInstance().funcMap_.clear();
+}
+
+/*
+* Function: QueueBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call QueueBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, QueueBuffer, TestSize.Level0)
+{
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    int32_t fenceFd = 3;
+    sptr<SurfaceBuffer> bufferTemp = nullptr;
+    GSError ret = consumerDelegator->QueueBuffer(bufferTemp, fenceFd);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorQueueBuffer);
+    consumerDelegator->mDelegator_ = 0x123456;
+    GSError ret1 = consumerDelegator->QueueBuffer(buffer, fenceFd);
+    ASSERT_EQ(ret1, GSERROR_OK);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC] = nullptr;
+    GSError ret2 = consumerDelegator->QueueBuffer(buffer, fenceFd);
+    ASSERT_EQ(ret2, GSERROR_BINDER);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorQueueBuffer);
+    consumerDelegator->mDelegator_ = 0;
+    GSError ret3 = consumerDelegator->QueueBuffer(buffer, fenceFd);
+    ASSERT_EQ(ret3, GSERROR_BINDER);
+    consumerDelegator = nullptr;
+}
+
+/*
+* Function: QueueBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call QueueBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, QueueBuffer001, TestSize.Level0)
+{
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    int32_t fenceFd = 3;
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC] = nullptr;
+    GSError ret2 = consumerDelegator->QueueBuffer(buffer, fenceFd);
+    ASSERT_EQ(ret2, GSERROR_BINDER);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorQueueBuffer);
+    consumerDelegator->mDelegator_ = 0;
+    GSError ret3 = consumerDelegator->QueueBuffer(buffer, fenceFd);
+    ASSERT_EQ(ret3, GSERROR_BINDER);
+    consumerDelegator = nullptr;
+}
+
+/*
+* Function: DequeueBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call DequeueBuffer
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, DequeueBuffer, TestSize.Level0)
+{
+    g_dlopenNull = true;
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    IBufferProducer::RequestBufferReturnValue retval;
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDequeueBuffer);
+    consumerDelegator->mDelegator_ = 0x123456;
+    GSError ret1 = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret1, GSERROR_OK);
+
+    DelegatorAdapter::GetInstance().funcMap_.erase(FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC);
+    GSError ret2 = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret2, GSERROR_BINDER);
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDequeueBuffer);
+
+    consumerDelegator->mDelegator_ = 0;
+    GSError ret3 = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret3, GSERROR_BINDER);
+    consumerDelegator = nullptr;
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDequeueBuffer);
 }
 
 /*
@@ -76,161 +173,243 @@ void ConsumerSurfaceDelegatorTest::TearDownTestCase()
  */
 HWTEST_F(ConsumerSurfaceDelegatorTest, DequeueBuffer001, TestSize.Level0)
 {
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
     IBufferProducer::RequestBufferReturnValue retval;
-    GSError ret = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
-    ASSERT_EQ(ret, GSERROR_OK);
-}
 
+    DelegatorAdapter::GetInstance().funcMap_.erase(FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC);
+    GSError ret2 = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret2, GSERROR_BINDER);
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDequeueBuffer);
 
-/*
-* Function: QueueBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call QueueBuffer
-*                  2. check ret
- */
-HWTEST_F(ConsumerSurfaceDelegatorTest, QueueBuffer001, TestSize.Level0)
-{
-    int32_t fenceFd = 3;
-    GSError ret = consumerDelegator->QueueBuffer(buffer, fenceFd);
-    ASSERT_EQ(ret, GSERROR_OK);
+    consumerDelegator->mDelegator_ = 0;
+    GSError ret3 = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret3, GSERROR_BINDER);
+    consumerDelegator = nullptr;
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDequeueBuffer);
 }
 
 /*
-* Function: ReleaseBuffer
+* Function: DequeueBuffer
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call ReleaseBuffer
+* CaseDescription: 1. call DequeueBuffer
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, ReleaseBuffer001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, DequeueBuffer002, TestSize.Level0)
 {
-    int slot = 0;
-    int32_t releaseFenceFd = 3;
-    GSError ret = consumerDelegator->ReleaseBuffer(slot, releaseFenceFd);
-    ASSERT_EQ(ret, GSERROR_OK);
-}
-
-/*
-* Function: CancelBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call CancelBuffer
-*                  2. check ret
- */
-HWTEST_F(ConsumerSurfaceDelegatorTest, CancelBuffer001, TestSize.Level0)
-{
-    int32_t slot = 0;
-    int32_t fenceFd = -1;
-    GSError ret = consumerDelegator->CancelBuffer(slot, fenceFd);
-    ASSERT_EQ(ret, GSERROR_OK);
-}
-
-/*
-* Function: AsyncDequeueBuffer
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call AsyncDequeueBuffer
-*                  2. check ret
- */
-HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncDequeueBuffer001, TestSize.Level0)
-{
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
     IBufferProducer::RequestBufferReturnValue retval;
-    GSError ret = consumerDelegator->AsyncDequeueBuffer(requestConfig, bedata, retval);
-    ASSERT_EQ(ret, GSERROR_OK);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDequeueBuffer);
+    consumerDelegator->mDelegator_ = 0x123456;
+    GSError ret3 = consumerDelegator->DequeueBuffer(requestConfig, bedata, retval);
+    ASSERT_NE(ret3, GSERROR_BINDER);
+    consumerDelegator = nullptr;
 }
 
 /*
-* Function: AsyncQueueBuffer
+* Function: SetClient
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call AsyncQueueBuffer
+* CaseDescription: 1. call SetClient
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, AsyncQueueBuffer001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetClient, TestSize.Level0)
 {
-    int32_t fenceFd = 3;
-    GSError ret = consumerDelegator->AsyncQueueBuffer(buffer, fenceFd);
-    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    sptr<IRemoteObject> clientTemp = nullptr;
+    bool ret = consumerDelegator->SetClient(clientTemp);
+    ASSERT_EQ(ret, false);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::SET_CONSUMER_CLIENT_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorSetClient);
+    consumerDelegator->mDelegator_ = 0x123456;
+    bool ret1 = consumerDelegator->SetClient(new OHOS::Rosen::IRemoteObjectMocker());
+    ASSERT_NE(ret1, false);
+
+    consumerDelegator->mDelegator_ = 0;
+    ret1 = consumerDelegator->SetClient(new OHOS::Rosen::IRemoteObjectMocker());
+    ASSERT_EQ(ret1, false);
+
+    DelegatorAdapter::GetInstance().funcMap_.erase(FunctionFlags::SET_CONSUMER_CLIENT_FUNC);
+    ret1 = consumerDelegator->SetClient(new OHOS::Rosen::IRemoteObjectMocker());
+    ASSERT_EQ(ret1, false);
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::SET_CONSUMER_CLIENT_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorSetClient);
 }
 
 /*
-* Function: GetAncoAsyncFlag
+* Function: SetClient001
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call GetAncoAsyncFlag
+* CaseDescription: 1. call SetClient001
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, GetAncoAsyncFlag001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetClient001, TestSize.Level0)
 {
-    int ret = consumerDelegator->GetAncoAsyncFlag();
-    ASSERT_EQ(ret, ERR_NONE);
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    sptr<IRemoteObject> clientTemp = nullptr;
+    bool ret = consumerDelegator->SetClient(clientTemp);
+    ASSERT_EQ(ret, false);
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::SET_CONSUMER_CLIENT_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorSetClient);
+    consumerDelegator->mDelegator_ = 0;
+    bool ret1 = consumerDelegator->SetClient(new OHOS::Rosen::IRemoteObjectMocker());
+    ASSERT_EQ(ret1, false);
+
+    DelegatorAdapter::GetInstance().funcMap_.erase(FunctionFlags::SET_CONSUMER_CLIENT_FUNC);
+    ret1 = consumerDelegator->SetClient(new OHOS::Rosen::IRemoteObjectMocker());
+    ASSERT_EQ(ret1, false);
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::SET_CONSUMER_CLIENT_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorSetClient);
 }
 
 /*
-* Function: DetachBuffer
+* Function: SetSurface
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call DetachBuffer
+* CaseDescription: 1. call SetSurface
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, DetachBuffer001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetSurface, TestSize.Level0)
 {
-    GSError ret = consumerDelegator->DetachBuffer(buffer);
-    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    sptr<Surface> surface = nullptr;
+    ASSERT_NO_FATAL_FAILURE({consumerDelegator->SetSurface(surface);});
+
+    sptr<IConsumerSurface> csurf = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    csurf->RegisterConsumerListener(listener);
+    sptr<IBufferProducer> producer = csurf->GetProducer();
+    surface = new ProducerSurface(producer);
+    ASSERT_NO_FATAL_FAILURE({consumerDelegator->SetSurface(surface);});
+    consumerDelegator = nullptr;
 }
 
 /*
-* Function: SetBufferQueue
+* Function: SetSurface
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetBufferQueue
+* CaseDescription: 1. call SetSurface
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, SetBufferQueue001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetSurface001, TestSize.Level0)
 {
-    bool ret = consumerDelegator->SetBufferQueue(bq);
-    ASSERT_EQ(ret, true);
+    g_dlopenNull = true;
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+
+    sptr<IConsumerSurface> csurf = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    csurf->RegisterConsumerListener(listener);
+    sptr<IBufferProducer> producer = csurf->GetProducer();
+    sptr<Surface> surface = new ProducerSurface(producer);
+    ASSERT_NO_FATAL_FAILURE({consumerDelegator->SetSurface(surface);});
+
+    consumerDelegator->mDelegator_ = 0;
+    ASSERT_NO_FATAL_FAILURE({consumerDelegator->SetSurface(surface);});
+    consumerDelegator = nullptr;
 }
 
 /*
-* Function: OnRemoteRequest
+* Function: SetSurface
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call OnRemoteRequest
+* CaseDescription: 1. call SetSurface
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, OnRemoteRequest001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetSurface002, TestSize.Level0)
 {
-    uint32_t code = 1; // QUEUEBUFFER
-    MessageParcel reply;
-    MessageOption option;
-    MessageParcel dataQueue;
-    dataQueue.WriteInt32(10);
-    int ret = consumerDelegator->OnRemoteRequest(code, dataQueue, reply, option);
-    ASSERT_EQ(ret, ERR_NONE);
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    sptr<IConsumerSurface> csurf = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    csurf->RegisterConsumerListener(listener);
+    sptr<IBufferProducer> producer = csurf->GetProducer();
+    sptr<Surface> surface = new ProducerSurface(producer);
+
+    auto &delegatorAdapter = DelegatorAdapter::GetInstance();
+    delegatorAdapter.funcMap_[FunctionFlags::SET_CONSUMER_SURFACE_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorSetSurface);
+    consumerDelegator->mDelegator_ = 0;
+    ASSERT_NO_FATAL_FAILURE({consumerDelegator->SetSurface(surface);});
+
+    delegatorAdapter.funcMap_.erase(FunctionFlags::SET_CONSUMER_SURFACE_FUNC);
+    ASSERT_NO_FATAL_FAILURE({consumerDelegator->SetSurface(surface);});
 }
 
 /*
-* Function: GetSurfaceBuffer
+* Function: SetSurface
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call GetSurfaceBuffer
+* CaseDescription: 1. call SetSurface
 *                  2. check ret
  */
-HWTEST_F(ConsumerSurfaceDelegatorTest, GetSurfaceBuffer001, TestSize.Level0)
+HWTEST_F(ConsumerSurfaceDelegatorTest, SetSurface003, TestSize.Level0)
 {
-    GSError ret = consumerDelegator->GetSurfaceBuffer(nullptr, buffer);
-    ASSERT_EQ(ret, GSERROR_OK);
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    sptr<BufferQueue> bq = new BufferQueue("test");
+    IBufferProducer::RequestBufferReturnValue retval;
+    sptr<BufferExtraData> bedata = new OHOS::BufferExtraDataImpl();
+
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::SET_CONSUMER_CLIENT_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorSetClient);
+    sptr<Surface> surface = nullptr;
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    auto ret = bq->RegisterSurfaceDelegator(remoteObjectMocker, surface);
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = ConsumerSurfaceDelegator::Create();
+    bq->sptrCSurfaceDelegator_ = consumerDelegator;
+    ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_NE(ret, GSERROR_OK);
 }
+
+/*
+* Function: ~ConsumerSurfaceDelegator
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ~ConsumerSurfaceDelegator()
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceDelegatorTest, ConsumerSurfaceDelegator, TestSize.Level0)
+{
+    ConsumerSurfaceDelegator* surfaceDelegator = new ConsumerSurfaceDelegator();
+    ASSERT_NE(surfaceDelegator, nullptr);
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DESTROY_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDestroy);
+    surfaceDelegator->mDelegator_ = 0x1234566;
+    ASSERT_NO_FATAL_FAILURE({delete(surfaceDelegator);});
+
+    ConsumerSurfaceDelegator* surfaceDelegator1 = new ConsumerSurfaceDelegator();
+    ASSERT_NE(surfaceDelegator1, nullptr);
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DESTROY_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDestroy);
+    surfaceDelegator1->mDelegator_ = 0;
+    ASSERT_NO_FATAL_FAILURE({delete(surfaceDelegator1);});
+
+    ConsumerSurfaceDelegator* surfaceDelegator2 = new ConsumerSurfaceDelegator();
+    ASSERT_NE(surfaceDelegator2, nullptr);
+    DelegatorAdapter::GetInstance().funcMap_.erase(FunctionFlags::CONSUMER_DESTROY_FUNC);
+    surfaceDelegator2->mDelegator_ = 0;
+    ASSERT_NO_FATAL_FAILURE({delete(surfaceDelegator2);});
+    DelegatorAdapter::GetInstance().funcMap_[FunctionFlags::CONSUMER_DESTROY_FUNC] =
+        reinterpret_cast<void *>(MockConsumerSurfaceDelegatorDestroy);
+}
+
 }

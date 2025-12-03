@@ -906,7 +906,7 @@ private:
     sptr<IProducerListener> listenerBackup_;
     std::mutex listenerMutex_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;
-    wptr<ProducerSurfaceDelegator> wpPSurfaceDelegator_ = nullptr;
+    sptr<ProducerSurfaceDelegator> surfaceDelegator_ = nullptr;
     std::mutex delegatorMutex_;
     std::map<std::string, OnUserDataChangeFunc> onUserDataChange_;
     std::mutex lockMutex_;

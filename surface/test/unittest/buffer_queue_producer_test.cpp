@@ -20,6 +20,7 @@
 #include <buffer_queue_producer.h>
 #include "buffer_consumer_listener.h"
 #include "buffer_utils.h"
+#include "remote_object_mock.h"
 #include "consumer_surface.h"
 #include "frame_report.h"
 #include "sync_fence.h"
@@ -930,14 +931,15 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote001, TestSize.Le
 HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote002, TestSize.Level0)
 {
     MessageParcel arguments;
-    auto surfaceDelegator = ProducerSurfaceDelegator::Create();
-    EXPECT_NE(surfaceDelegator, nullptr);
-    arguments.WriteRemoteObject(surfaceDelegator->AsObject());
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    EXPECT_NE(remoteObjectMocker, nullptr);
+    arguments.WriteRemoteObject(remoteObjectMocker);
     arguments.WriteUint64(0);
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->RegisterPropertyListenerRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
+    remoteObjectMocker = nullptr;
 }
 
 /*
@@ -950,14 +952,15 @@ HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote002, TestSize.Le
 HWTEST_F(BufferQueueProducerTest, RegisterPropertyListenerRemote003, TestSize.Level0)
 {
     MessageParcel arguments;
-    auto surfaceDelegator = ProducerSurfaceDelegator::Create();
-    EXPECT_NE(surfaceDelegator, nullptr);
-    arguments.WriteRemoteObject(surfaceDelegator->AsObject());
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    EXPECT_NE(remoteObjectMocker, nullptr);
+    arguments.WriteRemoteObject(remoteObjectMocker);
     arguments.WriteBool(false);
     MessageParcel reply;
     MessageOption option;
     int32_t ret = bqp_->RegisterPropertyListenerRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_INVALID_REPLY);
+    remoteObjectMocker = nullptr;
 }
 
 /*

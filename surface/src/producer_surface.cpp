@@ -537,7 +537,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     surfaceDelegator->SetSurface(this);
     {
         std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
-        wpPSurfaceDelegator_ = surfaceDelegator;
+        surfaceDelegator_ = surfaceDelegator;
     }
 
     auto releaseBufferCallBack = [weakThis = wptr(this)] (const sptr<SurfaceBuffer>& buffer,
@@ -550,7 +550,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
         {
             std::lock_guard<std::mutex> lockGuard(pSurface->delegatorMutex_);
-            surfaceDelegator = pSurface->wpPSurfaceDelegator_.promote();
+            surfaceDelegator = pSurface->surfaceDelegator_;
         }
         if (surfaceDelegator == nullptr) {
             return GSERROR_INVALID_ARGUMENTS;
@@ -812,7 +812,7 @@ GSError ProducerSurface::UnRegisterReleaseListenerBackup()
     }
     {
         std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
-        wpPSurfaceDelegator_ = nullptr;
+        surfaceDelegator_ = nullptr;
     }
     {
         std::lock_guard<std::mutex> lockGuard(listenerMutex_);

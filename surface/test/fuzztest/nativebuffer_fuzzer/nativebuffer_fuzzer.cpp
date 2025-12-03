@@ -67,6 +67,7 @@ namespace OHOS {
         OH_NativeBuffer *outBuffer;
         OH_NativeBuffer_ReadFromParcel(parcel, &outBuffer);
         OH_IPCParcel_Destroy(parcel);
+        OH_NativeBuffer_Unreference(outBuffer);
         bool isSupported = false;
         OH_NativeBuffer_IsSupported(config, &isSupported);
         void *virAddr1 = nullptr;

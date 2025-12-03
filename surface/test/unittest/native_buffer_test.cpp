@@ -1217,13 +1217,13 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes004, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_WriteToParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeBuffer_WriteToParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_WriteToParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_WriteToParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel001, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
@@ -1236,13 +1236,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel001, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_WriteToParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. nativeBuffer is nullptr, call OH_NativeBuffer_WriteToParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_WriteToParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. nativeBuffer is nullptr, call OH_NativeBuffer_WriteToParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel002, TestSize.Level0)
 {
     OHIPCParcel *parcel = OH_IPCParcel_Create();
@@ -1251,13 +1251,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel002, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_WriteToParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_WriteToParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_WriteToParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_WriteToParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel003, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
@@ -1268,13 +1268,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel003, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_WriteToParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_WriteToParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_WriteToParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_WriteToParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel004, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
@@ -1287,13 +1287,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel004, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_ReadFromParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call OH_NativeBuffer_ReadFromParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel001, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = nullptr;
@@ -1330,13 +1330,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel001, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_ReadFromParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. nativeBuffer is nullptr, call OH_NativeBuffer_ReadFromParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. nativeBuffer is nullptr, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel002, TestSize.Level0)
 {
     OHIPCParcel *parcel = OH_IPCParcel_Create();
@@ -1345,13 +1345,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel002, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_ReadFromParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_ReadFromParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel003, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = nullptr;
@@ -1359,13 +1359,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel003, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_ReadFromParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_ReadFromParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. parcel is nullptr, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel004, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = nullptr;
@@ -1376,13 +1376,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel004, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_ReadFromParcel
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. ReadSurfaceBufferImpl fail, call OH_NativeBuffer_ReadFromParcel
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. ReadSurfaceBufferImpl fail, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel005, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = nullptr;
@@ -1394,13 +1394,69 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel005, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_IsSupported
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. isSupported is nullptr, call OH_NativeBuffer_IsSupported
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. ReadSurfaceBufferImpl fail, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel006, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel->WriteInt32(5);
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, &nativeBuffer), OHOS::SURFACE_ERROR_UNKOWN);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. ReadSurfaceBufferImpl fail, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel007, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel->WriteInt32(5);
+    parcel->msgParcel->WriteBool(false);
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, &nativeBuffer), OHOS::SURFACE_ERROR_UNKOWN);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+ * Function: OH_NativeBuffer_ReadFromParcel
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. ReadSurfaceBufferImpl fail, call OH_NativeBuffer_ReadFromParcel
+ *                  2. check ret
+ */
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel008, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = nullptr;
+    OHIPCParcel *parcel = OH_IPCParcel_Create();
+    parcel->msgParcel->WriteInt32(5);
+    parcel->msgParcel->WriteBool(true);
+    // reserveFds, reserveInts
+    parcel->msgParcel->WriteUint32(1);
+    parcel->msgParcel->WriteUint32(1);
+    ASSERT_EQ(OH_NativeBuffer_ReadFromParcel(parcel, &nativeBuffer), OHOS::SURFACE_ERROR_UNKOWN);
+    OH_IPCParcel_Destroy(parcel);
+}
+
+/*
+ * Function: OH_NativeBuffer_IsSupported
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. isSupported is nullptr, call OH_NativeBuffer_IsSupported
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported001, TestSize.Level0)
 {
     OH_NativeBuffer_Config config;
@@ -1409,13 +1465,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported001, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_IsSupported
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. width is invalid, call OH_NativeBuffer_IsSupported
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_IsSupported
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. width is invalid, call OH_NativeBuffer_IsSupported
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported002, TestSize.Level0)
 {
     OH_NativeBuffer_Config config;
@@ -1427,13 +1483,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported002, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_IsSupported
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. height is invalid, call OH_NativeBuffer_IsSupported
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_IsSupported
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. height is invalid, call OH_NativeBuffer_IsSupported
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported003, TestSize.Level0)
 {
     OH_NativeBuffer_Config config;
@@ -1445,13 +1501,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported003, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_IsSupported
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. format is invalid, call OH_NativeBuffer_IsSupported
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_IsSupported
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. format is invalid, call OH_NativeBuffer_IsSupported
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported004, TestSize.Level0)
 {
     OH_NativeBuffer_Config config;
@@ -1465,13 +1521,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported004, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_IsSupported
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. config is valid, call OH_NativeBuffer_IsSupported
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_IsSupported
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. config is valid, call OH_NativeBuffer_IsSupported
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported005, TestSize.Level0)
 {
     OH_NativeBuffer_Config config;
@@ -1485,13 +1541,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported005, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_IsSupported
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. config is valid, call OH_NativeBuffer_IsSupported
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_IsSupported
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. config is valid, call OH_NativeBuffer_IsSupported
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported006, TestSize.Level0)
 {
     OH_NativeBuffer_Config config;
@@ -1503,14 +1559,15 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_IsSupported006, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(isSupported, false);
 }
+
 /*
-* Function: OH_NativeBuffer_MapAndGetConfig
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. nativeBuffer、virAddr、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_MapAndGetConfig
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. nativeBuffer、virAddr、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig001, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
@@ -1529,13 +1586,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig001, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_MapAndGetConfig
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. nativeBuffer is nullptr, virAddr、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_MapAndGetConfig
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. nativeBuffer is nullptr, virAddr、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig002, TestSize.Level0)
 {
     void *virAddr = nullptr;
@@ -1545,13 +1602,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig002, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_MapAndGetConfig
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. virAddr is nullptr, nativeBuffer、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_MapAndGetConfig
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. virAddr is nullptr, nativeBuffer、testConfig is valid, call OH_NativeBuffer_MapAndGetConfig
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig003, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
@@ -1563,13 +1620,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig003, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_MapAndGetConfig
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. nativeBuffer, virAddr is valid, call OH_NativeBuffer_MapAndGetConfig
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_MapAndGetConfig
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. nativeBuffer, virAddr is valid, call OH_NativeBuffer_MapAndGetConfig
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig004, TestSize.Level0)
 {
     OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
@@ -1580,13 +1637,13 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig004, TestSize.Level0)
 }
 
 /*
-* Function: OH_NativeBuffer_MapAndGetConfig
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. map fail, call OH_NativeBuffer_MapAndGetConfig
-*                  2. check ret
-*/
+ * Function: OH_NativeBuffer_MapAndGetConfig
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. map fail, call OH_NativeBuffer_MapAndGetConfig
+ *                  2. check ret
+ */
 HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig005, TestSize.Level0)
 {
     sptr<OHOS::SurfaceBuffer> sBuffer = SurfaceBuffer::Create();

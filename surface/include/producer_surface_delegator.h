@@ -20,60 +20,25 @@
 #include <vector>
 #include <mutex>
 #include <unordered_set>
+#include <message_option.h>
+#include <message_parcel.h>
+#include <iremote_stub.h>
 
-#include "transact_surface_delegator_stub.h"
+#include "surface.h"
+#include "buffer_log.h"
+#include "sync_fence.h"
 
 namespace OHOS {
-class ProducerSurfaceDelegator : public TransactSurfaceDelegatorStub {
+class ProducerSurfaceDelegator : public OHOS::RefBase {
 public:
+    static sptr<ProducerSurfaceDelegator> Create();
     ~ProducerSurfaceDelegator();
-    static sptr<ProducerSurfaceDelegator> Create()
-    {
-        return sptr<ProducerSurfaceDelegator>(new ProducerSurfaceDelegator());
-    }
-    GSError DequeueBuffer(int32_t slot, sptr<SurfaceBuffer> buffer);
-    GSError QueueBuffer(int32_t slot, int32_t acquireFence);
-    GSError ReleaseBuffer(const sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
-    GSError ClearBufferSlot(int32_t slot);
-    GSError ClearAllBuffers();
-    GSError CancelBuffer(int32_t slot, int32_t fenceFd);
-    GSError DetachBuffer(int32_t slot);
-    int OnSetBufferQueueSize(MessageParcel& data, MessageParcel& reply);
-    int OnSetDataspace(MessageParcel& data, MessageParcel& reply);
-    int OnDequeueBuffer(MessageParcel &data, MessageParcel &reply);
-    int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
-    int OnQueueBuffer(MessageParcel& data, MessageParcel& reply);
-    int32_t OnNdkFlushBuffer(MessageParcel& data, MessageParcel& reply);
-
-    static void SetDisplayRotation(int32_t rotation);
-    static void SetAncoGraphicVersion(uint32_t version);
-
+    GSError ReleaseBuffer(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence);
+    void SetSurface(sptr<Surface> surface);
+    bool SetClient(sptr<IRemoteObject> client);
 private:
-    std::map<int32_t, std::vector<sptr<SurfaceBuffer>>> map_;
-    std::vector<sptr<SurfaceBuffer>> pendingReleaseBuffer_;
-    std::unordered_set<int> dequeueFailedSet_;
-    std::mutex dequeueFailedSetMutex_;
-    std::mutex mapMutex_;
-    std::mutex mstate_;
-    uint32_t mTransform_ = 0;
-    GraphicTransformType mLastTransform_ = GraphicTransformType::GRAPHIC_ROTATE_BUTT;
-    int32_t mAncoDataspace = -1;
-    std::atomic<bool> mIsNdk{false};
-
-    static std::atomic<int32_t> mDisplayRotation_;
-
-    void AddBufferLocked(const sptr<SurfaceBuffer>& buffer, int32_t slot);
-    sptr<SurfaceBuffer> GetBufferLocked(int32_t slot);
-    int32_t GetSlotLocked(const sptr<SurfaceBuffer>& buffer);
-    GSError RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence, BufferFlushConfig& config);
-    bool HasSlotInSet(int32_t slot);
-    void InsertSlotIntoSet(int32_t slot);
-    void EraseSlotFromSet(int32_t slot);
-    void UpdateBufferTransform();
-    GraphicTransformType ConvertTransformToHmos(uint32_t transform);
-    int32_t NdkFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t slot, const sptr<SyncFence>& fence);
-    sptr<SurfaceBuffer> NdkConvertBuffer(MessageParcel& data, int32_t hasNewBuffer, int32_t slot);
-    void NdkClearBuffer(int32_t slot, uint32_t seqNum);
+    uintptr_t mDelegator_ = 0;
+    ProducerSurfaceDelegator();
 };
 } // namespace OHOS
 #endif // PRODUCER_SURFACE_DELEGATOR_H

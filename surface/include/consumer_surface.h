@@ -742,6 +742,13 @@ public:
      * @return false Buffer not found in cache.
      */
     bool IsCached(uint32_t bufferSeqNum) const override;
+    /**
+     * @brief set the surface is destroy
+     *
+     * @return true surface is in destroy.
+     * @return false surface is in not destroy.
+     */
+    GSError UnregisterSurfaceDelegator() override;
 
 private:
     std::map<std::string, std::string> userData_;

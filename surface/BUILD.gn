@@ -14,19 +14,11 @@
 import("//build/ohos.gni")
 import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
-if (graphic_2d_ext_delegator && graphic_2d_ext_delegator_gni != "") {
-  import("${graphic_2d_ext_delegator_gni}")
-}
-
 ## Build surface.so {{{
 config("surface_config") {
   visibility = [ ":*" ]
 
   include_dirs = [ "include" ]
-
-  if (graphic_2d_ext_delegator && defined(vendor_root)) {
-    include_dirs += libsurface_ext_delegator_include_dirs
-  }
 
   cflags = [
     "-Wall",
@@ -114,6 +106,7 @@ ohos_static_library("surface_static") {
     "src/buffer_utils.cpp",
     "src/consumer_surface.cpp",
     "src/consumer_surface_delegator.cpp",
+    "src/delegator_adapter.cpp",
     "src/metadata_helper.cpp",
     "src/native_buffer.cpp",
     "src/native_window.cpp",
@@ -123,8 +116,6 @@ ohos_static_library("surface_static") {
     "src/surface_delegate.cpp",
     "src/surface_tunnel_handle.cpp",
     "src/surface_utils.cpp",
-    "src/transact_surface_delegator_proxy.cpp",
-    "src/transact_surface_delegator_stub.cpp",
   ]
 
   configs = [ ":surface_config" ]
@@ -156,12 +147,6 @@ ohos_static_library("surface_static") {
     "ipc:ipc_capi",
     "ipc:ipc_single",
   ]
-
-  if (graphic_2d_ext_delegator && defined(vendor_root)) {
-    sources += libsurface_ext_delegator_sources
-    sources -= libsurface_ext_delegator_sources_del
-    external_deps += libsurface_ext_delegator_external_deps
-  }
 
   if (graphic_surface_feature_tv_metadata_enable) {
     defines = [ "RS_ENABLE_TV_PQ_METADATA" ]

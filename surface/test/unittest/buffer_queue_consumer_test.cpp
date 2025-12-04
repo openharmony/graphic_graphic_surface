@@ -21,6 +21,7 @@
 #include "consumer_surface.h"
 #include "producer_surface_delegator.h"
 #include "buffer_client_producer.h"
+#include "remote_object_mock.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -196,25 +197,27 @@ HWTEST_F(BufferQueueConsumerTest, AttachBuffer001, TestSize.Level0)
 HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
     sptr<BufferQueue> bufferqueue = nullptr;
-    auto bqcTmp = new BufferQueueConsumer(bufferqueue);
+    auto bufferQueueConsumer = new BufferQueueConsumer(bufferqueue);
 
-    sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
-    GSError ret = bqcTmp->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), surface);
-    ASSERT_NE(ret, OHOS::GSERROR_OK);
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    GSError ret = bufferQueueConsumer->RegisterSurfaceDelegator(remoteObjectMocker, surface);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
+/* Function: RegisterSurfaceDelegator
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. check ret
+ *    2. call RegisterSurfaceDelegator
+ */
 HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator002, TestSize.Level0)
 {
-    sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
-    GSError ret = bqc->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), surface);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-}
-
-HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator003, TestSize.Level0)
-{
-    sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
-    GSError ret = bqc->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), nullptr);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    sptr<BufferQueue> bufferqueue = new BufferQueue("test");
+    auto bufferQueueConsumer = new BufferQueueConsumer(bufferqueue);
+    GSError ret = bufferQueueConsumer->RegisterSurfaceDelegator(remoteObjectMocker, surface);
+    ASSERT_NE(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
@@ -390,5 +393,23 @@ HWTEST_F(BufferQueueConsumerTest, IsCached001, TestSize.Level0)
     bqc->bufferQueue_->bufferQueueCache_[bufferSeqNum] = ele;
     EXPECT_TRUE(bqc->IsCached(bufferSeqNum));
     bqc->bufferQueue_ = nullptr;
+}
+
+/**
+ * Function: UnregisterSurfaceDelegator
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call UnregisterSurfaceDelegator and check ret
+ */
+HWTEST_F(BufferQueueConsumerTest, UnregisterSurfaceDelegator, TestSize.Level0)
+{
+    bqc->bufferQueue_ = nullptr;
+    GSError ret = bqc->UnregisterSurfaceDelegator();
+    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+
+    bqc->bufferQueue_ = new BufferQueue("test");
+    ret = bqc->UnregisterSurfaceDelegator();
+    EXPECT_NE(ret, GSERROR_INVALID_ARGUMENTS);
 }
 }

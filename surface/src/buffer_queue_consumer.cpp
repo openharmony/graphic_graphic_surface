@@ -102,6 +102,14 @@ GSError BufferQueueConsumer::RegisterSurfaceDelegator(sptr<IRemoteObject> client
     return bufferQueue_->RegisterSurfaceDelegator(client, cSurface);
 }
 
+GSError BufferQueueConsumer::UnregisterSurfaceDelegator()
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->UnregisterSurfaceDelegator();
+}
+
 bool BufferQueueConsumer::QueryIfBufferAvailable()
 {
     if (bufferQueue_ == nullptr) {

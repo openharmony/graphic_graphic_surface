@@ -16,33 +16,32 @@
 #ifndef CONSUMER_SURFACE_DELEGATOR_H
 #define CONSUMER_SURFACE_DELEGATOR_H
 
-#include "transact_surface_delegator_stub.h"
+#include <iremote_stub.h>
+#include <message_option.h>
+#include <message_parcel.h>
+
+#include "buffer_log.h"
+#include "buffer_extra_data.h"
+#include "delegator_adapter.h"
+#include "ibuffer_producer.h"
+#include "sync_fence.h"
+#include "surface.h"
+#include "surface_type.h"
 
 namespace OHOS {
-class BufferQueue;
-class ConsumerSurfaceDelegator : public TransactSurfaceDelegatorStub {
+class ConsumerSurfaceDelegator : public OHOS::RefBase {
 public:
     static sptr<ConsumerSurfaceDelegator> Create();
-    ~ConsumerSurfaceDelegator() = default;
+    ~ConsumerSurfaceDelegator();
     GSError DequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
                           struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError QueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd);
-    GSError ReleaseBuffer(int slot, int releaseFenceFd);
-    GSError CancelBuffer(int32_t slot, int32_t fenceFd);
-    GSError DetachBuffer(sptr<SurfaceBuffer>& buffer);
-    bool SetBufferQueue(BufferQueue* bufferQueue);
-    int OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
-protected:
-    GSError GetSurfaceBuffer(NativeHandleT* handle, sptr<SurfaceBuffer>& buffer);
+    void SetSurface(sptr<Surface> surface);
+    bool SetClient(sptr<IRemoteObject> client);
 
 private:
-    ConsumerSurfaceDelegator() = default;
-    GSError AsyncDequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
-        struct IBufferProducer::RequestBufferReturnValue& retval);
-    GSError AsyncQueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd);
-    int GetAncoAsyncFlag();
-    std::map<int32_t, sptr<SurfaceBuffer>> slotBufferMap_;
-    BufferQueue* bufferQueue_ = nullptr;
+    ConsumerSurfaceDelegator();
+    uintptr_t mDelegator_ = 0;
 };
 } // namespace OHOS
 #endif // CONSUMER_SURFACE_DELEGATOR_H

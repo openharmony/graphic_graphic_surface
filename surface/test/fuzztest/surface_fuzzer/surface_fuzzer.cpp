@@ -30,12 +30,24 @@
 using namespace g_fuzzCommon;
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 namespace OHOS {
+
     class TestConsumerListenerClazz : public IBufferConsumerListenerClazz {
     public:
         void OnBufferAvailable() override
         {
         }
     };
+
+    class TestProducerSurfaceDelegator : public IRemoteBroker {
+    public:
+        DECLARE_INTERFACE_DESCRIPTOR(u"surf.111");
+    };
+    class TransactSurfaceDelegatorStub : public IRemoteStub<TestProducerSurfaceDelegator> {
+    public:
+        TransactSurfaceDelegatorStub() = default;
+        ~TransactSurfaceDelegatorStub() = default;
+    };
+
     GSError OnBufferRelease(sptr<SurfaceBuffer> &buffer)
     {
         return GSERROR_OK;
@@ -280,8 +292,9 @@ namespace OHOS {
         sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name);
         auto producer = cSurface->GetProducer();
         sptr<OHOS::Surface> pSurface = OHOS::Surface::CreateSurfaceAsProducer(producer);
-        sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
+        sptr<TransactSurfaceDelegatorStub> surfaceDelegator = new TransactSurfaceDelegatorStub();
         cSurface->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
+
         cSurface->QueryIfBufferAvailable();
         sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
         cSurface->RegisterConsumerListener(listener);
@@ -329,8 +342,6 @@ namespace OHOS {
         sptr<OHOS::IConsumerSurface> cSurface = OHOS::IConsumerSurface::Create(name);
         auto producer = cSurface->GetProducer();
         sptr<OHOS::Surface> pSurface = OHOS::Surface::CreateSurfaceAsProducer(producer);
-        sptr<ProducerSurfaceDelegator> surfaceDelegator = ProducerSurfaceDelegator::Create();
-        pSurface->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
         pSurface->RegisterReleaseListener([](sptr<SurfaceBuffer> &buffer) ->
             GSError {
                 return GSERROR_OK;

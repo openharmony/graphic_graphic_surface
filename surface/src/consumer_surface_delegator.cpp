@@ -18,6 +18,7 @@
 #include "consumer_surface_delegator.h"
 #include "buffer_log.h"
 #include "sync_fence.h"
+#include "delegator_adapter.h"
 
 namespace OHOS {
 sptr<ConsumerSurfaceDelegator> ConsumerSurfaceDelegator::Create()
@@ -25,62 +26,85 @@ sptr<ConsumerSurfaceDelegator> ConsumerSurfaceDelegator::Create()
     return sptr<ConsumerSurfaceDelegator>(new ConsumerSurfaceDelegator());
 }
 
+ConsumerSurfaceDelegator::ConsumerSurfaceDelegator()
+{
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto consumerDelegator = delegatorAdapter.GetFunc<ConsumerDelegatorFunc>(
+        FunctionFlags::CONSUMER_CREATE_FUNC);
+    if (consumerDelegator != nullptr) {
+        mDelegator_ = reinterpret_cast<uintptr_t>(consumerDelegator());
+    }
+}
+
+ConsumerSurfaceDelegator::~ConsumerSurfaceDelegator()
+{
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto consumerDelegatorDestroy = delegatorAdapter.GetFunc<ConsumerDestroyFunc>(
+        FunctionFlags::CONSUMER_DESTROY_FUNC);
+    if (consumerDelegatorDestroy != nullptr && mDelegator_ != 0) {
+        consumerDelegatorDestroy(mDelegator_);
+    }
+}
+
+void ConsumerSurfaceDelegator::SetSurface(sptr<Surface> surface)
+{
+    if (surface == nullptr) {
+        BLOGE("surface is nullptr");
+        return;
+    }
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto setSurfaceFunc = delegatorAdapter.GetFunc<SetConsumerSurfaceFunc>(
+        FunctionFlags::SET_CONSUMER_SURFACE_FUNC);
+    if (setSurfaceFunc != nullptr && mDelegator_ != 0) {
+        setSurfaceFunc(mDelegator_, surface);
+    }
+}
+
+bool ConsumerSurfaceDelegator::SetClient(sptr<IRemoteObject> client)
+{
+    if (client == nullptr) {
+        BLOGE("client is nullptr");
+        return false;
+    }
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto setClientFunc = delegatorAdapter.GetFunc<SetConsumerClientFunc>(
+        FunctionFlags::SET_CONSUMER_CLIENT_FUNC);
+    if (setClientFunc != nullptr && mDelegator_ != 0) {
+        return setClientFunc(mDelegator_, client);
+    }
+    BLOGE("remote SetClient is nullptr");
+    return false;
+}
+
 GSError ConsumerSurfaceDelegator::DequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
                                                 struct IBufferProducer::RequestBufferReturnValue& retval)
 {
-    return GSERROR_OK;
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto dequeueBufferFunc = delegatorAdapter.GetFunc<ConsumerDeQueueBuffer>(
+        FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC);
+    if (dequeueBufferFunc != nullptr && mDelegator_ != 0) {
+        return dequeueBufferFunc(mDelegator_, config, bedata, retval);
+    }
+    BLOGE("%{public}s error, DequeueBufferFunc:%{public}d mDelegator:%{public}d",
+        __func__, dequeueBufferFunc != nullptr, mDelegator_ != 0);
+    return GSERROR_BINDER;
 }
 
 GSError ConsumerSurfaceDelegator::QueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd)
 {
-    return GSERROR_OK;
+    if (buffer == nullptr) {
+        BLOGE("buffer is nullptr");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto queueBufferFunc = delegatorAdapter.GetFunc<ConsumerQueueBuffer>(
+        FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC);
+    if (queueBufferFunc != nullptr && mDelegator_ != 0) {
+        return queueBufferFunc(mDelegator_, buffer, fenceFd);
+    }
+    BLOGE("%{public}s error, QueueBufferFunc:%{public}d mDelegator:%{public}d",
+        __func__, queueBufferFunc != nullptr, mDelegator_ != 0);
+    return GSERROR_BINDER;
 }
 
-GSError ConsumerSurfaceDelegator::ReleaseBuffer(int slot, int releaseFenceFd)
-{
-    return GSERROR_OK;
-}
-
-GSError ConsumerSurfaceDelegator::CancelBuffer(int32_t slot, int32_t fenceFd)
-{
-    return GSERROR_OK;
-}
-
-GSError ConsumerSurfaceDelegator::AsyncDequeueBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
-    struct IBufferProducer::RequestBufferReturnValue& retval)
-{
-    return GSERROR_OK;
-}
-
-GSError ConsumerSurfaceDelegator::AsyncQueueBuffer(sptr<SurfaceBuffer>& buffer, int32_t fenceFd)
-{
-    return GSERROR_OK;
-}
-
-int ConsumerSurfaceDelegator::GetAncoAsyncFlag()
-{
-    return ERR_NONE;
-}
-
-GSError ConsumerSurfaceDelegator::DetachBuffer(sptr<SurfaceBuffer>& buffer)
-{
-    return GSERROR_OK;
-}
-
-bool ConsumerSurfaceDelegator::SetBufferQueue(BufferQueue* bufferQueue)
-{
-    bufferQueue_ = bufferQueue;
-    return true;
-}
-
-int ConsumerSurfaceDelegator::OnRemoteRequest(uint32_t code,
-    MessageParcel& data, MessageParcel& reply, MessageOption& option)
-{
-    return ERR_NONE;
-}
-
-GSError ConsumerSurfaceDelegator::GetSurfaceBuffer(NativeHandleT* handle, sptr<SurfaceBuffer>& buffer)
-{
-    return GSERROR_OK;
-}
 } // namespace OHOS

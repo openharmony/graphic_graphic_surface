@@ -14,8 +14,6 @@
 graphic_surface_root = "//foundation/graphic/graphic_surface"
 
 declare_args() {
-  graphic_2d_ext_delegator = false
-  graphic_2d_ext_delegator_gni = ""
   graphic_surface_feature_tv_metadata_enable = false
 }
 rs_common_define = []

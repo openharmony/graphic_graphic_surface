@@ -261,6 +261,10 @@ public:
         (void)client;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError UnregisterSurfaceDelegator()
+    {
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual void ConsumerRequestCpuAccess(bool on)
     {
         (void)on;

@@ -343,7 +343,7 @@ int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, v
  * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
  * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
- * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or parcel is NULL.
+ * {@link SURFACE_ERROR_ERROR} 50002000 - deserialize failed.
  * @since 23
  * @version 1.0
  */
@@ -359,7 +359,7 @@ int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parc
  * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
  * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> pointer.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
- * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - parcel or buffer is NULL.
+ * {@link SURFACE_ERROR_ERROR} 50002000 - deserialize failed.
  * @since 23
  * @version 1.0
  */

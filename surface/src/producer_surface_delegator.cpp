@@ -17,171 +17,87 @@
 #include "producer_surface_delegator.h"
 #include "buffer_log.h"
 #include "sync_fence.h"
+#include "delegator_adapter.h"
 
 namespace OHOS {
 
-std::atomic<int32_t> ProducerSurfaceDelegator::mDisplayRotation_ = 0;
+sptr<ProducerSurfaceDelegator> ProducerSurfaceDelegator::Create()
+{
+    return sptr<ProducerSurfaceDelegator>(new ProducerSurfaceDelegator());
+}
+
+ProducerSurfaceDelegator::ProducerSurfaceDelegator()
+{
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto createFunc = delegatorAdapter.GetFunc<CreateFunc>(
+        FunctionFlags::PRODUCER_CREATE_FUNC);
+    if (createFunc != nullptr) {
+        mDelegator_ = reinterpret_cast<uintptr_t>(createFunc());
+    } else {
+        BLOGE("remote Delegator createFunc is nullptr");
+    }
+}
 
 ProducerSurfaceDelegator::~ProducerSurfaceDelegator()
 {
-    map_.clear();
-}
-GSError ProducerSurfaceDelegator::DequeueBuffer(int32_t slot, sptr<SurfaceBuffer> buffer)
-{
-    return GSERROR_OK;
-}
-
-GSError ProducerSurfaceDelegator::QueueBuffer(int32_t slot, int32_t acquireFence)
-{
-    return GSERROR_OK;
-}
-
-GSError ProducerSurfaceDelegator::ReleaseBuffer(const sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence)
-{
-    return GSERROR_OK;
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto destroyFunc = delegatorAdapter.GetFunc<DestroyFunc>(
+        FunctionFlags::PRODUCER_DESTROY_FUNC);
+    if (destroyFunc != nullptr && mDelegator_ != 0) {
+        destroyFunc(mDelegator_);
+    } else {
+        BLOGE("%{public}s error, ~ProducerSurfaceDelegator:%{public}d mDelegator:%{public}d",
+            __func__, destroyFunc != nullptr, mDelegator_ != 0);
+    }
+    mDelegator_ = 0;
 }
 
-GSError ProducerSurfaceDelegator::ClearBufferSlot(int32_t slot)
+void ProducerSurfaceDelegator::SetSurface(sptr<Surface> surface)
 {
-    (void)slot;
-    return GSERROR_OK;
+    if (surface == nullptr) {
+        BLOGE("surface is nullptr");
+        return;
+    }
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto setSurfaceFunc = delegatorAdapter.GetFunc<SetProducerSurfaceFunc>(
+        FunctionFlags::SET_PRODUCER_SURFACE_FUNC);
+    if (setSurfaceFunc != nullptr && mDelegator_ != 0) {
+        setSurfaceFunc(mDelegator_, surface);
+    }
 }
 
-GSError ProducerSurfaceDelegator::ClearAllBuffers()
+bool ProducerSurfaceDelegator::SetClient(sptr<IRemoteObject> client)
 {
-    return GSERROR_OK;
+    if (client == nullptr) {
+        BLOGE("client is nullptr");
+        return false;
+    }
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto setClientFunc = delegatorAdapter.GetFunc<SetProducerClientFunc>(
+        FunctionFlags::SET_PRODUCER_CLIENT_FUNC);
+    if (setClientFunc != nullptr && mDelegator_ != 0) {
+        return setClientFunc(mDelegator_, client);
+    }
+    BLOGE("%{public}s error, SetClient:%{public}d mDelegator:%{public}d",
+        __func__, setClientFunc != nullptr, mDelegator_ != 0);
+    return false;
 }
 
-void ProducerSurfaceDelegator::AddBufferLocked(const sptr<SurfaceBuffer>& buffer, int32_t slot)
+GSError ProducerSurfaceDelegator::ReleaseBuffer(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
-    (void)buffer;
-    (void)slot;
+    if (buffer == nullptr || fence == nullptr) {
+        BLOGE("buffer or fence is nullptr");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    auto& delegatorAdapter = DelegatorAdapter::GetInstance();
+    auto releaseBufferfunc = delegatorAdapter.GetFunc<ReleaseBufferFunc>(
+        FunctionFlags::PRODUCER_RELEASE_BUFFER_FUNC);
+    if (releaseBufferfunc != nullptr && mDelegator_ != 0) {
+        return releaseBufferfunc(mDelegator_, buffer, fence);
+    }
+    BLOGE("%{public}s error, ReleaseBuffer:%{public}d mDelegator:%{public}d",
+        __func__, releaseBufferfunc != nullptr, mDelegator_ != 0);
+    return GSERROR_BINDER;
 }
 
-sptr<SurfaceBuffer> ProducerSurfaceDelegator::GetBufferLocked(int32_t slot)
-{
-    (void)slot;
-    return nullptr;
-}
-
-int32_t ProducerSurfaceDelegator::GetSlotLocked(const sptr<SurfaceBuffer>& buffer)
-{
-    (void)buffer;
-    return 0;
-}
-
-GSError ProducerSurfaceDelegator::CancelBuffer(int32_t slot, int32_t fenceFd)
-{
-    return GSERROR_OK;
-}
-
-GSError ProducerSurfaceDelegator::DetachBuffer(int32_t slot)
-{
-    return GSERROR_OK;
-}
-
-int ProducerSurfaceDelegator::OnSetBufferQueueSize(MessageParcel &data, MessageParcel &reply)
-{
-    return ERR_NONE;
-}
-
-int ProducerSurfaceDelegator::OnDequeueBuffer(MessageParcel &data, MessageParcel &reply)
-{
-    return ERR_NONE;
-}
-
-int ProducerSurfaceDelegator::OnQueueBuffer(MessageParcel &data, MessageParcel &reply)
-{
-    (void)data;
-    (void)reply;
-    return ERR_NONE;
-}
-
-int ProducerSurfaceDelegator::OnSetDataspace(MessageParcel& data, MessageParcel& reply)
-{
-    mAncoDataspace = -1;
-    return ERR_NONE;
-}
-
-int ProducerSurfaceDelegator::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
-{
-    return ERR_NONE;
-}
-
-int32_t ProducerSurfaceDelegator::OnNdkFlushBuffer(MessageParcel &data, MessageParcel &reply)
-{
-    (void)data;
-    (void)reply;
-    return GSERROR_OK;
-}
-
-GSError ProducerSurfaceDelegator::RetryFlushBuffer(sptr<SurfaceBuffer>& buffer, int32_t fence,
-                                                   BufferFlushConfig& config)
-{
-    return GSERROR_OK;
-}
-
-bool ProducerSurfaceDelegator::HasSlotInSet(int32_t slot)
-{
-    std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
-    return dequeueFailedSet_.find(slot) != dequeueFailedSet_.end();
-}
-
-void ProducerSurfaceDelegator::InsertSlotIntoSet(int32_t slot)
-{
-    std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
-    dequeueFailedSet_.insert(slot);
-}
-
-void ProducerSurfaceDelegator::EraseSlotFromSet(int32_t slot)
-{
-    std::lock_guard<std::mutex> setLock(dequeueFailedSetMutex_);
-    dequeueFailedSet_.erase(slot);
-}
-
-void ProducerSurfaceDelegator::SetDisplayRotation(int32_t rotation)
-{
-    mDisplayRotation_.store(rotation);
-}
-
-void ProducerSurfaceDelegator::SetAncoGraphicVersion(uint32_t version)
-{
-    (void)version;
-}
-
-void ProducerSurfaceDelegator::UpdateBufferTransform()
-{
-}
-
-GraphicTransformType ProducerSurfaceDelegator::ConvertTransformToHmos(uint32_t transform)
-{
-    mTransform_ = transform;
-    return mLastTransform_;
-}
-
-int32_t ProducerSurfaceDelegator::NdkFlushBuffer(
-    sptr<SurfaceBuffer>& buffer, int32_t slot, const sptr<SyncFence>& fence)
-{
-    (void)buffer;
-    (void)slot;
-    (void)fence;
-    return GSERROR_OK;
-}
-
-sptr<SurfaceBuffer> ProducerSurfaceDelegator::NdkConvertBuffer(
-    MessageParcel& data, int32_t hasNewBuffer, int32_t slot)
-{
-    (void)data;
-    (void)hasNewBuffer;
-    (void)slot;
-    return nullptr;
-}
-
-void ProducerSurfaceDelegator::NdkClearBuffer(int32_t slot, uint32_t seqNum)
-{
-    mIsNdk = false;
-    (void)slot;
-    (void)seqNum;
-}
 } // namespace OHOS

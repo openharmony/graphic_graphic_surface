@@ -194,6 +194,14 @@ GSError ConsumerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
     return consumer_->RegisterSurfaceDelegator(client, this);
 }
 
+GSError ConsumerSurface::UnregisterSurfaceDelegator()
+{
+    if (consumer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return consumer_->UnregisterSurfaceDelegator();
+}
+
 bool ConsumerSurface::QueryIfBufferAvailable()
 {
     if (consumer_ == nullptr) {

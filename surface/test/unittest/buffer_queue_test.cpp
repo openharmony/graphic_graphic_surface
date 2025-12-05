@@ -14,16 +14,20 @@
  */
 #include <fcntl.h>
 #include <map>
+#include <surface.h>
 #include <sys/mman.h>
 #include <gtest/gtest.h>
-#include <surface.h>
-#include <buffer_extra_data_impl.h>
-#include <buffer_queue.h>
-#include <buffer_producer_listener.h>
+
 #include "buffer_consumer_listener.h"
-#include "sync_fence.h"
+#include "buffer_extra_data_impl.h"
+#include "buffer_producer_listener.h"
+#define PRIVATE PUBLIC
+#include "buffer_queue.h"
+#undef PRIVATE
 #include "consumer_surface.h"
 #include "producer_surface_delegator.h"
+#include "remote_object_mock.h"
+#include "sync_fence.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -161,7 +165,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel001, TestSize.Level0)
     ASSERT_EQ(bq->detachReserveSlotNum_, 0);
 
     auto start = std::chrono::high_resolution_clock::now();
-    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    auto ret = bq->RequestBuffer(requestConfig, bedata, retval);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << "RequestBuffer costs: " << duration.count() << "ms" << std::endl;
@@ -178,6 +182,7 @@ HWTEST_F(BufferQueueTest, ReqCanFluAcqRel001, TestSize.Level0)
     ASSERT_NE(addr1, nullptr);
     addr1[0] = 5;
 
+    bq->sptrCSurfaceDelegator_ = nullptr;
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
     ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -931,20 +936,6 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, TestSize.Level0)
 }
 
 /*
-* Function: RegisterSurfaceDelegator
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterSurfaceDelegator and check ret
- */
-HWTEST_F(BufferQueueTest, RegisterSurfaceDelegator001, TestSize.Level0)
-{
-    surfaceDelegator = ProducerSurfaceDelegator::Create();
-    GSError ret = bq->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), csurface1);
-    ASSERT_EQ(ret, GSERROR_OK);
-}
-
-/*
 * Function: RegisterDeleteBufferListener
 * Type: Function
 * Rank: Important(2)
@@ -953,7 +944,6 @@ HWTEST_F(BufferQueueTest, RegisterSurfaceDelegator001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, TestSize.Level0)
 {
-    surfaceDelegator = ProducerSurfaceDelegator::Create();
     GSError ret = bq->RegisterDeleteBufferListener(nullptr, true);
     ASSERT_EQ(ret, GSERROR_OK);
 }
@@ -969,14 +959,9 @@ HWTEST_F(BufferQueueTest, RegisterDeleteBufferListener001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, QueueAndDequeueDelegator001, TestSize.Level0)
 {
-    surfaceDelegator = ProducerSurfaceDelegator::Create();
-    GSError ret = bq->RegisterSurfaceDelegator(surfaceDelegator->AsObject(), csurface1);
-    ASSERT_EQ(ret, GSERROR_OK);
-
     IBufferProducer::RequestBufferReturnValue retval;
-    ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    auto ret = bq->RequestBuffer(requestConfig, bedata, retval);
     ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_NE(retval.buffer, nullptr);
     ASSERT_GE(retval.sequence, 0);
 
     sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;

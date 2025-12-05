@@ -427,6 +427,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
 int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, void **virAddr)
 {
     if (buffer == nullptr || virAddr == nullptr || fenceFd < 0) {
+        BLOGE("parameter error");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -445,6 +446,7 @@ int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, v
 int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parcel)
 {
     if (parcel == nullptr || parcel->msgParcel == nullptr || buffer == nullptr) {
+        BLOGE("parameter error");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> bufferImpl = SurfaceBuffer::NativeBufferToSurfaceBuffer(buffer);
@@ -454,12 +456,13 @@ int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parc
 int32_t OH_NativeBuffer_ReadFromParcel(OHIPCParcel* parcel, OH_NativeBuffer** buffer)
 {
     if (parcel == nullptr || parcel->msgParcel == nullptr || buffer == nullptr) {
+        BLOGE("parameter error");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     uint32_t sequence;
     sptr<SurfaceBuffer> sfBuffer = nullptr;
     GSError ret = ReadSurfaceBufferImpl(*(parcel->msgParcel), sequence, sfBuffer);
-    if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (ret != OHOS::SURFACE_ERROR_OK || sfBuffer == nullptr) {
         BLOGE("Read parcel failed, ret:%{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
@@ -475,6 +478,7 @@ int32_t OH_NativeBuffer_ReadFromParcel(OHIPCParcel* parcel, OH_NativeBuffer** bu
 int32_t OH_NativeBuffer_IsSupported(OH_NativeBuffer_Config config, bool* isSupported)
 {
     if (isSupported == nullptr) {
+        BLOGE("parameter error");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     if (config.width <= 0 || config.height <= 0 || config.format < 0 || config.format >= GRAPHIC_PIXEL_FMT_BUTT) {
@@ -489,6 +493,7 @@ int32_t OH_NativeBuffer_IsSupported(OH_NativeBuffer_Config config, bool* isSuppo
 int32_t OH_NativeBuffer_MapAndGetConfig(OH_NativeBuffer* buffer, void** virAddr, OH_NativeBuffer_Config* config)
 {
     if (buffer == nullptr || virAddr == nullptr || config == nullptr) {
+        BLOGE("parameter error");
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     SurfaceBuffer* sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);

@@ -135,6 +135,7 @@ public:
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer);
 
     GSError RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<Surface> cSurface);
+    GSError UnregisterSurfaceDelegator();
 
     bool QueryIfBufferAvailable();
 
@@ -377,7 +378,7 @@ private:
     const bool isLocalRender_;
     uint32_t lastFlusedSequence_ = 0;
     sptr<SyncFence> lastFlusedFence_;
-    wptr<ConsumerSurfaceDelegator> wpCSurfaceDelegator_;
+    sptr<ConsumerSurfaceDelegator> sptrCSurfaceDelegator_;
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     bool isBufferHold_ = false;

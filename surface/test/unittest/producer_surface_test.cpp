@@ -20,11 +20,13 @@
 #include <consumer_surface.h>
 #include <sys/time.h>
 #include <producer_surface.h>
+
 #include "buffer_consumer_listener.h"
 #include <native_window.h>
 #include "sync_fence.h"
 #include "producer_surface_delegator.h"
 #include "metadata_helper.h"
+#include "remote_object_mock.h"
 #include "surface_aps_sdr_utils.h"
 #include "surface_buffer_impl.h"
 
@@ -1568,10 +1570,12 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer003, TestSize.Level0)
  */
 HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
-    GSError ret = pSurface->CleanCache();
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ret = pSurface->RegisterSurfaceDelegator(nullptr);
+    auto ret = pSurface->RegisterSurfaceDelegator(nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    ret = pSurface->RegisterSurfaceDelegator(remoteObjectMocker);
+    ASSERT_NE(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*

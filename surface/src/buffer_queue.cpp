@@ -217,12 +217,12 @@ bool BufferQueue::QueryIfBufferAvailable()
     return ret;
 }
 
-static GSError DelegatorDequeueBuffer(wptr<ConsumerSurfaceDelegator>& delegator,
+static GSError DelegatorDequeueBuffer(sptr<ConsumerSurfaceDelegator>& delegator,
                                       const BufferRequestConfig& config,
                                       sptr<BufferExtraData>& bedata,
                                       struct IBufferProducer::RequestBufferReturnValue& retval)
 {
-    auto consumerDelegator = delegator.promote();
+    auto consumerDelegator = delegator;
     if (consumerDelegator == nullptr) {
         BLOGE("Consumer surface delegator has been expired");
         return GSERROR_INVALID_ARGUMENTS;
@@ -420,8 +420,8 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
-    if (wpCSurfaceDelegator_ != nullptr) {
-        return DelegatorDequeueBuffer(wpCSurfaceDelegator_, config, bedata, retval);
+    if (sptrCSurfaceDelegator_ != nullptr) {
+        return DelegatorDequeueBuffer(sptrCSurfaceDelegator_, config, bedata, retval);
     }
     std::unique_lock<std::mutex> lock(mutex_);
     return RequestBufferLocked(config, bedata, retval, lock);
@@ -606,7 +606,7 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
 
 GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence)
 {
-    auto consumerDelegator = wpCSurfaceDelegator_.promote();
+    auto consumerDelegator = sptrCSurfaceDelegator_;
     if (consumerDelegator == nullptr) {
         BLOGE("Consumer surface delegator has been expired");
         return GSERROR_INVALID_ARGUMENTS;
@@ -693,7 +693,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     }
     CallConsumerListener();
 
-    if (wpCSurfaceDelegator_ != nullptr) {
+    if (sptrCSurfaceDelegator_ != nullptr) {
         sret = DelegatorQueueBuffer(sequence, fence);
     }
     return sret;
@@ -1446,13 +1446,15 @@ GSError BufferQueue::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<S
         BLOGE("Failed to set client");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    if (!surfaceDelegator->SetBufferQueue(this)) {
-        BLOGE("Failed to set bufferqueue");
-        return GSERROR_INVALID_ARGUMENTS;
-    }
 
     surfaceDelegator->SetSurface(cSurface);
-    wpCSurfaceDelegator_ = surfaceDelegator;
+    sptrCSurfaceDelegator_ = surfaceDelegator;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::UnregisterSurfaceDelegator()
+{
+    sptrCSurfaceDelegator_ = nullptr;
     return GSERROR_OK;
 }
 

@@ -29,6 +29,17 @@ using namespace testing;
 using namespace testing::ext;
 
 namespace OHOS::Rosen {
+class TestConsumerSurfaceTest : public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"surf.111");
+};
+
+class TransactConsumerSurfaceStub : public IRemoteStub<TestConsumerSurfaceTest> {
+public:
+    TransactConsumerSurfaceStub() = default;
+    ~TransactConsumerSurfaceStub() = default;
+};
+
 class ConsumerSurfaceTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -64,10 +75,10 @@ public:
     static inline sptr<IConsumerSurface> cs = nullptr;
     static inline sptr<Surface> ps = nullptr;
     static inline sptr<BufferQueue> bq = nullptr;
-    static inline sptr<ProducerSurfaceDelegator> surfaceDelegator = nullptr;
     static inline sptr<BufferQueueConsumer> consumer_ = nullptr;
     static inline uint32_t firstSeqnum = 0;
     sptr<ConsumerSurface> surface_ = nullptr;
+    static inline bool dlopenTestEnabled_ = false;
 };
 
 void ConsumerSurfaceTest::SetUpTestCase()
@@ -78,7 +89,6 @@ void ConsumerSurfaceTest::SetUpTestCase()
     auto p = cs->GetProducer();
     bq = new BufferQueue("test");
     ps = Surface::CreateSurfaceAsProducer(p);
-    surfaceDelegator = ProducerSurfaceDelegator::Create();
 }
 
 void ConsumerSurfaceTest::TearDownTestCase()
@@ -86,7 +96,6 @@ void ConsumerSurfaceTest::TearDownTestCase()
     cs = nullptr;
     bq = nullptr;
     ps = nullptr;
-    surfaceDelegator = nullptr;
 }
 
 void ConsumerSurfaceTest::deleteBuffer(int32_t bufferId)
@@ -99,10 +108,12 @@ void ConsumerSurfaceTest::SetUp()
     ASSERT_NE(surface_, nullptr);
     ASSERT_EQ(surface_->producer_, nullptr);
     ASSERT_EQ(surface_->consumer_, nullptr);
+    dlopenTestEnabled_ = true;
 }
 
 void ConsumerSurfaceTest::TearDown()
 {
+    dlopenTestEnabled_ = false;
     surface_ = nullptr;
 }
 
@@ -112,6 +123,46 @@ public:
     {
     }
 };
+
+using DlopenFunc = void*(*)(const char*, int);
+using DlcloseFunc = int(*)(void*);
+static DlopenFunc g_realDlopen = nullptr;
+static DlcloseFunc g_realDlclose = nullptr;
+
+extern "C" {
+    void* dlopen(const char* filename, int flag)
+    {
+        if (ConsumerSurfaceTest::dlopenTestEnabled_ &&
+            filename && strstr(filename, "libdelegator.z.so")) {
+            return reinterpret_cast<void *>(0x12345678);
+        }
+
+        if (!g_realDlopen) {
+            g_realDlopen = reinterpret_cast<DlopenFunc>(dlsym(RTLD_NEXT, "dlopen"));
+            if (!g_realDlopen) {
+                return nullptr;
+            }
+        }
+
+        return g_realDlopen(filename, flag);
+    }
+
+    int dlclose(void* handle)
+    {
+        if (handle == reinterpret_cast<void *>(0x12345678)) {
+            return 0;
+        }
+
+        if (!g_realDlclose) {
+            g_realDlclose = reinterpret_cast<DlcloseFunc>(dlsym(RTLD_NEXT, "dlclose"));
+            if (!g_realDlclose) {
+                return -1;
+            }
+        }
+
+        return g_realDlclose(handle);
+    }
+}
 
 /*
 * Function: GetProducer
@@ -1802,9 +1853,9 @@ HWTEST_F(ConsumerSurfaceTest, AttachBuffer005, TestSize.Level0)
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
-    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
-    GSError ret = cs->RegisterSurfaceDelegator(remoteObjectMocker);
-    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<TransactConsumerSurfaceStub> surfaceDelegator = new TransactConsumerSurfaceStub();
+    GSError ret = cs->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
+    ASSERT_NE(ret, GSERROR_OK);
 }
 
 /*
@@ -1819,9 +1870,9 @@ HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator002, TestSize.Level0)
 {
     GSError ret = surface_->RegisterSurfaceDelegator(nullptr);
     ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
-    ASSERT_NE(surfaceDelegator, nullptr);
-    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
-    ret = surface_->RegisterSurfaceDelegator(remoteObjectMocker);
+
+    sptr<TransactConsumerSurfaceStub> surfaceDelegator = new TransactConsumerSurfaceStub();
+    ret = surface_->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
     ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
 }
 

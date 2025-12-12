@@ -35,6 +35,17 @@ using namespace testing::ext;
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
 
 namespace OHOS::Rosen {
+class TestProducerSurface : public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"surf.111");
+};
+
+class TransactProducerSurfacerStub : public IRemoteStub<TestProducerSurface> {
+public:
+    TransactProducerSurfacerStub() = default;
+    ~TransactProducerSurfacerStub() = default;
+};
+
 class ProducerSurfaceTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -74,7 +85,48 @@ public:
     }
     sptr<ProducerSurface> surface_ = nullptr;
     sptr<ProducerSurface> surfaceMd_ = nullptr;
+    static inline bool dlopenTestEnabled_ = false;
 };
+
+using DlopenFunc = void*(*)(const char*, int);
+using DlcloseFunc = int(*)(void*);
+static DlopenFunc g_realDlopen = nullptr;
+static DlcloseFunc g_realDlclose = nullptr;
+
+extern "C" {
+    void* dlopen(const char* filename, int flag)
+    {
+        if (ProducerSurfaceTest::dlopenTestEnabled_ &&
+            filename && strstr(filename, "libdelegator.z.so")) {
+            return reinterpret_cast<void *>(0x12345678);
+        }
+
+        if (!g_realDlopen) {
+            g_realDlopen = reinterpret_cast<DlopenFunc>(dlsym(RTLD_NEXT, "dlopen"));
+            if (!g_realDlopen) {
+                return nullptr;
+            }
+        }
+
+        return g_realDlopen(filename, flag);
+    }
+
+    int dlclose(void* handle)
+    {
+        if (handle == reinterpret_cast<void *>(0x12345678)) {
+            return 0;
+        }
+
+        if (!g_realDlclose) {
+            g_realDlclose = reinterpret_cast<DlcloseFunc>(dlsym(RTLD_NEXT, "dlclose"));
+            if (!g_realDlclose) {
+                return -1;
+            }
+        }
+
+        return g_realDlclose(handle);
+    }
+}
 
 void ProducerSurfaceTest::SetUpTestCase()
 {
@@ -1561,7 +1613,7 @@ HWTEST_F(ProducerSurfaceTest, AttachBuffer003, TestSize.Level0)
 }
 
 /*
-* Function: RegisterSurfaceDelegator000
+* Function: RegisterSurfaceDelegator001
 * Type: Function
 * Rank: Important(1)
 * EnvConditions: N/A
@@ -1573,9 +1625,10 @@ HWTEST_F(ProducerSurfaceTest, RegisterSurfaceDelegator001, TestSize.Level0)
     auto ret = pSurface->RegisterSurfaceDelegator(nullptr);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 
-    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
-    ret = pSurface->RegisterSurfaceDelegator(remoteObjectMocker);
-    ASSERT_NE(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    dlopenTestEnabled_ = true;
+    sptr<TransactProducerSurfacerStub> surfaceDelegator = new TransactProducerSurfacerStub();
+    ret = pSurface->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*

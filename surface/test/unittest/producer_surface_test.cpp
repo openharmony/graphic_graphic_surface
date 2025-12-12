@@ -155,6 +155,7 @@ void ProducerSurfaceTest::SetUp()
     surfaceMd_ = new ProducerSurface(producer);
     ASSERT_NE(surfaceMd_, nullptr);
     surfaceMd_->producer_ = nullptr;
+    dlopenTestEnabled_ = false;
 }
 
 void ProducerSurfaceTest::TearDown()

@@ -108,7 +108,6 @@ void ConsumerSurfaceTest::SetUp()
     ASSERT_NE(surface_, nullptr);
     ASSERT_EQ(surface_->producer_, nullptr);
     ASSERT_EQ(surface_->consumer_, nullptr);
-    dlopenTestEnabled_ = true;
 }
 
 void ConsumerSurfaceTest::TearDown()
@@ -1853,6 +1852,7 @@ HWTEST_F(ConsumerSurfaceTest, AttachBuffer005, TestSize.Level0)
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator001, TestSize.Level0)
 {
+    dlopenTestEnabled_ = true;
     sptr<TransactConsumerSurfaceStub> surfaceDelegator = new TransactConsumerSurfaceStub();
     GSError ret = cs->RegisterSurfaceDelegator(surfaceDelegator->AsObject());
     ASSERT_NE(ret, GSERROR_OK);
@@ -1868,6 +1868,7 @@ HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator001, TestSize.Level0)
  */
 HWTEST_F(ConsumerSurfaceTest, RegisterSurfaceDelegator002, TestSize.Level0)
 {
+    dlopenTestEnabled_ = true;
     GSError ret = surface_->RegisterSurfaceDelegator(nullptr);
     ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
 

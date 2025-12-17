@@ -64,18 +64,18 @@ typedef struct OHIPCParcel OHIPCParcel;
  * @version 1.0
  */
 typedef enum OH_NativeBuffer_Usage {
-    NATIVEBUFFER_USAGE_CPU_READ = (1ULL << 0),        /// < CPU read buffer */
-    NATIVEBUFFER_USAGE_CPU_WRITE = (1ULL << 1),       /// < CPU write memory */
-    NATIVEBUFFER_USAGE_MEM_DMA = (1ULL << 3),         /// < Direct memory access (DMA) buffer */
+    NATIVEBUFFER_USAGE_CPU_READ = (1ULL << 0),        ///< CPU read buffer
+    NATIVEBUFFER_USAGE_CPU_WRITE = (1ULL << 1),       ///< CPU write memory
+    NATIVEBUFFER_USAGE_MEM_DMA = (1ULL << 3),         ///< Direct memory access (DMA) buffer
     /**
      * MMZ with cache
      * @since 20
      */
     NATIVEBUFFER_USAGE_MEM_MMZ_CACHE = (1ULL << 5),
-    NATIVEBUFFER_USAGE_HW_RENDER = (1ULL << 8),       /// < For GPU write case */
-    NATIVEBUFFER_USAGE_HW_TEXTURE = (1ULL << 9),      /// < For GPU read case */
-    NATIVEBUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), /// < Often be mapped for direct CPU reads */
-    NATIVEBUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  /// < 512 bytes alignment */
+    NATIVEBUFFER_USAGE_HW_RENDER = (1ULL << 8),       ///< For GPU write case
+    NATIVEBUFFER_USAGE_HW_TEXTURE = (1ULL << 9),      ///< For GPU read case
+    NATIVEBUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), ///< Often be mapped for direct CPU reads
+    NATIVEBUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  ///< 512 bytes alignment
 } OH_NativeBuffer_Usage;
 
 /**

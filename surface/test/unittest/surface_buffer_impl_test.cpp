@@ -14,6 +14,7 @@
  */
 #include <securec.h>
 #include <gtest/gtest.h>
+#include <fcntl.h>
 #include <surface.h>
 #include <surface_buffer_impl.h>
 #include <buffer_utils.h>
@@ -634,5 +635,84 @@ HWTEST_F(SurfaceBufferImplTest, GetFlushedTimestampCorrectnessTest, TestSize.Lev
     flushedTimestamp = bufferTmp->GetFlushedTimestamp();
     std::cout << "flushedTimestamp = " << flushedTimestamp << std::endl;
     ASSERT_EQ(flushedTimestamp, now);
+}
+
+/*
+ * Function: CloneBufferHandle
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. call SetBufferHandle and check buffer handle
+ *                  3. set fd of handle to 123
+ *                  4. call CloneBufferHandle and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle001, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    auto sret = buffer->Alloc(requestConfig);
+    ASSERT_EQ(sret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer->GetBufferHandle(), nullptr);
+    BufferHandle* bufferHandle = buffer->CloneBufferHandle(buffer->GetBufferHandle());
+    if (bufferHandle != nullptr) {
+        BufferHandle *handle = buffer->GetBufferHandle();
+        ASSERT_NE(bufferHandle, handle);
+        ASSERT_EQ(bufferHandle->width, handle->width);
+        ASSERT_EQ(bufferHandle->stride, handle->stride);
+        ASSERT_EQ(bufferHandle->height, handle->height);
+        ASSERT_EQ(bufferHandle->size, handle->size);
+        ASSERT_EQ(bufferHandle->format, handle->format);
+        ASSERT_EQ(bufferHandle->usage, handle->usage);
+        ASSERT_EQ(bufferHandle->reserveFds, handle->reserveFds);
+        ASSERT_EQ(bufferHandle->reserveInts, handle->reserveInts);
+        ASSERT_NE(bufferHandle->fd, handle->fd);
+        for (uint32_t i = 0; i < bufferHandle->reserveInts; i++)
+        {
+            ASSERT_NE(bufferHandle->reserve[i], handle->reserve[i]);
+        }
+    }
+}
+
+/*
+ * Function: CloneBufferHandle
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. call SetBufferHandle and check buffer handle
+ *                  3. set fd of handle to -1
+ *                  4. call CloneBufferHandle and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle002, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    BufferHandle *handle = new BufferHandle();
+    buffer->SetBufferHandle(handle);
+    ASSERT_NE(buffer->GetBufferHandle(), nullptr);
+    handle->fd = -1;
+    BufferHandle* bufferHandle = buffer->CloneBufferHandle(buffer->GetBufferHandle());
+    ASSERT_EQ(bufferHandle, nullptr);
+}
+
+/*
+ * Function: CloneBufferHandle
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. call SetBufferHandle and check buffer handle
+ *                  3. set handle to nullptr
+ *                  4. call CloneBufferHandle and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle003, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    buffer->SetBufferHandle(nullptr);
+    ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
+    BufferHandle* bufferHandle = buffer->CloneBufferHandle(buffer->GetBufferHandle());
+    ASSERT_EQ(bufferHandle, nullptr);
 }
 }

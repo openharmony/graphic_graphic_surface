@@ -108,6 +108,7 @@ public:
     uint64_t GetBufferId() override;
     uint64_t GetFlushedTimestamp() const override;
     void SetFlushTimestamp(uint64_t timestamp) override;
+    BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);

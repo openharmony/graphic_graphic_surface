@@ -241,6 +241,11 @@ public:
         (void)timestamp;
         return;
     }
+    virtual BufferHandle* CloneBufferHandle(const BufferHandle* handle) const
+    {
+        (void)handle;
+        return nullptr;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

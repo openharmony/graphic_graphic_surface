@@ -27,11 +27,11 @@
 #include "surface_trace.h"
 #include "v1_1/buffer_handle_meta_key_type.h"
 #include "v1_2/display_buffer_type.h"
-#include "v1_3/include/idisplay_buffer.h"
+#include "v1_4/include/idisplay_buffer.h"
 
 namespace OHOS {
 namespace {
-using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_3::IDisplayBuffer>;
+using IDisplayBufferSptr = std::shared_ptr<OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer>;
 static IDisplayBufferSptr g_displayBuffer;
 static std::mutex g_displayBufferMutex;
 static std::mutex g_seqNumMutex;
@@ -68,7 +68,7 @@ IDisplayBufferSptr GetOrResetDisplayBuffer()
         return g_displayBuffer;
     }
 
-    g_displayBuffer.reset(OHOS::HDI::Display::Buffer::V1_3::IDisplayBuffer::Get());
+    g_displayBuffer.reset(OHOS::HDI::Display::Buffer::V1_4::IDisplayBuffer::Get());
     if (g_displayBuffer == nullptr) {
         BLOGE("IDisplayBuffer::Get return nullptr.");
         return nullptr;
@@ -939,5 +939,25 @@ uint64_t SurfaceBufferImpl::GetFlushedTimestamp() const
 void SurfaceBufferImpl::SetFlushTimestamp(uint64_t timestamp)
 {
     lastFlushedTime_.store(timestamp);
+}
+
+BufferHandle* SurfaceBufferImpl::CloneBufferHandle(const BufferHandle* handle) const
+{
+    if (handle == nullptr || handle->fd < 0) {
+        BLOGE("parameter error.");
+        return nullptr;
+    }
+    IDisplayBufferSptr displayBuffer = GetOrResetDisplayBuffer();
+    if (displayBuffer == nullptr) {
+        BLOGE("displayBuffer is nullptr.");
+        return nullptr;
+    }
+    BufferHandle* outHandle = nullptr;
+    auto ret = displayBuffer->CloneDmaBufferHandle(*handle, outHandle);
+    if (ret != 0) {
+        BLOGE("hdi clone dma buffer error, ret:%{public}d.", ret);
+        return nullptr;
+    }
+    return outHandle;
 }
 } // namespace OHOS

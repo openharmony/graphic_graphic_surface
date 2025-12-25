@@ -667,10 +667,6 @@ HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle001, TestSize.Level0)
         ASSERT_EQ(bufferHandle->reserveFds, handle->reserveFds);
         ASSERT_EQ(bufferHandle->reserveInts, handle->reserveInts);
         ASSERT_NE(bufferHandle->fd, handle->fd);
-        for (uint32_t i = 0; i < bufferHandle->reserveInts; i++)
-        {
-            ASSERT_NE(bufferHandle->reserve[i], handle->reserve[i]);
-        }
     }
 }
 

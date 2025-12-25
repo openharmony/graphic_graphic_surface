@@ -20,7 +20,6 @@
 #include <message_option.h>
 #include <message_parcel.h>
 
-#include "buffer_log.h"
 #include "buffer_extra_data.h"
 #include "delegator_adapter.h"
 #include "ibuffer_producer.h"

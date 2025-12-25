@@ -33,6 +33,8 @@ ConsumerSurfaceDelegator::ConsumerSurfaceDelegator()
         FunctionFlags::CONSUMER_CREATE_FUNC);
     if (consumerDelegator != nullptr) {
         mDelegator_ = reinterpret_cast<uintptr_t>(consumerDelegator());
+    } else {
+        BLOGE("remote ConsumerSurfaceDelegator consumerDelegator is nullptr");
     }
 }
 
@@ -43,6 +45,9 @@ ConsumerSurfaceDelegator::~ConsumerSurfaceDelegator()
         FunctionFlags::CONSUMER_DESTROY_FUNC);
     if (consumerDelegatorDestroy != nullptr && mDelegator_ != 0) {
         consumerDelegatorDestroy(mDelegator_);
+    } else {
+        BLOGE("%{public}s error, ~ConsumerSurfaceDelegator:%{public}d mDelegator:%{public}d",
+            __func__, consumerDelegatorDestroy != nullptr, mDelegator_ != 0);
     }
 }
 
@@ -72,7 +77,8 @@ bool ConsumerSurfaceDelegator::SetClient(sptr<IRemoteObject> client)
     if (setClientFunc != nullptr && mDelegator_ != 0) {
         return setClientFunc(mDelegator_, client);
     }
-    BLOGE("remote SetClient is nullptr");
+    BLOGE("%{public}s error, SetClient:%{public}d mDelegator:%{public}d",
+        __func__, setClientFunc != nullptr, mDelegator_ != 0);
     return false;
 }
 

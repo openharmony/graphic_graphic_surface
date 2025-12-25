@@ -61,11 +61,11 @@ DelegatorAdapter::~DelegatorAdapter()
 {
     std::unique_lock<std::mutex> lock(mutex_);
     if (handle_ != nullptr) {
+        funcMap_.clear();
         if (dlclose(handle_) != 0) {
             BLOGE("cannot close dynamic library dlerror : %{public}s", dlerror());
         }
         handle_ = nullptr;
-        funcMap_.clear();
         BLOGI("~DelegatorAdapter is called");
     }
 }

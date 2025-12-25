@@ -63,6 +63,9 @@ void ProducerSurfaceDelegator::SetSurface(sptr<Surface> surface)
         FunctionFlags::SET_PRODUCER_SURFACE_FUNC);
     if (setSurfaceFunc != nullptr && mDelegator_ != 0) {
         setSurfaceFunc(mDelegator_, surface);
+    } else {
+        BLOGE("%{public}s error, SetSurface:%{public}d mDelegator:%{public}d",
+            __func__, setSurfaceFunc != nullptr, mDelegator_ != 0);
     }
 }
 

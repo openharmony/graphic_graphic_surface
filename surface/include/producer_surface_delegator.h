@@ -25,7 +25,6 @@
 #include <iremote_stub.h>
 
 #include "surface.h"
-#include "buffer_log.h"
 #include "sync_fence.h"
 
 namespace OHOS {

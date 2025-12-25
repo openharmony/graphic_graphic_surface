@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef DELEGATOR_SURFACE_TEST_UNITTEST_H
-#define DELEGATOR_SURFACE_TEST_UNITTEST_H
+#ifndef REMOTE_OBJECT_MOCK_H
+#define REMOTE_OBJECT_MOCK_H
 
 #include <consumer_surface.h>
 #include <gtest/gtest.h>
@@ -83,4 +83,4 @@ public:
 };
 }
 
-#endif // DELEGATOR_SURFACE_TEST_UNITTEST_H
+#endif // REMOTE_OBJECT_MOCK_H

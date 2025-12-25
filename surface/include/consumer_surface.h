@@ -743,10 +743,10 @@ public:
      */
     bool IsCached(uint32_t bufferSeqNum) const override;
     /**
-     * @brief set the surface is destroy
+     * @brief set the surface destroy
      *
-     * @return true surface is in destroy.
-     * @return false surface is in not destroy.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError UnregisterSurfaceDelegator() override;
 

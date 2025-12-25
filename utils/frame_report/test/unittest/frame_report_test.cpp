@@ -32,6 +32,7 @@ namespace {
     static const int64_t FRT_GAME_BUFFER_TIME = 2048;
     static std::string FRT_SURFACE_NAME_EMPTY = "";
     static std::string FRT_SURFACE_NAME = "SurfaceTEST";
+    static const uint64_t FRT_UNIQUEID = 0L;
 }
 
 namespace OHOS::Rosen {
@@ -277,7 +278,7 @@ HWTEST_F(FrameReportTest, NotifyFrameInfo001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ = nullptr;
     Rosen::FrameReport::GetInstance().NotifyFrameInfo(FRT_GAME_PID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME,
-                                                      FRT_SURFACE_NAME_EMPTY);
+                                                      FRT_SURFACE_NAME_EMPTY, FRT_UNIQUEID);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ == nullptr);
 }
 

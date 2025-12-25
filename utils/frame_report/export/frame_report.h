@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace Rosen {
 
-using NotifyFrameInfoFunc = bool(*)(int32_t, const std::string&, int64_t, const std::string&);
+using NotifyFrameInfoFunc = bool(*)(int32_t, const std::string&, int64_t, const std::string&, uint64_t);
 constexpr int32_t FR_DEFAULT_PID = 0;
 constexpr uint64_t FR_DEFAULT_UNIQUEID = 0;
 
@@ -52,7 +52,8 @@ private:
     void* LoadSymbol(const std::string& symName);
 
     void DeletePidInfo();
-    void NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp, const std::string& bufferMsg);
+    void NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp, const std::string& bufferMsg,
+        uint64_t uniqueId);
 
     std::atomic<int32_t> activelyPid_ = FR_DEFAULT_PID;
     std::atomic<uint64_t> activelyUniqueId_ = FR_DEFAULT_UNIQUEID;

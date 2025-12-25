@@ -512,7 +512,7 @@ int32_t OH_NativeBuffer_MapAndGetConfig(OH_NativeBuffer* buffer, void** virAddr,
     config->width = sbuffer->GetWidth();
     config->height = sbuffer->GetHeight();
     config->format = sbuffer->GetFormat();
-    config->usage = sbuffer->GetUsage();
+    config->usage = static_cast<int32_t>(sbuffer->GetUsage());
     config->stride = sbuffer->GetStride();
 
     return OHOS::SURFACE_ERROR_OK;

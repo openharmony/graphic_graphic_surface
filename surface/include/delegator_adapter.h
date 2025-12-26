@@ -12,14 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef DISPLAY_COMPOSER_SERVER_H
-#define DISPLAY_COMPOSER_SERVER_H
+#ifndef DELEGATOR_ADAPTER_H
+#define DELEGATOR_ADAPTER_H
 
 #include <any>
 #include <mutex>
 #include <typeindex>
 
-#include "buffer_log.h"
 #include "consumer_surface_delegator.h"
 #include "producer_surface_delegator.h"
 #include "singleton.h"

@@ -163,6 +163,10 @@ void ProducerSurfaceTest::TearDown()
     surface_ = nullptr;
 }
 
+void TestGameUpascaleProcessor(int32_t *width, int32_t *height)
+{
+}
+
 /*
 * Function: ProducerSurface
 * Type: Function
@@ -249,6 +253,23 @@ HWTEST_F(ProducerSurfaceTest, RequestBuffer004, TestSize.Level0)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
     sptr<SyncFence> releaseFence = nullptr;
+    GSError ret = surface_->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: RequestBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RequestBuffer with nullptr params
+*                  2. check ret
+ */
+HWTEST_F(ProducerSurfaceTest, RequestBuffer005, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> releaseFence = nullptr;
+    surface_->SetGameUpscaleProcessor(TestGameUpascaleProcessor);
     GSError ret = surface_->RequestBuffer(buffer, releaseFence, requestConfig);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
@@ -3840,9 +3861,6 @@ HWTEST_F(ProducerSurfaceTest, GetAvailableBufferCount001, TestSize.Level0)
  * EnvConditions: N/A
  * CaseDescription: SetGameUpscaleProcessor
  */
-void TestGameUpascaleProcessor(int32_t *width, int32_t *height)
-{
-}
 HWTEST_F(ProducerSurfaceTest, SetGameUpscaleProcessor, TestSize.Level0)
 {
     GSError result = pSurface->SetGameUpscaleProcessor(TestGameUpascaleProcessor);

@@ -32,6 +32,7 @@ namespace {
     static const int64_t FRT_GAME_BUFFER_TIME = 2048;
     static std::string FRT_SURFACE_NAME_EMPTY = "";
     static std::string FRT_SURFACE_NAME = "SurfaceTEST";
+    static const uint64_t FRT_UNIQUEID = 0L;
 }
 
 namespace OHOS::Rosen {
@@ -277,8 +278,29 @@ HWTEST_F(FrameReportTest, NotifyFrameInfo001, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ = nullptr;
     Rosen::FrameReport::GetInstance().NotifyFrameInfo(FRT_GAME_PID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME,
-                                                      FRT_SURFACE_NAME_EMPTY);
+                                                      FRT_SURFACE_NAME_EMPTY, FRT_UNIQUEID);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ == nullptr);
+}
+
+/*
+* Function: NotifyFrameInfo002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NotifyFrameInfo
+*                  2. check ret
+ */
+HWTEST_F(FrameReportTest, NotifyFrameInfo002, Function | MediumTest | Level2)
+{
+    Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ = [](int32_t pid,
+                                                                 const std::string &layerName,
+                                                                 int64_t timestamp,
+                                                                 const std::string &bufferMsg,
+                                                                 uint64_t uniqueId) noexcept { return uniqueId == 0; };
+    Rosen::FrameReport::GetInstance().NotifyFrameInfo(
+        FRT_GAME_PID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME, FRT_SURFACE_NAME_EMPTY, FRT_UNIQUEID);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
+    Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ = nullptr;
 }
 
 } // namespace OHOS::Rosen

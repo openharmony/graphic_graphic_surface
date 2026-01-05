@@ -218,17 +218,17 @@ void FrameReport::Report(const std::string& layerName)
         return;
     }
     bufferMsg = msg;
-    NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg);
+    NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg, activelyUniqueId_.load());
 }
 
 void FrameReport::NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp,
-                                  const std::string& bufferMsg)
+                                  const std::string& bufferMsg, uint64_t uniqueId)
 {
     std::shared_lock lock(mutex_);
     if (notifyFrameInfoFunc_ == nullptr) {
         return;
     }
-    bool result = notifyFrameInfoFunc_(pid, layerName, timeStamp, bufferMsg);
+    bool result = notifyFrameInfoFunc_(pid, layerName, timeStamp, bufferMsg, uniqueId);
     if (!result) {
         LOGW("FrameReport::NotifyFrameInfo Call GAS_NotifyFrameInfo Func Error");
         DeletePidInfo();

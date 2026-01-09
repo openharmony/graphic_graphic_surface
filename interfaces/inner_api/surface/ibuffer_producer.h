@@ -82,7 +82,13 @@ public:
     virtual GSError CleanCache(bool cleanAll = false, uint32_t *bufSeqNum = nullptr) = 0;
     virtual GSError GoBackground() = 0;
 
-    virtual GSError RegisterReleaseListener(sptr<IProducerListener> listener) = 0;
+    virtual GSError RegisterReleaseListener(sptr<IProducerListener> listener,
+        bool isOnReleaseBufferWithSequenceAndFence = false)
+    {
+        (void)listener;
+        (void)isOnReleaseBufferWithSequenceAndFence;
+        return GSERROR_OK;
+    }
     virtual GSError RegisterReleaseListenerBackup(sptr<IProducerListener> listener)
     {
         (void)listener;

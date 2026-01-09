@@ -332,6 +332,14 @@ public:
      */
     GSError RegisterReleaseListenerBackup(OnReleaseFuncWithFence func) override;
     /**
+     * @brief Register release listener function.
+     * 
+     * @param func [in] The callback of release function.
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
+    GSError RegisterReleaseListener(OnReleaseFuncWithSequenceAndFence func) override;
+    /**
      * @brief Unregister release listener function.
      * 
      * @return {@link GSERROR_OK} 0 - Success.
@@ -893,6 +901,7 @@ private:
     GSError RequestBufferLocked(sptr<SurfaceBuffer>& buffer,
         sptr<SyncFence>& fence, BufferRequestConfig& config);
     GSError ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& buffer);
+    GSError OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence> &fence);
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;
@@ -904,6 +913,7 @@ private:
     bool isDisconnected_ = true;
     sptr<IProducerListener> listener_;
     sptr<IProducerListener> listenerBackup_;
+    OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence_;
     std::mutex listenerMutex_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;
     sptr<ProducerSurfaceDelegator> surfaceDelegator_ = nullptr;

@@ -308,9 +308,14 @@ void BufferQueue::RequestBufferDebugInfoLocked()
     SURFACE_TRACE_NAME_FMT("lockLastFlushedBuffer seq: %u， reserveSlotNum: %u",
         acquireLastFlushedBufSequence_, detachReserveSlotNum_);
     std::map<BufferState, int32_t> bufferState;
+    std::string strListenerClientPid = "";
     for (auto &[id, ele] : bufferQueueCache_) {
         SURFACE_TRACE_NAME_FMT("request buffer id: %u state: %u", id, ele.state);
         bufferState[ele.state] += 1;
+        if (ele.requestedFromListenerClientPid != 0) {
+            strListenerClientPid = strListenerClientPid + "Seq:" + std::to_string(id) + ", clientPid:" +
+            std::to_string(ele.requestedFromListenerClientPid) + ". ";
+        }
     }
     std::string str = std::to_string(uniqueId_) +
         ", Released: " + std::to_string(bufferState[BUFFER_STATE_RELEASED]) +
@@ -319,6 +324,7 @@ void BufferQueue::RequestBufferDebugInfoLocked()
         " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
     if (str.compare(requestBufferStateStr_) != 0) {
         requestBufferStateStr_ = str;
+        str += strListenerClientPid;
         BLOGE("all buffer are using, uniqueId: %{public}s", str.c_str());
     }
 }
@@ -378,7 +384,8 @@ GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr
 }
 
 GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
+    bool listenerSeqAndFence)
 {
     GSError ret = RequestBufferCheckStatus();
     if (ret != GSERROR_OK) {
@@ -398,10 +405,16 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         name_.c_str(), uniqueId_, bufferQueueSize_, detachReserveSlotNum_);
     // dequeue from free list
     sptr<SurfaceBuffer>& buffer = retval.buffer;
-    if (!(isPriorityAlloc_ && (GetUsedSize() < bufferQueueSize_ - detachReserveSlotNum_))) {
+    if (!(isPriorityAlloc_ && (GetUsedSize() < bufferQueueSize_ - detachReserveSlotNum_))
+        || listenerSeqAndFence) {
         ret = PopFromFreeListLocked(buffer, updateConfig);
         if (ret == GSERROR_OK) {
-            return ReuseBuffer(updateConfig, bedata, retval, lock);
+            return ReuseBuffer(updateConfig, bedata, retval, lock, listenerSeqAndFence);
+        }
+
+        if (listenerSeqAndFence) {
+            BLOGW("no buffer for listener, queueId: %" PRIu64 ".", uniqueId_);
+            return GSERROR_NO_BUFFER;
         }
 
         // check queue size
@@ -429,6 +442,12 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
 
 GSError BufferQueue::SetProducerCacheCleanFlag(bool flag)
 {
+    bool isOnReleaseBufferWithSequenceAndFence = isOnReleaseBufferWithSequenceAndFence_ &&
+                                                 listenerSeqAndFenceCallingPid_ != 0 &&
+                                                 connectedPid_ == listenerSeqAndFenceCallingPid_;
+    if (flag && isOnReleaseBufferWithSequenceAndFence) {
+        CleanCache(true, nullptr);
+    }
     std::unique_lock<std::mutex> lock(mutex_);
     return SetProducerCacheCleanFlagLocked(flag, lock);
 }
@@ -497,7 +516,8 @@ void BufferQueue::AddDeletingBuffersLocked(std::vector<uint32_t> &deletingBuffer
 }
 
 GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock)
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
+    bool listenerSeqAndFence)
 {
     if (retval.buffer == nullptr) {
         BLOGE("input buffer is null, uniqueId: %{public}" PRIu64 ".", uniqueId_);
@@ -516,12 +536,31 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     bool needRealloc = (config != mapIter->second.config);
     // config, realloc
     if (needRealloc) {
+        if (listenerSeqAndFence) {
+            freeList_.push_back(retval.sequence);
+            BLOGW("Realloc is not support when listening for SeqAndFence,"
+                " buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
+            return GSERROR_NO_BUFFER;
+        }
         auto sret = ReallocBufferLocked(config, retval, lock);
         if (sret != GSERROR_OK) {
             return sret;
         }
     }
 
+    auto ret = UpdateReuseBufferState(needRealloc, bedata, retval, lock, listenerSeqAndFence);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+
+    SURFACE_TRACE_NAME_FMT("%s:%u", name_.c_str(), retval.sequence);
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::UpdateReuseBufferState(bool needRealloc, sptr<BufferExtraData> &bedata,
+    struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
+    bool listenerSeqAndFence)
+{
     bufferQueueCache_[retval.sequence].state = BUFFER_STATE_REQUESTED;
     retval.fence = bufferQueueCache_[retval.sequence].fence;
     bedata = retval.buffer->GetExtraData();
@@ -533,6 +572,18 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
 
     if (needRealloc || producerCacheClean_ || retval.buffer->GetConsumerAttachBufferFlag() ||
         bufferQueueCache_[retval.sequence].isPreAllocBuffer) {
+        if (listenerSeqAndFence) {
+            bufferQueueCache_[retval.sequence].state = BUFFER_STATE_RELEASED;
+            freeList_.push_back(retval.sequence);
+            BLOGW("not support when listening for SeqAndFence,"
+                "needRealloc:%{public}d, producerCacheClean:%{public}d,"
+                "ConsumerAttachBufferFlag:%{public}d, PreAllocBuffer:%{public}d, "
+                " buffer(%{public}u), uniqueId: %{public}" PRIu64 ".",
+                needRealloc, producerCacheClean_, retval.buffer->GetConsumerAttachBufferFlag(),
+                bufferQueueCache_[retval.sequence].isPreAllocBuffer,
+                retval.sequence, uniqueId_);
+            return GSERROR_NO_BUFFER;
+        }
         if (producerCacheClean_) {
             producerCacheList_.push_back(retval.sequence);
             if (CheckProducerCacheListLocked()) {
@@ -545,7 +596,6 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         retval.buffer = nullptr;
     }
 
-    SURFACE_TRACE_NAME_FMT("%s:%u", name_.c_str(), retval.sequence);
     return GSERROR_OK;
 }
 
@@ -566,6 +616,7 @@ GSError BufferQueue::CancelBufferLocked(uint32_t sequence, sptr<BufferExtraData>
         return SURFACE_ERROR_UNKOWN;
     }
     mapIter->second.buffer->SetExtraData(bedata);
+    mapIter->second.requestedFromListenerClientPid = 0;
 
     waitReqCon_.notify_all();
     waitAttachCon_.notify_all();
@@ -810,6 +861,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
     bufferSupportFastCompose_ = (bool)supportFastCompose;
+    mapIter->second.requestedFromListenerClientPid = 0;
 
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);
     lastFlushedDesiredPresentTimeStamp_ = mapIter->second.desiredPresentTimestamp;
@@ -988,7 +1040,9 @@ bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64
     return isBufferUtilPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
 }
 
-void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence)
+void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence,
+    bool isOnReleaseBufferWithSequenceAndFence,
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences)
 {
     {
         std::lock_guard<std::mutex> lockGuard(onBufferReleaseMutex_);
@@ -1009,7 +1063,13 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
 
     if (listener != nullptr) {
         SURFACE_TRACE_NAME_FMT("onBufferReleasedForProducer sequence: %u", buffer->GetSeqNum());
-        if (listener->OnBufferReleased() != GSERROR_OK) {
+        GSError ret =  GSERROR_OK;
+        if (isOnReleaseBufferWithSequenceAndFence) {
+            OnReleaseBufferWithSequenceAndFence(listener, requestBuffersAndFences);
+        } else {
+            ret = listener->OnBufferReleased();
+        }
+        if (ret != GSERROR_OK) {
             BLOGE("seq: %{public}u, OnBufferReleased faile, uniqueId: %{public}" PRIu64 ".",
                 buffer->GetSeqNum(), uniqueId_);
         }
@@ -1026,6 +1086,24 @@ void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sp
     OnBufferDeleteCbForHardwareThreadLocked(buffer);
 }
 
+void BufferQueue::OnReleaseBufferWithSequenceAndFence(sptr<IProducerListener> &listener,
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences)
+{
+    for (auto &requestBuffersAndFence : requestBuffersAndFences) {
+        SURFACE_TRACE_NAME_FMT("OnReleaseBufferWithSequenceAndFence sequence: %u",
+            requestBuffersAndFence.first);
+        auto ret = listener->OnBufferReleasedWithSequenceAndFence(requestBuffersAndFence.first,
+            requestBuffersAndFence.second);
+        if (ret != GSERROR_OK) {
+            std::unique_lock<std::mutex> lock(mutex_);
+            auto iter = bufferQueueCache_.find(requestBuffersAndFence.first);
+            if (iter != bufferQueueCache_.end()) {
+                CancelBufferLocked(requestBuffersAndFence.first, iter->second.buffer->GetExtraData());
+            }
+        }
+    }
+}
+
 void BufferQueue::OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const
 {
     if (onBufferDeleteForRSHardwareThread_ != nullptr) {
@@ -1040,51 +1118,111 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     }
 
     uint32_t sequence = buffer->GetSeqNum();
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
+    bool isOnReleaseBufferWithSequenceAndFence = false;
     SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
     {
         std::unique_lock<std::mutex> lock(mutex_);
+        auto ret = ReleaseBufferLocked(buffer, fence, lock);
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
+        isOnReleaseBufferWithSequenceAndFence = isOnReleaseBufferWithSequenceAndFence_ &&
+                                                listenerSeqAndFenceCallingPid_ != 0 &&
+                                                connectedPid_ == listenerSeqAndFenceCallingPid_;
+        if (isOnReleaseBufferWithSequenceAndFence) {
+            RequestBuffersForListenerLocked(requestBuffersAndFences, lock);
+        }
+    }
+    ListenerBufferReleasedCb(buffer, fence, isOnReleaseBufferWithSequenceAndFence, requestBuffersAndFences);
+
+    return GSERROR_OK;
+}
+
+void BufferQueue::RequestBuffersForListenerLocked(
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences, std::unique_lock<std::mutex> &lock)
+{
+    if (freeList_.empty()) {
+        return;
+    }
+    std::vector<BufferRequestConfig> bufferConfigs;
+    for (auto iter = freeList_.begin(); iter != freeList_.end(); ++iter) {
+        uint32_t sequence = *iter;
         auto mapIter = bufferQueueCache_.find(sequence);
         if (mapIter == bufferQueueCache_.end()) {
-            SURFACE_TRACE_NAME_FMT("buffer not found in cache");
-            BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
-            OnBufferDeleteCbForHardwareThreadLocked(buffer);
-            return SURFACE_ERROR_BUFFER_NOT_INCACHE;
+            continue;
         }
-
-        const auto &state = mapIter->second.state;
-        if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
-            SURFACE_TRACE_NAME_FMT("invalid state: %u", state);
-            BLOGD("invalid state: %{public}d, uniqueId: %{public}" PRIu64 ".", state, uniqueId_);
-            return SURFACE_ERROR_BUFFER_STATE_INVALID;
+        
+        BufferRequestConfig config = mapIter->second.buffer->GetBufferRequestConfig();
+        config.timeout = 0;
+        bool isExist = false;
+        for (uint32_t i = 0; i < bufferConfigs.size(); ++i) {
+            if (bufferConfigs[i] == config) {
+                isExist = true;
+                break;
+            }
         }
-
-        mapIter->second.state = BUFFER_STATE_RELEASED;
-
-        // merge surface buffer syncFence and releaseFence
-        auto surfaceBufferSyncFence = mapIter->second.buffer->GetSyncFence();
-        if (fence == nullptr) {
-            mapIter->second.fence = surfaceBufferSyncFence;
-        } else if (surfaceBufferSyncFence != nullptr && surfaceBufferSyncFence->IsValid()) {
-            mapIter->second.fence =
-                SyncFence::MergeFence("SurfaceReleaseFence", surfaceBufferSyncFence, fence);
-        } else {
-            mapIter->second.fence = fence;
+        if (!isExist) {
+            bufferConfigs.emplace_back(std::move(config));
         }
-        mapIter->second.buffer->SetAndMergeSyncFence(nullptr);
-
-        int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        lastConsumeTime_ = now - mapIter->second.lastAcquireTime;
-        if (mapIter->second.isDeleting) {
-            DeleteBufferInCache(sequence, lock);
-        } else {
-            freeList_.push_back(sequence);
-        }
-        waitReqCon_.notify_all();
-        waitAttachCon_.notify_all();
     }
-    ListenerBufferReleasedCb(buffer, fence);
+    uint32_t configIndex = 0;
+    while (configIndex < bufferConfigs.size()) {
+        sptr<BufferExtraData> bedata = nullptr;
+        struct IBufferProducer::RequestBufferReturnValue retval;
+        auto ret = RequestBufferLocked(bufferConfigs[configIndex], bedata, retval, lock, true);
+        if (ret == GSERROR_OK) {
+            requestBuffersAndFences.push_back(std::make_pair(retval.sequence, retval.fence));
+            bufferQueueCache_[retval.sequence].requestedFromListenerClientPid = listenerSeqAndFenceCallingPid_;
+        } else {
+            configIndex++;
+        }
+    }
+}
 
+GSError BufferQueue::ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
+    std::unique_lock<std::mutex> &lock)
+{
+    uint32_t sequence = buffer->GetSeqNum();
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
+        SURFACE_TRACE_NAME_FMT("buffer not found in cache");
+        BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", sequence, uniqueId_);
+        OnBufferDeleteCbForHardwareThreadLocked(buffer);
+        return SURFACE_ERROR_BUFFER_NOT_INCACHE;
+    }
+
+    const auto &state = mapIter->second.state;
+    if (state != BUFFER_STATE_ACQUIRED && state != BUFFER_STATE_ATTACHED) {
+        SURFACE_TRACE_NAME_FMT("invalid state: %u", state);
+        BLOGD("invalid state: %{public}d, uniqueId: %{public}" PRIu64 ".", state, uniqueId_);
+        return SURFACE_ERROR_BUFFER_STATE_INVALID;
+    }
+
+    mapIter->second.state = BUFFER_STATE_RELEASED;
+
+    // merge surface buffer syncFence and releaseFence
+    auto surfaceBufferSyncFence = mapIter->second.buffer->GetSyncFence();
+    if (fence == nullptr) {
+        mapIter->second.fence = surfaceBufferSyncFence;
+    } else if (surfaceBufferSyncFence != nullptr && surfaceBufferSyncFence->IsValid()) {
+        mapIter->second.fence =
+            SyncFence::MergeFence("SurfaceReleaseFence", surfaceBufferSyncFence, fence);
+    } else {
+        mapIter->second.fence = fence;
+    }
+    mapIter->second.buffer->SetAndMergeSyncFence(nullptr);
+
+    int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    lastConsumeTime_ = now - mapIter->second.lastAcquireTime;
+    if (mapIter->second.isDeleting) {
+        DeleteBufferInCache(sequence, lock);
+    } else {
+        freeList_.push_back(sequence);
+    }
+    waitReqCon_.notify_all();
+    waitAttachCon_.notify_all();
     return GSERROR_OK;
 }
 
@@ -1266,6 +1404,14 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool
 GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool needMap)
 {
     uint32_t sequence = buffer->GetSeqNum();
+    bool isOnReleaseBufferWithSequenceAndFence = isOnReleaseBufferWithSequenceAndFence_ &&
+                                                 listenerSeqAndFenceCallingPid_ != 0 &&
+                                                 connectedPid_ == listenerSeqAndFenceCallingPid_;
+    if (invokerType == InvokerType::CONSUMER_INVOKER && isOnReleaseBufferWithSequenceAndFence) {
+        BLOGE("consumer can't attachbuffer when listenerReleaseWithSequenceAndFence buffer:%{public}u,"
+              "uniqueId:%{public}" PRIu64 ".", sequence, uniqueId_);
+        return GSERROR_INVALID_OPERATING;
+    }
     if (GetUsedSize() >= bufferQueueSize_) {
         BLOGE("seq: %{public}u, buffer queue size:%{public}u, used size:%{public}u,"
             "uniqueId: %{public}" PRIu64 ".", sequence, bufferQueueSize_, GetUsedSize(), uniqueId_);
@@ -1528,10 +1674,12 @@ GSError BufferQueue::RegisterReleaseListener(OnReleaseFunc func)
     return GSERROR_OK;
 }
 
-GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> listener)
+GSError BufferQueue::RegisterProducerReleaseListener(sptr<IProducerListener> listener,
+    bool isOnReleaseBufferWithSequenceAndFence)
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
     producerListener_ = listener;
+    isOnReleaseBufferWithSequenceAndFence_ = isOnReleaseBufferWithSequenceAndFence;
     return GSERROR_OK;
 }
 
@@ -1558,7 +1706,15 @@ GSError BufferQueue::UnRegisterProducerReleaseListener()
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
     producerListener_ = nullptr;
+    isOnReleaseBufferWithSequenceAndFence_ = false;
+    SetListenerSeqAndFenceCallingPid(0);
     return GSERROR_OK;
+}
+
+void BufferQueue::SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    listenerSeqAndFenceCallingPid_ = listenerSeqAndFenceCallingPid;
 }
 
 GSError BufferQueue::UnRegisterProducerReleaseListenerBackup()
@@ -2151,6 +2307,7 @@ void BufferQueue::DumpCache(std::string &result)
             result += "        sequence = " + std::to_string(it->first) +
                 ", bufferId = " + std::to_string(element.buffer->GetBufferId()) +
                 ", state = " + std::to_string(element.state) +
+                ", listenerClientPid = " + std::to_string(element.requestedFromListenerClientPid) +
                 ", timestamp = " + std::to_string(element.timestamp);
         }
         for (decltype(element.damages.size()) i = 0; i < element.damages.size(); i++) {

@@ -379,6 +379,22 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener001, TestSize.Le
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
+* CaseDescription: 1. call RegisterReleaseListener
+*/
+HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListener002, TestSize.Level0)
+{
+    OnReleaseFuncWithSequenceAndFence onBufferReleaseWithSequenceAndFence = nullptr;
+    sptr<IProducerListener> listener =
+        new BufferReleaseProducerListener(nullptr, nullptr, onBufferReleaseWithSequenceAndFence);
+    GSError ret = bp->RegisterReleaseListener(listener);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: RegisterReleaseListenerBackup
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
 * CaseDescription: 1. call RegisterReleaseListenerBackup
 */
 HWTEST_F(BufferClientProducerRemoteTest, RegisterReleaseListenerBackup001, TestSize.Level0)

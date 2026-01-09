@@ -623,6 +623,10 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
     MessageParcel &reply, MessageOption &option)
 {
     sptr<IRemoteObject> listenerObject = arguments.ReadRemoteObject();
+    bool isOnReleaseBufferWithSequenceAndFence = false;
+    if (!arguments.ReadBool(isOnReleaseBufferWithSequenceAndFence)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
     if (listenerObject == nullptr) {
         if (!reply.WriteInt32(GSERROR_INVALID_ARGUMENTS)) {
             return IPC_STUB_WRITE_PARCEL_ERR;
@@ -630,7 +634,7 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
-    GSError sRet = RegisterReleaseListener(listener);
+    GSError sRet = RegisterReleaseListener(listener, isOnReleaseBufferWithSequenceAndFence);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1550,12 +1554,18 @@ GSError BufferQueueProducer::UnRegisterPropertyListener(uint64_t producerId)
     return bufferQueue_->UnRegisterProducerPropertyListener(producerId);
 }
 
-GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> listener)
+GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> listener,
+    bool isOnReleaseBufferWithSequenceAndFence)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->RegisterProducerReleaseListener(listener);
+    if (isOnReleaseBufferWithSequenceAndFence) {
+        SetListenerSeqAndFenceCallingPid(GetCallingPid());
+    } else {
+        SetListenerSeqAndFenceCallingPid(0);
+    }
+    return bufferQueue_->RegisterProducerReleaseListener(listener, isOnReleaseBufferWithSequenceAndFence);
 }
 
 GSError BufferQueueProducer::RegisterReleaseListenerBackup(sptr<IProducerListener> listener)
@@ -1926,6 +1936,13 @@ void BufferQueueProducer::SetConnectedPidLocked(int32_t connectedPid)
     connectedPid_ = connectedPid;
     if (bufferQueue_) {
         bufferQueue_->SetConnectedPidLocked(connectedPid_);
+    }
+}
+
+void BufferQueueProducer::SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid)
+{
+    if (bufferQueue_) {
+        bufferQueue_->SetListenerSeqAndFenceCallingPid(listenerSeqAndFenceCallingPid);
     }
 }
 

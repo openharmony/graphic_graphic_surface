@@ -344,6 +344,11 @@ public:
         (void)func;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError RegisterReleaseListener(OnReleaseFuncWithSequenceAndFence func)
+    {
+        (void)func;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func)
     {
         (void)funcName;

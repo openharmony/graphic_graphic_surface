@@ -74,6 +74,11 @@ using BufferElement = struct BufferElement {
      */
     int64_t lastAcquireTime;
     bool isBufferNeedRealloc = false;
+    /**
+     * dfx for listener ReleaseBufferWithSequenceAndFence.
+     * record the clientpid when the buffer requested from ReleaseBufferWithSequenceAndFence.
+     */
+    int32_t requestedFromListenerClientPid = 0;
 };
 
 struct BufferSlot {
@@ -111,7 +116,8 @@ public:
                           struct IBufferProducer::RequestBufferReturnValue &retval);
 
     GSError ReuseBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-                        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+                        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
+                        bool listenerSeqAndFence = false);
 
     GSError CancelBuffer(uint32_t sequence, sptr<BufferExtraData> bedata);
 
@@ -147,7 +153,8 @@ public:
     GSError RegisterConsumerListener(sptr<IBufferConsumerListener>& listener);
     GSError RegisterConsumerListener(IBufferConsumerListenerClazz *listener);
     GSError RegisterReleaseListener(OnReleaseFunc func);
-    GSError RegisterProducerReleaseListener(sptr<IProducerListener> listener);
+    GSError RegisterProducerReleaseListener(sptr<IProducerListener> listener,
+        bool isOnReleaseBufferWithSequenceAndFence);
     GSError RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener);
     GSError UnRegisterProducerReleaseListener();
     GSError UnRegisterProducerReleaseListenerBackup();
@@ -238,6 +245,7 @@ public:
     uint32_t GetAvailableBufferCount();
 
     void SetConnectedPidLocked(int32_t connectedPid);
+    void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);
     GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
         struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
@@ -287,7 +295,11 @@ private:
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence,
         int32_t timeOut, std::map<uint32_t, BufferElement>::iterator &mapIter);
     void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool needMap);
-    void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence);
+    void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence,
+        bool isOnReleaseBufferWithSequenceAndFence,
+        std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences);
+    void OnReleaseBufferWithSequenceAndFence(sptr<IProducerListener> &listener,
+        std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences);
     void OnBufferDeleteCbForHardwareThreadLocked(const sptr<SurfaceBuffer> &buffer) const;
     GSError CheckBufferQueueCache(uint32_t sequence);
     GSError ReallocBufferLocked(const BufferRequestConfig &config,
@@ -320,7 +332,10 @@ private:
     GSError DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
-        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+        struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
+        bool listenerSeqAndFence = false);
+    void RequestBuffersForListenerLocked(std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences,
+        std::unique_lock<std::mutex> &lock);
     GSError SetupNewBufferLocked(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
         BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
@@ -339,8 +354,13 @@ private:
     GSError ReuseBufferForBlockMode(sptr<SurfaceBuffer> &buffer, sptr<BufferExtraData> &bedata,
         BufferRequestConfig &updateConfig, const BufferRequestConfig &config,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock);
+    GSError UpdateReuseBufferState(bool needRealloc, sptr<BufferExtraData> &bedata,
+                                   struct IBufferProducer::RequestBufferReturnValue &retval,
+                                   std::unique_lock<std::mutex> &lock, bool listenerSeqAndFence);
     void SetLppBufferConfig(sptr<SurfaceBuffer> &buffer, std::vector<Rect> &damages, const BufferSlot &slot);
     bool CheckLppFenceLocked();
+    GSError ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
+        std::unique_lock<std::mutex> &lock);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -404,6 +424,7 @@ private:
     int32_t lastRsToShbWriteOffset_ = -1;
     // Lpp >>
     int32_t connectedPid_ = 0;
+    int32_t listenerSeqAndFenceCallingPid_ = 0;
     bool isAllocatingBuffer_ = false;
     std::condition_variable isAllocatingBufferCon_;
     int64_t lastFlushedDesiredPresentTimeStamp_ = 0;
@@ -417,6 +438,7 @@ private:
     bool isFirstSetDropModeOpen_ = false;
     GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
     bool isPriorityAlloc_ = false;
+    bool isOnReleaseBufferWithSequenceAndFence_ = false;
 };
 }; // namespace OHOS
 

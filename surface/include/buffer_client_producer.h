@@ -68,7 +68,8 @@ public:
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer) override;
     GSError AttachBuffer(sptr<SurfaceBuffer>& buffer, int32_t timeOut) override;
     GSError DetachBuffer(sptr<SurfaceBuffer>& buffer) override;
-    GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;
+    GSError RegisterReleaseListener(sptr<IProducerListener> listener,
+        bool isOnReleaseBufferWithSequenceAndFence) override;
     GSError RegisterReleaseListenerBackup(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
     GSError UnRegisterReleaseListenerBackup() override;

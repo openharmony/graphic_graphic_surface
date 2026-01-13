@@ -568,20 +568,20 @@ public:
     }
 
     /**
-    * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
-    *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
-    *        suitable for stricter connection management scenarios.
-    */
+     * @brief In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
+     *        buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
+     *        suitable for stricter connection management scenarios.
+     */
     virtual GSError ConnectStrictly()
     {
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
     /**
-    * @brief After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
-    *        In this state, any attempt by the producer (client) to request buffer will fail and return the error code
-    *        GSERROR_CONSUMER_DISCONNECTED.
-    */
+     * @brief After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
+     *        In this state, any attempt by the producer (client) to request buffer will fail and return the error code
+     *        GSERROR_CONSUMER_DISCONNECTED.
+     */
     virtual GSError DisconnectStrictly()
     {
         return SURFACE_ERROR_NOT_SUPPORT;
@@ -593,12 +593,12 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     /**
-    * @brief Request a buffer with lock.
-    * @param config Indicates the buffer config to be requested.
-    * @param region Indicates the info of the dirty region.
-    * @param buffer Indicates the pointer to a <b>SurfaceBuffer</b> instance.
-    * @return Returns the error code of the request of lock.
-    */
+     * @brief Request a buffer with lock.
+     * @param config Indicates the buffer config to be requested.
+     * @param region Indicates the info of the dirty region.
+     * @param buffer Indicates the pointer to a <b>SurfaceBuffer</b> instance.
+     * @return Returns the error code of the request of lock.
+     */
     virtual GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer)
     {
         (void)config;
@@ -607,9 +607,9 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
     /**
-    * @brief Unlock a buffer with lock.
-    * @return Returns the error code of the request of unlock.
-    */
+     * @brief Unlock a buffer with lock.
+     * @return Returns the error code of the request of unlock.
+     */
     virtual GSError ProducerSurfaceUnlockAndFlushBuffer()
     {
         return SURFACE_ERROR_NOT_SUPPORT;

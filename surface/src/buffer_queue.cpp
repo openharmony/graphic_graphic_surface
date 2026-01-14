@@ -62,6 +62,8 @@ constexpr int32_t LPP_SLOT_SIZE = 8;
 constexpr int32_t MAX_LPP_SKIP_COUNT = 10;
 static const size_t LPP_SHARED_MEM_SIZE = 0x3000;
 static const size_t MAX_LPP_ACQUIRE_BUFFER_SIZE = 2;
+// producerId start from 1; 0 resvered for comsumer
+static std::atomic<uint64_t> producerId = 1;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -123,7 +125,6 @@ uint32_t BufferQueue::GetUsedSize()
 
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
-    static uint64_t producerId = 1; // producerId start from 1; 0 resvered for comsumer
     std::lock_guard<std::mutex> lockGuard(mutex_);
     info.name = name_;
     info.width = defaultWidth_;

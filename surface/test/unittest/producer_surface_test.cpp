@@ -83,6 +83,10 @@ public:
     {
         return GSERROR_OK;
     }
+    static inline GSError OnBufferReleaseWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence> &fence)
+    {
+        return GSERROR_OK;
+    }
     sptr<ProducerSurface> surface_ = nullptr;
     sptr<ProducerSurface> surfaceMd_ = nullptr;
     static inline bool dlopenTestEnabled_ = false;
@@ -1771,8 +1775,165 @@ HWTEST_F(ProducerSurfaceTest, ReleaseListener001, TestSize.Level0)
     OnReleaseFuncWithFence releaseFuncWithFence;
     ret = surface_->RegisterReleaseListener(releaseFuncWithFence);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    OnReleaseFuncWithSequenceAndFence releaseFuncWithSequenceAndFence;
+    ret = surface_->RegisterReleaseListener(releaseFuncWithSequenceAndFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ret = surface_->UnRegisterReleaseListener();
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: OnBufferReleaseWithSequenceAndFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. RegisterReleaseListener call ReleaseBuffer and check Listener sequence
+*/
+HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence001, TestSize.Level0)
+{
+    uint32_t sequenceOut = 0;
+    OnReleaseFuncWithSequenceAndFence releaseFuncWithSequenceAndFence =
+        [&sequenceOut](uint32_t sequence, const sptr<SyncFence>&) -> GSError {
+        sequenceOut = sequence;
+        return GSERROR_OK;
+    };
+    GSError ret = pSurface->RegisterReleaseListener(releaseFuncWithSequenceAndFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    for (int i = 0; i < 100; i++) {
+        ret = pSurface->FlushBuffer(buffer, -1, flushConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        int32_t flushFence = -1;
+        ret = csurf->AcquireBuffer(buffer, flushFence, timestamp, damage);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        ret = csurf->ReleaseBuffer(buffer, -1);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_EQ(sequenceOut, buffer->GetSeqNum());
+    }
+    
+    ret = pSurface->GoBackground();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = pSurface->UnRegisterReleaseListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(pSurface->CleanCache(), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OnBufferReleaseWithSequenceAndFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. RegisterReleaseListener call ReleaseBuffer and check Listener sequence
+*/
+HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence002, TestSize.Level0)
+{
+    uint32_t sequenceOut = 0;
+    OnReleaseFuncWithSequenceAndFence releaseFuncWithSequenceAndFence =
+        [&sequenceOut](uint32_t sequence, const sptr<SyncFence>&) -> GSError {
+        sequenceOut = sequence;
+        return GSERROR_OK;
+    };
+    GSError ret = pSurface->RegisterReleaseListener(releaseFuncWithSequenceAndFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = pSurface->FlushBuffer(buffer, -1, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t flushFence = -1;
+    ret = csurf->AcquireBuffer(buffer, flushFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> lastFlushedBuffer = nullptr;
+    sptr<SyncFence> fence;
+    float matrix[16];
+    ret = pSurface->AcquireLastFlushedBuffer(lastFlushedBuffer, fence, matrix, 16, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = csurf->ReleaseBuffer(buffer, -1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(sequenceOut, 0);
+    ret = pSurface->ReleaseLastFlushedBuffer(lastFlushedBuffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    buffer = new SurfaceBufferImpl();
+    ret = csurf->AttachBufferToQueue(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_OPERATING);
+
+    ret = pSurface->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = pSurface->FlushBuffer(buffer, -1, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = csurf->AcquireBuffer(buffer, flushFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = csurf->ReleaseBuffer(buffer, -1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = pSurface->UnRegisterReleaseListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(pSurface->CleanCache(), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OnBufferReleaseWithSequenceAndFence
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. RegisterReleaseListener call ReleaseBuffer and check Listener sequence
+*/
+HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence003, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    uint32_t sequenceOut = 0;
+    OnReleaseFuncWithSequenceAndFence releaseFuncWithSequenceAndFence =
+        [&sequenceOut](uint32_t sequence, const sptr<SyncFence>&) -> GSError {
+        sequenceOut = sequence;
+        return GSERROR_OK;
+    };
+    GSError ret = pSurfaceTmp->RegisterReleaseListener(releaseFuncWithSequenceAndFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    int releaseFence = -1;
+    ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = pSurfaceTmp->FlushBuffer(buffer, -1, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    int32_t flushFence = -1;
+    ret = cSurfTmp->AcquireBuffer(buffer, flushFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cSurfTmp->ReleaseBuffer(buffer, -1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(sequenceOut, 0);
+    ret = pSurfaceTmp->UnRegisterReleaseListener();
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->CleanCache(), OHOS::GSERROR_OK);
 }
 
 /*
@@ -2495,6 +2656,10 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, TestSize.Level0)
     std::string appFrameworkType;
     ASSERT_EQ(pSurfaceTmp->SetSurfaceAppFrameworkType(appFrameworkType), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->GetSurfaceAppFrameworkType(), "");
+    OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence = nullptr;
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(funcWithSequenceAndFence), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(OnBufferReleaseWithSequenceAndFence),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
     OnReleaseFunc func = nullptr;
     ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(func), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->RegisterReleaseListener(OnBufferRelease), OHOS::GSERROR_INVALID_ARGUMENTS);

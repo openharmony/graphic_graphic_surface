@@ -149,7 +149,8 @@ namespace OHOS {
         bufferqueue->DoFlushBuffer(sequence, bedata, syncFence, flushConfig);
         bufferqueue->AcquireBuffer(buffer, syncFence, timestamp, damages);
         bufferqueue->ReleaseBuffer(buffer, syncFence);
-        bufferqueue->ListenerBufferReleasedCb(buffer, syncFence);
+        std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
+        bufferqueue->ListenerBufferReleasedCb(buffer, syncFence, false, requestBuffersAndFences);
         bufferqueue->AttachBuffer(buffer1, timeOut);
         bufferqueue->DetachBuffer(buffer1);
         float matrix[16] = {0};

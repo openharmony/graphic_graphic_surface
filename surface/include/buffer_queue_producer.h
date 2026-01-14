@@ -77,7 +77,8 @@ public:
     GSError CleanCache(bool cleanAll, uint32_t *bufSeqNum) override;
     GSError GoBackground() override;
 
-    GSError RegisterReleaseListener(sptr<IProducerListener> listener) override;
+    GSError RegisterReleaseListener(sptr<IProducerListener> listener,
+        bool isOnReleaseBufferWithSequenceAndFence = false) override;
     GSError RegisterReleaseListenerBackup(sptr<IProducerListener> listener) override;
     GSError UnRegisterReleaseListener() override;
     GSError UnRegisterReleaseListenerBackup() override;
@@ -214,6 +215,7 @@ private:
     int32_t SetAlphaTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
+    void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
     bool CheckIsAlive();

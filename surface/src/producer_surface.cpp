@@ -790,6 +790,70 @@ GSError ProducerSurface::RegisterReleaseListenerBackup(OnReleaseFuncWithFence fu
     return producer_->RegisterReleaseListenerBackup(listener);
 }
 
+GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithSequenceAndFence func)
+{
+    if (func == nullptr || producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    sptr<IProducerListener> listener;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        auto releaseBufferCallback = [weakThis = wptr(this)] (uint32_t sequence,
+            const sptr<SyncFence> &fence) ->GSError {
+            auto pSurface = weakThis.promote();
+            if (pSurface == nullptr) {
+                BLOGE("pSurface is nullptr");
+                return GSERROR_INVALID_ARGUMENTS;
+            }
+            auto ret = pSurface->OnBufferReleasedWithSequenceAndFence(sequence, fence);
+            return ret;
+        };
+        funcWithSequenceAndFence_ = func;
+        listener_ = new BufferReleaseProducerListener(nullptr, nullptr, releaseBufferCallback);
+        listener = listener_;
+    }
+    return producer_->RegisterReleaseListener(listener, true);
+}
+
+GSError ProducerSurface::OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence> &fence)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence = nullptr;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        auto iter = bufferProducerCache_.find(sequence);
+        if (iter == bufferProducerCache_.end()) {
+            BLOGE("OnBufferReleasedWithSequenceAndFence cache not find buffer(%{public}u),"
+                "uniqueId: %{public}" PRIu64 ".",
+                sequence, queueId_);
+            return GSERROR_NO_BUFFER;
+        }
+        if (SetMetadataValue(iter->second) != GSERROR_OK) {
+            BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
+        }
+
+        if (IsTagEnabled(HITRACE_TAG_GRAPHIC_AGP)) {
+            static SyncFenceTracker releaseFenceThread("Release Fence");
+            releaseFenceThread.TrackFence(fence);
+        }
+        {
+            std::lock_guard<std::mutex> lock(listenerMutex_);
+            if (funcWithSequenceAndFence_ != nullptr) {
+                funcWithSequenceAndFence = funcWithSequenceAndFence_;
+            }
+        }
+        buffer = iter->second;
+    }
+    
+    if (funcWithSequenceAndFence != nullptr) {
+        return funcWithSequenceAndFence(sequence, fence);
+    }
+    
+    BLOGW("funcWithSequenceAndFence_ is nullptr, uniqueId: %{public}" PRIu64 ".", queueId_);
+    CancelBuffer(buffer);
+    return GSERROR_INVALID_ARGUMENTS;
+}
+
 GSError ProducerSurface::UnRegisterReleaseListener()
 {
     if (producer_ == nullptr) {
@@ -800,6 +864,7 @@ GSError ProducerSurface::UnRegisterReleaseListener()
         if (listener_ != nullptr) {
             listener_->ResetReleaseFunc();
         }
+        funcWithSequenceAndFence_ = nullptr;
     }
     return producer_->UnRegisterReleaseListener();
 }

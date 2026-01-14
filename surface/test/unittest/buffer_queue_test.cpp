@@ -28,6 +28,7 @@
 #include "producer_surface_delegator.h"
 #include "remote_object_mock.h"
 #include "sync_fence.h"
+#include "surface_buffer_impl.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -2146,6 +2147,207 @@ HWTEST_F(BufferQueueTest, SetLppBufferConfig001, TestSize.Level0)
     buffer = SurfaceBuffer::Create();
     tmpBq->SetLppBufferConfig(buffer, damages, slot);
     ASSERT_EQ(buffer->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
+}
+
+/*
+ * Function: RequestBuffersForListenerLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call RequestBuffersForListenerLocked
+ */
+HWTEST_F(BufferQueueTest, RequestBuffersForListenerLocked001, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    bq->CleanCache(false, nullptr);
+    bq->isOnReleaseBufferWithSequenceAndFence_ = true;
+    bq->SetIsPriorityAlloc(true);
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        bq->RequestBuffersForListenerLocked(requestBuffersAndFences, lock);
+        ASSERT_EQ(requestBuffersAndFences.size(), 0);
+        auto ret = bq->RequestBufferLocked(requestConfig, bedata, retval, lock, true);
+        ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+        bq->RegisterProducerReleaseListener(nullptr, true);
+        ret = bq->SetProducerCacheCleanFlagLocked(true, lock);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        ret = bq->RequestBuffer(requestConfig, bedata, retval);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+        ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        ret = bq->AcquireBuffer(retval.buffer, retval.fence, timestamp, damages);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+        sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+        ret = bq->ReleaseBuffer(retval.buffer, releaseFence);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    bq->UnRegisterProducerReleaseListener();
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: RequestBuffersForListenerLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call RequestBuffersForListenerLocked
+ */
+HWTEST_F(BufferQueueTest, RequestBuffersForListenerLocked002, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    bq->CleanCache(false, nullptr);
+
+    auto ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->AcquireBuffer(retval.buffer, retval.fence, timestamp, damages);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    ret = bq->ReleaseBuffer(retval.buffer, releaseFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bq->isOnReleaseBufferWithSequenceAndFence_ = true;
+    bq->SetIsPriorityAlloc(true);
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        BufferRequestConfig requestConfigTmp = {
+            .width = 0x200,
+            .height = 0x200,
+            .strideAlignment = 0x8,
+            .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+            .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+            .timeout = 0,
+        };
+        ret = bq->ReuseBuffer(requestConfigTmp, bedata, retval, lock, true);
+        ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+        bq->producerCacheClean_ = true;
+        ret = bq->ReuseBuffer(requestConfig, bedata, retval, lock, true);
+        ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+        bq->producerCacheClean_ = false;
+    }
+
+    bq->UnRegisterProducerReleaseListener();
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: ReleaseBufferLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call ReleaseBufferLocked
+ */
+HWTEST_F(BufferQueueTest, RequestBuffersForListenerLocked003, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    sptr<IRemoteObject> obj = nullptr;
+    sptr<IProducerListener> listener = new ProducerListenerProxy(obj);
+    bq->RegisterProducerReleaseListener(listener, true);
+
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
+    auto ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    requestBuffersAndFences.push_back(std::make_pair(retval.sequence, retval.fence));
+    requestBuffersAndFences.push_back(std::make_pair(0, nullptr));
+    bq->OnReleaseBufferWithSequenceAndFence(listener, requestBuffersAndFences);
+    auto iter = bq->bufferQueueCache_.find(retval.sequence);
+    ASSERT_NE(iter, bq->bufferQueueCache_.end());
+    ASSERT_EQ(iter->second.state, 0);
+    bq->UnRegisterProducerReleaseListener();
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: ReleaseBufferLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call ReleaseBufferLocked
+ */
+HWTEST_F(BufferQueueTest, RequestBuffersForListenerLocked004, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    IBufferProducer::RequestBufferReturnValue retval3;
+    sptr<BufferExtraData> bedata1;
+    sptr<BufferExtraData> bedata2;
+    sptr<BufferExtraData> bedata3;
+    auto ret = bq->RequestBuffer(requestConfig, bedata1, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->RequestBuffer(requestConfig, bedata2, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x200,
+        .height = 0x200,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    ret = bq->RequestBuffer(requestConfigTmp, bedata3, retval3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->CancelBuffer(retval1.sequence, bedata1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->CancelBuffer(retval2.sequence, bedata2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->CancelBuffer(retval3.sequence, bedata3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    bq->freeList_.push_back(0);
+    std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        bq->RequestBuffersForListenerLocked(requestBuffersAndFences, lock);
+        ASSERT_EQ(requestBuffersAndFences.size(), 3);
+    }
+    bq->UnRegisterProducerReleaseListener();
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: ReleaseBufferLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call ReleaseBufferLocked
+ */
+HWTEST_F(BufferQueueTest, ReleaseBufferLocked001, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock(mutex);
+    sptr<SyncFence> fence = nullptr;
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    auto ret = bq->ReleaseBufferLocked(buffer, fence, lock);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_BUFFER_NOT_INCACHE);
+
+    ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->AcquireBuffer(retval.buffer, retval.fence, timestamp, damages);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    ret = bq->ReleaseBuffer(retval.buffer, releaseFence);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
 /**

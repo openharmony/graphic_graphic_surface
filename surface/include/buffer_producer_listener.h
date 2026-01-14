@@ -72,6 +72,35 @@ public:
         return GSERROR_OK;
     }
 
+    GSError OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence>& fence) override
+    {
+        MessageOption option;
+        MessageParcel arguments;
+        MessageParcel reply;
+        if (!arguments.WriteInterfaceToken(IProducerListener::GetDescriptor())) {
+            BLOGE("write interface token failed");
+            return GSERROR_BINDER;
+        }
+        arguments.WriteUint32(sequence);
+        arguments.WriteBool(fence != nullptr);
+        if (fence != nullptr) {
+            fence->WriteToMessageParcel(arguments);
+        }
+        option.SetFlags(MessageOption::TF_ASYNC);
+        sptr<IRemoteObject> remote = Remote();
+        if (remote == nullptr) {
+            BLOGE("listener Remote is nullptr");
+            return GSERROR_SERVER_ERROR;
+        }
+        int32_t ret = remote->SendRequest(IProducerListener::ON_BUFFER_RELEASED_WITH_SEQUENCE_AND_FENCE,
+            arguments, reply, option);
+        if (ret != ERR_NONE) {
+            BLOGE("Remote SendRequest fail, ret = %{public}d", ret);
+            return GSERROR_BINDER;
+        }
+        return GSERROR_OK;
+    }
+
     GSError OnPropertyChange(const SurfaceProperty& property) override
     {
         MessageOption option;
@@ -125,6 +154,11 @@ public:
                 auto sret = OnPropertyChangeRemote(arguments);
                 return reply.WriteInt32(sret) ? ERR_NONE : ERR_INVALID_REPLY;
             }
+            case ON_BUFFER_RELEASED_WITH_SEQUENCE_AND_FENCE: {
+                auto sret = OnBufferReleasedWithSequenceFenceRemote(arguments);
+                reply.WriteInt32(sret);
+                break;
+            }
             default: {
                 ret = ERR_UNKNOWN_TRANSACTION;
                 break;
@@ -149,6 +183,16 @@ private:
         ret = OnBufferReleasedWithFence(buffer, fence);
         return ret;
     }
+    GSError OnBufferReleasedWithSequenceFenceRemote(MessageParcel& arguments)
+    {
+        sptr<SyncFence> fence = SyncFence::InvalidFence();
+        uint32_t sequence = arguments.ReadUint32();
+        if (arguments.ReadBool()) {
+            fence = SyncFence::ReadFromMessageParcel(arguments);
+        }
+        GSError ret = OnBufferReleasedWithSequenceAndFence(sequence, fence);
+        return ret;
+    }
     GSError OnPropertyChangeRemote(MessageParcel& arguments)
     {
         SurfaceProperty property;
@@ -162,8 +206,9 @@ private:
 
 class BufferReleaseProducerListener : public ProducerListenerStub {
 public:
-    BufferReleaseProducerListener(OnReleaseFunc func = nullptr, OnReleaseFuncWithFence funcWithFence = nullptr)
-        : func_(func), funcWithFence_(funcWithFence) {};
+    BufferReleaseProducerListener(OnReleaseFunc func = nullptr, OnReleaseFuncWithFence funcWithFence = nullptr,
+        OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence = nullptr)
+        : func_(func), funcWithFence_(funcWithFence), funcWithSequenceAndFence_(funcWithSequenceAndFence) {};
     ~BufferReleaseProducerListener() override {};
     GSError OnBufferReleased() override
     {
@@ -194,16 +239,32 @@ public:
         }
         return GSERROR_INTERNAL;
     }
+    GSError OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence>& fence) override
+    {
+        OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (funcWithSequenceAndFence_ != nullptr) {
+                funcWithSequenceAndFence = funcWithSequenceAndFence_;
+            }
+        }
+        if (funcWithSequenceAndFence != nullptr) {
+            return funcWithSequenceAndFence(sequence, fence);
+        }
+        return GSERROR_INTERNAL;
+    }
     GSError OnPropertyChange(const SurfaceProperty& property) override {return GSERROR_NOT_SUPPORT; }
     void ResetReleaseFunc() override
     {
         std::lock_guard<std::mutex> lock(mutex_);
         func_ = nullptr;
         funcWithFence_ = nullptr;
+        funcWithSequenceAndFence_ = nullptr;
     }
 private:
     OnReleaseFunc func_;
     OnReleaseFuncWithFence funcWithFence_;
+    OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence_;
     std::mutex mutex_;
 };
 

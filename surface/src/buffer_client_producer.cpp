@@ -396,11 +396,16 @@ GSError BufferClientProducer::DetachBuffer(sptr<SurfaceBuffer>& buffer)
     return GSERROR_NOT_SUPPORT;
 }
 
-GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> listener)
+GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> listener,
+    bool isOnReleaseBufferWithSequenceAndFence)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
     if (!arguments.WriteRemoteObject(listener->AsObject())) {
+        return GSERROR_BINDER;
+    }
+
+    if (!arguments.WriteBool(isOnReleaseBufferWithSequenceAndFence)) {
         return GSERROR_BINDER;
     }
 

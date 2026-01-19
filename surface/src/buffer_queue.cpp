@@ -62,8 +62,8 @@ constexpr int32_t LPP_SLOT_SIZE = 8;
 constexpr int32_t MAX_LPP_SKIP_COUNT = 10;
 static const size_t LPP_SHARED_MEM_SIZE = 0x3000;
 static const size_t MAX_LPP_ACQUIRE_BUFFER_SIZE = 2;
-// producerId start from 1; 0 resvered for comsumer
-static std::atomic<uint64_t> producerId = 1;
+// g_ProducerId start from 1; 0 resvered for comsumer
+std::atomic<uint64_t> g_ProducerId = 1;
 }
 
 static const std::map<BufferState, std::string> BufferStateStrs = {
@@ -132,7 +132,7 @@ GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
     info.uniqueId = uniqueId_;
     info.isInHebcList = HebcWhiteList::GetInstance().Check(info.appName);
     info.bufferName = bufferName_;
-    info.producerId = producerId++;
+    info.producerId = g_ProducerId.fetch_add(1);
     info.transformHint = transformHint_;
     return GSERROR_OK;
 }

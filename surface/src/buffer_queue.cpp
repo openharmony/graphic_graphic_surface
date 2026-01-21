@@ -974,6 +974,18 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             LogAndTraceAllBufferInBufferQueueCacheLocked();
             return GSERROR_NO_BUFFER;
         }
+
+        // Drop frames by level: keep latest N frames, drop the rest
+        DropBuffersByLevel(dropBuffers);
+
+        // Re-check after dropping by level
+        frontSequence = dirtyList_.begin();
+        if (frontSequence == dirtyList_.end()) {
+            ReleaseDropBuffers(dropBuffers);
+            LogAndTraceAllBufferInBufferQueueCacheLocked();
+            return GSERROR_NO_BUFFER;
+        }
+
         auto mapIter = bufferQueueCache_.find(*frontSequence);
         int64_t frontDesiredPresentTimestamp = mapIter->second.desiredPresentTimestamp;
         bool frontIsAutoTimestamp = mapIter->second.isAutoTimestamp;
@@ -1036,9 +1048,41 @@ void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
     }
 }
 
+void BufferQueue::DropBuffersByLevel(std::vector<BufferAndFence> &dropBuffers)
+{
+    if (dropFrameLevel_ <= 0 || dirtyList_.size() <= dropFrameLevel_) {
+        return;
+    }
+
+    int32_t dropCount = static_cast<int32_t>(dirtyList_.size()) - dropFrameLevel_;
+    for (int32_t i = 0; i < dropCount; i++) {
+        if (dirtyList_.empty()) {
+            break;
+        }
+        BufferElement& frontElement = bufferQueueCache_[dirtyList_.front()];
+        dropBuffers.emplace_back(frontElement.buffer, frontElement.fence);
+        SURFACE_TRACE_NAME_FMT("DropBufferByLevel name: %s queueId: %" PRIu64
+            " buffer seq: %u dropLevel: %d", name_.c_str(), uniqueId_,
+            frontElement.buffer->GetSeqNum(), dropFrameLevel_);
+        dirtyList_.pop_front();
+    }
+}
+
 bool BufferQueue::IsPresentTimestampReady(int64_t desiredPresentTimestamp, int64_t expectPresentTimestamp)
 {
     return isBufferUtilPresentTimestampReady(desiredPresentTimestamp, expectPresentTimestamp);
+}
+
+GSError BufferQueue::SetDropFrameLevel(int32_t level)
+{
+    if (level < 0) {
+        BLOGW("Invalid drop frame level: %{public}d, uniqueId: %{public}" PRIu64 ".", level, uniqueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    dropFrameLevel_ = level;
+    BLOGD("Set drop frame level: %{public}d, uniqueId: %{public}" PRIu64 ".", level, uniqueId_);
+    return GSERROR_OK;
 }
 
 void BufferQueue::ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence,

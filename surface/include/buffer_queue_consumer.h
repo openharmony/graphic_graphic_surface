@@ -99,6 +99,13 @@ public:
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
     bool IsCached(uint32_t bufferSeqNum) const;
+
+    /**
+     * @brief Set the Drop Frame Level for the buffer queue.
+     * @param level The drop frame level (0 means no drop, >0 means keep latest N frames)
+     * @return {@link GSERROR_OK} 0 - Success.
+     */
+    GSError SetDropFrameLevel(int32_t level);
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

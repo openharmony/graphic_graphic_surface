@@ -750,6 +750,13 @@ public:
      */
     GSError UnregisterSurfaceDelegator() override;
 
+    /**
+     * @brief Set the Drop Frame Level for the buffer queue.
+     * @param level The drop frame level (0 means no drop, >0 means keep latest N frames)
+     * @return {@link GSERROR_OK} 0 - Success.
+     */
+    GSError SetDropFrameLevel(int32_t level) override;
+
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

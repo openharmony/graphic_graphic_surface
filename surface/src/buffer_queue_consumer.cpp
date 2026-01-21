@@ -436,4 +436,12 @@ bool BufferQueueConsumer::IsCached(uint32_t bufferSeqNum) const
     }
     return bufferQueue_->IsCached(bufferSeqNum);
 }
+
+GSError BufferQueueConsumer::SetDropFrameLevel(int32_t level)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SetDropFrameLevel(level);
+}
 } // namespace OHOS

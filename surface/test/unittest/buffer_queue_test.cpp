@@ -2424,6 +2424,9 @@ HWTEST_F(BufferQueueTest, SetDropFrameLevel003, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, DropBuffersByLevel001, TestSize.Level0)
 {
+    // Ensure queue size is sufficient for test
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
     sptr<BufferExtraData> bedata1;
@@ -2466,6 +2469,9 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, DropBuffersByLevel002, TestSize.Level0)
 {
+    // Ensure queue size is sufficient for test
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
     sptr<BufferExtraData> bedata1;
@@ -2510,6 +2516,9 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel002, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, DropBuffersByLevel003, TestSize.Level0)
 {
+    // Ensure queue size is sufficient for test
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
     sptr<BufferExtraData> bedata1;
@@ -2553,6 +2562,9 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel003, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, DropBuffersByLevel004, TestSize.Level0)
 {
+    // Ensure queue size is sufficient for test (need 4 buffers)
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
     IBufferProducer::RequestBufferReturnValue retval1;
     IBufferProducer::RequestBufferReturnValue retval2;
     IBufferProducer::RequestBufferReturnValue retval3;

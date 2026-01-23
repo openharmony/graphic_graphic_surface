@@ -412,4 +412,35 @@ HWTEST_F(BufferQueueConsumerTest, UnregisterSurfaceDelegator, TestSize.Level0)
     ret = bqc->UnregisterSurfaceDelegator();
     EXPECT_NE(ret, GSERROR_INVALID_ARGUMENTS);
 }
+
+/**
+ * Function: SetDropFrameLevel001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with valid bufferQueue_
+ */
+HWTEST_F(BufferQueueConsumerTest, SetDropFrameLevel001, TestSize.Level0)
+{
+    if (bqc->bufferQueue_ == nullptr) {
+        bqc->bufferQueue_ = new BufferQueue("test");
+    }
+    GSError ret = bqc->SetDropFrameLevel(2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/**
+ * Function: SetDropFrameLevel002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with bufferQueue_ is nullptr
+ */
+HWTEST_F(BufferQueueConsumerTest, SetDropFrameLevel002, TestSize.Level0)
+{
+    sptr<BufferQueue> nullQueue = nullptr;
+    sptr<BufferQueueConsumer> bqcNull = new BufferQueueConsumer(nullQueue);
+    GSError ret = bqcNull->SetDropFrameLevel(1);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
 }

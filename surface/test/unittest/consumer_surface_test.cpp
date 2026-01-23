@@ -2801,4 +2801,31 @@ HWTEST_F(ConsumerSurfaceTest, UnregisterSurfaceDelegator, TestSize.Level0)
     EXPECT_NE(ret, GSERROR_INVALID_ARGUMENTS);
 }
 
+/*
+ * Function: SetDropFrameLevel001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with consumer_ is nullptr
+ */
+HWTEST_F(ConsumerSurfaceTest, SetDropFrameLevel001, TestSize.Level0)
+{
+    // surface_ in SetUp has consumer_ == nullptr
+    GSError ret = surface_->SetDropFrameLevel(1);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
+
+/*
+ * Function: SetDropFrameLevel002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with valid consumer_
+ */
+HWTEST_F(ConsumerSurfaceTest, SetDropFrameLevel002, TestSize.Level0)
+{
+    GSError ret = cs->SetDropFrameLevel(2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
 }

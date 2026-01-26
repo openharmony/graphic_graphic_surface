@@ -1253,14 +1253,14 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, TestSize.Level0)
 }
 
 /*
-* Function: PreAllocBuffers
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
-*                  2. operation: producer sends invalid width/height/format/allocBufferCount config to bufferQueue
-*                  3. result: bufferQueue return GSERROR_INVALID_ARGUMENTS
-*/
+ * Function: PreAllocBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+ *                  2. operation: producer sends invalid width/height/format/allocBufferCount config to bufferQueue
+ *                  3. result: bufferQueue return GSERROR_INVALID_ARGUMENTS
+ */
 HWTEST_F(BufferQueueTest, PreAllocBuffers001, TestSize.Level0)
 {
     BufferQueue *bqTmp = new BufferQueue("testTmp");
@@ -1310,14 +1310,14 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers001, TestSize.Level0)
 }
 
 /*
-* Function: PreAllocBuffers
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
-*                  2. operation: producer sends valid width/height/format/allocBufferCount config to bufferQueue
-*                  3. result: bufferQueue return GSERROR_OK
-*/
+ * Function: PreAllocBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+ *                  2. operation: producer sends valid width/height/format/allocBufferCount config to bufferQueue
+ *                  3. result: bufferQueue return GSERROR_OK
+ */
 HWTEST_F(BufferQueueTest, PreAllocBuffers002, TestSize.Level0)
 {
     BufferQueue *bqTmp = new BufferQueue("testTmp");
@@ -1336,15 +1336,15 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers002, TestSize.Level0)
 }
 
 /*
-* Function: PreAllocBuffers
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
-*                  2. operation: producer sends valid width/height/format/allocBufferCount and larger allocBufferCount
-*                       than empty bufferQueueSize config to bufferQueue
-*                  3. result: bufferQueue return GSERROR_OK
-*/
+ * Function: PreAllocBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: producer calls PreAllocBuffers and check the ret
+ *                  2. operation: producer sends valid width/height/format/allocBufferCount and larger allocBufferCount
+ *                       than empty bufferQueueSize config to bufferQueue
+ *                  3. result: bufferQueue return GSERROR_OK
+ */
 HWTEST_F(BufferQueueTest, PreAllocBuffers003, TestSize.Level0)
 {
     BufferQueue *bqTmp = new BufferQueue("testTmp");
@@ -1446,12 +1446,12 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers005, TestSize.Level0)
 }
 
 /*
-* Function: MarkBufferReclaimableByIdLocked
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call MarkBufferReclaimableByIdLocked and check value
-*/
+ * Function: MarkBufferReclaimableByIdLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call MarkBufferReclaimableByIdLocked and check value
+ */
 HWTEST_F(BufferQueueTest, MarkBufferReclaimableByIdLocked001, TestSize.Level0)
 {
     for (const auto &[id, ele] : bq->bufferQueueCache_) {

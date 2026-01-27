@@ -2373,4 +2373,262 @@ HWTEST_F(BufferQueueTest, IsCached001, TestSize.Level0)
     tmpBq->bufferQueueCache_[bufferSeqNum] = ele;
     EXPECT_TRUE(tmpBq->IsCached(bufferSeqNum));
 }
+
+/*
+ * Function: SetDropFrameLevel001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with valid value
+ */
+HWTEST_F(BufferQueueTest, SetDropFrameLevel001, TestSize.Level0)
+{
+    GSError ret = bq->SetDropFrameLevel(2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bq->dropFrameLevel_, 2);
+}
+
+/*
+ * Function: SetDropFrameLevel002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with zero (no drop)
+ */
+HWTEST_F(BufferQueueTest, SetDropFrameLevel002, TestSize.Level0)
+{
+    GSError ret = bq->SetDropFrameLevel(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(bq->dropFrameLevel_, 0);
+}
+
+/*
+ * Function: SetDropFrameLevel003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test SetDropFrameLevel with negative value (should fail)
+ */
+HWTEST_F(BufferQueueTest, SetDropFrameLevel003, TestSize.Level0)
+{
+    GSError ret = bq->SetDropFrameLevel(-1);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: DropBuffersByLevel001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test DropBuffersByLevel with level=0 (no drop)
+ */
+HWTEST_F(BufferQueueTest, DropBuffersByLevel001, TestSize.Level0)
+{
+    // Clean up state from previous tests
+    bq->CleanCache(false, nullptr);
+
+    // Ensure queue size is sufficient for test
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    sptr<BufferExtraData> bedata1;
+    sptr<BufferExtraData> bedata2;
+
+    // Produce 2 buffers
+    auto ret = bq->RequestBuffer(requestConfig, bedata1, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata2, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    // Set drop level to 0 (no drop)
+    bq->SetDropFrameLevel(0);
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    // Call DropBuffersByLevel
+    std::vector<BufferAndFence> dropBuffers;
+    bq->DropBuffersByLevel(dropBuffers);
+
+    // Should not drop any buffers
+    ASSERT_EQ(dropBuffers.size(), 0);
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    // Cleanup
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: DropBuffersByLevel002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test DropBuffersByLevel with level=1 (keep latest 1, drop 1)
+ */
+HWTEST_F(BufferQueueTest, DropBuffersByLevel002, TestSize.Level0)
+{
+    // Clean up state from previous tests
+    bq->CleanCache(false, nullptr);
+
+    // Ensure queue size is sufficient for test
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    sptr<BufferExtraData> bedata1;
+    sptr<BufferExtraData> bedata2;
+
+    // Produce 2 buffers
+    auto ret = bq->RequestBuffer(requestConfig, bedata1, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata2, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    // Set drop level to 1 (keep latest 1)
+    bq->SetDropFrameLevel(1);
+
+    // Call DropBuffersByLevel
+    std::vector<BufferAndFence> dropBuffers;
+    bq->DropBuffersByLevel(dropBuffers);
+
+    // Should drop 1 buffer (oldest)
+    ASSERT_EQ(dropBuffers.size(), 1);
+    ASSERT_EQ(bq->dirtyList_.size(), 1);
+
+    // Cleanup
+    bq->ReleaseDropBuffers(dropBuffers);
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: DropBuffersByLevel003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test DropBuffersByLevel with level >= available count (no drop)
+ */
+HWTEST_F(BufferQueueTest, DropBuffersByLevel003, TestSize.Level0)
+{
+    // Clean up state from previous tests
+    bq->CleanCache(false, nullptr);
+
+    // Ensure queue size is sufficient for test
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    sptr<BufferExtraData> bedata1;
+    sptr<BufferExtraData> bedata2;
+
+    // Produce 2 buffers
+    auto ret = bq->RequestBuffer(requestConfig, bedata1, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata2, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    // Set drop level to 5 (greater than available count)
+    bq->SetDropFrameLevel(5);
+
+    // Call DropBuffersByLevel
+    std::vector<BufferAndFence> dropBuffers;
+    bq->DropBuffersByLevel(dropBuffers);
+
+    // Should not drop any buffers
+    ASSERT_EQ(dropBuffers.size(), 0);
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    // Cleanup
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: DropBuffersByLevel004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test DropBuffersByLevel with multiple buffers
+ */
+HWTEST_F(BufferQueueTest, DropBuffersByLevel004, TestSize.Level0)
+{
+    // Clean up state from previous tests
+    bq->CleanCache(false, nullptr);
+
+    // Ensure queue size is sufficient for test (need 4 buffers)
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    IBufferProducer::RequestBufferReturnValue retval3;
+    IBufferProducer::RequestBufferReturnValue retval4;
+    sptr<BufferExtraData> bedata1;
+    sptr<BufferExtraData> bedata2;
+    sptr<BufferExtraData> bedata3;
+    sptr<BufferExtraData> bedata4;
+
+    // Produce 4 buffers
+    auto ret = bq->RequestBuffer(requestConfig, bedata1, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata2, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata3, retval3);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval3.sequence, bedata3, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata4, retval4);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval4.sequence, bedata4, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ASSERT_EQ(bq->dirtyList_.size(), 4);
+
+    // Set drop level to 2 (keep latest 2)
+    bq->SetDropFrameLevel(2);
+
+    // Call DropBuffersByLevel
+    std::vector<BufferAndFence> dropBuffers;
+    bq->DropBuffersByLevel(dropBuffers);
+
+    // Should drop 2 oldest buffers
+    ASSERT_EQ(dropBuffers.size(), 2);
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    // Verify remaining buffers are the latest 2
+    auto it = bq->dirtyList_.begin();
+    ASSERT_EQ(*it, retval3.sequence);
+    ++it;
+    ASSERT_EQ(*it, retval4.sequence);
+
+    // Cleanup
+    bq->ReleaseDropBuffers(dropBuffers);
+    bq->CleanCache(false, nullptr);
+}
 }

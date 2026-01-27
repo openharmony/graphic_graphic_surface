@@ -380,6 +380,20 @@ public:
         (void)bufferSeqNum;
         return false;
     }
+
+    /**
+     * @brief Set the Drop Frame Level for the buffer queue.
+     * When dirty list size exceeds this level, oldest buffers will be dropped during acquire.
+     * Default implementation returns NOT_SUPPORT for backward compatibility.
+     * @param level The drop frame level (0 means no drop, >0 means keep latest N frames)
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link SURFACE_ERROR_NOT_SUPPORT} - Not supported by implementation.
+     */
+    virtual GSError SetDropFrameLevel(int32_t level)
+    {
+        (void)level;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
 protected:
     IConsumerSurface() = default;
 };

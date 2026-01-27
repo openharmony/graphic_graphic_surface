@@ -789,4 +789,13 @@ bool ConsumerSurface::IsCached(uint32_t bufferSeqNum) const
     }
     return consumer_->IsCached(bufferSeqNum);
 }
+
+GSError ConsumerSurface::SetDropFrameLevel(int32_t level)
+{
+    if (consumer_ == nullptr) {
+        BLOGE("ConsumerSurface::SetDropFrameLevel consumer is nullptr, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return consumer_->SetDropFrameLevel(level);
+}
 } // namespace OHOS

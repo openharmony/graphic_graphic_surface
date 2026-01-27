@@ -274,6 +274,15 @@ public:
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
     bool IsCached(uint32_t bufferSeqNum) const;
+
+    /**
+     * @brief Set the Drop Frame Level for the buffer queue.
+     * When dirty list size exceeds this level, oldest buffers will be dropped during acquire.
+     * @param level The drop frame level (0 means no drop, >0 means keep latest N frames)
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Invalid argument.
+     */
+    GSError SetDropFrameLevel(int32_t level);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -320,6 +329,7 @@ private:
                               int64_t &frontDesiredPresentTimestamp, bool &frontIsAutoTimestamp,
                               std::vector<BufferAndFence> &dropBuffers);
     void ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers);
+    void DropBuffersByLevel(std::vector<BufferAndFence> &dropBuffers);
     void OnBufferDeleteForRS(uint32_t sequence);
     void DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence);
     void AddDeletingBuffersLocked(std::vector<uint32_t> &deletingBuffers);
@@ -439,6 +449,7 @@ private:
     GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
     bool isPriorityAlloc_ = false;
     bool isOnReleaseBufferWithSequenceAndFence_ = false;
+    int32_t dropFrameLevel_ = 0;  // Drop frame level: 0=no drop, >0=keep latest N frames
 };
 }; // namespace OHOS
 

@@ -246,6 +246,15 @@ public:
         (void)handle;
         return nullptr;
     }
+    virtual void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack)
+    {
+        (void)callBack;
+        return;
+    }
+    virtual void UnRegisterBufferDestructorCallBack()
+    {
+        return;
+    }
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

@@ -93,6 +93,7 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
 
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
+    bufferDtorCb_ = nullptr;
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
 
@@ -179,6 +180,10 @@ void SurfaceBufferImpl::InitMemMgrMembers()
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 {
     metaDataCache_.clear();
+    bufferDtorCb_ = nullptr;
+    if (IsReclaimed()) {
+        TryResumeIfNeeded();
+    }
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
         sequenceNumber_ = seqNum;
@@ -200,6 +205,7 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
+    NotifyBufferDestructorCallBack();
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
         if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid() &&
@@ -959,5 +965,32 @@ BufferHandle* SurfaceBufferImpl::CloneBufferHandle(const BufferHandle* handle) c
         return nullptr;
     }
     return outHandle;
+}
+
+void SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::function<void(uint64_t)> bufferDtorCb)
+{
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    if (bufferDtorCb_ == nullptr) {
+        bufferDtorCb_ = bufferDtorCb;
+    }
+}
+
+void SurfaceBufferImpl::UnRegisterBufferDestructorCallBack()
+{
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    bufferDtorCb_ = nullptr;
+}
+
+void SurfaceBufferImpl::NotifyBufferDestructorCallBack() const
+{
+    std::function<void(uint64_t)> bufferDtorCb = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+        if (bufferDtorCb_ == nullptr) {
+            return;
+        }
+        bufferDtorCb = bufferDtorCb_;
+    }
+    bufferDtorCb(bufferId_);
 }
 } // namespace OHOS

@@ -248,7 +248,6 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     // add cache
     if (retval.buffer != nullptr) {
         bufferProducerCache_[retval.sequence] = retval.buffer;
-        ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
         if (bufferName_ != "") {
             int fd = retval.buffer->GetFileDescriptor();
             if (fd > 0) {
@@ -296,7 +295,6 @@ GSError ProducerSurface::AddCacheLocked(sptr<SurfaceBuffer>& attachedBuffer)
             bufferProducerCache_.clear();
         }
         bufferProducerCache_[sequence] = attachedBuffer;
-        ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
     }
     return SURFACE_ERROR_OK;
 }
@@ -367,6 +365,8 @@ GSError ProducerSurface::FlushBuffer(sptr<SurfaceBuffer>& buffer, const sptr<Syn
             CleanCacheLocked(false);
         }
         BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+    } else if (ret == GSERROR_OK) {
+        ReleasePreCacheBuffer(0);
     }
     return ret;
 }
@@ -396,6 +396,10 @@ GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& bu
     if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
         BLOGD("FlushBuffers ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+    } else if (ret == GSERROR_OK) {
+        for (uint32_t i = 0; i < buffers.size(); ++i) {
+            ReleasePreCacheBuffer(0);
+        }
     }
     return ret;
 }
@@ -463,7 +467,6 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
-        ReleasePreCacheBuffer(static_cast<int>(bufferProducerCache_.size()));
     }
     return ret;
 }
@@ -932,7 +935,13 @@ bool ProducerSurface::IsRemote()
 void ProducerSurface::CleanAllLocked(uint32_t *bufSeqNum)
 {
     if (bufSeqNum && bufferProducerCache_.find(*bufSeqNum) != bufferProducerCache_.end()) {
+        std::lock_guard<std::mutex> lockGuard(preCacheBufferMutex_);
         preCacheBuffer_ = bufferProducerCache_[*bufSeqNum];
+        flushBufferCountAfterCleanCache_ = 0;
+        if (preCacheBuffer_ != nullptr) {
+            SURFACE_TRACE_NAME_FMT("ReleasePreCacheBuffer: bufId=%" PRIu64 ", bufSeqNum=%u",
+                preCacheBuffer_->GetBufferId(), preCacheBuffer_->GetSeqNum());
+        }
     }
     bufferProducerCache_.clear();
     auto spNativeWindow = wpNativeWindow_.promote();
@@ -955,6 +964,7 @@ GSError ProducerSurface::CleanCacheLocked(bool cleanAll)
     GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
     CleanAllLocked(&bufSeqNum);
     if (cleanAll) {
+        std::lock_guard<std::mutex> lockGuard(preCacheBufferMutex_);
         preCacheBuffer_ = nullptr;
     }
     return ret;
@@ -1370,6 +1380,7 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
+        ReleasePreCacheBuffer(0);
     } else if (ret == GSERROR_NO_CONSUMER) {
         CleanCache();
         BLOGD("FlushBuffer ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
@@ -1379,11 +1390,23 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
 
 void ProducerSurface::ReleasePreCacheBuffer(int bufferCacheSize)
 {
+    (void)bufferCacheSize;
     // client must have more than two buffer, otherwise RS can not delete the prebuffer.
     // Because RS has two buffer(pre and cur).
     const int deletePreCacheBufferThreshold = 2; // 2 is delete threshold.
-    if (bufferCacheSize >= deletePreCacheBufferThreshold) {
-        preCacheBuffer_ = nullptr;
+
+    std::lock_guard<std::mutex> lockGuard(preCacheBufferMutex_);
+    if (flushBufferCountAfterCleanCache_ < 0) {
+        return;
+    }
+
+    if ((++flushBufferCountAfterCleanCache_) >= deletePreCacheBufferThreshold) {
+        if (preCacheBuffer_ != nullptr) {
+            SURFACE_TRACE_NAME_FMT("Mark PreCacheBuffer: bufId=%" PRIu64 ", bufSeqNum=%u",
+                preCacheBuffer_->GetBufferId(), preCacheBuffer_->GetSeqNum());
+            preCacheBuffer_ = nullptr;
+        }
+        flushBufferCountAfterCleanCache_ = -1;
     }
 }
 

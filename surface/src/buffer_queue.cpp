@@ -974,14 +974,15 @@ GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &r
             LogAndTraceAllBufferInBufferQueueCacheLocked();
             return GSERROR_NO_BUFFER;
         }
-
         // Drop frames by level: keep latest N frames, drop the rest
         DropBuffersByLevel(dropBuffers);
-
-        // Re-check after dropping by level
-        frontSequence = dirtyList_.begin();
+    }
+    ReleaseDropBuffers(dropBuffers);
+    dropBuffers.clear();
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        std::list<uint32_t>::iterator frontSequence = dirtyList_.begin();
         if (frontSequence == dirtyList_.end()) {
-            ReleaseDropBuffers(dropBuffers);
             LogAndTraceAllBufferInBufferQueueCacheLocked();
             return GSERROR_NO_BUFFER;
         }
@@ -1054,12 +1055,19 @@ void BufferQueue::DropBuffersByLevel(std::vector<BufferAndFence> &dropBuffers)
         return;
     }
 
+    // Mark dropped dirty buffers as acquired so they can be released via the normal ReleaseBuffer path.
+    // This keeps buffer states/lists consistent (otherwise buffers would be removed from dirtyList_ but
+    // remain in cache without being returned to freeList_).
+    const int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
     int32_t dropCount = static_cast<int32_t>(dirtyList_.size()) - dropFrameLevel_;
     for (int32_t i = 0; i < dropCount; i++) {
         if (dirtyList_.empty()) {
             break;
         }
         BufferElement& frontElement = bufferQueueCache_[dirtyList_.front()];
+        frontElement.state = BUFFER_STATE_ACQUIRED;
+        frontElement.lastAcquireTime = now;
         dropBuffers.emplace_back(frontElement.buffer, frontElement.fence);
         SURFACE_TRACE_NAME_FMT("DropBufferByLevel name: %s queueId: %" PRIu64
             " buffer seq: %u dropLevel: %d", name_.c_str(), uniqueId_,

@@ -2510,6 +2510,8 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel002, TestSize.Level0)
 
     // Cleanup
     bq->ReleaseDropBuffers(dropBuffers);
+    ASSERT_EQ(bq->bufferQueueCache_[retval1.sequence].state, BUFFER_STATE_RELEASED);
+    ASSERT_EQ(bq->freeList_.size(), 1);
     bq->CleanCache(false, nullptr);
 }
 
@@ -2629,6 +2631,55 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel004, TestSize.Level0)
 
     // Cleanup
     bq->ReleaseDropBuffers(dropBuffers);
+    ASSERT_EQ(bq->bufferQueueCache_[retval1.sequence].state, BUFFER_STATE_RELEASED);
+    ASSERT_EQ(bq->bufferQueueCache_[retval2.sequence].state, BUFFER_STATE_RELEASED);
+    ASSERT_EQ(bq->freeList_.size(), 2);
     bq->CleanCache(false, nullptr);
 }
+
+/*
+ * Function: DropBuffersByLevel005
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Drop by level with present timestamp, ensure dropped buffer is released on early return.
+ */
+HWTEST_F(BufferQueueTest, DropBuffersByLevel005, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    sptr<BufferExtraData> bedata1;
+    sptr<BufferExtraData> bedata2;
+
+    auto ret = bq->RequestBuffer(requestConfig, bedata1, retval1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    BufferFlushConfigWithDamages localFlushConfig = flushConfig;
+    localFlushConfig.desiredPresentTimestamp = 1000000000;
+    localFlushConfig.timestamp = 0;
+    ret = bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, localFlushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->RequestBuffer(requestConfig, bedata2, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, localFlushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ASSERT_EQ(bq->dirtyList_.size(), 2);
+
+    bq->SetDropFrameLevel(1);
+    IConsumerSurface::AcquireBufferReturnValue returnValue;
+    ret = bq->AcquireBuffer(returnValue, 500000000, false);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER_READY);
+
+    ASSERT_EQ(bq->dirtyList_.size(), 1);
+    ASSERT_EQ(bq->dirtyList_.front(), retval2.sequence);
+    ASSERT_EQ(bq->freeList_.size(), 1);
+    ASSERT_EQ(bq->bufferQueueCache_[retval1.sequence].state, BUFFER_STATE_RELEASED);
+
+    bq->CleanCache(false, nullptr);
 }
+} // namespace OHOS::Rosen

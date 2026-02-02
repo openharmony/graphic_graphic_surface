@@ -945,7 +945,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         fence = mapIter->second.fence;
         timestamp = mapIter->second.timestamp;
         damages = mapIter->second.damages;
-        SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u desiredPresentTimestamp: %" PRId64 " isAotuTimestamp: %d",
+        SURFACE_TRACE_NAME_FMT("acquire buffer sequence: %u desiredPresentTimestamp: %" PRId64 " isAutoTimestamp: %d",
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
         // record game acquire buffer time
@@ -2695,14 +2695,14 @@ void BufferQueue::AllocBuffers(const BufferRequestConfig &config, uint32_t alloc
 
 GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount)
 {
-    SURFACE_TRACE_NAME_FMT("PreAllocBuffers bufferQueueSize %u cacheSize %u allocBufferCount %u",
-        bufferQueueSize_, bufferQueueCache_.size(), allocBufferCount);
     if (config.width <=0 || config.height <= 0 || config.format < GraphicPixelFormat::GRAPHIC_PIXEL_FMT_CLUT8 ||
         config.format >= GraphicPixelFormat::GRAPHIC_PIXEL_FMT_BUTT || allocBufferCount == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
+        SURFACE_TRACE_NAME_FMT("PreAllocBuffers bufferQueueSize %u cacheSize %u allocBufferCount %u",
+            bufferQueueSize_, bufferQueueCache_.size(), allocBufferCount);
         if (allocBufferCount > bufferQueueSize_ - detachReserveSlotNum_ - bufferQueueCache_.size()) {
             allocBufferCount = bufferQueueSize_ - detachReserveSlotNum_ - bufferQueueCache_.size();
         }
@@ -2724,7 +2724,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
             }
             BufferElement ele = {
                 .buffer = iter->second,
-                .state = BUFFER_STATE_REQUESTED,
+                .state = BUFFER_STATE_RELEASED,
                 .isDeleting = false,
                 .config = config,
                 .fence = SyncFence::InvalidFence(),

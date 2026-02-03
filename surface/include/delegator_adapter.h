@@ -59,7 +59,7 @@ struct CallbackConfig {
     std::string name;
 };
 
-const std::vector<CallbackConfig> CALLBACK_FUNC_CONFIGS = {
+inline const std::vector<CallbackConfig> CALLBACK_FUNC_CONFIGS = {
     { PRODUCER_CREATE_FUNC, "ProducerSurfaceDelegatorCreate" },
     { PRODUCER_DESTROY_FUNC, "ProducerSurfaceDelegatorDestroy" },
     { SET_PRODUCER_SURFACE_FUNC, "ProducerSurfaceDelegatorSetSurface" },

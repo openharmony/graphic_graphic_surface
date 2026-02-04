@@ -1865,6 +1865,7 @@ HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence002, TestSize.L
 
     ret = csurf->ReleaseBuffer(buffer, -1);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    // After AcquireLastFlushedBuffer, the listener won't be triggered on ReleaseBuffer
     ASSERT_EQ(sequenceOut, 0);
     ret = pSurface->ReleaseLastFlushedBuffer(lastFlushedBuffer);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1930,7 +1931,7 @@ HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence003, TestSize.L
 
     ret = cSurfTmp->ReleaseBuffer(buffer, -1);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ASSERT_EQ(sequenceOut, 0);
+    ASSERT_EQ(sequenceOut, buffer->GetSeqNum());
     ret = pSurfaceTmp->UnRegisterReleaseListener();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(pSurfaceTmp->CleanCache(), OHOS::GSERROR_OK);

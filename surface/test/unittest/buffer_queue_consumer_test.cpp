@@ -213,11 +213,11 @@ HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueConsumerTest, RegisterSurfaceDelegator002, TestSize.Level0)
 {
-    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    sptr<IRemoteObjectMocker> remoteObjectMocker = nullptr;
     sptr<BufferQueue> bufferqueue = new BufferQueue("test");
     auto bufferQueueConsumer = new BufferQueueConsumer(bufferqueue);
     GSError ret = bufferQueueConsumer->RegisterSurfaceDelegator(remoteObjectMocker, surface);
-    ASSERT_NE(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_NE(ret, OHOS::GSERROR_OK);
 }
 
 HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)

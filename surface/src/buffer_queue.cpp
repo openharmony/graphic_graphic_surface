@@ -1051,7 +1051,7 @@ void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
 
 void BufferQueue::DropBuffersByLevel(std::vector<BufferAndFence> &dropBuffers)
 {
-    if (dropFrameLevel_ <= 0 || dirtyList_.size() <= dropFrameLevel_) {
+    if (dropFrameLevel_ <= 0 || dirtyList_.size() <= static_cast<size_t>(dropFrameLevel_)) {
         return;
     }
 

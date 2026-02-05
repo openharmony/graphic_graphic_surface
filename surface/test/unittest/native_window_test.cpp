@@ -998,6 +998,23 @@ HWTEST_F(NativeWindowTest, GetBufferHandle002, TestSize.Level0)
 }
 
 /*
+ * Function: OH_NativeWindow_GetBufferHandleFromNative
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeWindow_GetBufferHandleFromNative
+ *                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, GetBufferHandle003, TestSize.Level0)
+{
+    struct NativeWindowBuffer *buffer = new NativeWindowBuffer();
+    buffer->sfbuffer = sBuffer;
+    buffer->magic = NATIVE_OBJECT_MAGIC_WINDOW_INVALID;
+    ASSERT_EQ(OH_NativeWindow_GetBufferHandleFromNative(buffer), nullptr);
+    delete buffer;
+}
+
+/*
 * Function: OH_NativeWindow_NativeWindowFlushBuffer
 * Type: Function
 * Rank: Important(2)
@@ -2394,6 +2411,93 @@ HWTEST_F(NativeWindowTest, InvalidNativewindow002, TestSize.Level0)
     EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
 
     ret = OH_NativeWindow_CleanCache(InvalidNativeWindow);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+ * Function: GetNativeObjectMagic
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Func With Invalid NativeWindow
+ *                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, InvalidNativewindow003, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTestInvalid = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTestInvalid->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTestInvalid = cSurfaceTestInvalid->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTestInvalid = Surface::CreateSurfaceAsProducer(producerTestInvalid);
+    NativeWindow* InvalidNativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurfaceTestInvalid);
+    const char src[sizeof(NativeWindow)] = "TestInvalidNativeWindow";
+    memcpy_s((void*)InvalidNativeWindow, sizeof(NativeWindow), src, strlen(src) + 1);
+
+    OH_NativeBuffer_TransformType transform;
+    int32_t ret = NativeWindowGetTransformHint(InvalidNativeWindow, &transform);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowSetTransformHint(InvalidNativeWindow, OH_NativeBuffer_TransformType::NATIVEBUFFER_ROTATE_180);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    int32_t width, height;
+    ret = NativeWindowGetDefaultWidthAndHeight(InvalidNativeWindow, &width, &height);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowSetRequestWidthAndHeight(InvalidNativeWindow, 0, 0);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowDisconnect(InvalidNativeWindow);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = OH_NativeWindow_SetColorSpace(InvalidNativeWindow, OH_COLORSPACE_BT709_LIMIT);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    OH_NativeBuffer_ColorSpace colorSpace;
+    ret = OH_NativeWindow_GetColorSpace(InvalidNativeWindow, &colorSpace);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    uint8_t metadata[] = {0};
+    ret = OH_NativeWindow_SetMetadataValue(InvalidNativeWindow, OH_HDR_STATIC_METADATA, 1, metadata);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    int32_t size;
+    uint8_t *outMetadata;
+    ret = OH_NativeWindow_GetMetadataValue(InvalidNativeWindow, OH_HDR_STATIC_METADATA, &size, &outMetadata);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+ * Function: GetNativeObjectMagic
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Func With Invalid NativeWindow
+ *                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, InvalidNativewindow004, TestSize.Level0)
+{
+    sptr<OHOS::IConsumerSurface> cSurfaceTestInvalid = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurfaceTestInvalid->RegisterConsumerListener(listener);
+    sptr<OHOS::IBufferProducer> producerTestInvalid = cSurfaceTestInvalid->GetProducer();
+    sptr<OHOS::Surface> pSurfaceTestInvalid = Surface::CreateSurfaceAsProducer(producerTestInvalid);
+    NativeWindow* InvalidNativeWindow = OH_NativeWindow_CreateNativeWindow(&pSurfaceTestInvalid);
+    const char src[sizeof(NativeWindow)] = "TestInvalidNativeWindow";
+    memcpy_s((void*)InvalidNativeWindow, sizeof(NativeWindow), src, strlen(src) + 1);
+
+    Region region;
+    NativeWindowBuffer *buffer;
+    int32_t ret = NativeWindowLockBuffer(InvalidNativeWindow, region, &buffer);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowUnlockAndFlushBuffer(InvalidNativeWindow);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowSetGameUpscaleProcessor(InvalidNativeWindow, nullptr);
+    EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = NativeWindowPreAllocBuffers(InvalidNativeWindow, 3);
     EXPECT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
 }
 

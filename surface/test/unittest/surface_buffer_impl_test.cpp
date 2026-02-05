@@ -25,6 +25,7 @@ using namespace testing;
 using namespace testing::ext;
 
 namespace OHOS::Rosen {
+uint64_t gBufferId = UINT64_MAX;
 class SurfaceBufferImplTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -42,13 +43,20 @@ public:
     static inline sptr<SurfaceBuffer> buffer = nullptr;
     static inline int32_t val32 = 0;
     static inline int64_t val64 = 0;
+    static void BufferDestructorCallBack(uint64_t bufferId);
 };
+
+void SurfaceBufferImplTest::BufferDestructorCallBack(uint64_t bufferId)
+{
+    gBufferId = bufferId;
+}
 
 void SurfaceBufferImplTest::SetUpTestCase()
 {
     buffer = nullptr;
     val32 = 0;
     val64 = 0;
+    gBufferId = UINT64_MAX;
 }
 
 void SurfaceBufferImplTest::TearDownTestCase()
@@ -710,5 +718,37 @@ HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle003, TestSize.Level0)
     ASSERT_EQ(buffer->GetBufferHandle(), nullptr);
     BufferHandle* bufferHandle = buffer->CloneBufferHandle(buffer->GetBufferHandle());
     ASSERT_EQ(bufferHandle, nullptr);
+}
+
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallBack001, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferTmp->RegisterBufferDestructorCallBack(nullptr);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, UINT64_MAX);
+
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallBack(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallBack(nullptr); // invalid
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
+
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallBack(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->UnRegisterBufferDestructorCallBack();
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, UINT64_MAX);
 }
 }

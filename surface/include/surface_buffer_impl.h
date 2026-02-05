@@ -109,12 +109,15 @@ public:
     uint64_t GetFlushedTimestamp() const override;
     void SetFlushTimestamp(uint64_t timestamp) override;
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
+    void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
+    void UnRegisterBufferDestructorCallBack() override;
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);
     GSError GetImageLayout(void *layout);
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
+    void NotifyBufferDestructorCallBack() const;
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;
@@ -143,6 +146,9 @@ private:
     static inline std::atomic<bool> initMemMgrSucceed_ = false;
     sptr<SyncFence> syncFence_ = nullptr;
     std::atomic<uint64_t> lastFlushedTime_ = 0;
+
+    mutable std::mutex bufferDtorCbMutex_;
+    std::function<void(uint64_t)> bufferDtorCb_ = nullptr;
 };
 } // namespace OHOS
 

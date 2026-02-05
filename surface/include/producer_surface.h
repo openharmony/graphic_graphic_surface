@@ -930,6 +930,8 @@ private:
     sptr<SurfaceBuffer> mLockedBuffer_ = nullptr;
     Region region_ = {.rects = nullptr, .rectNumber = 0};
     std::string bufferTypeLeak_;
+    int32_t flushBufferCountAfterCleanCache_ = -1;
+    mutable std::mutex preCacheBufferMutex_;
 };
 } // namespace OHOS
 

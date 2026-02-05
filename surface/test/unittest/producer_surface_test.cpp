@@ -90,6 +90,10 @@ public:
     sptr<ProducerSurface> surface_ = nullptr;
     sptr<ProducerSurface> surfaceMd_ = nullptr;
     static inline bool dlopenTestEnabled_ = false;
+private:
+    void PrepareForFlushBuffers(uint32_t nums, sptr<ProducerSurface> pSurfaceTmp,
+        std::vector<sptr<SurfaceBuffer>> &buffers, std::vector<sptr<SyncFence>> &fences,
+        std::vector<BufferFlushConfigWithDamages> &configs);
 };
 
 using DlopenFunc = void*(*)(const char*, int);
@@ -129,6 +133,45 @@ extern "C" {
         }
 
         return g_realDlclose(handle);
+    }
+}
+
+void ProducerSurfaceTest::PrepareForFlushBuffers(uint32_t nums, sptr<ProducerSurface> pSurfaceTmp,
+    std::vector<sptr<SurfaceBuffer>> &buffers, std::vector<sptr<SyncFence>> &fences,
+    std::vector<BufferFlushConfigWithDamages> &configs)
+{
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+
+    uint32_t bufferQueueSize = nums;
+    for (uint32_t i = 0; i < bufferQueueSize; i++) {
+        sptr<SurfaceBuffer> buffer = nullptr;
+        sptr<SyncFence> releaseFence = nullptr;
+        GSError ret = pSurfaceTmp->RequestBuffer(buffer, releaseFence, requestConfig);
+        EXPECT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+        buffers.push_back(buffer);
+    }
+
+    pSurfaceTmp->flushBufferCountAfterCleanCache_ = 0;
+    uint32_t size = buffers.size();
+    fences.resize(size);
+    configs.reserve(size);
+    auto handleConfig = [](BufferFlushConfigWithDamages &config) -> void {
+        config.damages.reserve(1);
+        OHOS::Rect damage = { .x = 0, .y = 0, .w = 0x100, .h = 0x100 };
+        config.damages.emplace_back(damage);
+        config.timestamp = 0;
+    };
+    for (uint32_t i = 0; i < size; ++i) {
+        fences[i] = new SyncFence(-1);
+        BufferFlushConfigWithDamages config;
+        handleConfig(config);
+        configs.emplace_back(config);
     }
 }
 
@@ -4077,5 +4120,198 @@ HWTEST_F(ProducerSurfaceTest, AddCacheLocked002, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ret = surface_->AddCacheLocked(buffer3);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+
+    PrepareForFlushBuffers(2, pSurfaceTmp, buffers, fences, configs);
+    pSurfaceTmp->preCacheBuffer_ = buffers.empty() ? nullptr : buffers[0];
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+
+    GSError ret = pSurfaceTmp->FlushBuffers(buffers, fences, configs);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ == nullptr);
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+
+    PrepareForFlushBuffers(1, pSurfaceTmp, buffers, fences, configs);
+    pSurfaceTmp->preCacheBuffer_ = buffers.empty() ? nullptr : buffers[0];
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+
+    GSError ret = pSurfaceTmp->FlushBuffers(buffers, fences, configs);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer003, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+
+    PrepareForFlushBuffers(2, pSurfaceTmp, buffers, fences, configs);
+    pSurfaceTmp->preCacheBuffer_ = buffers.empty() ? nullptr : buffers[0];
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+
+    BufferFlushConfig flushConfig = { .damage = { .w = 0x100, .h = 0x100, }, };
+    uint32_t size = buffers.size();
+    for (int i = 0; i < size; i++) {
+        GSError ret = pSurfaceTmp->FlushBuffer(buffers[i], -1, flushConfig);
+        EXPECT_EQ(ret, OHOS::GSERROR_OK);
+        if (i == 0) {
+            EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+        } else {
+            EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ == nullptr);
+        }
+    }
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer004, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+
+    PrepareForFlushBuffers(1, pSurfaceTmp, buffers, fences, configs);
+    pSurfaceTmp->preCacheBuffer_ = buffers.empty() ? nullptr : buffers[0];
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+
+    BufferFlushConfig flushConfig = { .damage = { .w = 0x100, .h = 0x100, }, };
+    uint32_t size = buffers.size();
+    for (int i = 0; i < size; i++) {
+        GSError ret = pSurfaceTmp->FlushBuffer(buffers[i], -1, flushConfig);
+        EXPECT_EQ(ret, OHOS::GSERROR_OK);
+        if (i == 0) {
+            EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+        } else {
+            EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+        }
+    }
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer005, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+
+    PrepareForFlushBuffers(1, pSurfaceTmp, buffers, fences, configs);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 1);
+    uint32_t invalidBufferId = 9999;
+    sptr<SurfaceBuffer> invalidBuffer = nullptr;
+    if (pSurfaceTmp->bufferProducerCache_.find(invalidBufferId) == pSurfaceTmp->bufferProducerCache_.end()) {
+        pSurfaceTmp->bufferProducerCache_[invalidBufferId] = invalidBuffer;
+    } else {
+        pSurfaceTmp->bufferProducerCache_[++invalidBufferId] = invalidBuffer;
+    }
+
+    pSurfaceTmp->CleanAllLocked(&invalidBufferId);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ == nullptr);
+    EXPECT_EQ(pSurfaceTmp->flushBufferCountAfterCleanCache_, 0);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 0);
+
+    buffers.clear();
+    fences.clear();
+    configs.clear();
+    PrepareForFlushBuffers(1, pSurfaceTmp, buffers, fences, configs);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 1);
+    uint32_t validBufferId = buffers[0]->GetSeqNum();
+    pSurfaceTmp->CleanAllLocked(&validBufferId);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+    EXPECT_EQ(pSurfaceTmp->flushBufferCountAfterCleanCache_, 0);
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer006, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+    PrepareForFlushBuffers(2, pSurfaceTmp, buffers, fences, configs);
+
+    // invalid damages
+    configs[0].damages[0].w = -1;
+    configs[0].damages[0].h = -1;
+    pSurfaceTmp->preCacheBuffer_ = buffers.empty() ? nullptr : buffers[0];
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+
+    GSError ret = pSurfaceTmp->FlushBuffers(buffers, fences, configs);
+    EXPECT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
+}
+
+HWTEST_F(ProducerSurfaceTest, PreCacheBuffer007, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    std::vector<sptr<SurfaceBuffer>> buffers;
+    std::vector<sptr<SyncFence>> fences;
+    std::vector<BufferFlushConfigWithDamages> configs;
+
+    PrepareForFlushBuffers(3, pSurfaceTmp, buffers, fences, configs);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 3);
+
+    uint32_t invalidBufferId = 9999;
+    sptr<SurfaceBuffer> invalidBuffer = nullptr;
+    if (pSurfaceTmp->bufferProducerCache_.find(invalidBufferId) == pSurfaceTmp->bufferProducerCache_.end()) {
+        pSurfaceTmp->bufferProducerCache_[invalidBufferId] = invalidBuffer;
+    } else {
+        pSurfaceTmp->bufferProducerCache_[++invalidBufferId] = invalidBuffer;
+    }
+
+    pSurfaceTmp->CleanAllLocked(&invalidBufferId);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ == nullptr);
+    GSError ret = pSurfaceTmp->FlushBuffers(buffers, fences, configs);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ == nullptr);
+    EXPECT_EQ(pSurfaceTmp->flushBufferCountAfterCleanCache_, -1);
 }
 }

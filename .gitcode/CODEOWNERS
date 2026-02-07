@@ -1,0 +1,15 @@
+# Code owners for graphic_2d_surface
+[graphic_2d_surface base]
+.gitcode/CODEOWNERS @conan13234
+
+[interfaces]
+interfaces/inner_api/ @conan13234
+
+[surface]
+surface/include/ @conan13234
+surface/src/ @conan13234
+buffer_handle/src/ @conan13234
+
+[utils]
+utils/ @conan13234
+sandbox/ @conan13234

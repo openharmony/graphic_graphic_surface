@@ -395,6 +395,8 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         ret = MetadataHelper::GetHDRDynamicMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_STATIC_METADATA) {
         ret = MetadataHelper::GetHDRStaticMetadata(sbuffer, mD);
+    } else if (metadataKey == OH_REGION_OF_INTEREST_METADATA) {
+        ret = MetadataHelper::GetROIMetadata(sbuffer, mD);
     } else if (metadataKey == OH_HDR_METADATA_TYPE) {
         ret = OH_NativeBuffer_GetMatedataValueType(sbuffer, size, metadata);
         return ret;

@@ -93,6 +93,7 @@ public:
         HDI::Display::Graphic::Common::V1_0::BufferHandleMetaRegion& crop);
 
     static GSError SetROIMetadata(sptr<SurfaceBuffer>& buffer, const std::vector<uint8_t>& roiMetadata);
+    static GSError GetROIMetadata(const sptr<SurfaceBuffer>& buffer, std::vector<uint8_t>& roiMetadata);
 
 #ifdef RS_ENABLE_TV_PQ_METADATA
     using OnSetFieldsFunc = std::function<void(TvPQMetadata &tvPQMetadata)>;

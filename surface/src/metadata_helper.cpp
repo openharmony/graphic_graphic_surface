@@ -218,8 +218,17 @@ GSError MetadataHelper::SetROIMetadata(sptr<SurfaceBuffer>& buffer, const std::v
     if (buffer == nullptr) {
         return GSERROR_NO_BUFFER;
     }
- 
+
     return buffer->SetMetadata(OHOS::HDI::Display::Graphic::Common::V2_2::ATTRKEY_ROI_METADATA, roiMetadata);
+}
+
+GSError MetadataHelper::GetROIMetadata(const sptr<SurfaceBuffer>& buffer, std::vector<uint8_t>& roiMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+
+    return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_2::ATTRKEY_ROI_METADATA, roiMetadata);
 }
 
 GSError MetadataHelper::SetAdaptiveFOVMetadata(sptr<SurfaceBuffer>& buffer,

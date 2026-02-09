@@ -296,7 +296,7 @@ HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Lev
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: test SetROIMetadata
+* CaseDescription: test SetROIMetadata and GetROIMetadata
 */
 HWTEST_F(MetadataManagerTest, ROIMetadataTest, Function | SmallTest | Level1)
 {
@@ -306,7 +306,38 @@ HWTEST_F(MetadataManagerTest, ROIMetadataTest, Function | SmallTest | Level1)
 
     auto retSet = MetadataHelper::SetROIMetadata(buffer_, metadataSet);
     ASSERT_TRUE(retSet == GSERROR_OK || retSet == GSERROR_HDI_ERROR);
+
+    std::vector<uint8_t> metadataGet;
+    auto retGet = MetadataHelper::GetROIMetadata(buffer_, metadataGet);
+    ASSERT_TRUE(retGet == GSERROR_OK || retGet == GSERROR_HDI_ERROR);
+
+    if (retSet == GSERROR_OK && retGet == GSERROR_OK) {
+        ASSERT_EQ(metadataSet.size(), metadataGet.size());
+        for (uint32_t i = 0; i < metadataSet.size(); i++) {
+            ASSERT_EQ(metadataSet[i], metadataGet[i]);
+        }
+    }
+
     ASSERT_EQ(MetadataHelper::SetROIMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);
+    ASSERT_EQ(MetadataHelper::GetROIMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
+}
+
+/*
+* Function: MetadataManagerTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test GetROIMetadata without Set (edge case)
+*/
+HWTEST_F(MetadataManagerTest, ROIMetadataGetNotSetTest, Function | SmallTest | Level1)
+{
+    std::vector<uint8_t> metadataGet;
+    auto retGet = MetadataHelper::GetROIMetadata(buffer_, metadataGet);
+    // Verify behavior: returns OK but metadataGet is empty, or returns error
+    ASSERT_TRUE(retGet == GSERROR_OK || retGet == GSERROR_HDI_ERROR || retGet == GSERROR_NOT_SUPPORT);
+    if (retGet == GSERROR_OK) {
+        ASSERT_TRUE(metadataGet.empty());
+    }
 }
 
 /*

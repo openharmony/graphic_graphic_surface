@@ -720,6 +720,16 @@ HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle003, TestSize.Level0)
     ASSERT_EQ(bufferHandle, nullptr);
 }
 
+/*
+ * Function: RegisterBufferDestructorCallBack001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. RegisterBufferDestructorCallBack to SurfaceBuffer
+ *                  3. CallBack will be exe when SurfaceBuffer is destructor
+ *                  4. UnRegisterBufferDestructorCallBack to SurfaceBuffer
+ */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallBack001, TestSize.Level0)
 {
     uint64_t bufferId = 0;

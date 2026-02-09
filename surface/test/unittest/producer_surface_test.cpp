@@ -198,7 +198,7 @@ void ProducerSurfaceTest::SetUp()
     surface_ = new ProducerSurface(producer);
     ASSERT_NE(surface_, nullptr);
     surface_->producer_ = nullptr;
-    
+
     surfaceMd_ = new ProducerSurface(producer);
     ASSERT_NE(surfaceMd_, nullptr);
     surfaceMd_->producer_ = nullptr;
@@ -1176,35 +1176,35 @@ HWTEST_F(ProducerSurfaceTest, SetMetadataValue001, TestSize.Level0)
     sptr<SurfaceBuffer> buffer_;
     int releaseFence = -1;
     ret = pSurface->RequestBuffer(buffer_, releaseFence, requestConfig);
- 
+
     std::string valueInfo = "mockInfo";
     std::string valueDynamic = "mockDynamic";
     std::string valueStatic = "mockStatic";
     std::string valueType = "mockType";
- 
+
     surfaceMd_->SetUserData("ATTRKEY_COLORSPACE_INFO", valueInfo);
     surfaceMd_->SetUserData("OH_HDR_DYNAMIC_METADATA", valueDynamic);
     surfaceMd_->SetUserData("OH_HDR_STATIC_METADATA", valueStatic);
     surfaceMd_->SetUserData("OH_HDR_METADATA_TYPE", valueType);
- 
+
     ret = surfaceMd_->SetMetadataValue(buffer_);
     if (ret == OHOS::GSERROR_OK) {
         CM_ColorSpaceType colorSpaceType;
         MetadataHelper::GetColorSpaceType(buffer_, colorSpaceType);
         EXPECT_EQ(static_cast<CM_ColorSpaceType>(atoi(valueInfo.c_str())), colorSpaceType);
-        
+
         std::vector<uint8_t> setDynamicMetadata, getDynamicMetadata;
         setDynamicMetadata.resize(valueDynamic.size());
         setDynamicMetadata.assign(valueDynamic.begin(), valueDynamic.end());
         MetadataHelper::GetHDRDynamicMetadata(buffer_, getDynamicMetadata);
         EXPECT_EQ(setDynamicMetadata, getDynamicMetadata);
- 
+
         std::vector<uint8_t> setStaticMetadata, getStaticMetadata;
         setStaticMetadata.resize(valueStatic.size());
         setStaticMetadata.assign(valueStatic.begin(), valueStatic.end());
         MetadataHelper::GetHDRStaticMetadata(buffer_, getStaticMetadata);
         EXPECT_EQ(setStaticMetadata, getStaticMetadata);
- 
+
         CM_HDR_Metadata_Type hdrMetadataType;
         MetadataHelper::GetHDRMetadataType(buffer_, hdrMetadataType);
         EXPECT_EQ(static_cast<CM_HDR_Metadata_Type>(atoi(valueType.c_str())), hdrMetadataType);
@@ -1861,7 +1861,7 @@ HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence001, TestSize.L
         ASSERT_EQ(ret, OHOS::GSERROR_OK);
         ASSERT_EQ(sequenceOut, buffer->GetSeqNum());
     }
-    
+
     ret = pSurface->GoBackground();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ret = pSurface->UnRegisterReleaseListener();
@@ -2167,7 +2167,7 @@ HWTEST_F(ProducerSurfaceTest, SetBufferReallocFlag, Function | MediumTest | Leve
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
     ret = csurf->ReleaseBuffer(buffer, -1);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
-    
+
     ASSERT_EQ(pSurface->SetBufferReallocFlag(true), OHOS::GSERROR_OK);
     BufferRequestConfig requestConfigHDR = {
         .width = 0x200,
@@ -3288,7 +3288,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer002, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3303,13 +3303,13 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer002, TestSize.Level0)
     rect.h = 0x100;
     Region region = {.rects = &rect, .rectNumber = 1};
     sptr<SurfaceBuffer> buffer = nullptr;
-    
+
     GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
     ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
     ASSERT_NE(buffer, nullptr);
-    
+
     ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
     pSurfaceTmp = nullptr;
@@ -3331,7 +3331,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer003, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3353,7 +3353,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer003, TestSize.Level0)
         ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
         ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
         ASSERT_NE(buffer, nullptr);
-    
+
         ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
         ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     }
@@ -3386,7 +3386,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer001, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3401,13 +3401,13 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer001, TestSize.L
     rect.h = 0x100;
     Region region = {.rects = &rect, .rectNumber = 1};
     sptr<SurfaceBuffer> buffer = nullptr;
-    
+
     GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
     ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
     ASSERT_NE(buffer, nullptr);
-    
+
     pSurfaceTmp->producer_ = nullptr;
     ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
@@ -3431,7 +3431,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer002, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3446,7 +3446,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer002, TestSize.L
     rect.h = 0x100;
     Region region = {.rects = &rect, .rectNumber = 1};
     sptr<SurfaceBuffer> buffer = nullptr;
-    
+
     GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ASSERT_EQ(pSurfaceTmp->region_.rects->x, 0x100);
@@ -3479,7 +3479,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer003, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3489,7 +3489,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer003, TestSize.L
     };
     Region region = {.rects = nullptr, .rectNumber = 0};
     sptr<SurfaceBuffer> buffer = nullptr;
-    
+
     GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
@@ -3518,7 +3518,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer004, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3528,7 +3528,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer004, TestSize.L
     };
     Region region = {.rects = nullptr, .rectNumber = 0};
     sptr<SurfaceBuffer> buffer = nullptr;
-    
+
     GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
@@ -3558,7 +3558,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceCancelBufferLocked001, TestSize.Lev
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -3568,7 +3568,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceCancelBufferLocked001, TestSize.Lev
     };
     Region region = {.rects = nullptr, .rectNumber = 0};
     sptr<SurfaceBuffer> buffer = nullptr;
-    
+
     GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
     ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
@@ -4020,7 +4020,7 @@ HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakAndRequesBuffer, TestSize.Level0)
 
     pSurfaceTmpTest->SetBufferTypeLeak("test");
     ASSERT_TRUE(pSurfaceTmpTest->bufferTypeLeak_ == "test");
-    
+
     BufferRequestConfig requestConfig = {
         .width = 0x100,
         .height = 0x100,
@@ -4099,7 +4099,7 @@ HWTEST_F(ProducerSurfaceTest, AddCacheLocked001, TestSize.Level0)
     ret = surface_->AddCacheLocked(buffer);
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_UNKOWN);
 }
- 
+
 /*
  * Function: AddCacheLocked
  * Type: Function
@@ -4122,6 +4122,13 @@ HWTEST_F(ProducerSurfaceTest, AddCacheLocked002, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
 }
 
+/*
+ * Function: PreCacheBuffer001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer_, Flush 2 Buffer will clean PreCacheBuffer_
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer001, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
@@ -4143,6 +4150,13 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer001, TestSize.Level0)
     EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ == nullptr);
 }
 
+/*
+ * Function: PreCacheBuffer002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer_, Flush 1 Buffer will not clean PreCacheBuffer_
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer002, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
@@ -4164,6 +4178,14 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer002, TestSize.Level0)
     EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
 }
 
+/*
+ * Function: PreCacheBuffer003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer_, Flush 1 Buffer will not clean PreCacheBuffer_,
+ *                  Flush 2 Buffer will clean PreCacheBuffer_,
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer003, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
@@ -4193,6 +4215,14 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer003, TestSize.Level0)
     }
 }
 
+/*
+ * Function: PreCacheBuffer004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer_, Flush 1 Buffer will not clean PreCacheBuffer_,
+ *                  Flush 2 Buffer will clean PreCacheBuffer_,
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer004, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
@@ -4222,6 +4252,13 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer004, TestSize.Level0)
     }
 }
 
+/*
+ * Function: PreCacheBuffer005
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer_, CleanAllLocked with validBufferId should make a PreCacheBuffer_,
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer005, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
@@ -4260,6 +4297,13 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer005, TestSize.Level0)
     EXPECT_EQ(pSurfaceTmp->flushBufferCountAfterCleanCache_, 0);
 }
 
+/*
+ * Function: PreCacheBuffer006
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer, FlushBuffers fail will not clean preCacheBuffer_
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer006, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
@@ -4284,6 +4328,13 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer006, TestSize.Level0)
     EXPECT_TRUE(pSurfaceTmp->preCacheBuffer_ != nullptr);
 }
 
+/*
+ * Function: PreCacheBuffer007
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test PreCacheBuffer, FlushBuffers ok will clean preCacheBuffer_
+ */
 HWTEST_F(ProducerSurfaceTest, PreCacheBuffer007, TestSize.Level0)
 {
     sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();

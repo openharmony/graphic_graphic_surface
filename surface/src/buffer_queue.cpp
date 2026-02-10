@@ -414,7 +414,6 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
         }
 
         if (listenerSeqAndFence) {
-            BLOGW("no buffer for listener, queueId: %" PRIu64 ".", uniqueId_);
             return GSERROR_NO_BUFFER;
         }
 

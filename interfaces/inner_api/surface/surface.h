@@ -344,11 +344,6 @@ public:
         (void)func;
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError RegisterReleaseListener(OnReleaseFuncWithSequenceAndFence func)
-    {
-        (void)func;
-        return GSERROR_NOT_SUPPORT;
-    }
     virtual GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func)
     {
         (void)funcName;
@@ -665,6 +660,19 @@ public:
     virtual GSError SetGameUpscaleProcessor(GameUpscaleProcessor processor)
     {
         (void)processor;
+        return GSERROR_NOT_SUPPORT;
+    }
+    /**
+     * @brief Register a listener for buffer release events with sequence and fence information.
+     *        This listener depends on AttachBuffer or RequestBuffer to be invoked.
+     *        When the buffer queue is full, AttachBuffer and RequestBuffer operations will fail.
+     * @param func Indicates the callback function to be invoked on buffer release.
+     *        The callback receives the buffer sequence number and fence.
+     * @return Returns the error code of the registration.
+     */
+    virtual GSError RegisterReleaseListener(OnReleaseFuncWithSequenceAndFence func)
+    {
+        (void)func;
         return GSERROR_NOT_SUPPORT;
     }
 protected:

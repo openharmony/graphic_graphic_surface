@@ -17,9 +17,11 @@
 
 #include "metadata_helper.h"
 #include "surface_buffer_impl.h"
+#include "v2_2/buffer_handle_meta_key_type.h"
 
 using namespace testing::ext;
 using namespace OHOS::HDI::Display::Graphic::Common::V1_0;
+using namespace OHOS::HDI::Display::Graphic::Common;
 
 namespace OHOS {
 class MetadataManagerTest : public testing::Test {
@@ -289,6 +291,38 @@ HWTEST_F(MetadataManagerTest, HDRDynamicMetadataTest, Function | SmallTest | Lev
 
     ASSERT_EQ(MetadataHelper::SetHDRDynamicMetadata(nullBuffer_, metadataSet), GSERROR_NO_BUFFER);
     ASSERT_EQ(MetadataHelper::GetHDRDynamicMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
+}
+
+/*
+* Function: MetadataManagerTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test GetAIHDRVideoMetadata function
+*/
+HWTEST_F(MetadataManagerTest, AIHDRVideoMetadataTest, Function | SmallTest | Level1)
+{
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA | BUFFER_USAGE_VENDOR_PRI10,
+        .timeout = 0,
+        .colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB,
+    };
+
+    sptr<SurfaceBuffer> surfaceBuffer = new SurfaceBufferImpl(0);
+    GSError ret = surfaceBuffer->Alloc(requestConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(surfaceBuffer, nullptr);
+
+    std::vector<uint8_t> metadataGet;
+    auto retGet = MetadataHelper::GetAIHDRVideoMetadata(surfaceBuffer, metadataGet);
+    ASSERT_EQ(retGet, GSERROR_OK);
+    ASSERT_EQ(metadataGet.size(), sizeof(V2_1::BlobDataType));
+
+    ASSERT_EQ(MetadataHelper::GetAIHDRVideoMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
 }
 
 /*

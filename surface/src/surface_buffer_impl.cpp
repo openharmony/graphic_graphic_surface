@@ -993,4 +993,139 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallBack() const
     }
     bufferDtorCb(bufferId_);
 }
+
+GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parcel)
+{
+    if (!parcel.WriteUint32(sequenceNumber_) || !parcel.WriteUint64(bufferId_)) {
+        BLOGE("%{public}s: write basic info failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+
+    if (handle_ == nullptr) {
+        if (!parcel.WriteBool(false)) {
+            BLOGE("%{public}s: write handle null flag failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
+        }
+    } else {
+        if (!parcel.WriteBool(true)) {
+            BLOGE("%{public}s: write handle flag failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
+        }
+        if (WriteBufferHandle(parcel, *handle_) == false) {
+            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
+        }
+    }
+
+    if (!parcel.WriteUint32(static_cast<uint32_t>(surfaceBufferColorGamut_)) ||
+        !parcel.WriteUint32(static_cast<uint32_t>(transform_)) ||
+        !parcel.WriteUint32(static_cast<uint32_t>(scalingMode_))) {
+        BLOGE("%{public}s: write color/transform info failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+
+    if (!parcel.WriteInt32(surfaceBufferWidth_) || !parcel.WriteInt32(surfaceBufferHeight_)) {
+        BLOGE("%{public}s: write size info failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+
+    if (!parcel.WriteBool(isReclaimed_.load())) {
+        BLOGE("%{public}s: write flags failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+
+    if (!parcel.WriteInt32(crop_.x) || !parcel.WriteInt32(crop_.y) ||
+        !parcel.WriteInt32(crop_.w) || !parcel.WriteInt32(crop_.h)) {
+        BLOGE("%{public}s: write crop info failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+
+    if (!parcel.WriteBool(syncFence_ != nullptr)) {
+        BLOGE("%{public}s: write sync fence flag failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+    if (syncFence_ != nullptr) {
+        if (!syncFence_->WriteToMessageParcel(parcel)) {
+            BLOGE("%{public}s: write sync fence failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
+        }
+    }
+
+    BLOGD("%{public}s success, seq: %{public}u", __func__, sequenceNumber_);
+    return GSERROR_OK;
+}
+
+GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
+{
+    if (!parcel.ReadUint32(sequenceNumber_) || !parcel.ReadUint64(bufferId_)) {
+        BLOGE("%{public}s: read basic info failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+
+    bool hasHandle = false;
+    if (!parcel.ReadBool(hasHandle)) {
+        BLOGE("%{public}s: read handle flag failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+
+    if (hasHandle) {
+        auto handle = ReadBufferHandle(parcel, readSafeFdFunc);
+        if (handle == nullptr) {
+            BLOGE("%{public}s: read buffer handle failed", __func__);
+            return GSERROR_API_FAILED;
+        }
+        SetBufferHandle(handle);
+    } else {
+        FreeBufferHandleLocked();
+        handle_ = nullptr;
+    }
+
+    uint32_t colorGamut;
+    uint32_t transform;
+    uint32_t scalingMode;
+    if (!parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadUint32(scalingMode)) {
+        BLOGE("%{public}s: read color/transform info failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+    surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);
+    transform_ = static_cast<GraphicTransformType>(transform);
+    scalingMode_ = static_cast<ScalingMode>(scalingMode);
+
+    if (!parcel.ReadInt32(surfaceBufferWidth_) || !parcel.ReadInt32(surfaceBufferHeight_)) {
+        BLOGE("%{public}s: read size info failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+
+    bool isReclaimed;
+    if (!parcel.ReadBool(isReclaimed)) {
+        BLOGE("%{public}s: read flags failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+    isReclaimed_.store(isReclaimed);
+
+    if (!parcel.ReadInt32(crop_.x) || !parcel.ReadInt32(crop_.y) ||
+        !parcel.ReadInt32(crop_.w) || !parcel.ReadInt32(crop_.h)) {
+        BLOGE("%{public}s: read crop info failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+
+    bool hasSyncFence;
+    if (!parcel.ReadBool(hasSyncFence)) {
+        BLOGE("%{public}s: read sync fence flag failed", __func__);
+        return GSERROR_API_FAILED;
+    }
+    if (hasSyncFence) {
+        syncFence_ = SyncFence::ReadFromMessageParcel(parcel, readSafeFdFunc);
+        if (syncFence_ == nullptr) {
+            BLOGE("%{public}s: read sync fence failed", __func__);
+            return GSERROR_API_FAILED;
+        }
+    } else {
+        syncFence_ = nullptr;
+    }
+
+    BLOGD("%{public}s success, seq: %{public}u", __func__, sequenceNumber_);
+    return GSERROR_OK;
+}
 } // namespace OHOS

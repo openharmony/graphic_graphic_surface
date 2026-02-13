@@ -255,6 +255,21 @@ public:
     {
         return;
     }
+    virtual GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    }
+
+    virtual GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
+        std::function<int(MessageParcel &parcel,
+            std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr)
+    {
+        (void)parcel;
+        (void)readSafeFdFunc;
+        return GSERROR_OK;
+    }
+
 protected:
     SurfaceBuffer() {}
     SurfaceBuffer(const SurfaceBuffer&) = delete;

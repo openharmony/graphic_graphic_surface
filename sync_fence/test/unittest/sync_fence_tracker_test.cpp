@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 #include "sync_fence_tracker.h"
+#include <fcntl.h>
 
 using namespace testing;
 using namespace testing::ext;
@@ -46,7 +47,8 @@ void SyncFenceTrackerTest::TearDownTestCase()
 HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("TrackFenceTest001");
-    sptr<SyncFence> fence = new SyncFence(0);
+    int fd = open("/dev/GPIO_TEST", O_RDONLY);
+    sptr<SyncFence> fence = new SyncFence(fd);
     tracker->TrackFence(nullptr, true);
     EXPECT_EQ(tracker->fencesQueued_.load(), 0);
    
@@ -80,7 +82,8 @@ HWTEST_F(SyncFenceTrackerTest, TrackFenceTest001, Function | MediumTest | Level2
 HWTEST_F(SyncFenceTrackerTest, TrackFenceTest002, Function | MediumTest | Level2)
 {
     auto tracker = new SyncFenceTracker("Acquire Fence");
-    sptr<SyncFence> fence = new SyncFence(0);
+    int fd = open("/dev/GPIO_TEST", O_RDONLY);
+    sptr<SyncFence> fence = new SyncFence(fd);
     tracker->TrackFence(nullptr, true);
     EXPECT_EQ(tracker->fencesQueued_.load(), 0);
  

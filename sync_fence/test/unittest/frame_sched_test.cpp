@@ -17,6 +17,7 @@
 
 #include "frame_sched.h"
 #include "sync_fence.h"
+#include <fcntl.h>
 
 using namespace testing;
 using namespace testing::ext;
@@ -175,7 +176,8 @@ HWTEST_F(FrameSchedTest, SyncMergeTest001, Function | MediumTest | Level2)
     ASSERT_EQ(SyncFence::SyncMerge("SyncMergeTest001", 1, -1, newFenceFd), -1);
     ASSERT_EQ(newFenceFd, -1);
 
-    sptr<SyncFence> fence = new SyncFence(0);
+    int fd = open("/dev/GPIO_TEST", O_RDONLY);
+    sptr<SyncFence> fence = new SyncFence(fd);
     ASSERT_EQ(fence->GetStatus(), FenceStatus::ERROR);
 
     sptr<SyncFence> fence1 = new SyncFence(-1);

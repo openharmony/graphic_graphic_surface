@@ -179,6 +179,16 @@ GSError MetadataHelper::GetHDRDynamicMetadata(const sptr<SurfaceBuffer>& buffer,
     return buffer->GetMetadata(ATTRKEY_HDR_DYNAMIC_METADATA, hdrDynamicMetadata);
 }
 
+GSError MetadataHelper::GetAIHDRVideoMetadata(const sptr<SurfaceBuffer>& buffer,
+    std::vector<uint8_t>& aihdrVideoMetadata)
+{
+    if (buffer == nullptr) {
+        return GSERROR_NO_BUFFER;
+    }
+
+    return buffer->GetMetadata(OHOS::HDI::Display::Graphic::Common::V2_2::ATTRKEY_VIDEO_AI_HDR_LUT, aihdrVideoMetadata);
+}
+
 GSError MetadataHelper::SetHDRStaticMetadata(sptr<SurfaceBuffer>& buffer,
     const std::vector<uint8_t>& hdrStaticMetadata)
 {

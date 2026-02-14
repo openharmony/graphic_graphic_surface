@@ -85,6 +85,7 @@ public:
 
     static GSError SetHDRDynamicMetadata(sptr<SurfaceBuffer>& buffer, const std::vector<uint8_t>& hdrDynamicMetadata);
     static GSError GetHDRDynamicMetadata(const sptr<SurfaceBuffer>& buffer, std::vector<uint8_t>& hdrDynamicMetadata);
+    static GSError GetAIHDRVideoMetadata(const sptr<SurfaceBuffer>& buffer, std::vector<uint8_t>& aihdrVideoMetadata);
 
     static GSError SetHDRStaticMetadata(sptr<SurfaceBuffer>& buffer, const std::vector<uint8_t>& hdrStaticMetadata);
     static GSError GetHDRStaticMetadata(const sptr<SurfaceBuffer>& buffer, std::vector<uint8_t>& hdrStaticMetadata);

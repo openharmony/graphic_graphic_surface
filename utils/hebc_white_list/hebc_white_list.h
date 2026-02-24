@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <mutex>
 
 namespace OHOS {
 
@@ -46,6 +47,7 @@ private:
     std::atomic_bool inited_ = false;
     std::vector<std::string> hebcList_;
     std::string appName_;
+    std::mutex mutex_;
 };
 
 } // namespace OHOS

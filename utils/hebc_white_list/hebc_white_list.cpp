@@ -29,7 +29,7 @@ const std::string PROCESS_NAME = "/proc/self/cmdline";
 constexpr long MAX_FILE_SIZE = 32 * 1024 * 1024;
 static constexpr uint32_t MAX_HEBC_WHITELIST_NUMBER = 10000; // hebcwhiteList size not exceed 10000
 static constexpr uint32_t MAX_APP_NAME_SIZE = 1024; // appname size not exceed 1024
-static std::once_flag nameFlag_;
+static std::once_flag g_nameFlag;
 } // end of anonymous namespace
 
 bool HebcWhiteList::Check(const std::string& appName) noexcept
@@ -42,6 +42,7 @@ bool HebcWhiteList::Check(const std::string& appName) noexcept
 
 bool HebcWhiteList::Init() noexcept
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     if (inited_.load()) {
         return true;
     }
@@ -54,7 +55,7 @@ bool HebcWhiteList::Init() noexcept
 
 void HebcWhiteList::GetApplicationName(std::string& name) noexcept
 {
-    std::call_once(nameFlag_, [this, &name]() {
+    std::call_once(g_nameFlag, [this, &name]() {
         std::ifstream procfile(PROCESS_NAME);
         if (!procfile.is_open()) {
             return;

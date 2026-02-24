@@ -17,6 +17,7 @@
 
 #include "acquire_fence_manager.h"
 #include "sync_fence.h"
+#include <fcntl.h>
 
 using namespace testing;
 using namespace testing::ext;
@@ -63,7 +64,8 @@ HWTEST_F(AcquireFenceTrackerTest, TrackFence001, Function | MediumTest | Level2)
 */
 HWTEST_F(AcquireFenceTrackerTest, AcquireFenceTracker001, Function | MediumTest | Level2)
 {
-    sptr<SyncFence> syncFence = new SyncFence(0);
+    int fd = open("/dev/GPIO_TEST", O_RDONLY);
+    sptr<SyncFence> syncFence = new SyncFence(fd);
     AcquireFenceTracker::tracker_ = nullptr;
     AcquireFenceTracker::TrackFence(syncFence, true);
 }

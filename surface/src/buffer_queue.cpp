@@ -1328,6 +1328,8 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
 
     BufferHandle* bufferHandle = bufferImpl->GetBufferHandle();
     if (connectedPid != 0 && bufferHandle != nullptr) {
+        SURFACE_TRACE_NAME_FMT("AllocBuffer SetDMAName name: %s queueId: %" PRIu64 " connectedPid: %d",
+            name_.c_str(), uniqueId_, connectedPid);
         ioctl(bufferHandle->fd, DMA_BUF_SET_NAME_A, std::to_string(connectedPid).c_str());
     }
 

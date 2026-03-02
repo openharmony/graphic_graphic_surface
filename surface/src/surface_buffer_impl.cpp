@@ -1081,9 +1081,9 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
         handle_ = nullptr;
     }
 
-    uint32_t colorGamut;
-    uint32_t transform;
-    uint32_t scalingMode;
+    uint32_t colorGamut = 0;
+    uint32_t transform = 0;
+    uint32_t scalingMode = 0;
     if (!parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadUint32(scalingMode)) {
         BLOGE("%{public}s: read color/transform info failed", __func__);
         return GSERROR_API_FAILED;

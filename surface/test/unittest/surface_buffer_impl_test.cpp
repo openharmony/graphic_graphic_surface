@@ -371,7 +371,6 @@ HWTEST_F(SurfaceBufferImplTest, Metadata003, TestSize.Level0)
     }
 }
 
-
 /*
 * Function: BufferRequestConfig
 * Type: Function
@@ -542,15 +541,15 @@ HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded001, TestSize.Level0)
 }
 
 /*
-* Function: TryResumeIfNeeded
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. new SurfaceBufferImpl
-*                  2. call SetBufferHandle and check buffer handle
-*                  3. set fd of handle to 123
-*                  4. call TryReclaim and check ret
-*                  5. call TryResumeIfNeeded and check ret
+ * Function: TryResumeIfNeeded
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. call SetBufferHandle and check buffer handle
+ *                  3. set fd of handle to 123
+ *                  4. call TryReclaim and check ret
+ *                  5. call TryResumeIfNeeded and check ret
  */
 HWTEST_F(SurfaceBufferImplTest, TryResumeIfNeeded002, TestSize.Level0)
 {
@@ -760,5 +759,538 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallBack001, TestSize.Le
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, UINT64_MAX);
+}
+
+/*
+ * Function: Write/Read all properties parcel
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: round-trip with and without handle, with sync fence
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    // set some properties
+    sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
+    sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_180);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    sbi->SetSurfaceBufferWidth(11);
+    sbi->SetSurfaceBufferHeight(22);
+    sbi->SetCropMetadata({3, 4, 5, 6});
+    sbi->SetAndMergeSyncFence(new SyncFence(0));
+
+    // with no handle
+    MessageParcel parcel1;
+    ASSERT_EQ(sbi->WriteAllPropertiesToMessageParcel(parcel1), GSERROR_OK);
+    sptr<SurfaceBufferImpl> sbiIn1 = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn1->ReadAllPropertiesFromMessageParcel(parcel1), GSERROR_OK);
+    ASSERT_EQ(sbiIn1->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
+    ASSERT_EQ(sbiIn1->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_180);
+    ASSERT_EQ(sbiIn1->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    Rect out{};
+    ASSERT_TRUE(sbiIn1->GetCropMetadata(out));
+    ASSERT_EQ(out.x, 3);
+    ASSERT_EQ(out.y, 4);
+    ASSERT_EQ(out.w, 5);
+    ASSERT_EQ(out.h, 6);
+
+    // with handle
+    ASSERT_EQ(sbi->Alloc(requestConfig), OHOS::GSERROR_OK);
+    MessageParcel parcel2;
+    ASSERT_EQ(sbi->WriteAllPropertiesToMessageParcel(parcel2), GSERROR_OK);
+    sptr<SurfaceBufferImpl> sbiIn2 = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn2->ReadAllPropertiesFromMessageParcel(parcel2), GSERROR_OK);
+    ASSERT_NE(sbiIn2->GetBufferHandle(), nullptr);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel bad parcel (hasHandle=true but missing handle data)
+ * Type: Function
+ * Rank: Important(2)
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write sequenceNumber and bufferId
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    // Indicate handle exists but do not write the handle content
+    ASSERT_TRUE(parcel.WriteBool(true));
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: Write/Read all properties parcel without sync fence
+ * Type: Function
+ * Rank: Important(2)
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelNoFence001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    // leave syncFence_ as nullptr
+    sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
+    sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    sbi->SetSurfaceBufferWidth(33);
+    sbi->SetSurfaceBufferHeight(44);
+    sbi->SetCropMetadata({7, 8, 9, 10});
+
+    MessageParcel parcel;
+    ASSERT_EQ(sbi->WriteAllPropertiesToMessageParcel(parcel), GSERROR_OK);
+    sptr<SurfaceBufferImpl> sbiIn = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_NONE);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    Rect out{};
+    ASSERT_TRUE(sbiIn->GetCropMetadata(out));
+    ASSERT_EQ(out.x, 7);
+    ASSERT_EQ(out.y, 8);
+    ASSERT_EQ(out.w, 9);
+    ASSERT_EQ(out.h, 10);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read basic info (sequenceNumber)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading sequenceNumber fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadBasicInfoFail001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write only bufferId, missing sequenceNumber
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read basic info (bufferId)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading bufferId fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadBasicInfoFail002, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write only sequenceNumber, missing bufferId
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read hasHandle flag
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading hasHandle flag fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadHasHandleFail, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write sequenceNumber and bufferId, but not hasHandle
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read color/transform info
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading colorGamut fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadColorTransformFail001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write sequenceNumber, bufferId, and hasHandle=false
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    // Missing colorGamut, transform, scalingMode
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read color/transform info (partial)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when only colorGamut is written, transform fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadColorTransformFail002, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write sequenceNumber, bufferId, hasHandle=false, and only colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    // Missing transform and scalingMode - this tests ReadUint32(transform) failure
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read color/transform info (partial 2)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when colorGamut and transform are written, scalingMode fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadColorTransformFail003, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write sequenceNumber, bufferId, hasHandle=false, colorGamut, and transform
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    // Missing scalingMode - this tests ReadUint32(scalingMode) failure
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read size info
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading surfaceBufferWidth fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadSizeInfoFail001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to scalingMode
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    // Missing surfaceBufferWidth and surfaceBufferHeight
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read size info (partial)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when only surfaceBufferWidth is written, missing surfaceBufferHeight
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadSizeInfoFail002, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    // Missing surfaceBufferHeight
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read isReclaimed flag
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading isReclaimed flag fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadIsReclaimedFail, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    // Missing isReclaimed
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read crop info
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading crop_.x fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadCropInfoFail001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to isReclaimed
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    // Missing crop info
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read crop info (partial)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when only crop_.x is written, crop_.y fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadCropInfoFail002, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to crop_.x
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    // Missing crop_.y, crop_.w, crop_.h - this tests ReadInt32(crop_.y) failure
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read crop info (partial 2)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when crop_.x and crop_.y are written, crop_.w fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadCropInfoFail003, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to crop_.y
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    ASSERT_TRUE(parcel.WriteInt32(20)); // crop_.y
+    // Missing crop_.w and crop_.h - this tests ReadInt32(crop_.w) failure
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read crop info (partial 3)
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when crop_.x, crop_.y, crop_.w are written, crop_.h fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadCropInfoFail004, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to crop_.w
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    ASSERT_TRUE(parcel.WriteInt32(20)); // crop_.y
+    ASSERT_TRUE(parcel.WriteInt32(30)); // crop_.w
+    // Missing crop_.h
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - failed to read hasSyncFence flag
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test failure when reading hasSyncFence flag fails
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadHasSyncFenceFail, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to crop_.h
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    ASSERT_TRUE(parcel.WriteInt32(20)); // crop_.y
+    ASSERT_TRUE(parcel.WriteInt32(30)); // crop_.w
+    ASSERT_TRUE(parcel.WriteInt32(40)); // crop_.h
+    // Missing hasSyncFence
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - hasSyncFence true but missing fence data
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test when hasSyncFence is true but fence data is incomplete.
+ *                 Note: SyncFence::ReadFromMessageParcel never returns nullptr, it returns
+ *                 INVALID_FENCE when data is invalid, so the read succeeds but stores INVALID_FENCE.
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadSyncFenceIncomplete, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write up to hasSyncFence = true, then incomplete fence data
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    ASSERT_TRUE(parcel.WriteInt32(20)); // crop_.y
+    ASSERT_TRUE(parcel.WriteInt32(30)); // crop_.w
+    ASSERT_TRUE(parcel.WriteInt32(40)); // crop_.h
+    ASSERT_TRUE(parcel.WriteBool(true)); // hasSyncFence = true
+    // Write incomplete fence data (just a valid int32, missing fd)
+    ASSERT_TRUE(parcel.WriteInt32(0)); // fence flag (valid)
+    // Missing file descriptor - ReadFileDescriptor will return -1
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    // The read should succeed because SyncFence::ReadFromMessageParcel returns INVALID_FENCE (not nullptr)
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
+    // Verify that syncFence is set but is invalid (INVALID_FENCE)
+    sptr<SyncFence> fence = sbi->GetSyncFence();
+    ASSERT_NE(fence, nullptr);
+    ASSERT_FALSE(fence->IsValid());
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - hasHandle=true with handle=nullptr
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test when hasHandle is true but ReadBufferHandle returns nullptr
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_HandleNullWhenHasHandleTrue, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write sequenceNumber, bufferId, and hasHandle = true
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(true));
+    // Write invalid handle data (write bool instead of proper handle)
+    ASSERT_TRUE(parcel.WriteBool(false));
+    // Write remaining valid data to avoid early return
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    ASSERT_TRUE(parcel.WriteInt32(20)); // crop_.y
+    ASSERT_TRUE(parcel.WriteInt32(30)); // crop_.w
+    ASSERT_TRUE(parcel.WriteInt32(40)); // crop_.h
+    ASSERT_TRUE(parcel.WriteBool(false)); // hasSyncFence
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - hasSyncFence true with negative fence value
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test when hasSyncFence is true and fence int32 value is negative,
+ *                 which causes SyncFence::ReadFromMessageParcel to return INVALID_FENCE.
+ *                 The read should succeed because INVALID_FENCE is a valid sptr (not nullptr).
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadSyncFenceNegative, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // Write complete valid data up to hasSyncFence
+    ASSERT_TRUE(parcel.WriteUint32(123));
+    ASSERT_TRUE(parcel.WriteUint64(456));
+    ASSERT_TRUE(parcel.WriteBool(false));
+    ASSERT_TRUE(parcel.WriteUint32(1)); // colorGamut
+    ASSERT_TRUE(parcel.WriteUint32(2)); // transform
+    ASSERT_TRUE(parcel.WriteUint32(3)); // scalingMode
+    ASSERT_TRUE(parcel.WriteInt32(100)); // surfaceBufferWidth
+    ASSERT_TRUE(parcel.WriteInt32(200)); // surfaceBufferHeight
+    ASSERT_TRUE(parcel.WriteBool(false)); // isReclaimed
+    ASSERT_TRUE(parcel.WriteInt32(10)); // crop_.x
+    ASSERT_TRUE(parcel.WriteInt32(20)); // crop_.y
+    ASSERT_TRUE(parcel.WriteInt32(30)); // crop_.w
+    ASSERT_TRUE(parcel.WriteInt32(40)); // crop_.h
+    ASSERT_TRUE(parcel.WriteBool(true)); // hasSyncFence = true
+    // Write fence data with negative value (indicates invalid fence)
+    ASSERT_TRUE(parcel.WriteInt32(-1)); // negative fence value
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    // The read should succeed because SyncFence::ReadFromMessageParcel returns INVALID_FENCE when fence < 0
+    ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
+    // Verify that syncFence is set but is invalid (INVALID_FENCE)
+    sptr<SyncFence> fence = sbi->GetSyncFence();
+    ASSERT_NE(fence, nullptr);
+    ASSERT_EQ(fence, SyncFence::INVALID_FENCE);
+    ASSERT_FALSE(fence->IsValid());
+}
+
+/*
+ * Function: WriteAllPropertiesToMessageParcel with all properties set
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test writing all properties including isReclaimed=true
+ */
+HWTEST_F(SurfaceBufferImplTest, WriteAllPropertiesWithReclaimedFlag, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_CROP);
+    sbi->SetSurfaceBufferWidth(1920);
+    sbi->SetSurfaceBufferHeight(1080);
+    sbi->SetCropMetadata({0, 0, 1920, 1080});
+
+    // Manually set isReclaimed_ to true (access via friend or internal method)
+    sbi->SetBufferDeletedFlag(OHOS::BufferDeletedFlag::DELETED_FROM_CACHE);
+
+    MessageParcel parcel;
+    ASSERT_EQ(sbi->WriteAllPropertiesToMessageParcel(parcel), GSERROR_OK);
+
+    sptr<SurfaceBufferImpl> sbiIn = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_CROP);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferWidth(), 1920);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferHeight(), 1080);
+    Rect out{};
+    ASSERT_TRUE(sbiIn->GetCropMetadata(out));
+    ASSERT_EQ(out.x, 0);
+    ASSERT_EQ(out.y, 0);
+    ASSERT_EQ(out.w, 1920);
+    ASSERT_EQ(out.h, 1080);
 }
 }

@@ -60,12 +60,17 @@ using GraphicCompositionType = enum {
     GRAPHIC_COMPOSITION_BUTT
 };
 
-using GraphicLayerAlpha = struct {
+using GraphicLayerAlpha = struct GraphicLayerAlpha {
     bool enGlobalAlpha;   /**< Global alpha enable bit */
     bool enPixelAlpha;    /**< Pixel alpha enable bit */
     uint8_t alpha0;       /**< Alpha0 value, ranging from 0 to 255 */
     uint8_t alpha1;       /**< Alpha1 value, ranging from 0 to 255 */
     uint8_t gAlpha;       /**< Global alpha value, ranging from 0 to 255 */
+    bool operator==(const GraphicLayerAlpha& alpha) const
+    {
+        return (enGlobalAlpha == alpha.enGlobalAlpha) && (enPixelAlpha == alpha.enPixelAlpha) &&
+            (alpha0 == alpha.alpha0) && (alpha1 == alpha.alpha1) && (gAlpha == alpha.gAlpha);
+    }
 };
 
 using GraphicBlendType = enum {
@@ -235,9 +240,13 @@ using GraphicPresentTimestampType = enum {
     GRAPHIC_DISPLAY_PTS_TIMESTAMP = 1 << 1,     /**< Timestamp */
 };
 
-using GraphicPresentTimestamp = struct {
+using GraphicPresentTimestamp = struct GraphicPresentTimestamp {
     GraphicPresentTimestampType type;     /**< Present timestamp type */
     int64_t time;                         /**< Present timestamp value */
+    bool operator==(const GraphicPresentTimestamp& timestamp) const
+    {
+        return (type == timestamp.type) && (time == timestamp.time);
+    }
 };
 
 using Rect = struct Rect {
@@ -294,12 +303,22 @@ using GraphicHDRMetadataKey = enum {
 using GraphicHDRMetaDataSet = struct GraphicHDRMetaDataSet {
     GraphicHDRMetadataKey key = GraphicHDRMetadataKey::GRAPHIC_MATAKEY_RED_PRIMARY_X;
     std::vector<uint8_t> metaData;
+
+    bool operator==(const GraphicHDRMetaDataSet& metaDataSet) const
+    {
+        return (key == metaDataSet.key) && (metaData == metaDataSet.metaData);
+    }
 };
 
-typedef struct {
+using GraphicHDRMetaData = struct GraphicHDRMetaData {
     GraphicHDRMetadataKey key;
     float value;
-} GraphicHDRMetaData;
+
+    bool operator==(const GraphicHDRMetaData& metaData) const
+    {
+        return (key == metaData.key) && (std::abs(value - metaData.value) < 1e-6f);
+    }
+};
 
 using SurfaceBufferUsage = enum {
     BUFFER_USAGE_CPU_READ = (1ULL << 0),            /**< CPU read buffer */

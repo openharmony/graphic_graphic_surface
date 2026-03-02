@@ -111,6 +111,11 @@ public:
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
     void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
     void UnRegisterBufferDestructorCallBack() override;
+    GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel) override;
+    GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
+        std::function<int(MessageParcel &parcel,
+            std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr) override;
+
 private:
     void FreeBufferHandleLocked();
     bool MetaDataCachedLocked(const uint32_t key, const std::vector<uint8_t>& value);

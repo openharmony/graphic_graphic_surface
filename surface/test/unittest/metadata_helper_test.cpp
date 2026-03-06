@@ -320,8 +320,9 @@ HWTEST_F(MetadataManagerTest, AIHDRVideoMetadataTest, Function | SmallTest | Lev
     std::vector<uint8_t> metadataGet;
     auto retGet = MetadataHelper::GetAIHDRVideoMetadata(surfaceBuffer, metadataGet);
     ASSERT_TRUE(retGet == GSERROR_OK || retGet == GSERROR_HDI_ERROR);
-    ASSERT_EQ(metadataGet.size(), sizeof(V2_1::BlobDataType));
-
+    if (retGet == GSERROR_OK) {
+        ASSERT_EQ(metadataGet.size(), sizeof(V2_1::BlobDataType));
+    }
     ASSERT_EQ(MetadataHelper::GetAIHDRVideoMetadata(nullBuffer_, metadataGet), GSERROR_NO_BUFFER);
 }
 

@@ -61,8 +61,13 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 
 ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
-    initInfo_.propertyListener = new PropertyChangeProducerListener([this](SurfaceProperty property) {
-        return PropertyChangeCallback(property);
+    initInfo_.propertyListener = new PropertyChangeProducerListener([weakThis = wptr(this)](SurfaceProperty property) {
+        auto strongThis = weakThis.promote();
+        if (strongThis == nullptr) {
+            BLOGE("ProducerSurface has been destroyed.");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        return strongThis->PropertyChangeCallback(property);
     });
     producer_ = producer;
     GetProducerInitInfo(initInfo_);

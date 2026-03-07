@@ -52,7 +52,7 @@ ohos_static_library("buffer_handle_test_common") {
   testonly = true
   public_configs = [ ":buffer_handle_test_config" ]
 
-  public_deps = [
+  deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle_static",
   ]
 

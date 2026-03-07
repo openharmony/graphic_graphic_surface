@@ -24,7 +24,10 @@ group("unittest") {
 ohos_unittest("hebc_white_list_test") {
   module_out_path = module_output_path
   sources = [ "hebc_white_list_test.cpp" ]
-  deps = [ ":hebc_white_list_test_common" ]
+  deps = [
+    ":hebc_white_list_test_common",
+    "$graphic_surface_root/utils/hebc_white_list:hebc_white_list",
+  ]
   external_deps = [ "hilog:libhilog" ]
 }
 
@@ -43,7 +46,7 @@ ohos_static_library("hebc_white_list_test_common") {
   testonly = true
   public_configs = [ ":hebc_white_list_test_config" ]
 
-  public_deps = [
+  deps = [
     "$graphic_surface_root/surface:surface",
     "$graphic_surface_root/utils/hebc_white_list:hebc_white_list",
   ]

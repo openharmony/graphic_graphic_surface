@@ -1365,7 +1365,7 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
 {
     auto it = bufferQueueCache_.find(sequence);
     if (it != bufferQueueCache_.end()) {
-        BLOGD("DeleteBufferInCache seq: %{public}d, %{public}u, uniqueId: %{public}" PRIu64 ".",
+        BLOGD("DeleteBufferInCache isPreAllocBuffer: %{public}d, seq: %{public}u, uniqueId: %{public}" PRIu64 ".",
             it->second.isPreAllocBuffer, sequence, uniqueId_);
         if (it->second.isPreAllocBuffer) {
             bufferQueueCache_.erase(it);

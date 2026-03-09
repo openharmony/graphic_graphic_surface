@@ -37,10 +37,18 @@ ohos_unittest("native_window_buffer_test_st") {
 
   sources = [ "native_window_buffer_test.cpp" ]
 
-  deps = [ ":surface_system_test_common" ]
+  deps = [
+    ":surface_system_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
   external_deps = [
     "cJSON:cjson_static",     
-    "selinux_adapter:librestorecon"
+    "selinux_adapter:librestorecon",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "bounds_checking_function:libsec_shared",
   ]
 }
 
@@ -52,7 +60,17 @@ ohos_unittest("native_window_test_st") {
 
   sources = [ "native_window_test.cpp" ]
 
-  deps = [ ":surface_system_test_common" ]
+  deps = [
+    ":surface_system_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
+  external_deps = [
+    "samgr:samgr_proxy",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "bounds_checking_function:libsec_shared",
+    "eventhandler:libeventhandler",
+  ]
 }
 
 ## SystemTest native_window_test }}}
@@ -63,10 +81,17 @@ ohos_unittest("surface_ipc_test_st") {
 
   sources = [ "surface_ipc_test.cpp" ]
 
-  deps = [ ":surface_system_test_common" ]
+  deps = [
+    ":surface_system_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
   external_deps = [
     "cJSON:cjson_static",     
-    "selinux_adapter:librestorecon"
+    "selinux_adapter:librestorecon",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
   ]
 }
 
@@ -77,10 +102,17 @@ ohos_unittest("native_window_clean_cache_test_st") {
   module_out_path = module_out_path
 
   sources = [ "clean_cache_test/native_window_clean_cache_test.cpp" ]
-  deps = [ ":surface_system_test_common" ]
+  deps = [
+    ":surface_system_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
   external_deps = [
     "cJSON:cjson_static",     
-    "selinux_adapter:librestorecon"
+    "selinux_adapter:librestorecon",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
   ]
 }
 
@@ -90,10 +122,17 @@ ohos_unittest("surface_ipc_with_connect_strictly_test_st") {
   sources = [
     "connect_and_disconnect_test/surface_ipc_with_connect_strictly_test.cpp",
   ]
-  deps = [ ":surface_system_test_common" ]
+  deps = [
+    ":surface_system_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
   external_deps = [
     "cJSON:cjson_static",     
-    "selinux_adapter:librestorecon"
+    "selinux_adapter:librestorecon",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
   ]
 }
 
@@ -103,10 +142,17 @@ ohos_unittest("surface_ipc_with_connect_strictly_test_st") {
 ohos_unittest("surface_batch_opt_with_connect_strictly_test_st") {
   module_out_path = module_out_path
   sources = [ "connect_and_disconnect_test/surface_batch_opt_with_connect_strictly_test.cpp" ]
-  deps = [ ":surface_system_test_common" ]
+  deps = [
+    ":surface_system_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
   external_deps = [
     "cJSON:cjson_static",     
-    "selinux_adapter:librestorecon"
+    "selinux_adapter:librestorecon",
+    "samgr:samgr_proxy",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
   ]
 }
 
@@ -131,14 +177,14 @@ ohos_static_library("surface_system_test_common") {
 
   public_configs = [ ":surface_system_test_common_public_config" ]
 
-  public_deps = [
+  deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle",
     "$graphic_surface_root/surface:surface",
     "$graphic_surface_root/sync_fence:sync_fence",
     "$graphic_surface_root/test_header:test_header",
   ]
 
-  public_external_deps = [
+  external_deps = [
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",

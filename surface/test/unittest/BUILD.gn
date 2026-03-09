@@ -47,10 +47,17 @@ ohos_unittest("producer_surface_delegator_test") {
 
   sources = [ "producer_surface_delegator_test.cpp" ]
 
-  deps = [ ":surface_test_common",
-           ":mock_dlfcn",
+  deps = [
+    ":surface_test_common",
+    ":mock_dlfcn",
+    "$graphic_surface_root/surface:surface_static",
   ]
-  external_deps = [ "bounds_checking_function:libsec_shared" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest producer_surface_delegator_test }}}
@@ -61,10 +68,17 @@ ohos_unittest("consumer_surface_delegator_test") {
 
   sources = [ "consumer_surface_delegator_test.cpp" ]
 
-  deps = [ ":surface_test_common",
-           ":mock_dlfcn",
+  deps = [
+    ":surface_test_common",
+    ":mock_dlfcn",
+    "$graphic_surface_root/surface:surface_static",
   ]
-  external_deps = [ "bounds_checking_function:libsec_shared" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest consumer_surface_delegator_test }}}
@@ -75,10 +89,19 @@ ohos_unittest("buffer_client_producer_remote_test") {
 
   sources = [ "buffer_client_producer_remote_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
   external_deps = [
     "cJSON:cjson_static",     
-    "selinux_adapter:librestorecon"
+    "selinux_adapter:librestorecon",
+    "samgr:samgr_proxy",
+    "ipc:ipc_single",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "hilog:libhilog",
   ]
 }
 
@@ -90,7 +113,16 @@ ohos_unittest("buffer_queue_consumer_test") {
 
   sources = [ "buffer_queue_consumer_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
 }
 
 ## UnitTest buffer_queue_consumer_test }}}
@@ -101,7 +133,18 @@ ohos_unittest("buffer_queue_producer_remote_test") {
 
   sources = [ "buffer_queue_producer_remote_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  external_deps = [
+    "samgr:samgr_proxy",
+    "ipc:ipc_single",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest buffer_queue_producer_remote_test }}}
@@ -112,7 +155,15 @@ ohos_unittest("buffer_queue_producer_test") {
 
   sources = [ "buffer_queue_producer_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest buffer_queue_producer_test }}}
@@ -123,7 +174,15 @@ ohos_unittest("buffer_queue_test") {
 
   sources = [ "buffer_queue_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest buffer_queue_test }}}
@@ -134,11 +193,17 @@ ohos_unittest("consumer_surface_test") {
 
   sources = [ "consumer_surface_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
 
   external_deps = [
     "bounds_checking_function:libsec_shared",
     "drivers_interface_display:display_commontype_idl_headers_1.1",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
   ]
 }
 
@@ -150,10 +215,17 @@ ohos_unittest("delegator_adapter_test") {
 
   sources = [ "delegator_adapter_test.cpp" ]
 
-  deps = [ ":surface_test_common",
-          ":mock_dlfcn",
+  deps = [
+    ":surface_test_common",
+    ":mock_dlfcn",
+    "$graphic_surface_root/surface:surface_static",
   ]
-  external_deps = [ "bounds_checking_function:libsec_shared" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest delegator_adapter_test }}}
@@ -164,10 +236,16 @@ ohos_unittest("producer_surface_test") {
 
   sources = [ "producer_surface_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
   external_deps = [
     "bounds_checking_function:libsec_shared",
     "drivers_interface_display:display_commontype_idl_headers_1.1",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
   ]
 }
 
@@ -179,11 +257,17 @@ ohos_unittest("surface_buffer_impl_test") {
 
   sources = [ "surface_buffer_impl_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
 
   external_deps = [
     "bounds_checking_function:libsec_shared",
     "drivers_interface_display:display_commontype_idl_headers_1.1",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
   ]
 }
 
@@ -195,8 +279,16 @@ ohos_unittest("surface_utils_test") {
 
   sources = [ "surface_utils_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
-  external_deps = [ "bounds_checking_function:libsec_shared" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest surface_utils_test }}}
@@ -205,13 +297,19 @@ ohos_unittest("surface_utils_test") {
 ohos_unittest("native_window_test") {
   module_out_path = module_out_path
 
-  sources = [ "native_window_test.cpp" ]
   external_deps = [
     "bounds_checking_function:libsec_shared",
+    "eventhandler:libeventhandler",
     "ipc:ipc_capi",
+    "samgr:samgr_proxy",
+    "c_utils:utils",
+    "hilog:libhilog",
   ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface",
+  ]
 }
 
 ## UnitTest native_window_test }}}
@@ -222,7 +320,10 @@ ohos_unittest("metadata_helper_test") {
 
   sources = [ "metadata_helper_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
   defines = []
   if (defined(graphic_surface_feature_tv_metadata_enable) && graphic_surface_feature_tv_metadata_enable) {
       defines += [ "RS_ENABLE_TV_PQ_METADATA" ]
@@ -231,6 +332,7 @@ ohos_unittest("metadata_helper_test") {
     "c_utils:utils",
     "drivers_interface_display:display_commontype_idl_headers",
     "hilog:libhilog",
+    "ipc:ipc_single",
   ]
 }
 
@@ -242,12 +344,17 @@ ohos_unittest("native_buffer_test") {
 
   sources = [ "native_buffer_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_capi",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
   ]
 }
 
@@ -259,7 +366,14 @@ ohos_unittest("buffer_utils_test") {
 
   sources = [ "buffer_utils_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  external_deps = [
+    "ipc:ipc_single",
+    "hilog:libhilog",
+  ]
 }
 
 ## UnitTest buffer_utils_test }}}
@@ -270,11 +384,15 @@ ohos_unittest("surface_test") {
 
   sources = [ "surface_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "ipc:ipc_single",
   ]
 }
 
@@ -286,7 +404,10 @@ ohos_unittest("surface_type_test") {
 
   sources = [ "surface_type_test.cpp" ]
 
-  deps = [ ":surface_test_common" ]
+  deps = [
+    ":surface_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -343,14 +464,14 @@ ohos_static_library("surface_test_common") {
 
   public_configs = [ ":surface_test_common_public_config" ]
 
-  public_deps = [
+  deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle_static",
     "$graphic_surface_root/surface:surface_static",
     "$graphic_surface_root/sync_fence:sync_fence_static",
     "$graphic_surface_root/test_header:test_header",
   ]
 
-  public_external_deps = [
+  external_deps = [
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",

@@ -17,6 +17,7 @@
 
 #include <securec.h>
 #include <string>
+#include <climits>  // For INT32_MAX
 
 #include "data_generate.h"
 #include "native_buffer.h"
@@ -28,6 +29,43 @@
 using namespace g_fuzzCommon;
 
 namespace OHOS {
+    // Test edge cases and null pointer scenarios
+    void NativeBufferFuzzTestEdgeCases(OH_NativeBuffer *buffer)
+    {
+        OH_NativeBuffer_Config config;
+        // Test GetConfig null pointer
+        OH_NativeBuffer_GetConfig(nullptr, &config);                     // buffer = nullptr
+        OH_NativeBuffer_GetConfig(buffer, nullptr);                      // config = nullptr
+
+        // Test SetColorSpace null pointer and invalid parameters
+        OH_NativeBuffer_ColorSpace invalidColorSpace = (OH_NativeBuffer_ColorSpace)0x7FFFFFFF;
+        OH_NativeBuffer_SetColorSpace(nullptr, OH_COLORSPACE_SRGB_FULL); // buffer = nullptr
+        OH_NativeBuffer_SetColorSpace(buffer, invalidColorSpace);        // invalid color space
+
+        // Test GetColorSpace null pointer
+        OH_NativeBuffer_ColorSpace colorSpace;
+        OH_NativeBuffer_GetColorSpace(nullptr, &colorSpace);            // buffer = nullptr
+        OH_NativeBuffer_GetColorSpace(buffer, nullptr);                 // colorSpace = nullptr
+
+        // Test SetMetadataValue null pointer and invalid parameters
+        const uint32_t metadataSize = 10;
+        uint8_t metadata[metadataSize] = {0};
+        OH_NativeBuffer_SetMetadataValue(nullptr, OH_HDR_DYNAMIC_METADATA, metadataSize, metadata); // buffer = nullptr
+        OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, metadataSize, nullptr); // metadata = nullptr
+        OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, 0, metadata);             // size = 0
+        OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, -1, metadata);            // size < 0
+
+        // Test GetMetadataValue null pointer
+        int32_t getSize = 0;
+        uint8_t *getMetadata = nullptr;
+        OH_NativeBuffer_GetMetadataValue(nullptr, OH_HDR_DYNAMIC_METADATA, &getSize, &getMetadata);
+        OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, nullptr, &getMetadata);
+        OH_NativeBuffer_GetMetadataValue(buffer, OH_HDR_DYNAMIC_METADATA, &getSize, nullptr);
+
+        // Test IsSupported null pointer and invalid parameters
+        OH_NativeBuffer_IsSupported(config, nullptr);                  // isSupported = nullptr
+    }
+
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         if (data == nullptr) {
@@ -93,6 +131,9 @@ namespace OHOS {
         OH_NativeBuffer_Unmap(buffer);
         DestroyNativeWindowBuffer(nativeWindowBuffer);
         OH_NativeBuffer_Unreference(buffer);
+
+        // Run boundary value and exception tests
+        NativeBufferFuzzTestEdgeCases(buffer);
 
         return true;
     }

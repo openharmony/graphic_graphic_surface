@@ -1060,6 +1060,25 @@ HWTEST_F(NativeBufferTest, NativeBufferFromNativeWindowBuffer003, TestSize.Level
 }
 
 /*
+* Function: OH_NativeBuffer_GetBufferHandle
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetBufferHandle with valid buffer
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferGetBufferHandle001, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    const BufferHandle* bufferHandle = OH_NativeBuffer_GetBufferHandle(nativeBuffer);
+    ASSERT_NE(bufferHandle, nullptr);
+
+    OH_NativeBuffer_Unreference(nativeBuffer);
+}
+
+/*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
 * Rank: Important(2)

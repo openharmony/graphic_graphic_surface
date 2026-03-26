@@ -780,7 +780,7 @@ GSError SurfaceBufferImpl::EraseMetadataKey(uint32_t key)
         metaDataCache_.erase(key);
         return GSERROR_OK;
     }
-    BLOGE("EraseMetadataKey Failed with %{public}d", dRet);
+    BLOGD("EraseMetadataKey Failed with %{public}d", dRet);
     return GSERROR_HDI_ERROR;
 }
 

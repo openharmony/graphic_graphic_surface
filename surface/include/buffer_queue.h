@@ -274,6 +274,7 @@ public:
     GSError GetAlphaType(GraphicAlphaType &alphaType);
     GSError SetIsPriorityAlloc(bool isPriorityAlloc);
     bool IsCached(uint32_t bufferSeqNum) const;
+    GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers);
 
     /**
      * @brief Set the Drop Frame Level for the buffer queue.

@@ -1069,4 +1069,25 @@ GSError BufferClientProducer::SetAlphaType(GraphicAlphaType alphaType)
     SEND_REQUEST(BUFFER_PRODUCER_SET_ALPHA_TYPE, arguments, reply, option);
     return CheckRetval(reply);
 }
+
+GSError BufferClientProducer::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_SYNC_PRODUCER_CACHE, arguments, reply, option);
+    uint32_t size = reply.ReadUint32();
+    if (size > SURFACE_MAX_QUEUE_SIZE) {
+        BLOGE("SyncProducerCache size too large");
+        return SURFACE_ERROR_UNKOWN;
+    }
+    for (uint32_t i = 0; i < size; i++) {
+        uint32_t seqNum;
+        sptr<SurfaceBuffer> buffer;
+        GSError ret = ReadSurfaceBufferImpl(reply, seqNum, buffer);
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
+        buffers[seqNum] = buffer;
+    }
+    return GSERROR_OK;
+}
 }; // namespace OHOS

@@ -29,6 +29,7 @@
 #include "remote_object_mock.h"
 #include "surface_aps_sdr_utils.h"
 #include "surface_buffer_impl.h"
+#include "buffer_extra_data_impl.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -2928,6 +2929,67 @@ HWTEST_F(ProducerSurfaceTest, GetAndSetRotatingBuffersNumber001, TestSize.Level0
 }
 
 /*
+ * Function: CreateSurfaceAsProducer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. create ConsumerSurface and ProducerSurface
+ *                  2. rotate buffers with first ProducerSurface
+ *                  3. create second ProducerSurface with CreateSurfaceAsProducer
+ *                  4. rotate buffers with second ProducerSurface and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, CreateSurfaceAsProducer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurf = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    cSurf->RegisterConsumerListener(listener);
+    sptr<IBufferProducer> producer = cSurf->GetProducer();
+    
+    sptr<Surface> pSurface1 = Surface::CreateSurfaceAsProducer(producer);
+    ASSERT_NE(pSurface1, nullptr);
+    
+    int64_t timestamp = 0;
+    Rect damage = {};
+    
+    for (int i = 0; i < 3; i++) {
+        sptr<SurfaceBuffer> buffer = nullptr;
+        int releaseFence = -1;
+        GSError ret = pSurface1->RequestBuffer(buffer, releaseFence, requestConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_NE(buffer, nullptr);
+        
+        ret = pSurface1->FlushBuffer(buffer, -1, flushConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        
+        ret = cSurf->AcquireBuffer(buffer, releaseFence, timestamp, damage);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        
+        ret = cSurf->ReleaseBuffer(buffer, -1);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+    
+    sptr<Surface> pSurface2 = Surface::CreateSurfaceAsProducer(producer);
+    ASSERT_NE(pSurface2, nullptr);
+    
+    for (int i = 0; i < 3; i++) {
+        sptr<SurfaceBuffer> buffer = nullptr;
+        int releaseFence = -1;
+        GSError ret = pSurface2->RequestBuffer(buffer, releaseFence, requestConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        ASSERT_NE(buffer, nullptr);
+        
+        ret = pSurface2->FlushBuffer(buffer, -1, flushConfig);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        
+        ret = cSurf->AcquireBuffer(buffer, releaseFence, timestamp, damage);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+        
+        ret = cSurf->ReleaseBuffer(buffer, -1);
+        ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    }
+}
+
+/*
 * Function: PropertyChangeCallback
 * Type: Function
 * Rank: Important(2)
@@ -4457,5 +4519,237 @@ HWTEST_F(ProducerSurfaceTest, ResetPropertyListenerInner002, TestSize.Level0)
     // Test normal reset
     GSError ret = pSurfaceTmp->ResetPropertyListenerInner(producerId);
     EXPECT_EQ(ret, GSERROR_OK);
+}
+
+/*
+ * Function: SyncProducerCache001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SyncProducerCache when producer_ is nullptr
+ */
+HWTEST_F(ProducerSurfaceTest, SyncProducerCache001, TestSize.Level0)
+{
+    sptr<IBufferProducer> producer = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    GSError ret = pSurfaceTmp->SyncProducerCacheLocked();
+    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: SyncProducerCache002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SyncProducerCache successful synchronization
+ */
+HWTEST_F(ProducerSurfaceTest, SyncProducerCache002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    
+    sptr<SurfaceBuffer> buffer1;
+    sptr<SyncFence> fence1 = SyncFence::InvalidFence();
+    GSError ret = pSurfaceTmp->RequestBuffer(buffer1, fence1, requestConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(buffer1 != nullptr);
+    
+    sptr<SurfaceBuffer> buffer2;
+    sptr<SyncFence> fence2 = SyncFence::InvalidFence();
+    ret = pSurfaceTmp->RequestBuffer(buffer2, fence2, requestConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(buffer2 != nullptr);
+    
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 2);
+    
+    pSurfaceTmp->bufferProducerCache_.clear();
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 0);
+    
+    ret = pSurfaceTmp->SyncProducerCacheLocked();
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 2);
+}
+
+/*
+ * Function: SyncProducerCache003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test AddCacheLocked triggers sync when cache miss
+ */
+HWTEST_F(ProducerSurfaceTest, SyncProducerCache003, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    
+    sptr<SurfaceBuffer> buffer1;
+    sptr<SyncFence> fence1 = SyncFence::InvalidFence();
+    GSError ret = pSurfaceTmp->RequestBuffer(buffer1, fence1, requestConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(buffer1 != nullptr);
+    
+    uint32_t seqNum = buffer1->GetSeqNum();
+    pSurfaceTmp->bufferProducerCache_.clear();
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 0);
+    
+    IBufferProducer::RequestBufferReturnValue retval;
+    retval.sequence = seqNum;
+    retval.buffer = nullptr;
+    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    
+    ret = pSurfaceTmp->AddCacheLocked(bedataimpl, retval, requestConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 1);
+    EXPECT_TRUE(retval.buffer != nullptr);
+    EXPECT_EQ(retval.buffer->GetSeqNum(), seqNum);
+}
+
+/*
+ * Function: SyncProducerCache004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test AddCacheLocked with normal buffer (no sync needed)
+ */
+HWTEST_F(ProducerSurfaceTest, SyncProducerCache004, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    
+    IBufferProducer::RequestBufferReturnValue retval;
+    retval.sequence = 12345;
+    retval.buffer = new SurfaceBufferImpl();
+    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+    
+    GSError ret = pSurfaceTmp->AddCacheLocked(bedataimpl, retval, requestConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 1);
+    EXPECT_TRUE(pSurfaceTmp->bufferProducerCache_.find(12345) != pSurfaceTmp->bufferProducerCache_.end());
+}
+
+/*
+ * Function: SyncProducerCache005
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SyncProducerCache with empty server cache
+ */
+HWTEST_F(ProducerSurfaceTest, SyncProducerCache005, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    
+    GSError ret = pSurfaceTmp->SyncProducerCacheLocked();
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(pSurfaceTmp->bufferProducerCache_.size(), 0);
+}
+
+/*
+ * Function: AttachBufferToQueue002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test AttachBufferToQueue with reconnection (race condition fix)
+ */
+HWTEST_F(ProducerSurfaceTest, AttachBufferToQueue002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    
+    sptr<SurfaceBuffer> buffer1 = new SurfaceBufferImpl();
+    buffer1->Alloc(requestConfig, nullptr);
+    pSurfaceTmp->isDisconnected_ = true;
+    
+    auto ret = pSurfaceTmp->AttachBufferToQueue(buffer1);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_FALSE(pSurfaceTmp->isDisconnected_);
+}
+
+/*
+ * Function: AttachAndFlushBuffer001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test AttachAndFlushBuffer with reconnection (race condition fix)
+ */
+HWTEST_F(ProducerSurfaceTest, AttachAndFlushBuffer001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    
+    sptr<SurfaceBuffer> buffer1 = new SurfaceBufferImpl();
+    buffer1->Alloc(requestConfig, nullptr);
+    
+    pSurfaceTmp->isDisconnected_ = true;
+    BufferFlushConfig flushConfig;
+    sptr<SyncFence> fence1 = SyncFence::InvalidFence();
+    auto ret = pSurfaceTmp->AttachAndFlushBuffer(buffer1, fence1, flushConfig, false);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_FALSE(pSurfaceTmp->isDisconnected_);
+}
+
+/*
+ * Function: SyncProducerCache007
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test SyncProducerCache with IPC failure simulation
+ */
+HWTEST_F(ProducerSurfaceTest, SyncProducerCache007, TestSize.Level0)
+{
+    sptr<IBufferProducer> producer = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    GSError ret = pSurfaceTmp->SyncProducerCacheLocked();
+    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: AddCacheLockedSyncFail001
+ * Type: Function
+ * Rank Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test AddCacheLocked when SyncProducerCacheLocked fails
+ */
+HWTEST_F(ProducerSurfaceTest, AddCacheLockedSyncFail001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+
+    IBufferProducer::RequestBufferReturnValue retval;
+    retval.sequence = 12345;
+    sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
+
+    GSError ret = pSurfaceTmp->AddCacheLocked(bedataimpl, retval, requestConfig);
+    EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
 }

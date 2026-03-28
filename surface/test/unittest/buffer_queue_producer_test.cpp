@@ -25,6 +25,7 @@
 #include "frame_report.h"
 #include "sync_fence.h"
 #include "producer_surface_delegator.h"
+#include "surface_buffer_impl.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -1313,5 +1314,66 @@ HWTEST_F(BufferQueueProducerTest, GetAvailableBufferCount001, Function | MediumT
     sptr<BufferQueueProducer> bqptmp2 = new BufferQueueProducer(bqtmp2);
     EXPECT_EQ(bqptmp2->GetAvailableBufferCount(count), GSERROR_OK);
     EXPECT_EQ(count, bqtmp2->dirtyList_.size());
+}
+
+/*
+ * Function: SyncProducerCache
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SyncProducerCache member function test
+ */
+HWTEST_F(BufferQueueProducerTest, SyncProducerCache001, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> bqtmp1 = nullptr;
+    sptr<BufferQueueProducer> bqptmp1 = new BufferQueueProducer(bqtmp1);
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    EXPECT_EQ(bqptmp1->SyncProducerCache(buffers), SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(buffers.size(), 0u);
+
+    sptr<BufferQueue> bqtmp2 = new BufferQueue("test");
+    sptr<BufferQueueProducer> bqptmp2 = new BufferQueueProducer(bqtmp2);
+    EXPECT_EQ(bqptmp2->SyncProducerCache(buffers), GSERROR_OK);
+}
+
+/*
+ * Function: SyncProducerCache
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SyncProducerCache with buffers test
+ */
+HWTEST_F(BufferQueueProducerTest, SyncProducerCache002, Function | MediumTest | Level2)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bqp_->FlushBuffer(retval.sequence, bedata_, acquireFence, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    ret = bqp_->SyncProducerCache(buffers);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+    EXPECT_GE(buffers.size(), 1u);
+}
+
+/*
+ * Function: SyncProducerCache
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SyncProducerCache with buffers test
+ */
+HWTEST_F(BufferQueueProducerTest, SyncProducerCache003, Function | MediumTest | Level2)
+{
+    sptr<BufferQueue> bqTmp = nullptr;
+    sptr<BufferQueueProducer> bqpTmp = new BufferQueueProducer(bqTmp);
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqpTmp->SyncProducerCacheRemote(arguments, reply, option);
+    EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
 }

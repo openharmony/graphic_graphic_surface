@@ -259,6 +259,11 @@ public:
         (void)count;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers)
+    {
+        (void)buffers;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -327,6 +332,7 @@ protected:
         BUFFER_PRODUCER_SET_LPP_FD,
         BUFFER_PRODUCER_SET_ALPHA_TYPE,
         BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
+        BUFFER_PRODUCER_SYNC_PRODUCER_CACHE,
     };
 };
 } // namespace OHOS

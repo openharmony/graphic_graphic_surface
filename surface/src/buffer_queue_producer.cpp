@@ -110,6 +110,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_LPP_FD, SetLppShareFdRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ALPHA_TYPE, SetAlphaTypeRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SYNC_PRODUCER_CACHE, SyncProducerCacheRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -1248,6 +1249,10 @@ GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, s
             uniqueId_);
         return GSERROR_CONSUMER_DISCONNECTED;
     }
+    auto ret = Connect();
+    if (ret != SURFACE_ERROR_OK) {
+        return ret;
+    }
     return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
 
@@ -1397,6 +1402,10 @@ GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
+    }
+    auto ret = Connect();
+    if (ret != SURFACE_ERROR_OK) {
+        return ret;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
 }
@@ -2005,5 +2014,33 @@ GSError BufferQueueProducer::SetAlphaType(GraphicAlphaType alphaType)
         return SURFACE_ERROR_UNKOWN;
     }
     return bufferQueue_->SetAlphaType(alphaType);
+}
+
+GSError BufferQueueProducer::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers)
+{
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return bufferQueue_->SyncProducerCache(buffers);
+}
+
+int32_t BufferQueueProducer::SyncProducerCacheRemote(MessageParcel &arguments, MessageParcel &reply,
+    MessageOption &option)
+{
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    GSError ret = SyncProducerCache(buffers);
+    if (ret != GSERROR_OK) {
+        BLOGE("SyncProducerCacheRemote failed, ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
+        return ret;
+    }
+    if (!reply.WriteUint32(buffers.size())) {
+        return GSERROR_API_FAILED;
+    }
+    for (auto& [seqNum, buffer] : buffers) {
+        if (WriteSurfaceBufferImpl(reply, seqNum, buffer) != GSERROR_OK) {
+            return GSERROR_API_FAILED;
+        }
+    }
+    return ret;
 }
 }; // namespace OHOS

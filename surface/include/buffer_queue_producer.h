@@ -142,6 +142,7 @@ public:
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
     GSError GetAvailableBufferCount(uint32_t &count) override;
+    GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -213,6 +214,7 @@ private:
     int32_t UnRegisterPropertyListenerRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetLppShareFdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetAlphaTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SyncProducerCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
     void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);

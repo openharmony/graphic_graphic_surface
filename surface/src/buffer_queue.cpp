@@ -480,7 +480,7 @@ GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
         if (isBufferNeedRealloc && mapIter->second.fence != nullptr) {
             // fence wait time 3000ms
             int32_t ret = mapIter->second.fence->Wait(3000);
-            if (ret < 0) {
+            if (ret < 0 && mapIter->second.fence->Get() != -1) {
                 BLOGE("BufferQueue::ReallocBufferLocked WaitFence timeout 3000ms");
                 isBufferNeedRealloc = false;
             }
@@ -3014,6 +3014,17 @@ bool BufferQueue::IsCached(uint32_t bufferSeqNum) const
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return bufferQueueCache_.find(bufferSeqNum) != bufferQueueCache_.end();
+}
+
+GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    for (auto& [seqNum, element] : bufferQueueCache_) {
+        if (element.buffer != nullptr) {
+            buffers[seqNum] = element.buffer;
+        }
+    }
+    return GSERROR_OK;
 }
 }; // namespace OHOS
 

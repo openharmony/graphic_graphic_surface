@@ -1059,7 +1059,7 @@ int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH
         *colorSpace = it->first;
         return OHOS::SURFACE_ERROR_OK;
     }
-    BLOGE("the colorSpace does not support it.");
+    BLOGE("the colorSpace: %{public}d does not support it.", colorSpaceType);
     return OHOS::SURFACE_ERROR_UNKOWN;
 }
 

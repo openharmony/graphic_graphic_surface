@@ -28,6 +28,8 @@
 #include "ibuffer_producer.h"
 #include "iconsumer_surface.h"
 #include "native_window.h"
+#include "native_buffer.h"
+#include "native_buffer_inner.h"
 
 using namespace g_fuzzCommon;
 namespace OHOS {
@@ -35,6 +37,7 @@ namespace OHOS {
         constexpr uint32_t MATRIX_SIZE = 16;
         constexpr size_t STR_LEN = 10;
         constexpr int DEFAULT_FENCE = 100;
+        constexpr uint32_t DEFAULT_BUFFER_SIZE = 100;
         const uint8_t* g_data = nullptr;
         size_t g_size = 0;
         size_t g_pos = 0;
@@ -203,7 +206,7 @@ namespace OHOS {
 
     void NativeWindowFuzzTest2(OHNativeWindow *nativeWindow)
     {
-        // 稳定性测试，10次重复lock->unlock
+        // Stability test, repeat lock->unlock 10 times
         for (uint32_t i = 0; i < 10; i++) {
             OHNativeWindowBuffer* buffer = nullptr;
             Region::Rect rect = {0};
@@ -215,6 +218,203 @@ namespace OHOS {
             NativeWindowLockBuffer(nativeWindow, region, &buffer);
             NativeWindowUnlockAndFlushBuffer(nativeWindow);
         }
+    }
+
+    // Test CleanCache and PreAllocBuffers interfaces
+    void NativeWindowFuzzTest3(OHNativeWindow *nativeWindow)
+    {
+        // Test CleanCache interface
+        NativeWindowCleanCache(nativeWindow);
+
+        // Test PreAllocBuffers interface - use fuzz data to generate buffer count
+        uint32_t allocBufferCnt = GetData<uint32_t>() % 100 + 1;  // Limit to 1-100 range
+        NativeWindowPreAllocBuffers(nativeWindow, allocBufferCnt);
+
+        // Test boundary case: allocBufferCnt = 0 (should return error)
+        NativeWindowPreAllocBuffers(nativeWindow, 0);
+
+        // Test boundary case: allocBufferCnt = 1 (minimum valid value)
+        NativeWindowPreAllocBuffers(nativeWindow, 1);
+
+        // Test boundary case: allocBufferCnt = max value (test overflow handling)
+        allocBufferCnt = GetData<uint32_t>();
+        if (allocBufferCnt == 0) {
+            allocBufferCnt = 1;
+        }
+        NativeWindowPreAllocBuffers(nativeWindow, allocBufferCnt);
+    }
+
+    // Test null pointer and exception scenarios
+    void NativeWindowFuzzTestEdgeCases(OHNativeWindow *nativeWindow, OHNativeWindowBuffer *nwBuffer)
+    {
+        // Test null pointer scenarios
+        NativeWindowRequestBuffer(nullptr, &nwBuffer, (int*)GetData<int*>());
+        NativeWindowRequestBuffer(nativeWindow, nullptr, (int*)GetData<int*>());
+        NativeWindowFlushBuffer(nullptr, nwBuffer, GetData<int>(), {.rects = nullptr, .rectNumber = 0});
+        NativeWindowFlushBuffer(nativeWindow, nullptr, GetData<int>(), {.rects = nullptr, .rectNumber = 0});
+        NativeWindowCancelBuffer(nullptr, nwBuffer);
+        NativeWindowCancelBuffer(nativeWindow, nullptr);
+
+        // Test CleanCache null pointer
+        NativeWindowCleanCache(nullptr);
+
+        // Test PreAllocBuffers null pointer
+        NativeWindowPreAllocBuffers(nullptr, GetData<uint32_t>());
+
+        // Test LockBuffer null pointer
+        OHNativeWindowBuffer* buffer = nullptr;
+        Region region = {.rects = nullptr, .rectNumber = 0};
+        NativeWindowLockBuffer(nullptr, region, &buffer);
+        NativeWindowLockBuffer(nativeWindow, region, nullptr);
+
+        // Test UnlockAndFlushBuffer null pointer
+        NativeWindowUnlockAndFlushBuffer(nullptr);
+
+        // Test AttachBuffer/DetachBuffer null pointer
+        NativeWindowAttachBuffer(nullptr, nwBuffer);
+        NativeWindowAttachBuffer(nativeWindow, nullptr);
+        NativeWindowDetachBuffer(nullptr, nwBuffer);
+        NativeWindowDetachBuffer(nativeWindow, nullptr);
+
+        // Test GetLastFlushedBuffer null pointer
+        int* fenceFd = reinterpret_cast<int*>(GetData<int*>());
+        float matrix[MATRIX_SIZE] = {0};
+        GetLastFlushedBuffer(nullptr, &nwBuffer, fenceFd, matrix);
+        GetLastFlushedBuffer(nativeWindow, nullptr, fenceFd, matrix);
+
+        // Test SetScalingMode boundary values
+        OHScalingMode scalingMode = (OHScalingMode)(GetData<int32_t>() % 100 - 50);  // Including invalid values
+        NativeWindowSetScalingMode(nativeWindow, GetData<uint32_t>(), scalingMode);
+
+        OHScalingModeV2 scalingModeV2 = (OHScalingModeV2)(GetData<int32_t>() % 100 - 50);  // Including invalid values
+        NativeWindowSetScalingModeV2(nativeWindow, scalingModeV2);
+    }
+
+    // Test color space and metadata interface boundary scenarios
+    void NativeWindowFuzzTestColorSpaceAndMetadata(OHNativeWindow *nativeWindow)
+    {
+        // Test all color space enum values
+        OH_NativeBuffer_ColorSpace colorSpace;
+        int32_t colorSpaceInt = GetData<int32_t>();
+        colorSpace = (OH_NativeBuffer_ColorSpace)colorSpaceInt;
+        OH_NativeWindow_SetColorSpace(nativeWindow, colorSpace);
+        OH_NativeWindow_GetColorSpace(nativeWindow, &colorSpace);
+
+        // Test metadata interface
+        OH_NativeBuffer_MetadataKey metaKey = OH_HDR_DYNAMIC_METADATA;
+        int32_t testSize = GetData<int32_t>() % 100;  // Limit test size
+        if (testSize < 0) {
+            testSize = 0;
+        }
+        uint8_t* testMetadata = nullptr;
+        if (testSize > 0) {
+            testMetadata = new uint8_t[testSize];
+            for (int i = 0; i < testSize; i++) {
+                testMetadata[i] = GetData<uint8_t>();
+            }
+        }
+        OH_NativeWindow_SetMetadataValue(nativeWindow, metaKey, testSize, testMetadata);
+
+        // Test null pointer scenarios
+        OH_NativeWindow_SetMetadataValue(nullptr, metaKey, testSize, testMetadata);
+        OH_NativeWindow_SetMetadataValue(nativeWindow, metaKey, testSize, nullptr);
+        OH_NativeWindow_SetMetadataValue(nativeWindow, metaKey, -1, testMetadata);  // Invalid size
+        const int extraLargeSize = 1000000;
+        OH_NativeWindow_SetMetadataValue(nativeWindow, metaKey, extraLargeSize, testMetadata);  // Extra large size
+
+        int32_t getSize = 0;
+        uint8_t* getMetadata = nullptr;
+        OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, &getSize, &getMetadata);
+        delete[] getMetadata;
+
+        // Test null pointer scenarios
+        OH_NativeWindow_GetMetadataValue(nullptr, metaKey, &getSize, &getMetadata);
+        OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, nullptr, &getMetadata);
+        OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, &getSize, nullptr);
+
+        delete[] testMetadata;
+    }
+
+    // Test CreateNativeWindowBufferFromNativeBuffer interface
+    void NativeWindowFuzzTestCreateBufferFromNative(OHNativeWindow *nativeWindow)
+    {
+        // Test with valid OH_NativeBuffer created from SurfaceBuffer
+        int fenceFd = 0;
+        OHNativeWindowBuffer *nwBuffer = nullptr;
+        NativeWindowRequestBuffer(nativeWindow, &nwBuffer, &fenceFd);
+        if (nwBuffer != nullptr) {
+            // Get OH_NativeBuffer from nativeWindowBuffer
+            OH_NativeBuffer *nativeBuffer = OH_NativeBufferFromNativeWindowBuffer(nwBuffer);
+            if (nativeBuffer != nullptr) {
+                // Test CreateNativeWindowBufferFromNativeBuffer with valid buffer
+                OHNativeWindowBuffer *nwBufferFromNative = CreateNativeWindowBufferFromNativeBuffer(nativeBuffer);
+                if (nwBufferFromNative != nullptr) {
+                    DestroyNativeWindowBuffer(nwBufferFromNative);
+                }
+                OH_NativeBuffer_Unreference(nativeBuffer);
+            }
+            DestroyNativeWindowBuffer(nwBuffer);
+        }
+
+        // Test with nullptr - should return nullptr
+        OHNativeWindowBuffer *nullBuffer = CreateNativeWindowBufferFromNativeBuffer(nullptr);
+        if (nullBuffer != nullptr) {
+            DestroyNativeWindowBuffer(nullBuffer);
+        }
+
+        // Test with allocated OH_NativeBuffer
+        OH_NativeBuffer_Config config;
+        config.width = DEFAULT_BUFFER_SIZE;
+        config.height = DEFAULT_BUFFER_SIZE;
+        config.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+        config.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE;
+        config.stride = 0;
+        OH_NativeBuffer *allocatedBuffer = OH_NativeBuffer_Alloc(&config);
+        if (allocatedBuffer != nullptr) {
+            OHNativeWindowBuffer *nwBufferFromAlloc = CreateNativeWindowBufferFromNativeBuffer(allocatedBuffer);
+            if (nwBufferFromAlloc != nullptr) {
+                DestroyNativeWindowBuffer(nwBufferFromAlloc);
+            }
+            OH_NativeBuffer_Unreference(allocatedBuffer);
+        }
+    }
+
+    // Test NativeWindowSetGameUpscaleProcessor interface
+    void NativeWindowFuzzTestGameUpscaleProcessor(OHNativeWindow *nativeWindow)
+    {
+        // Define a test processor callback
+        static void (*testProcessor)(int32_t *, int32_t *) = nullptr;
+
+        // Test with nullptr window
+        NativeWindowSetGameUpscaleProcessor(nullptr, testProcessor);
+
+        // Test with nullptr processor (should clear the processor)
+        NativeWindowSetGameUpscaleProcessor(nativeWindow, nullptr);
+
+        // Test with valid processor callback
+        static auto processorCallback = [](int32_t *width, int32_t *height) -> void {
+            if (width != nullptr) {
+                *width = 1920;
+            }
+            if (height != nullptr) {
+                *height = 1080;
+            }
+        };
+        NativeWindowSetGameUpscaleProcessor(nativeWindow, processorCallback);
+
+        // Test with another processor to verify replacement
+        static auto processorCallback2 = [](int32_t *width, int32_t *height) -> void {
+            if (width != nullptr) {
+                *width = 3840;
+            }
+            if (height != nullptr) {
+                *height = 2160;
+            }
+        };
+        NativeWindowSetGameUpscaleProcessor(nativeWindow, processorCallback2);
+
+        // Test clearing the processor
+        NativeWindowSetGameUpscaleProcessor(nativeWindow, nullptr);
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
@@ -246,6 +446,11 @@ namespace OHOS {
         NativeWindowFuzzTest(nativeWindow, nwBuffer);
         NativeWindowFuzzTest1(nativeWindow, nwBuffer);
         NativeWindowFuzzTest2(nativeWindow);
+        NativeWindowFuzzTest3(nativeWindow);
+        NativeWindowFuzzTestEdgeCases(nativeWindow, nwBuffer);
+        NativeWindowFuzzTestColorSpaceAndMetadata(nativeWindow);
+        NativeWindowFuzzTestCreateBufferFromNative(nativeWindow);
+        NativeWindowFuzzTestGameUpscaleProcessor(nativeWindow);
         DestoryNativeWindow(nativeWindow);
         return true;
     }

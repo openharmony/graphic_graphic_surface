@@ -150,9 +150,12 @@ using GraphicPixelFormat = enum {
      */
     GRAPHIC_PIXEL_FMT_RGBA_1010108 = 43,
     /**< End marker for valid enums, new entries MUST be added above this line */
+    GRAPHIC_PIXEL_FMT_FP16 = 44,
+    /**< Depth information in ecological applications, to edit and read of information in ecological applications. */
     GRAPHIC_PIXEL_FMT_END_OF_VALID,
     /**< Fixed value strictly corresponding to HDI, cannot be contiguous with normal enums */
     GRAPHIC_PIXEL_FMT_VENDER_MASK = 0X7FFF0000,     /**< vendor mask format */
+    GRAPHIC_PIXEL_FMT_VENDER_PRIVATE1 = 0X7FFF0001, /**< private vendor mask format, and not open to third parties */
     GRAPHIC_PIXEL_FMT_BUTT = 0X7FFFFFFF             /**< Invalid pixel format */
 };
 

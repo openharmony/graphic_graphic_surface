@@ -869,3 +869,124 @@ HWTEST_F(SurfaceTypeTest, GraphicHDRMetaDataSmallTest, Function | SmallTest | Le
 
     EXPECT_TRUE(metaData1 == metaData2);
 }
+
+/*
+* Function: SurfaceTypeTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test GraphicPixelFormat FP16 in BufferRequestConfig
+*/
+HWTEST_F(SurfaceTypeTest, BufferRequestConfigFP16Test, Function | SmallTest | Level1)
+{
+    BufferRequestConfig config1 = {
+        .width = 1920,
+        .height = 1080,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_FP16,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig config2 = {
+        .width = 1920,
+        .height = 1080,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_FP16,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+
+    EXPECT_TRUE(config1 == config2);
+}
+
+/*
+* Function: SurfaceTypeTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test GraphicPixelFormat VENDER_PRIVATE1 in BufferRequestConfig
+*/
+HWTEST_F(SurfaceTypeTest, BufferRequestConfigVenderPrivate1Test, Function | SmallTest | Level1)
+{
+    BufferRequestConfig config1 = {
+        .width = 1280,
+        .height = 720,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_VENDER_PRIVATE1,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig config2 = {
+        .width = 1280,
+        .height = 720,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_VENDER_PRIVATE1,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+
+    EXPECT_TRUE(config1 == config2);
+}
+
+/*
+* Function: SurfaceTypeTest
+* Type: Function
+
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test BufferRequestConfig with FP16 and different dimensions
+*/
+HWTEST_F(SurfaceTypeTest, BufferRequestConfigFP16DimensionsTest, Function | SmallTest | Level1)
+{
+    BufferRequestConfig config1 = {
+        .width = 3840,
+        .height = 2160,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_FP16,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig config2 = {
+        .width = 1920,
+        .height = 1080,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_FP16,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+
+    EXPECT_FALSE(config1 == config2);
+}
+
+/*
+* Function: SurfaceTypeTest
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* Case CaseDescription: test BufferRequestConfig with VENDER_PRIVATE1 and different usages
+*/
+HWTEST_F(SurfaceTypeTest, BufferRequestConfigVenderPrivate1UsageTest, Function | SmallTest | Level1)
+{
+    BufferRequestConfig config1 = {
+        .width = 640,
+        .height = 480,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_VENDER_PRIVATE1,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig config2 = {
+        .width = 640,
+        .height = 480,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_VENDER_PRIVATE1,
+        .usage = BUFFER_USAGE_HW_RENDER | BUFFER_USAGE_HW_TEXTURE,
+        .timeout = 0,
+    };
+
+    EXPECT_FALSE(config1 == config2);
+}

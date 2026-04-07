@@ -353,6 +353,7 @@ int32_t BufferQueueProducer::FlushBufferRemote(MessageParcel &arguments, Message
         endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
                 std::chrono::steady_clock::now().time_since_epoch()).count();
         Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
+        Rosen::FrameReport::GetInstance().SetFlushBufferSequence(sequence);
         Rosen::FrameReport::GetInstance().Report(name_);
     }
 

@@ -39,7 +39,10 @@ public:
     void SetLastSwapBufferTime(int64_t lastSwapBufferTime);
     void SetDequeueBufferTime(const std::string& layerName, int64_t dequeueBufferTime);
     void SetQueueBufferTime(uint64_t uniqueId, const std::string& layerName, int64_t queueBufferTime);
+    void SetFlushBufferSequence(uint32_t sequence);
     void SetAcquireBufferSysTime();
+    void SetAcquireBufferSeqWithUniqueId(uint64_t uniqueId, uint32_t sequence);
+    void SetPresentTimeWithUniqueId(uint64_t uniqueId, int64_t presentFenceSysTime, uint32_t sequence);
     void SetPendingBufferNum(uint64_t uniqueId, const std::string& layerName, int32_t pendingBufferNum);
     void Report(const std::string& layerName);
 
@@ -61,7 +64,13 @@ private:
     std::atomic<int64_t> lastSwapBufferTime_ = 0;
     std::atomic<int64_t> dequeueBufferTime_ = 0;
     std::atomic<int64_t> queueBufferTime_ = 0;
+    std::atomic<int64_t> flushBufferSysTime_ = 0;
+    std::atomic<uint32_t> flushBufferSequence_ = 0;
     std::atomic<int64_t> acquireBufferSysTime_ = 0;
+    std::atomic<uint32_t> acquireBufferSequence_ = 0;
+    std::atomic<int64_t> presentFenceSysTime_ = 0;
+    std::atomic<uint32_t> presentFenceSequence_ = 0;
+    std::atomic<int64_t> lastReleaseSysTime_ = 0;
 
     bool isGameSoLoaded_ = false;
     void* gameSoHandle_ = nullptr;

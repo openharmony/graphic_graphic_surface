@@ -408,6 +408,7 @@ private:
     const bool isLocalRender_;
     uint32_t lastFlusedSequence_ = 0;
     sptr<SyncFence> lastFlusedFence_;
+    sptr<SyncFence> preBufferReleasedFence_;
     sptr<ConsumerSurfaceDelegator> sptrCSurfaceDelegator_;
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;

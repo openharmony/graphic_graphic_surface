@@ -948,7 +948,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
         // record game acquire buffer time
-        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
+        Rosen::FrameReport::GetInstance().SetAcquireBufferSeqWithUniqueId(uniqueId_, sequence);
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCacheLocked();
     }
@@ -1172,7 +1172,8 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     uint32_t sequence = buffer->GetSeqNum();
     std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
     bool isOnReleaseBufferWithSequenceAndFence = false;
-    SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
+    SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u fence: %d",
+        name_.c_str(), uniqueId_, sequence, fence->Get());
     {
         std::unique_lock<std::mutex> lock(mutex_);
         auto ret = ReleaseBufferLocked(buffer, fence, lock);
@@ -1185,6 +1186,11 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         if (isOnReleaseBufferWithSequenceAndFence) {
             RequestBuffersForListenerLocked(requestBuffersAndFences, lock);
         }
+        if (preBufferReleasedFence_) {
+            int64_t presentFenceTimeNs = preBufferReleasedFence_->SyncFileReadTimestamp();
+            Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(uniqueId_, presentFenceTimeNs, sequence);
+        }
+        preBufferReleasedFence_ = fence;
     }
     ListenerBufferReleasedCb(buffer, fence, isOnReleaseBufferWithSequenceAndFence, requestBuffersAndFences);
 

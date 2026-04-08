@@ -2682,4 +2682,81 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel005, TestSize.Level0)
 
     bq->CleanCache(false, nullptr);
 }
+
+/*
+* Function: SetBufferReallocFlag
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferReallocFlag and RequestBuffer with new config
+*                  2. verify buffer can be reallocated when fence fd is -1
+*/
+HWTEST_F(BufferQueueTest, SetBufferReallocFlag001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+    
+    uint32_t sequence = retval.sequence;
+    cache[sequence] = retval.buffer;
+    
+    ret = bq->FlushBuffer(sequence, bedata, SyncFence::INVALID_FENCE, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    
+    ret = bq->AcquireBuffer(retval.buffer, retval.fence, timestamp, damages);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    
+    BufferRequestConfig newConfig = {
+        .width = 0x2000,
+        .height = 0x2000,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 0,
+    };
+    
+    ret = bq->ReleaseBuffer(retval.buffer, SyncFence::INVALID_FENCE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    
+    bq->SetBufferReallocFlag(true);
+    
+    IBufferProducer::RequestBufferReturnValue retval2;
+    ret = bq->RequestBuffer(newConfig, bedata, retval2);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(retval2.buffer, nullptr);
+    ASSERT_NE(retval2.sequence, sequence);
+    
+    bq->CleanCache(false, nullptr);
+}
+
+/*
+* Function: SyncProducerCache
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: test SyncProducerCache with valid buffers in cache
+*/
+HWTEST_F(BufferQueueTest, SyncProducerCache001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+    
+    ret = bq->FlushBuffer(retval.sequence, bedata, SyncFence::INVALID_FENCE, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    ret = bq->SyncProducerCache(buffers);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_GE(buffers.size(), 1u);
+    
+    bq->CleanCache(false, nullptr);
+}
+
 } // namespace OHOS::Rosen

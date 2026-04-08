@@ -927,4 +927,40 @@ HWTEST_F(BufferClientProducerRemoteTest, SetLppShareFd002, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     close(fd);
 }
+
+/*
+ * Function: SyncProducerCache
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SyncProducerCache and check the ret
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SyncProducerCache001, TestSize.Level0)
+{
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    GSError ret = bp->SyncProducerCache(buffers);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: SyncProducerCache
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. request buffer and flush, then call SyncProducerCache
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SyncProducerCache002, TestSize.Level0)
+{
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bp->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bp->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    ret = bp->SyncProducerCache(buffers);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
 }

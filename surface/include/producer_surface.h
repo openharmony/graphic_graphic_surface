@@ -902,6 +902,7 @@ private:
         sptr<SyncFence>& fence, BufferRequestConfig& config);
     GSError ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& buffer);
     GSError OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence> &fence);
+    GSError SyncProducerCacheLocked();
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;

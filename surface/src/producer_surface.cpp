@@ -54,6 +54,7 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
         BLOGE("producer surf init failed");
         return nullptr;
     }
+
     auto utils = SurfaceUtils::GetInstance();
     utils->Add(surf->GetUniqueId(), surf);
     return surf;
@@ -274,12 +275,23 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
     } else {
         auto it = bufferProducerCache_.find(retval.sequence);
         if (it == bufferProducerCache_.end()) {
-            DeleteCacheBufferLocked(bedataimpl, retval, config);
-            BLOGE("cache not find buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, queueId_);
-            return SURFACE_ERROR_UNKOWN;
-        } else {
-            retval.buffer = it->second;
+            GSError syncRet = SyncProducerCacheLocked();
+            if (syncRet != GSERROR_OK) {
+                DeleteCacheBufferLocked(bedataimpl, retval, config);
+                BLOGE("sync cache failed, ret: %{public}d, buffer(%{public}u), uniqueId: %{public}" PRIu64 ".",
+                    syncRet, retval.sequence, queueId_);
+                return syncRet;
+            }
+            it = bufferProducerCache_.find(retval.sequence);
+            if (it == bufferProducerCache_.end()) {
+                DeleteCacheBufferLocked(bedataimpl, retval, config);
+                BLOGE("cache not find buffer(%{public}u) after sync, uniqueId: %{public}" PRIu64 ".",
+                    retval.sequence, queueId_);
+                return SURFACE_ERROR_UNKOWN;
+            }
+            BLOGI("sync cache success uniqueId: %{public}" PRIu64 ".", queueId_);
         }
+        retval.buffer = it->second;
     }
     SetBufferConfigLocked(bedataimpl, retval, config);
     DeleteCacheBufferLocked(bedataimpl, retval, config);
@@ -464,11 +476,25 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     if (buffer == nullptr || producer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (isDisconnected_) {
+            GSError ret = producer_->Connect();
+            if (ret != GSERROR_OK) {
+                BLOGE("Connect failed before AttachBufferToQueue, ret: %{public}d, "
+                    "uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+                return ret;
+            }
+            isDisconnected_ = false;
+        }
+    }
+
     auto ret = producer_->AttachBufferToQueue(buffer);
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
-            BLOGE("Attach buffer %{public}u, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
+            BLOGE("Attach buffer %{public}u, uniqueId: %{public}" PRIu64 ".",
+                buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
@@ -1376,12 +1402,25 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
     configWithDamages.damages.push_back(config.damage);
     configWithDamages.timestamp = config.timestamp;
     configWithDamages.desiredPresentTimestamp = config.desiredPresentTimestamp;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        if (isDisconnected_) {
+            GSError ret = producer_->Connect();
+            if (ret != GSERROR_OK) {
+                BLOGE("Connect failed before AttachAndFlushBuffer, ret: %{public}d, "
+                    "uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+                return ret;
+            }
+            isDisconnected_ = false;
+        }
+    }
 
     auto ret = producer_->AttachAndFlushBuffer(buffer, bedata, fence, configWithDamages, needMap);
     if (ret == GSERROR_OK) {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         if (bufferProducerCache_.find(buffer->GetSeqNum()) != bufferProducerCache_.end()) {
-            BLOGE("Attach buffer %{public}u, uniqueId: %{public}" PRIu64 ".", buffer->GetSeqNum(), queueId_);
+            BLOGE("Attach buffer %{public}u, uniqueId: %{public}" PRIu64 ".",
+                buffer->GetSeqNum(), queueId_);
             return SURFACE_ERROR_BUFFER_IS_INCACHE;
         }
         bufferProducerCache_[buffer->GetSeqNum()] = buffer;
@@ -1585,6 +1624,27 @@ GSError ProducerSurface::SetGameUpscaleProcessor(GameUpscaleProcessor processor)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     gameUpscaleProcessor_ = processor;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::SyncProducerCacheLocked()
+{
+    if (producer_ == nullptr) {
+        BLOGE("producer_ is nullptr, uniqueId: %{public}" PRIu64 ".", queueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::map<uint32_t, sptr<SurfaceBuffer>> buffers;
+    GSError ret = producer_->SyncProducerCache(buffers);
+    if (ret != GSERROR_OK) {
+        BLOGE("SyncProducerCache failed, ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, queueId_);
+        return ret;
+    }
+    std::string str = "SyncProducerCache uniqueId:" + std::to_string(queueId_);
+    for (auto& [seqNum, buffer] : buffers) {
+        str += " seqNum:" + std::to_string(seqNum);
+        bufferProducerCache_[seqNum] = buffer;
+    }
+    BLOGI("%s", str.c_str());
     return GSERROR_OK;
 }
 } // namespace OHOS

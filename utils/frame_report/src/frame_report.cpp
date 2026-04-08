@@ -142,7 +142,7 @@ void FrameReport::SetAcquireBufferSysTime()
     }
 }
 
-void FrameReport::SetAcquireBufferSeqWithUniqueId(uint32_t uniqueId, uint32_t sequence)
+void FrameReport::SetAcquireBufferSeqWithUniqueId(uint64_t uniqueId, uint32_t sequence)
 {
     if (IsActiveGameWithUniqueId(uniqueId)) {
         int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(

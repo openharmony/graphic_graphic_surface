@@ -1172,8 +1172,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
     uint32_t sequence = buffer->GetSeqNum();
     std::vector<std::pair<uint32_t, sptr<SyncFence>>> requestBuffersAndFences;
     bool isOnReleaseBufferWithSequenceAndFence = false;
-    SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u fence: %d",
-        name_.c_str(), uniqueId_, sequence, fence->Get());
+    SURFACE_TRACE_NAME_FMT("ReleaseBuffer name: %s queueId: %" PRIu64 " seq: %u", name_.c_str(), uniqueId_, sequence);
     {
         std::unique_lock<std::mutex> lock(mutex_);
         auto ret = ReleaseBufferLocked(buffer, fence, lock);

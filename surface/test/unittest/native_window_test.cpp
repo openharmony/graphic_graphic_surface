@@ -3109,4 +3109,44 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_UnlockAndFlushBuffer002, TestSize.Lev
     ASSERT_EQ(ret, GSERROR_INVALID_OPERATING);
     OH_NativeWindow_DestroyNativeWindow(window);
 }
+
+/*
+ * Function: OH_NativeWindow_NativeWindowHandleOpt
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt by different param
+ *                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, HandleOpt004_FP16, TestSize.Level0)
+{
+    int code = SET_FORMAT;
+    int32_t formatSet = GRAPHIC_PIXEL_FMT_FP16;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, formatSet), OHOS::GSERROR_OK);
+
+    code = GET_FORMAT;
+    int32_t formatGet = GRAPHIC_PIXEL_FMT_CLUT8;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &formatGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(formatSet, formatGet);
+}
+
+/*
+ * Function: OH_NativeWindow_NativeWindowHandleOpt
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt by different param
+ *                  2. check ret
+ */
+HWTEST_F(NativeWindowTest, HandleOpt004_VenderPrivate1, TestSize.Level0)
+{
+    int code = SET_FORMAT;
+    int32_t formatSet = GRAPHIC_PIXEL_FMT_VENDER_PRIVATE1;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, formatSet), OHOS::GSERROR_OK);
+
+    code = GET_FORMAT;
+    int32_t formatGet = GRAPHIC_PIXEL_FMT_CLUT8;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &formatGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(formatSet, formatGet);
+}
 }

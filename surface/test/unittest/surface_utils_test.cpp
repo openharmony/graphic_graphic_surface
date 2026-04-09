@@ -260,4 +260,287 @@ HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix002, TestSize.Level0)
     utils->ComputeTransformMatrixV2(matrix, 16, buffer, transform, crop);
     ASSERT_NE(matrix, emptyMatrix);
 }
+
+/*
+ * Function: ComputeTransformMatrix
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ComputeTransformMatrix with different transform types
+ *                  2. call ComputeTransformMatrixV2 with different transform types
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix003, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1080);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = buffer->GetWidth();
+    crop.h = buffer->GetHeight();
+
+    std::vector<GraphicTransformType> transforms = {
+        GraphicTransformType::GRAPHIC_ROTATE_NONE,
+        GraphicTransformType::GRAPHIC_ROTATE_90,
+        GraphicTransformType::GRAPHIC_ROTATE_180,
+        GraphicTransformType::GRAPHIC_ROTATE_270,
+        GraphicTransformType::GRAPHIC_FLIP_V,
+        GraphicTransformType::GRAPHIC_FLIP_H_ROT90,
+        GraphicTransformType::GRAPHIC_FLIP_V_ROT90,
+        GraphicTransformType::GRAPHIC_FLIP_H_ROT180,
+        GraphicTransformType::GRAPHIC_FLIP_V_ROT180,
+        GraphicTransformType::GRAPHIC_FLIP_H_ROT270,
+        GraphicTransformType::GRAPHIC_FLIP_V_ROT270
+    };
+
+    for (auto transform : transforms) {
+        utils->ComputeTransformMatrix(matrix, 16, buffer, transform, crop);
+        ASSERT_FALSE(IsArrayEmpty(matrix));
+        utils->ComputeTransformMatrixV2(matrix, 16, buffer, transform, crop);
+        ASSERT_FALSE(IsArrayEmpty(matrix));
+    }
+}
+
+/*
+ * Function: ComputeTransformMatrix
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ComputeTransformMatrix with zero crop
+ *                  2. call ComputeTransformMatrixV2 with zero crop
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix004, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1080);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = 0;
+    crop.h = 0;
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+
+    utils->ComputeTransformMatrix(matrix, 16, buffer, transform, crop);
+    utils->ComputeTransformMatrixV2(matrix, 16, buffer, transform, crop);
+}
+
+/*
+ * Function: ComputeTransformMatrix
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ComputeTransformMatrix with invalid matrix size
+ *                  2. call ComputeTransformMatrixV2 with invalid matrix size
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrix005, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1080);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = buffer->GetWidth();
+    crop.h = buffer->GetHeight();
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+
+    utils->ComputeTransformMatrix(matrix, 0, buffer, transform, crop);
+    utils->ComputeTransformMatrixV2(matrix, 0, buffer, transform, crop);
+}
+
+/*
+ * Function: ComputeBufferMatrix
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ComputeBufferMatrix with normal parameters
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeBufferMatrix001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1080);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = buffer->GetWidth();
+    crop.h = buffer->GetHeight();
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+
+    utils->ComputeBufferMatrix(matrix, 16, buffer, transform, crop);
+    ASSERT_FALSE(IsArrayEmpty(matrix));
+}
+
+/*
+ * Function: ComputeBufferMatrix
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ComputeBufferMatrix with different transform types
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeBufferMatrix002, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1080);
+    float matrix[16];
+    Rect crop = {};
+    crop.w = buffer->GetWidth();
+    crop.h = buffer->GetHeight();
+
+    std::vector<GraphicTransformType> transforms = {
+        GraphicTransformType::GRAPHIC_ROTATE_90,
+        GraphicTransformType::GRAPHIC_ROTATE_180,
+        GraphicTransformType::GRAPHIC_ROTATE_270,
+        GraphicTransformType::GRAPHIC_FLIP_H,
+        GraphicTransformType::GRAPHIC_FLIP_V
+    };
+
+    for (auto transform : transforms) {
+        utils->ComputeBufferMatrix(matrix, 16, buffer, transform, crop);
+        ASSERT_FALSE(IsArrayEmpty(matrix));
+    }
+}
+
+/*
+ * Function: ComputeBufferMatrix
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call ComputeBufferMatrix with null buffer
+ */
+HWTEST_F(SurfaceUtilsTest, ComputeBufferMatrix003, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    float matrix[16];
+    Rect crop = {};
+    crop.w = 1920;
+    crop.h = 1080;
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+
+    utils->ComputeBufferMatrix(matrix, 16, buffer, transform, crop);
+}
+
+/*
+ * Function: AddNativeWindow
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AddNativeWindow with null window
+ *                  2. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, AddNativeWindow001, TestSize.Level0)
+{
+    SurfaceError ret = utils->AddNativeWindow(psurface1->GetUniqueId(), nullptr);
+    ASSERT_EQ(ret, SURFACE_ERROR_NULLPTR);
+}
+
+/*
+ * Function: AddNativeWindow
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AddNativeWindow
+ *                  2. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, AddNativeWindow002, TestSize.Level0)
+{
+    void* nativeWindow = reinterpret_cast<void*>(0x1234);
+    SurfaceError ret = utils->AddNativeWindow(psurface1->GetUniqueId(), nativeWindow);
+    ASSERT_EQ(ret, SURFACE_ERROR_OK);
+}
+
+/*
+ * Function: AddNativeWindow
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AddNativeWindow 2 times
+ *                  2. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, AddNativeWindow003, TestSize.Level0)
+{
+    void* nativeWindow = reinterpret_cast<void*>(0x5678);
+    SurfaceError ret = utils->AddNativeWindow(psurface2->GetUniqueId(), nativeWindow);
+    ASSERT_EQ(ret, SURFACE_ERROR_OK);
+
+    ret = utils->AddNativeWindow(psurface2->GetUniqueId(), nativeWindow);
+    ASSERT_EQ(ret, SURFACE_ERROR_OK);
+}
+
+/*
+ * Function: GetNativeWindow
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetNativeWindow with invalid uniqueId
+ *                  2. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, GetNativeWindow001, TestSize.Level0)
+{
+    void* nativeWindow = utils->GetNativeWindow(0);
+    ASSERT_EQ(nativeWindow, nullptr);
+}
+
+/*
+ * Function: RemoveNativeWindow
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call AddNativeWindow
+ *                  2. call RemoveNativeWindow
+ *                  3. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, RemoveNativeWindow002, TestSize.Level0)
+{
+    void* nativeWindow = reinterpret_cast<void*>(0xDEF0);
+    utils->AddNativeWindow(psurface2->GetUniqueId(), nativeWindow);
+
+    SurfaceError ret = utils->RemoveNativeWindow(psurface2->GetUniqueId());
+    ASSERT_EQ(ret, SURFACE_ERROR_OK);
+}
+
+/*
+ * Function: Add
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Add with invalid uniqueId
+ *                  2. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, Add003, TestSize.Level0)
+{
+    GSError ret = utils->Add(0, psurface1);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+ * Function: GetSurface
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Add with invalid uniqueId
+ *                  2. call GetSurface with invalid uniqueId
+ *                  3. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, GetSurface004, TestSize.Level0)
+{
+    utils->Add(0, psurface1);
+    sptr<Surface> surface = utils->GetSurface(0);
+    ASSERT_NE(surface, nullptr);
+}
+
+/*
+ * Function: Remove
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call Add with invalid uniqueId
+ *                  2. call Remove with invalid uniqueId
+ *                  3. check ret
+ */
+HWTEST_F(SurfaceUtilsTest, Remove003, TestSize.Level0)
+{
+    utils->Add(0, psurface1);
+    GSError ret = utils->Remove(0);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
 }

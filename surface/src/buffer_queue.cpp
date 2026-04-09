@@ -948,7 +948,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
             sequence, mapIter->second.desiredPresentTimestamp,
             mapIter->second.isAutoTimestamp);
         // record game acquire buffer time
-        Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
+        Rosen::FrameReport::GetInstance().SetAcquireBufferSeqWithUniqueId(uniqueId_, sequence);
     } else if (ret == GSERROR_NO_BUFFER) {
         LogAndTraceAllBufferInBufferQueueCacheLocked();
     }
@@ -1185,6 +1185,11 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
         if (isOnReleaseBufferWithSequenceAndFence) {
             RequestBuffersForListenerLocked(requestBuffersAndFences, lock);
         }
+        if (preBufferReleasedFence_) {
+            int64_t presentFenceTimeNs = preBufferReleasedFence_->SyncFileReadTimestamp();
+            Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(uniqueId_, presentFenceTimeNs, sequence);
+        }
+        preBufferReleasedFence_ = fence;
     }
     ListenerBufferReleasedCb(buffer, fence, isOnReleaseBufferWithSequenceAndFence, requestBuffersAndFences);
 

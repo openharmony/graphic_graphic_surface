@@ -78,6 +78,16 @@ bool DoSetGameScene(const uint8_t* data, size_t size)
 
     Rosen::FrameReport::GetInstance().SetAcquireBufferSysTime();
 
+    uint32_t flushSequence = GetData<uint32_t>();
+    Rosen::FrameReport::GetInstance().SetFlushBufferSequence(flushSequence);
+
+    uint32_t acquireSequence = GetData<uint32_t>();
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSeqWithUniqueId(uniqueId, acquireSequence);
+
+    int64_t presentFenceSysTime = GetData<int64_t>();
+    uint32_t  presentSequence = GetData<uint32_t>();
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(uniqueId, presentFenceSysTime, presentSequence);
+
     return true;
 }
 } // namespace Rosen

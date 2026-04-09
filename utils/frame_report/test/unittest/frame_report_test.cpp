@@ -289,7 +289,7 @@ HWTEST_F(FrameReportTest, NotifyFrameInfo001, Function | MediumTest | Level2)
 * EnvConditions: N/A
 * CaseDescription: 1. call NotifyFrameInfo
 *                  2. check ret
- */
+*/
 HWTEST_F(FrameReportTest, NotifyFrameInfo002, Function | MediumTest | Level2)
 {
     Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ = [](int32_t pid,
@@ -301,6 +301,137 @@ HWTEST_F(FrameReportTest, NotifyFrameInfo002, Function | MediumTest | Level2)
         FRT_GAME_PID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME, FRT_SURFACE_NAME_EMPTY, FRT_UNIQUEID);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
     Rosen::FrameReport::GetInstance().notifyFrameInfoFunc_ = nullptr;
+}
+
+/*
+* Function: SetFlushBufferSequence001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetFlushBufferSequence
+*                  2. check flushBufferSysTime_ and flushBufferSequence_ are set correctly
+*/
+HWTEST_F(FrameReportTest, SetFlushBufferSequence001, Function | MediumTest | Level2)
+{
+    static const uint32_t FRT_FLUSH_SEQUENCE = 100;
+
+    Rosen::FrameReport::GetInstance().SetFlushBufferSequence(FRT_FLUSH_SEQUENCE);
+
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().flushBufferSysTime_.load() > 0);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().flushBufferSequence_.load() == FRT_FLUSH_SEQUENCE);
+}
+
+/*
+* Function: SetAcquireBufferSeqWithUniqueId001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetAcquireBufferSeqWithUniqueId with non-matching uniqueId
+*                  2. check acquireBufferSysTime_ and acquireBufferSequence_ are not changed
+*/
+HWTEST_F(FrameReportTest, SetAcquireBufferSeqWithUniqueId001, Function | MediumTest | Level2)
+{
+    static const uint32_t FRT_ACQUIRE_SEQUENCE = 200;
+
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSeqWithUniqueId(FRT_GAME_UNIQUEID_NOT, FRT_ACQUIRE_SEQUENCE);
+
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() == 0);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSequence_.load() == 0);
+}
+
+/*
+* Function: SetAcquireBufferSeqWithUniqueId002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetAcquireBufferSeqWithUniqueId with matching uniqueId
+*                  2. check acquireBufferSysTime_ and acquireBufferSequence_ are set correctly
+*/
+HWTEST_F(FrameReportTest, SetAcquireBufferSeqWithUniqueId002, Function | MediumTest | Level2)
+{
+    static const uint32_t FRT_ACQUIRE_SEQUENCE = 201;
+
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
+    Rosen::FrameReport::GetInstance().SetAcquireBufferSeqWithUniqueId(FRT_GAME_UNIQUEID, FRT_ACQUIRE_SEQUENCE);
+
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSysTime_.load() > 0);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().acquireBufferSequence_.load() == FRT_ACQUIRE_SEQUENCE);
+}
+
+/*
+* Function: SetPresentTimeWithUniqueId001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetPresentTimeWithUniqueId with non-matching uniqueId
+*                  2. check presentFenceSysTime_, presentFenceSequence_ and lastReleaseSysTime_ are not changed
+*/
+HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId001, Function | MediumTest | Level2)
+{
+    static const int64_t FRT_PRESENT_FENCE_TIME = 3000;
+    static const uint32_t FRT_PRESENT_SEQUENCE = 300;
+
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID_NOT, FRT_PRESENT_FENCE_TIME,
+                                                                  FRT_PRESENT_SEQUENCE);
+
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() == 0);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSequence_.load() == 0);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load() == 0);
+}
+
+/*
+* Function: SetPresentTimeWithUniqueId002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetPresentTimeWithUniqueId with matching uniqueId and normal timestamp
+*                  2. check presentFenceSysTime_, presentFenceSequence_ and lastReleaseSysTime_ are set correctly
+*/
+HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId002, Function | MediumTest | Level2)
+{
+    static const int64_t FRT_PRESENT_FENCE_TIME = 3001;
+    static const uint32_t FRT_PRESENT_SEQUENCE = 301;
+
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, FRT_PRESENT_FENCE_TIME,
+                                                                  FRT_PRESENT_SEQUENCE);
+
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() == FRT_PRESENT_FENCE_TIME);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSequence_.load() == FRT_PRESENT_SEQUENCE);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load() > 0);
+}
+
+/*
+* Function: SetPresentTimeWithUniqueId003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetPresentTimeWithUniqueId with FENCE_PENDING_TIMESTAMP
+*                  2. check presentFenceSysTime_ uses lastReleaseSysTime_ when FENCE_PENDING_TIMESTAMP is passed
+*/
+HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId003, Function | MediumTest | Level2)
+{
+    static const int64_t FRT_PENDING_TIMESTAMP = INT64_MAX;
+    static const uint32_t FRT_PRESENT_SEQUENCE = 302;
+
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
+
+    // First call to set lastReleaseSysTime_
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, 1000, 301);
+    int64_t firstReleaseTime = Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load();
+
+    // Second call with FENCE_PENDING_TIMESTAMP should use lastReleaseSysTime_
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, FRT_PENDING_TIMESTAMP,
+                                                                  FRT_PRESENT_SEQUENCE);
+
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() == firstReleaseTime);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSequence_.load() == FRT_PRESENT_SEQUENCE);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load() > firstReleaseTime);
 }
 
 } // namespace OHOS::Rosen

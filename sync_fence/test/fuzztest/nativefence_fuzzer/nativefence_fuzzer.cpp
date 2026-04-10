@@ -15,64 +15,61 @@
 
 #include "nativefence_fuzzer.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <fcntl.h>
 #include <securec.h>
-#include <string>
 #include <unistd.h>
 
-#include "data_generate.h"
 #include "native_fence.h"
 
-using namespace g_fuzzCommon;
-
 namespace OHOS {
-    constexpr uint32_t TIMEOUT_MS = 1000;
-    bool DoSomethingInterestingWithMyAPI001(const uint8_t* data, size_t size)
-    {
-        if (data == nullptr) {
-            return false;
-        }
-
-        // initialize
-        g_data = data;
-        g_size = size;
-        g_pos = 0;
-
-        int32_t fenceFd = open("/dev/GPIO_TEST", O_RDONLY);
-        if (fenceFd < 0) {
-            return false;
-        }
-        OH_NativeFence_IsValid(fenceFd);
-        OH_NativeFence_Wait(fenceFd, TIMEOUT_MS);
-        OH_NativeFence_Close(fenceFd);
-
-        return true;
+    namespace {
+        constexpr uint32_t MAX_TIMEOUT = 100;
     }
 
-    bool DoSomethingInterestingWithMyAPI002(const uint8_t* data, size_t size)
+    void NativeFenceFuzzTestWithValidFd(FuzzedDataProvider& provider)
     {
-        if (data == nullptr) {
-            return false;
+        int32_t devNullFd = open("/dev/null", O_RDONLY);
+        if (devNullFd < 0) {
+            return;
         }
 
-        // initialize
-        g_data = data;
-        g_size = size;
+        uint32_t timeout = provider.ConsumeIntegral<uint32_t>() % MAX_TIMEOUT;
+        if (timeout == 0) {
+            timeout = 1;
+        }
 
-        int32_t fenceFd = GetData<int32_t>();
+        OH_NativeFence_IsValid(devNullFd);
+        OH_NativeFence_Wait(devNullFd, timeout);
+        OH_NativeFence_WaitForever(devNullFd);
+        OH_NativeFence_Close(devNullFd);
+    }
+
+    void NativeFenceFuzzTestWithRandomFd(FuzzedDataProvider& provider)
+    {
+        int32_t fenceFd = provider.ConsumeIntegral<int32_t>();
+        uint32_t timeout = provider.ConsumeIntegral<uint32_t>() % MAX_TIMEOUT;
         OH_NativeFence_IsValid(fenceFd);
-        OH_NativeFence_WaitForever(-1);
+        OH_NativeFence_Wait(fenceFd, timeout);
+        OH_NativeFence_WaitForever(fenceFd);
 
-        return true;
+        // Only close safe fd values from fuzz data to avoid closing stdio descriptors.
+        if (fenceFd > STDERR_FILENO) {
+            OH_NativeFence_Close(fenceFd);
+        }
     }
 } // namespace OHOS
 
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
-    /* Run your code on data */
-    OHOS::DoSomethingInterestingWithMyAPI001(data, size);
-    OHOS::DoSomethingInterestingWithMyAPI002(data, size);
+    if (data == nullptr || size == 0) {
+        return 0;
+    }
+    FuzzedDataProvider provider(data, size);
+    OHOS::NativeFenceFuzzTestWithValidFd(provider);
+    OHOS::NativeFenceFuzzTestWithRandomFd(provider);
     return 0;
 }
 

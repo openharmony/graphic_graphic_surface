@@ -15,9 +15,13 @@
 
 #include "nativebuffer_fuzzer.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
+#include <fcntl.h>
 #include <securec.h>
 #include <string>
 #include <climits>  // For INT32_MAX
+#include <unistd.h>
 
 #include "data_generate.h"
 #include "native_buffer.h"
@@ -64,6 +68,16 @@ namespace OHOS {
 
         // Test IsSupported null pointer and invalid parameters
         OH_NativeBuffer_IsSupported(config, nullptr);                  // isSupported = nullptr
+
+        // Test MapWaitFence invalid parameters
+        void *addr = nullptr;
+        OH_NativeBuffer_MapWaitFence(nullptr, -1, &addr);
+        OH_NativeBuffer_MapWaitFence(buffer, -1, &addr);
+
+        // Test parcel interfaces invalid parameters
+        OH_NativeBuffer *tmpBuffer = nullptr;
+        OH_NativeBuffer_WriteToParcel(nullptr, nullptr);
+        OH_NativeBuffer_ReadFromParcel(nullptr, &tmpBuffer);
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
@@ -102,10 +116,12 @@ namespace OHOS {
         OH_NativeBuffer_FromNativeWindowBuffer(nativeWindowBuffer, &nativeBuffer);
         OHIPCParcel *parcel = OH_IPCParcel_Create();
         OH_NativeBuffer_WriteToParcel(nativeBuffer, parcel);
-        OH_NativeBuffer *outBuffer;
+        OH_NativeBuffer *outBuffer = nullptr;
         OH_NativeBuffer_ReadFromParcel(parcel, &outBuffer);
         OH_IPCParcel_Destroy(parcel);
-        OH_NativeBuffer_Unreference(outBuffer);
+        if (outBuffer != nullptr) {
+            OH_NativeBuffer_Unreference(outBuffer);
+        }
         bool isSupported = false;
         OH_NativeBuffer_IsSupported(config, &isSupported);
         void *virAddr1 = nullptr;
@@ -129,6 +145,13 @@ namespace OHOS {
         OH_NativeBuffer_Unreference(buffer);
         OH_NativeBuffer_Map(buffer, &virAddr);
         OH_NativeBuffer_Unmap(buffer);
+        int32_t invalidFence = -1;
+        OH_NativeBuffer_MapWaitFence(buffer, invalidFence, &virAddr);
+        int32_t nullFd = open("/dev/null", O_RDONLY);
+        if (nullFd >= 0) {
+            OH_NativeBuffer_MapWaitFence(buffer, nullFd, &virAddr);
+            close(nullFd);
+        }
         DestroyNativeWindowBuffer(nativeWindowBuffer);
         OH_NativeBuffer_Unreference(buffer);
 
@@ -142,6 +165,11 @@ namespace OHOS {
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
+    if (data == nullptr || size == 0) {
+        return 0;
+    }
+    FuzzedDataProvider provider(data, size);
+    (void)provider.ConsumeIntegral<uint8_t>();
     /* Run your code on data */
     OHOS::DoSomethingInterestingWithMyAPI(data, size);
     return 0;

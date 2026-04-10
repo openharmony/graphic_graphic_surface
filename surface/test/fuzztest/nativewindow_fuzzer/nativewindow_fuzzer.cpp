@@ -40,6 +40,7 @@ namespace OHOS {
         constexpr size_t STR_LEN = (5U << 1);
         constexpr int DEFAULT_FENCE = ((1 << 6) + (1 << 5) + (1 << 2));
         constexpr uint32_t DEFAULT_BUFFER_SIZE = ((1U << 6) + (1U << 5) + (1U << 2));
+        constexpr int32_t DEFAULT_REGION_EDGE = 256;
         const uint8_t* g_data = nullptr;
         size_t g_size = 0;
         size_t g_pos = 0;
@@ -235,10 +236,10 @@ namespace OHOS {
         for (uint32_t i = 0; i < 10; i++) {
             OHNativeWindowBuffer* buffer = nullptr;
             Region::Rect rect = {0};
-            rect.x = (1 << 8);
-            rect.y = (1 << 8);
-            rect.w = (1 << 8);
-            rect.h = (1 << 8);
+            rect.x = DEFAULT_REGION_EDGE;
+            rect.y = DEFAULT_REGION_EDGE;
+            rect.w = DEFAULT_REGION_EDGE;
+            rect.h = DEFAULT_REGION_EDGE;
             Region region = {.rects = &rect, .rectNumber = 1};
             NativeWindowLockBuffer(nativeWindow, region, &buffer);
             NativeWindowUnlockAndFlushBuffer(nativeWindow);

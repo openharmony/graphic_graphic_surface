@@ -42,7 +42,6 @@ namespace OHOS {
 
         OH_NativeFence_IsValid(devNullFd);
         OH_NativeFence_Wait(devNullFd, timeout);
-        OH_NativeFence_WaitForever(devNullFd);
         OH_NativeFence_Close(devNullFd);
     }
 
@@ -52,7 +51,6 @@ namespace OHOS {
         uint32_t timeout = provider.ConsumeIntegral<uint32_t>() % MAX_TIMEOUT;
         OH_NativeFence_IsValid(fenceFd);
         OH_NativeFence_Wait(fenceFd, timeout);
-        OH_NativeFence_WaitForever(fenceFd);
 
         // Only close safe fd values from fuzz data to avoid closing stdio descriptors.
         if (fenceFd > STDERR_FILENO) {

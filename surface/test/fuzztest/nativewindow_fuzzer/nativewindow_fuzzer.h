@@ -16,6 +16,8 @@
 #ifndef TEST_FUZZTEST_NATIVE_WINDOW_FUZZER_H
 #define TEST_FUZZTEST_NATIVE_WINDOW_FUZZER_H
 
+#include <cstdint>
+
 #define FUZZ_PROJECT_NAME "nativewindow_fuzzer"
 
 #endif // TEST_FUZZTEST_NATIVE_WINDOW_FUZZER_H

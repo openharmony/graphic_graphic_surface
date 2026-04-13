@@ -1050,6 +1050,10 @@ int32_t NativeWindowSetGameUpscaleProcessor(OHNativeWindow *window, void (*proce
 
 int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH_NativeBuffer_ColorSpace* colorSpace)
 {
+    if (colorSpace == nullptr) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+
     CM_ColorSpaceType colorSpaceEnumType = static_cast<CM_ColorSpaceType>(colorSpaceType);
     auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
         [colorSpaceEnumType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType>& element) {

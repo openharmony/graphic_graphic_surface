@@ -16,6 +16,8 @@
 #ifndef TEST_FUZZTEST_NATIVE_FENCE_FUZZER_H
 #define TEST_FUZZTEST_NATIVE_FENCE_FUZZER_H
 
+#include <cstdint>
+
 #define FUZZ_PROJECT_NAME "nativefence_fuzzer"
 
 #endif // TEST_FUZZTEST_NATIVE_FENCE_FUZZER_H

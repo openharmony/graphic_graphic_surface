@@ -281,4 +281,137 @@ HWTEST_F(BufferUtilsTest, GetBoolParameter001, Function | MediumTest | Level2)
     EXPECT_TRUE(GetBoolParameter("name", "1"));
     EXPECT_FALSE(GetBoolParameter("name", "0"));
 }
+
+/*
+ * Function: ReadSurfaceBufferImplWithAllProperties
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test ReadSurfaceBufferImplWithAllProperties when parcel.ReadBool() returns true
+ *                  This covers the if branch at buffer_utils.cpp:166 (true case)
+ */
+HWTEST_F(BufferUtilsTest, ReadSurfaceBufferImplWithAllProperties001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->Alloc(requestConfig);
+    uint32_t sequence = 123;
+
+    ASSERT_EQ(WriteSurfaceBufferImplWithAllProperties(parcel, sequence, buffer), GSERROR_OK);
+
+    uint32_t readSequence = 0;
+    sptr<SurfaceBuffer> readBuffer = nullptr;
+    ASSERT_EQ(ReadSurfaceBufferImplWithAllProperties(parcel, readSequence, readBuffer), GSERROR_OK);
+    ASSERT_EQ(readSequence, sequence);
+    ASSERT_NE(readBuffer, nullptr);
+    ASSERT_EQ(readBuffer->GetWidth(), buffer->GetWidth());
+    ASSERT_EQ(readBuffer->GetHeight(), buffer->GetHeight());
+}
+
+/*
+ * Function: ReadSurfaceBufferImplWithAllProperties
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test ReadSurfaceBufferImplWithAllProperties when parcel.ReadBool() returns false
+ *                  This covers the if branch at buffer_utils.cpp:166 (false case)
+ */
+HWTEST_F(BufferUtilsTest, ReadSurfaceBufferImplWithAllProperties002, TestSize.Level0)
+{
+    MessageParcel parcel;
+    uint32_t sequence = 456;
+    sptr<SurfaceBuffer> buffer = nullptr;
+
+    ASSERT_EQ(WriteSurfaceBufferImplWithAllProperties(parcel, sequence, buffer), GSERROR_OK);
+
+    uint32_t readSequence = 0;
+    sptr<SurfaceBuffer> readBuffer = nullptr;
+    ASSERT_EQ(ReadSurfaceBufferImplWithAllProperties(parcel, readSequence, readBuffer), GSERROR_OK);
+    ASSERT_EQ(readSequence, sequence);
+    ASSERT_EQ(readBuffer, nullptr);
+}
+
+/*
+ * Function: WriteSurfaceBufferImplWithAllProperties
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test WriteSurfaceBufferImplWithAllProperties with valid buffer (buffer != nullptr)
+ *                  This covers the if branch at buffer_utils.cpp:182 (true case)
+ */
+HWTEST_F(BufferUtilsTest, WriteSurfaceBufferImplWithAllProperties001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->Alloc(requestConfig);
+    uint32_t sequence = 789;
+
+    ASSERT_EQ(WriteSurfaceBufferImplWithAllProperties(parcel, sequence, buffer), GSERROR_OK);
+
+    uint32_t readSequence = 0;
+    sptr<SurfaceBuffer> readBuffer = nullptr;
+    ASSERT_EQ(ReadSurfaceBufferImplWithAllProperties(parcel, readSequence, readBuffer), GSERROR_OK);
+    ASSERT_EQ(readSequence, sequence);
+    ASSERT_NE(readBuffer, nullptr);
+}
+
+/*
+ * Function: WriteSurfaceBufferImplWithAllProperties
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test WriteSurfaceBufferImplWithAllProperties with nullptr buffer
+ *                  This covers the if branch at buffer_utils.cpp:182 (false case)
+ */
+HWTEST_F(BufferUtilsTest, WriteSurfaceBufferImplWithAllProperties002, TestSize.Level0)
+{
+    MessageParcel parcel;
+    sptr<SurfaceBuffer> buffer = nullptr;
+    uint32_t sequence = 999;
+
+    ASSERT_EQ(WriteSurfaceBufferImplWithAllProperties(parcel, sequence, buffer), GSERROR_OK);
+
+    uint32_t readSequence = 0;
+    sptr<SurfaceBuffer> readBuffer = nullptr;
+    ASSERT_EQ(ReadSurfaceBufferImplWithAllProperties(parcel, readSequence, readBuffer), GSERROR_OK);
+    ASSERT_EQ(readSequence, sequence);
+    ASSERT_EQ(readBuffer, nullptr);
+}
+
+/*
+ * Function: WriteSurfaceBufferImplWithAllProperties
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test WriteSurfaceBufferImplWithAllProperties round-trip with all properties
+ *                  This covers all branches working together in success case
+ */
+HWTEST_F(BufferUtilsTest, WriteSurfaceBufferImplWithAllProperties003, TestSize.Level0)
+{
+    MessageParcel parcel;
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->Alloc(requestConfig);
+    buffer->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DCI_P3);
+    buffer->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_90);
+    buffer->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    buffer->SetCropMetadata({10, 20, 30, 40});
+    uint32_t sequence = 111;
+
+    ASSERT_EQ(WriteSurfaceBufferImplWithAllProperties(parcel, sequence, buffer), GSERROR_OK);
+
+    uint32_t readSequence = 0;
+    sptr<SurfaceBuffer> readBuffer = nullptr;
+    ASSERT_EQ(ReadSurfaceBufferImplWithAllProperties(parcel, readSequence, readBuffer), GSERROR_OK);
+    ASSERT_EQ(readSequence, sequence);
+    ASSERT_NE(readBuffer, nullptr);
+    ASSERT_EQ(readBuffer->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DCI_P3);
+    ASSERT_EQ(readBuffer->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_90);
+    ASSERT_EQ(readBuffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    Rect crop;
+    ASSERT_TRUE(readBuffer->GetCropMetadata(crop));
+    ASSERT_EQ(crop.x, 10);
+    ASSERT_EQ(crop.y, 20);
+    ASSERT_EQ(crop.w, 30);
+    ASSERT_EQ(crop.h, 40);
+}
 }

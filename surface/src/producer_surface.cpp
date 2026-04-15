@@ -476,18 +476,6 @@ GSError ProducerSurface::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
     if (buffer == nullptr || producer_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (isDisconnected_) {
-            GSError ret = producer_->Connect();
-            if (ret != GSERROR_OK) {
-                BLOGE("Connect failed before AttachBufferToQueue, ret: %{public}d, "
-                    "uniqueId: %{public}" PRIu64 ".", ret, queueId_);
-                return ret;
-            }
-            isDisconnected_ = false;
-        }
-    }
 
     auto ret = producer_->AttachBufferToQueue(buffer);
     if (ret == GSERROR_OK) {
@@ -1402,18 +1390,6 @@ GSError ProducerSurface::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, const
     configWithDamages.damages.push_back(config.damage);
     configWithDamages.timestamp = config.timestamp;
     configWithDamages.desiredPresentTimestamp = config.desiredPresentTimestamp;
-    {
-        std::lock_guard<std::mutex> lockGuard(mutex_);
-        if (isDisconnected_) {
-            GSError ret = producer_->Connect();
-            if (ret != GSERROR_OK) {
-                BLOGE("Connect failed before AttachAndFlushBuffer, ret: %{public}d, "
-                    "uniqueId: %{public}" PRIu64 ".", ret, queueId_);
-                return ret;
-            }
-            isDisconnected_ = false;
-        }
-    }
 
     auto ret = producer_->AttachAndFlushBuffer(buffer, bedata, fence, configWithDamages, needMap);
     if (ret == GSERROR_OK) {

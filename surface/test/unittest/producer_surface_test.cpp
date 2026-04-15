@@ -4662,58 +4662,6 @@ HWTEST_F(ProducerSurfaceTest, SyncProducerCache005, TestSize.Level0)
 }
 
 /*
- * Function: AttachBufferToQueue002
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: test AttachBufferToQueue with reconnection (race condition fix)
- */
-HWTEST_F(ProducerSurfaceTest, AttachBufferToQueue002, TestSize.Level0)
-{
-    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
-    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
-    cSurfTmp->RegisterConsumerListener(listenerTmp);
-    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
-    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    pSurfaceTmp->Init();
-    
-    sptr<SurfaceBuffer> buffer1 = new SurfaceBufferImpl();
-    buffer1->Alloc(requestConfig, nullptr);
-    pSurfaceTmp->isDisconnected_ = true;
-    
-    auto ret = pSurfaceTmp->AttachBufferToQueue(buffer1);
-    EXPECT_EQ(ret, GSERROR_OK);
-    EXPECT_FALSE(pSurfaceTmp->isDisconnected_);
-}
-
-/*
- * Function: AttachAndFlushBuffer001
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: test AttachAndFlushBuffer with reconnection (race condition fix)
- */
-HWTEST_F(ProducerSurfaceTest, AttachAndFlushBuffer001, TestSize.Level0)
-{
-    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
-    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
-    cSurfTmp->RegisterConsumerListener(listenerTmp);
-    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
-    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    pSurfaceTmp->Init();
-    
-    sptr<SurfaceBuffer> buffer1 = new SurfaceBufferImpl();
-    buffer1->Alloc(requestConfig, nullptr);
-    
-    pSurfaceTmp->isDisconnected_ = true;
-    BufferFlushConfig flushConfig;
-    sptr<SyncFence> fence1 = SyncFence::InvalidFence();
-    auto ret = pSurfaceTmp->AttachAndFlushBuffer(buffer1, fence1, flushConfig, false);
-    EXPECT_EQ(ret, GSERROR_OK);
-    EXPECT_FALSE(pSurfaceTmp->isDisconnected_);
-}
-
-/*
  * Function: SyncProducerCache007
  * Type: Function
  * Rank: Important(2)

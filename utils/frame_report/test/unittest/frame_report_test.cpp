@@ -48,7 +48,16 @@ void FrameReportTest::SetUpTestSuite(void) {}
 
 void FrameReportTest::TearDownTestSuite(void) {}
 
-void FrameReportTest::SetUp() {}
+void FrameReportTest::SetUp()
+{
+    Rosen::FrameReport::GetInstance().flushBufferSysTime_.store(0);
+    Rosen::FrameReport::GetInstance().flushBufferSequence_.store(0);
+    Rosen::FrameReport::GetInstance().acquireBufferSysTime_.store(0);
+    Rosen::FrameReport::GetInstance().acquireBufferSequence_.store(0);
+    Rosen::FrameReport::GetInstance().presentFenceSysTime_.store(0);
+    Rosen::FrameReport::GetInstance().presentFenceSequence_.store(0);
+    Rosen::FrameReport::GetInstance().lastReleaseSysTime_.store(0);
+}
 
 void FrameReportTest::TearDown() {}
 
@@ -424,6 +433,9 @@ HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId003, Function | MediumTest |
     // First call to set lastReleaseSysTime_
     Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, 1000, 301);
     int64_t firstReleaseTime = Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load();
+
+    // wait next buffer
+    usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
 
     // Second call with FENCE_PENDING_TIMESTAMP should use lastReleaseSysTime_
     Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, FRT_PENDING_TIMESTAMP,

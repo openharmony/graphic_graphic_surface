@@ -1250,10 +1250,6 @@ GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, s
             uniqueId_);
         return GSERROR_CONSUMER_DISCONNECTED;
     }
-    auto ret = Connect();
-    if (ret != SURFACE_ERROR_OK) {
-        return ret;
-    }
     return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
 
@@ -1403,10 +1399,6 @@ GSError BufferQueueProducer::AttachBufferToQueue(sptr<SurfaceBuffer> buffer)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
-    }
-    auto ret = Connect();
-    if (ret != SURFACE_ERROR_OK) {
-        return ret;
     }
     return bufferQueue_->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
 }

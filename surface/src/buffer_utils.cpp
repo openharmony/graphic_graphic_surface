@@ -461,4 +461,31 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
 
     return GSERROR_OK;
 }
+
+GSError ReadSurfaceBufferImplWithAllProperties(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
+{
+    GSError ret = GSERROR_OK;
+    sequence = parcel.ReadUint32();
+    if (parcel.ReadBool()) {
+        buffer = new SurfaceBufferImpl(sequence);
+        ret = buffer->ReadAllPropertiesFromMessageParcel(parcel, readSafeFdFunc);
+    }
+    return ret;
+}
+
+GSError WriteSurfaceBufferImplWithAllProperties(
+    MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer)
+{
+    if (!parcel.WriteUint32(sequence)) {
+        return GSERROR_BINDER;
+    }
+    if (!parcel.WriteBool(buffer != nullptr)) {
+        return GSERROR_BINDER;
+    }
+    if (buffer != nullptr) {
+        return buffer->WriteAllPropertiesToMessageParcel(parcel);
+    }
+    return GSERROR_OK;
+}
 } // namespace OHOS

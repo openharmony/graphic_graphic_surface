@@ -135,6 +135,11 @@ static inline GSError BufferUtilGetCycleBuffersNumber(uint32_t& cycleBuffersNumb
     }
     return GSERROR_OK;
 }
+
+GSError ReadSurfaceBufferImplWithAllProperties(MessageParcel &parcel, uint32_t &sequence, sptr<SurfaceBuffer> &buffer,
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr);
+GSError WriteSurfaceBufferImplWithAllProperties(
+    MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer);
 } // namespace OHOS
 
 #endif // FRAMEWORKS_SURFACE_INCLUDE_BUFFER_UTILS_H

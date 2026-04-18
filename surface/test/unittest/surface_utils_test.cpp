@@ -543,4 +543,88 @@ HWTEST_F(SurfaceUtilsTest, Remove003, TestSize.Level0)
     GSError ret = utils->Remove(0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+/*
+ * Function: AddTunnelLayerConfig and NeedForceTunnelLayer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. set tunnel layer config with bundle+surface
+ *                  2. verify both bundle and surface prefix match
+ *                  3. verify any single-field mismatch does not match
+ */
+HWTEST_F(SurfaceUtilsTest, NeedForceTunnelLayer001, TestSize.Level0)
+{
+    auto* surfaceUtils = SurfaceUtils::GetInstance();
+    ASSERT_NE(surfaceUtils, nullptr);
+
+    const std::string tunnelInfo = "com.bundle+TunnelPrefix";
+    surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo);
+    surfaceUtils->AddTunnelLayerConfig(tunnelInfo);
+
+    EXPECT_TRUE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefix", "com.bundle"));
+    EXPECT_TRUE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", "com.bundle.app"));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", "com.other"));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("OtherTunnelPrefix", "com.bundle"));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", ""));
+
+    surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo);
+}
+
+/*
+ * Function: AddTunnelLayerConfig and NeedForceTunnelLayer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. add invalid tunnel layer config
+ *                  2. verify invalid config does not match
+ */
+HWTEST_F(SurfaceUtilsTest, NeedForceTunnelLayer002, TestSize.Level0)
+{
+    auto* surfaceUtils = SurfaceUtils::GetInstance();
+    ASSERT_NE(surfaceUtils, nullptr);
+
+    constexpr char INVALID_NO_DELIM[] = "TunnelPrefixOnly";
+    constexpr char INVALID_EMPTY_BUNDLE[] = "+TunnelPrefix";
+    constexpr char INVALID_EMPTY_SURFACE[] = "com.bundle+";
+    surfaceUtils->RemoveTunnelLayerConfig(INVALID_NO_DELIM);
+    surfaceUtils->RemoveTunnelLayerConfig(INVALID_EMPTY_BUNDLE);
+    surfaceUtils->RemoveTunnelLayerConfig(INVALID_EMPTY_SURFACE);
+    surfaceUtils->AddTunnelLayerConfig(INVALID_NO_DELIM);
+    surfaceUtils->AddTunnelLayerConfig(INVALID_EMPTY_BUNDLE);
+    surfaceUtils->AddTunnelLayerConfig(INVALID_EMPTY_SURFACE);
+
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", "com.bundle"));
+}
+
+/*
+ * Function: AddTunnelLayerConfig and NeedForceTunnelLayer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. add multiple tunnel layer config
+ *                  2. verify each config only matches its own bundle+surface
+ */
+HWTEST_F(SurfaceUtilsTest, NeedForceTunnelLayer003, TestSize.Level0)
+{
+    auto* surfaceUtils = SurfaceUtils::GetInstance();
+    ASSERT_NE(surfaceUtils, nullptr);
+
+    const std::string tunnelInfo1 = "com.bundle.surface+TunnelPrefix";
+    const std::string tunnelInfo2 = "com.bundle.other+OtherPrefix";
+    surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo1);
+    surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo2);
+    surfaceUtils->AddTunnelLayerConfig(tunnelInfo1);
+    surfaceUtils->AddTunnelLayerConfig(tunnelInfo2);
+
+    EXPECT_TRUE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", "com.bundle.surface"));
+    EXPECT_TRUE(surfaceUtils->NeedForceTunnelLayer("OtherPrefixSurface", "com.bundle.other"));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", "com.bundle.other"));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("OtherPrefixSurface", "com.bundle.surface"));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", ""));
+    EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("", "com.bundle.surface"));
+
+    surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo1);
+    surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo2);
+}
+
 }

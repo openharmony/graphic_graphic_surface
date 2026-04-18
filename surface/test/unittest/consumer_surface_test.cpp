@@ -1647,6 +1647,83 @@ HWTEST_F(ConsumerSurfaceTest, TunnelHandle004, TestSize.Level0)
 }
 
 /*
+* Function: SetTunnelLayerInfo and GetTunnelLayerInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo and GetTunnelLayerInfo with normal parameters
+*                  2. check ret and returned values
+ */
+HWTEST_F(ConsumerSurfaceTest, TunnelLayerInfo001, TestSize.Level0)
+{
+    constexpr uint64_t tunnelLayerId = 3003;
+    constexpr uint32_t property = TUNNEL_PROP_POSTION | TUNNEL_PROP_BUFFER_ADDR;
+    uint64_t newTunnelLayerId = 0;
+    uint32_t newProperty = TUNNEL_PROP_INVALID;
+
+    GSError ret = cs->SetTunnelLayerInfo(tunnelLayerId, property);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cs->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(newTunnelLayerId, tunnelLayerId);
+    ASSERT_EQ(newProperty, property);
+}
+
+/*
+* Function: SetTunnelLayerInfo and GetTunnelLayerInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo and GetTunnelLayerInfo with null internals
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, TunnelLayerInfo002, TestSize.Level0)
+{
+    constexpr uint64_t tunnelLayerId = 4004;
+    constexpr uint32_t property = TUNNEL_PROP_DEVICE_COMMIT;
+    uint64_t newTunnelLayerId = 0;
+    uint32_t newProperty = TUNNEL_PROP_INVALID;
+
+    GSError ret = surface_->SetTunnelLayerInfo(tunnelLayerId, property);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    ret = surface_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: NotifyLayerStateChanged
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NotifyLayerStateChanged with null consumer_
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, LayerCreated001, TestSize.Level0)
+{
+    GSError ret = surface_->NotifyLayerStateChanged(LayerStateChange::AVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: NotifyLayerStateChanged
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call NotifyLayerStateChanged with initialized consumer surface
+*                  2. check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, LayerCreated002, TestSize.Level0)
+{
+    GSError ret = cs->NotifyLayerStateChanged(LayerStateChange::AVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = cs->NotifyLayerStateChanged(LayerStateChange::UNAVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
 * Function: SetPresentTimestamp and GetPresentTimestamp
 * Type: Function
 * Rank: Important(2)

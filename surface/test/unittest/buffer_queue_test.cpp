@@ -34,6 +34,41 @@ using namespace testing;
 using namespace testing::ext;
 
 namespace OHOS::Rosen {
+class LayerStateChangedProducerListenerTest : public ProducerListenerStub {
+public:
+    explicit LayerStateChangedProducerListenerTest(std::vector<LayerStateChange>& results) : results_(results) {}
+    ~LayerStateChangedProducerListenerTest() override = default;
+
+    GSError OnBufferReleased() override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    GSError OnBufferReleasedWithFence(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) override
+    {
+        (void)buffer;
+        (void)fence;
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    GSError OnPropertyChange(const SurfaceProperty& property) override
+    {
+        (void)property;
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    GSError OnLayerStateChanged(LayerStateChange state) override
+    {
+        results_.emplace_back(state);
+        return GSERROR_OK;
+    }
+
+    void ResetReleaseFunc() override {}
+
+private:
+    std::vector<LayerStateChange>& results_;
+};
+
 class BufferQueueTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -1236,6 +1271,34 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, TestSize.Level0)
     EXPECT_EQ(bq->SetTransformHint(transformHint, producerId), GSERROR_OK);
     transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     ASSERT_EQ(bq->SetTransformHint(transformHint, producerId), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: NotifyLayerCreated
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. register producer property listener
+*                  2. call NotifyLayerStateChanged repeatedly
+*                  3. verify listener receives every state event
+*/
+HWTEST_F(BufferQueueTest, NotifyLayerStateChanged001, TestSize.Level0)
+{
+    constexpr uint64_t producerId = 7;
+    std::vector<LayerStateChange> results;
+    sptr<IProducerListener> listener = new LayerStateChangedProducerListenerTest(results);
+
+    GSError ret = bq->RegisterProducerPropertyListener(listener, producerId);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->NotifyLayerStateChanged(LayerStateChange::AVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->NotifyLayerStateChanged(LayerStateChange::UNAVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ASSERT_EQ(results.size(), 2u);
+    EXPECT_EQ(results[0], LayerStateChange::AVAILABLE);
+    EXPECT_EQ(results[1], LayerStateChange::UNAVAILABLE);
 }
 
 /*

@@ -155,7 +155,7 @@ void FrameReport::SetAcquireBufferSeqWithUniqueId(uint64_t uniqueId, uint32_t se
 void FrameReport::SetPresentTimeWithUniqueId(uint64_t uniqueId, int64_t presentFenceSysTime, uint32_t sequence)
 {
     if (IsActiveGameWithUniqueId(uniqueId)) {
-        // presentFenceSysTime获取错误时，使用lastReleaseSysTime代替
+        // if presentFenceSysTime is wrong, use lastReleaseSysTime instead
         if (presentFenceSysTime == INT64_MAX) {
             presentFenceSysTime = lastReleaseSysTime_.load();
         }

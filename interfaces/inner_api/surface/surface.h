@@ -170,6 +170,11 @@ public:
         (void)func;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError RegisterLayerStateChangedListener(OnLayerStateChangedFunc func)
+    {
+        (void)func;
+        return GSERROR_NOT_SUPPORT;
+    }
     virtual GSError RegisterDeleteBufferListener(OnDeleteBufferFunc func, bool isForUniRedraw = false)
     {
         (void)func;
@@ -673,6 +678,13 @@ public:
     virtual GSError RegisterReleaseListener(OnReleaseFuncWithSequenceAndFence func)
     {
         (void)func;
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    virtual GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+    {
+        (void)tunnelLayerId;
+        (void)property;
         return GSERROR_NOT_SUPPORT;
     }
 protected:

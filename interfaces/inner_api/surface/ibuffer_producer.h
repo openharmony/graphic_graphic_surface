@@ -119,6 +119,7 @@ public:
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                    const std::vector<uint8_t> &metaData) = 0;
     virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle) = 0;
+    virtual GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property) = 0;
     virtual GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) = 0;
 
     virtual sptr<NativeSurface> GetNativeSurface() = 0;
@@ -333,6 +334,7 @@ protected:
         BUFFER_PRODUCER_SET_ALPHA_TYPE,
         BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
         BUFFER_PRODUCER_SYNC_PRODUCER_CACHE,
+        BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO,
     };
 };
 } // namespace OHOS

@@ -1754,6 +1754,28 @@ GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t producerId)
     return BufferUtilUnRegisterPropertyListener(producerId, propertyChangeListeners_);
 }
 
+GSError BufferQueue::NotifyLayerStateChanged(LayerStateChange state)
+{
+    std::map<uint64_t, sptr<IProducerListener>> propertyListeners;
+    {
+        std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
+        if (propertyChangeListeners_.empty()) {
+            return GSERROR_OK;
+        }
+        propertyListeners = propertyChangeListeners_;
+    }
+
+    for (const auto& item : propertyListeners) {
+        if (item.second == nullptr) {
+            continue;
+        }
+        if (item.second->OnLayerStateChanged(state) != GSERROR_OK) {
+            BLOGE("OnLayerStateChanged failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        }
+    }
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
@@ -2242,6 +2264,26 @@ sptr<SurfaceTunnelHandle> BufferQueue::GetTunnelHandle()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return tunnelHandle_;
+}
+
+GSError BufferQueue::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+{
+    if (property == TUNNEL_PROP_INVALID) {
+        BLOGE("Invalid tunnel layer property: %{public}u, uniqueId: %{public}" PRIu64 ".", property, uniqueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    tunnelLayerId_ = tunnelLayerId;
+    tunnelLayerProperty_ = property;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetTunnelLayerInfo(uint64_t &tunnelLayerId, uint32_t &property)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    tunnelLayerId = tunnelLayerId_;
+    property = tunnelLayerProperty_;
+    return GSERROR_OK;
 }
 
 GSError BufferQueue::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
@@ -3032,4 +3074,3 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
     return GSERROR_OK;
 }
 }; // namespace OHOS
-

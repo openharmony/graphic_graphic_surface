@@ -396,12 +396,15 @@ public:
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
+    GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property) override;
     /**
      * @brief Get the Tunnel Handle of the surface.
      * 
      * @return sptr<SurfaceTunnelHandle> Tunnel handle.
      */
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const override;
+    GSError GetTunnelLayerInfo(uint64_t &newTunnelLayerId, uint32_t &newProperty) override;
+    GSError NotifyLayerStateChanged(LayerStateChange state) override;
     /**
      * @brief Set the Present Timestamp for the surface buffer.
      * 

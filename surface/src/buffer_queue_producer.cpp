@@ -111,6 +111,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_ALPHA_TYPE, SetAlphaTypeRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SYNC_PRODUCER_CACHE, SyncProducerCacheRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO, SetTunnelLayerInfoRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -883,6 +884,18 @@ int32_t BufferQueueProducer::SetTunnelHandleRemote(MessageParcel &arguments, Mes
         }
     }
     GSError sRet = SetTunnelHandle(handle);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetTunnelLayerInfoRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                      MessageOption &option)
+{
+    uint64_t tunnelLayerId = arguments.ReadUint64();
+    uint32_t property = arguments.ReadUint32();
+    GSError sRet = SetTunnelLayerInfo(tunnelLayerId, property);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1834,6 +1847,14 @@ GSError BufferQueueProducer::SetTunnelHandle(const GraphicExtDataHandle *handle)
         return GSERROR_INVALID_OPERATING;
     }
     return bufferQueue_->SetTunnelHandle(tunnelHandle);
+}
+
+GSError BufferQueueProducer::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetTunnelLayerInfo(tunnelLayerId, property);
 }
 
 GSError BufferQueueProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)

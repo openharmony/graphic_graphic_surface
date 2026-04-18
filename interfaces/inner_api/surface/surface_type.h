@@ -174,6 +174,7 @@ using TunnelLayerProperty = enum {
     TUNNEL_PROP_BUFFER_ADDR = 1 << 1,   /**< update layer buffer address by tunnel */
     TUNNEL_PROP_CLIENT_COMMIT = 1 << 2,    /**< tunnel layer update by client */
     TUNNEL_PROP_DEVICE_COMMIT = 1 << 3,    /**< tunnel layer update by device */
+    TUNNEL_PROP_RS_FORCE = 1 << 4,
 };
 
 using GraphicLayerInfo = struct {

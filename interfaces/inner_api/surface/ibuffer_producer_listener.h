@@ -35,11 +35,17 @@ public:
         (void)fence;
         return GSERROR_OK;
     }
+    virtual GSError OnLayerStateChanged(LayerStateChange state)
+    {
+        (void)state;
+        return GSERROR_OK;
+    }
     enum {
         ON_BUFFER_RELEASED = 0,
         ON_BUFFER_RELEASED_WITH_FENCE = 1,
         ON_PROPERTY_CHANGE = 2,
         ON_BUFFER_RELEASED_WITH_SEQUENCE_AND_FENCE = 3,
+        ON_LAYER_STATE_CHANGED = 4,
     };
 };
 } // namespace OHOS

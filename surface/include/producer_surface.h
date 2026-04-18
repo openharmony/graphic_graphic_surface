@@ -322,6 +322,7 @@ public:
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError RegisterReleaseListener(OnReleaseFuncWithFence func) override;
+    GSError RegisterLayerStateChangedListener(OnLayerStateChangedFunc func) override;
     /**
      * @brief Register release listener function.
      * 
@@ -442,6 +443,7 @@ public:
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
+    GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property) override;
     /**
      * @brief Get the Present Timestamp from the surface buffer.
      * 
@@ -882,6 +884,7 @@ public:
 private:
     ProducerSurface(sptr<IBufferProducer>& producer);
     GSError PropertyChangeCallback(const SurfaceProperty& property);
+    GSError OnLayerStateChanged(LayerStateChange state);
     GSError ResetPropertyListenerInner(uint64_t producerId);
     bool IsRemote();
     void CleanAllLocked(uint32_t *bufSeqNum);
@@ -915,6 +918,7 @@ private:
     sptr<IProducerListener> listener_;
     sptr<IProducerListener> listenerBackup_;
     OnReleaseFuncWithSequenceAndFence funcWithSequenceAndFence_;
+    OnLayerStateChangedFunc onLayerStateChangedFunc_;
     std::mutex listenerMutex_;
     wptr<NativeWindow> wpNativeWindow_ = nullptr;
     sptr<ProducerSurfaceDelegator> surfaceDelegator_ = nullptr;

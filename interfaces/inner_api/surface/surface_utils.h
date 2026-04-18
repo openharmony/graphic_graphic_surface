@@ -16,8 +16,10 @@
 #ifndef INTERFACES_INNERKITS_SURFACE_SURFACE_UTILS_H
 #define INTERFACES_INNERKITS_SURFACE_SURFACE_UTILS_H
 
+#include <utility>
 #include <unordered_map>
 #include <mutex>
+#include <vector>
 #include "surface.h"
 
 namespace OHOS {
@@ -39,11 +41,17 @@ public:
     void ComputeBufferMatrix(float matrix[16], uint32_t matrixSize,
         sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop);
 
+    void AddTunnelLayerConfig(const std::string& tunnelLayerInfo);
+    void RemoveTunnelLayerConfig(const std::string& tunnelLayerInfo);
+    bool NeedForceTunnelLayer(const std::string& surfaceName, const std::string& bundleName);
+
     void* GetNativeWindow(uint64_t uniqueId);
     SurfaceError AddNativeWindow(uint64_t uniqueId, void *nativeWidow);
     SurfaceError RemoveNativeWindow(uint64_t uniqueId);
 
 private:
+    using TunnelLayerInfoPair = std::pair<std::string, std::string>;
+
     SurfaceUtils() = default;
     virtual ~SurfaceUtils();
     std::array<float, 16> MatrixProduct(const std::array<float, 16>& lMat, const std::array<float, 16>& rMat);
@@ -52,10 +60,12 @@ private:
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
     void ComputeTransformByMatrixV2(GraphicTransformType& transform,
         std::array<float, TRANSFORM_MATRIX_ELE_COUNT> *transformMatrix);
+    bool GetTunnelLayerInfo(const std::string& tunnelLayerInfo, TunnelLayerInfoPair& parsedInfo) const;
 
     std::unordered_map<uint64_t, wptr<Surface>> surfaceCache_;
     std::mutex mutex_;
     std::unordered_map<uint64_t, void*> nativeWindowCache_;
+    std::vector<TunnelLayerInfoPair> tunnelLayerPrefix_;
 };
 } // namespace OHOS
 

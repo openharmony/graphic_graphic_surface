@@ -62,6 +62,23 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 
 ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
+    initInfo_.propertyListener = new PropertyChangeProducerListener(
+        [weakThis = wptr(this)](SurfaceProperty property) {
+            auto strongThis = weakThis.promote();
+            if (strongThis == nullptr) {
+                BLOGE("ProducerSurface has been destroyed.");
+                return GSERROR_INVALID_ARGUMENTS;
+            }
+            return strongThis->PropertyChangeCallback(property);
+        },
+        [weakThis = wptr(this)](LayerStateChange state) {
+            auto strongThis = weakThis.promote();
+            if (strongThis == nullptr) {
+                BLOGE("ProducerSurface has been destroyed.");
+                return;
+            }
+            strongThis->OnLayerStateChanged(state);
+        });
     producer_ = producer;
 }
 
@@ -781,10 +798,33 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     return producer_->RegisterReleaseListener(listener);
 }
 
+GSError ProducerSurface::RegisterLayerStateChangedListener(OnLayerStateChangedFunc func)
+{
+    if (!func || producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    onLayerStateChangedFunc_ = std::move(func);
+    return GSERROR_OK;
+}
+
 GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     lastSetTransformHint_ = property.transformHint;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::OnLayerStateChanged(LayerStateChange state)
+{
+    OnLayerStateChangedFunc func = nullptr;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        func = onLayerStateChangedFunc_;
+    }
+    if (func != nullptr) {
+        func(state);
+    }
     return GSERROR_OK;
 }
 
@@ -1154,6 +1194,14 @@ GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetTunnelHandle(handle);
+}
+
+GSError ProducerSurface::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetTunnelLayerInfo(tunnelLayerId, property);
 }
 
 GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,

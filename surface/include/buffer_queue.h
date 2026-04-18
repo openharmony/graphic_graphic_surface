@@ -162,6 +162,7 @@ public:
     GSError UnregisterConsumerListener();
     GSError RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t producerId);
     GSError UnRegisterProducerPropertyListener(uint64_t producerId);
+    GSError NotifyLayerStateChanged(LayerStateChange state);
 
     GSError SetDefaultWidthAndHeight(int32_t width, int32_t height);
     int32_t GetDefaultWidth();
@@ -200,6 +201,8 @@ public:
                            std::vector<uint8_t> &metaData);
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
     sptr<SurfaceTunnelHandle> GetTunnelHandle();
+    GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property);
+    GSError GetTunnelLayerInfo(uint64_t &tunnelLayerId, uint32_t &property);
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp);
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time);
 
@@ -404,6 +407,8 @@ private:
     std::condition_variable waitReqCon_;
     std::condition_variable waitAttachCon_;
     sptr<SurfaceTunnelHandle> tunnelHandle_ = nullptr;
+    uint64_t tunnelLayerId_ = 0;
+    uint32_t tunnelLayerProperty_ = TUNNEL_PROP_INVALID;
     bool isValidStatus_ = true;
     bool producerCacheClean_ = false;
     const bool isLocalRender_;

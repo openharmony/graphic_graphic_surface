@@ -120,6 +120,24 @@ public:
         return GSERROR_OK;
     }
 
+    GSError OnLayerStateChanged(LayerStateChange state) override
+    {
+        MessageOption option;
+        MessageParcel arguments;
+        MessageParcel reply;
+        if (!arguments.WriteInterfaceToken(IProducerListener::GetDescriptor())) {
+            BLOGE("write interface token failed");
+            return GSERROR_BINDER;
+        }
+        arguments.WriteUint32(static_cast<uint32_t>(state));
+        option.SetFlags(MessageOption::TF_ASYNC);
+        int32_t ret = Remote()->SendRequest(IProducerListener::ON_LAYER_STATE_CHANGED, arguments, reply, option);
+        if (ret != ERR_NONE) {
+            return GSERROR_BINDER;
+        }
+        return GSERROR_OK;
+    }
+
     void ResetReleaseFunc() override {}
 private:
     static inline BrokerDelegator<ProducerListenerProxy> delegator_;
@@ -156,6 +174,11 @@ public:
             }
             case ON_BUFFER_RELEASED_WITH_SEQUENCE_AND_FENCE: {
                 auto sret = OnBufferReleasedWithSequenceFenceRemote(arguments);
+                reply.WriteInt32(sret);
+                break;
+            }
+            case ON_LAYER_STATE_CHANGED: {
+                auto sret = OnLayerStateChangedRemote(arguments);
                 reply.WriteInt32(sret);
                 break;
             }
@@ -201,6 +224,11 @@ private:
             OnPropertyChange(property);
         }
         return ret;
+    }
+
+    GSError OnLayerStateChangedRemote(MessageParcel& arguments)
+    {
+        return OnLayerStateChanged(static_cast<LayerStateChange>(arguments.ReadUint32()));
     }
 };
 
@@ -270,8 +298,9 @@ private:
 
 class PropertyChangeProducerListener : public ProducerListenerStub {
 public:
-    PropertyChangeProducerListener(OnPropertyChangeFunc&& func)
-        : func_(std::move(func)) {};
+    PropertyChangeProducerListener(
+        OnPropertyChangeFunc&& func, OnLayerStateChangedFunc&& layerStateChangedFunc = nullptr)
+        : func_(std::move(func)), layerStateChangedFunc_(std::move(layerStateChangedFunc)) {};
     ~PropertyChangeProducerListener() override {};
     GSError OnBufferReleased() override
     {
@@ -296,14 +325,31 @@ public:
         return GSERROR_OK;
     }
 
+    GSError OnLayerStateChanged(LayerStateChange state) override
+    {
+        OnLayerStateChangedFunc layerStateChangedFunc = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (layerStateChangedFunc_ != nullptr) {
+                layerStateChangedFunc = layerStateChangedFunc_;
+            }
+        }
+        if (layerStateChangedFunc != nullptr) {
+            layerStateChangedFunc(state);
+        }
+        return GSERROR_OK;
+    }
+
     void ResetReleaseFunc() override
     {
         std::lock_guard<std::mutex> lock(mutex_);
         func_ = nullptr;
+        layerStateChangedFunc_ = nullptr;
     }
 
 private:
     OnPropertyChangeFunc func_;
+    OnLayerStateChangedFunc layerStateChangedFunc_;
     std::mutex mutex_;
 };
 

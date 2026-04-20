@@ -18,7 +18,9 @@
 
 #include <atomic>
 #include <event_handler.h>
+#include <mutex>
 #include <queue>
+#include <shared_mutex>
 #include "sync_fence.h"
 
 namespace OHOS {
@@ -60,21 +62,30 @@ class SyncFenceTrackerManager {
 public:
     static std::shared_ptr<SyncFenceTracker> GetSyncFenceTracker(const std::string& name, uint32_t screenId)
     {
-        auto it = trackers_.find(screenId);
-        if (it == trackers_.end()) {
-            return CreateSyncFenceTracker(name, screenId);
-        } else {
-            return it->second;
+        {
+            std::shared_lock<std::shared_mutex> lock(mutex_);
+            auto it = trackers_.find(screenId);
+            if (it != trackers_.end()) {
+                return it->second;
+            }
         }
+        return CreateSyncFenceTracker(name, screenId);
     }
 private:
     static std::shared_ptr<SyncFenceTracker> CreateSyncFenceTracker(const std::string& name, uint32_t screenId)
     {
         auto tracker = std::make_shared<SyncFenceTracker>(name);
+        std::unique_lock<std::shared_mutex> lock(mutex_);
+        // double-check: prevent race condition where another thread created it first
+        auto it = trackers_.find(screenId);
+        if (it != trackers_.end()) {
+            return it->second;
+        }
         trackers_[screenId] = tracker;
         return tracker;
     }
     static inline std::unordered_map<uint32_t, std::shared_ptr<SyncFenceTracker>> trackers_;
+    static inline std::shared_mutex mutex_;
 };
 }
 #endif // UTILS_INCLUDE_SYNC_FENCE_TRACKER_H

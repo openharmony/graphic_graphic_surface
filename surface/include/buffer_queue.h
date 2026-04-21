@@ -201,8 +201,8 @@ public:
                            std::vector<uint8_t> &metaData);
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
     sptr<SurfaceTunnelHandle> GetTunnelHandle();
-    GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property);
-    GSError GetTunnelLayerInfo(uint64_t &tunnelLayerId, uint32_t &property);
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info);
+    GSError GetTunnelLayerInfo(TunnelLayerState& info);
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp);
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time);
 
@@ -407,8 +407,7 @@ private:
     std::condition_variable waitReqCon_;
     std::condition_variable waitAttachCon_;
     sptr<SurfaceTunnelHandle> tunnelHandle_ = nullptr;
-    uint64_t tunnelLayerId_ = 0;
-    uint32_t tunnelLayerProperty_ = TUNNEL_PROP_INVALID;
+    TunnelLayerState tunnelLayerState_;
     bool isValidStatus_ = true;
     bool producerCacheClean_ = false;
     const bool isLocalRender_;

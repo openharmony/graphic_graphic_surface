@@ -60,7 +60,7 @@ public:
     GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key, std::vector<uint8_t> &metaData) const;
     GSError GetGlobalAlpha(int32_t &alpha);
     sptr<SurfaceTunnelHandle> GetTunnelHandle() const;
-    GSError GetTunnelLayerInfo(uint64_t &tunnelLayerId, uint32_t &property) const;
+    GSError GetTunnelLayerInfo(TunnelLayerState& info) const;
     GSError NotifyLayerStateChanged(LayerStateChange state);
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp);
 

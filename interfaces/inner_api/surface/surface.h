@@ -681,12 +681,7 @@ public:
         return GSERROR_NOT_SUPPORT;
     }
 
-    virtual GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
-    {
-        (void)tunnelLayerId;
-        (void)property;
-        return GSERROR_NOT_SUPPORT;
-    }
+    virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) = 0;
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

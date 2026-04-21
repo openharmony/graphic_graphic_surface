@@ -2266,23 +2266,30 @@ sptr<SurfaceTunnelHandle> BufferQueue::GetTunnelHandle()
     return tunnelHandle_;
 }
 
-GSError BufferQueue::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
 {
-    if (property == TUNNEL_PROP_INVALID) {
-        BLOGE("Invalid tunnel layer property: %{public}u, uniqueId: %{public}" PRIu64 ".", property, uniqueId_);
-        return GSERROR_INVALID_ARGUMENTS;
-    }
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    tunnelLayerId_ = tunnelLayerId;
-    tunnelLayerProperty_ = property;
+    tunnelLayerState_.tunnelLayerInfo = info;
+    switch (info.tunnelTypeMask) {
+        case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
+        case TunnelTypeMask::TUNNEL_TYPE_VIDEO: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
+            break;
+        }
+        default: {
+            tunnelLayerState_.tunnelLayerId = 0;
+            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+            break;
+        }
+    }
     return GSERROR_OK;
 }
 
-GSError BufferQueue::GetTunnelLayerInfo(uint64_t &tunnelLayerId, uint32_t &property)
+GSError BufferQueue::GetTunnelLayerInfo(TunnelLayerState& info)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    tunnelLayerId = tunnelLayerId_;
-    property = tunnelLayerProperty_;
+    info = tunnelLayerState_;
     return GSERROR_OK;
 }
 

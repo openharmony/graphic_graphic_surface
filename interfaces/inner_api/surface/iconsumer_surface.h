@@ -400,10 +400,9 @@ public:
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 
-    virtual GSError GetTunnelLayerInfo(uint64_t &newTunnelLayerId, uint32_t &newProperty)
+    virtual GSError GetTunnelLayerInfo(TunnelLayerState& info)
     {
-        (void)newTunnelLayerId;
-        (void)newProperty;
+        (void)info;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 protected:

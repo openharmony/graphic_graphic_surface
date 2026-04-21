@@ -239,12 +239,12 @@ sptr<SurfaceTunnelHandle> BufferQueueConsumer::GetTunnelHandle() const
     return bufferQueue_->GetTunnelHandle();
 }
 
-GSError BufferQueueConsumer::GetTunnelLayerInfo(uint64_t &tunnelLayerId, uint32_t &property) const
+GSError BufferQueueConsumer::GetTunnelLayerInfo(TunnelLayerState& info) const
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->GetTunnelLayerInfo(tunnelLayerId, property);
+    return bufferQueue_->GetTunnelLayerInfo(info);
 }
 
 GSError BufferQueueConsumer::NotifyLayerStateChanged(LayerStateChange state)

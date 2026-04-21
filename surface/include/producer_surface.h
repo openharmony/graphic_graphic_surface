@@ -443,7 +443,8 @@ public:
      * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
-    GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property) override;
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override;
+    GSError GetTunnelLayerInfo(TunnelLayerState& info) override;
     /**
      * @brief Get the Present Timestamp from the surface buffer.
      * 

@@ -522,12 +522,12 @@ GSError ConsumerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
     return producer_->SetTunnelHandle(handle);
 }
 
-GSError ConsumerSurface::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+GSError ConsumerSurface::SetTunnelLayerInfo(const TunnelLayerInfo& info)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return producer_->SetTunnelLayerInfo(tunnelLayerId, property);
+    return producer_->SetTunnelLayerInfo(info);
 }
 
 sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
@@ -538,12 +538,12 @@ sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
     return consumer_->GetTunnelHandle();
 }
 
-GSError ConsumerSurface::GetTunnelLayerInfo(uint64_t &newTunnelLayerId, uint32_t &newProperty)
+GSError ConsumerSurface::GetTunnelLayerInfo(TunnelLayerState& info)
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return consumer_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    return consumer_->GetTunnelLayerInfo(info);
 }
 
 GSError ConsumerSurface::NotifyLayerStateChanged(LayerStateChange state)

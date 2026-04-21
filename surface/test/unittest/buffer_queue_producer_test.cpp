@@ -490,23 +490,23 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote002, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo
+* CaseDescription: 1. call SetTunnelLayerInfo with STYLUS type
 *                  2. check ret and saved values
 */
 HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo001, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 1001;
-    constexpr uint32_t property = TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT;
-    uint64_t newTunnelLayerId = 0;
-    uint32_t newProperty = TUNNEL_PROP_INVALID;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
 
-    GSError ret = bqp_->SetTunnelLayerInfo(tunnelLayerId, property);
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
     EXPECT_EQ(ret, GSERROR_OK);
 
-    ret = bq_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
     EXPECT_EQ(ret, GSERROR_OK);
-    EXPECT_EQ(newTunnelLayerId, tunnelLayerId);
-    EXPECT_EQ(newProperty, property);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_STYLUS);
+    EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
 }
 
 /*
@@ -514,23 +514,23 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo001, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo with RS_FORCE
+* CaseDescription: 1. call SetTunnelLayerInfo with VIDEO type
 *                  2. check ret and saved values
 */
 HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo002, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 1002;
-    constexpr uint32_t property = TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT;
-    uint64_t newTunnelLayerId = 0;
-    uint32_t newProperty = TUNNEL_PROP_INVALID;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_VIDEO;
 
-    GSError ret = bqp_->SetTunnelLayerInfo(tunnelLayerId, property);
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
     EXPECT_EQ(ret, GSERROR_OK);
 
-    ret = bq_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
     EXPECT_EQ(ret, GSERROR_OK);
-    EXPECT_EQ(newTunnelLayerId, tunnelLayerId);
-    EXPECT_EQ(newProperty, property);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_VIDEO);
+    EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
 }
 
 /*
@@ -538,16 +538,23 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo002, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo with invalid property
-*                  2. check ret is invalid arguments
+* CaseDescription: 1. call SetTunnelLayerInfo with NONE type
+*                  2. check tunnelLayerId and property are reset
 */
 HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo003, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 1003;
-    constexpr uint32_t property = TUNNEL_PROP_INVALID;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_NONE;
 
-    GSError ret = bqp_->SetTunnelLayerInfo(tunnelLayerId, property);
-    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_NONE);
+    EXPECT_EQ(state.tunnelLayerId, 0);
+    EXPECT_EQ(state.property, TUNNEL_PROP_INVALID);
 }
 
 /*
@@ -555,24 +562,23 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo003, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo with normal non-invalid property
-*                  2. verify saved property is unchanged
+* CaseDescription: 1. call SetTunnelLayerInfo with HARD_CURSOR type
+*                  2. verify tunnelLayerId and property are reset
 */
 HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo004, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 1004;
-    constexpr uint32_t property = TUNNEL_PROP_DEVICE_COMMIT;
-    constexpr uint32_t expectedProperty = property;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR;
 
-    uint64_t newTunnelLayerId = 0;
-    uint32_t newProperty = TUNNEL_PROP_INVALID;
-    GSError ret = bqp_->SetTunnelLayerInfo(tunnelLayerId, property);
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
     EXPECT_EQ(ret, GSERROR_OK);
 
-    ret = bq_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
     EXPECT_EQ(ret, GSERROR_OK);
-    EXPECT_EQ(newTunnelLayerId, tunnelLayerId);
-    EXPECT_EQ(newProperty, expectedProperty);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR);
+    EXPECT_EQ(state.tunnelLayerId, 0);
+    EXPECT_EQ(state.property, TUNNEL_PROP_INVALID);
 }
 
 /*
@@ -580,23 +586,23 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo004, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo with custom non-invalid property
+* CaseDescription: 1. call SetTunnelLayerInfo with LPP type
 *                  2. check ret and saved values
 */
 HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo005, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 1005;
-    constexpr uint32_t customProperty = TUNNEL_PROP_BUFFER_ADDR << 1;
-    uint64_t newTunnelLayerId = 0;
-    uint32_t newProperty = TUNNEL_PROP_INVALID;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_LPP;
 
-    GSError ret = bqp_->SetTunnelLayerInfo(tunnelLayerId, customProperty);
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
     EXPECT_EQ(ret, GSERROR_OK);
 
-    ret = bq_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
     EXPECT_EQ(ret, GSERROR_OK);
-    EXPECT_EQ(newTunnelLayerId, tunnelLayerId);
-    EXPECT_EQ(newProperty, customProperty);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_LPP);
+    EXPECT_EQ(state.tunnelLayerId, 0);
+    EXPECT_EQ(state.property, TUNNEL_PROP_INVALID);
 }
 
 /*
@@ -609,14 +615,12 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo005, TestSize.Level0)
  */
 HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfoRemote001, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 2002;
-    constexpr uint32_t property = TUNNEL_PROP_POSTION | TUNNEL_PROP_CLIENT_COMMIT;
     MessageParcel arguments;
     MessageParcel reply;
     MessageOption option;
 
-    arguments.WriteUint64(tunnelLayerId);
-    arguments.WriteUint32(property);
+    arguments.WriteUint32(static_cast<uint32_t>(TunnelTypeMask::TUNNEL_TYPE_STYLUS));
+    arguments.WriteUint64(0);
     int32_t ret = bqp_->SetTunnelLayerInfoRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
     EXPECT_EQ(reply.ReadInt32(), GSERROR_OK);

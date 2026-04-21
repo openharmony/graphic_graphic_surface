@@ -101,7 +101,8 @@ public:
     GSError SetGlobalAlpha(int32_t alpha) override;
     GSError SetRequestBufferNoblockMode(bool noblock) override;
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
-    GSError SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property) override;
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override;
+    GSError GetTunnelLayerInfo(TunnelLayerState& info) override;
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) override;
 
     bool GetStatus() const;

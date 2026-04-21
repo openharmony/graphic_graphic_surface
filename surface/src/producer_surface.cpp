@@ -1196,12 +1196,20 @@ GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
     return producer_->SetTunnelHandle(handle);
 }
 
-GSError ProducerSurface::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+GSError ProducerSurface::SetTunnelLayerInfo(const TunnelLayerInfo& info)
 {
     if (producer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return producer_->SetTunnelLayerInfo(tunnelLayerId, property);
+    return producer_->SetTunnelLayerInfo(info);
+}
+
+GSError ProducerSurface::GetTunnelLayerInfo(TunnelLayerState& info)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->GetTunnelLayerInfo(info);
 }
 
 GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,

@@ -168,6 +168,7 @@ using GraphicLayerType = enum {
     GRAPHIC_LAYER_TYPE_TUNNEL           /**< Tunnel Layer */
 };
 
+// hisi tunnel type
 using TunnelLayerProperty = enum {
     TUNNEL_PROP_INVALID = 0,            /**< invalid tunnel layer property */
     TUNNEL_PROP_POSTION = 1 << 0,       /**< update layer position by tunnel */
@@ -175,6 +176,33 @@ using TunnelLayerProperty = enum {
     TUNNEL_PROP_CLIENT_COMMIT = 1 << 2,    /**< tunnel layer update by client */
     TUNNEL_PROP_DEVICE_COMMIT = 1 << 3,    /**< tunnel layer update by device */
     TUNNEL_PROP_RS_FORCE = 1 << 4,
+};
+
+using TunnelTypeMask = enum TunnelTypeMask {
+    TUNNEL_TYPE_NONE = 0,               /**< Tunnel disabled */
+    TUNNEL_TYPE_HARD_CURSOR = 1,        /**< Hard cursor tunnel */
+    TUNNEL_TYPE_LPP = 2,                /**< LPP tunnel */
+    TUNNEL_TYPE_STYLUS = 3,             /**< Stylus tunnel */
+    TUNNEL_TYPE_VIDEO = 4,              /**< Video tunnel */
+    TUNNEL_TYPE_ANCO = 5,               /**< ANCO tunnel */
+    TUNNEL_TYPE_GAME = 6,               /**< Game tunnel */
+};
+
+// inner interface params
+using TunnelLayerInfo = struct TunnelLayerInfo {
+    TunnelTypeMask tunnelTypeMask = TUNNEL_TYPE_NONE; /**< Tunnel type mask */
+    uint64_t reserved = {0}; /**< Reserved fields */
+
+    bool operator==(const TunnelLayerInfo& other) const {
+        return tunnelTypeMask == other.tunnelTypeMask;
+    }
+};
+
+// tunnel layer state
+using TunnelLayerState = struct TunnelLayerState {
+    TunnelLayerInfo tunnelLayerInfo; /**< Tunnel layer info */
+    uint64_t tunnelLayerId = 0; /**< Tunnel layer ID */
+    TunnelLayerProperty property = TUNNEL_PROP_INVALID; /**< Hisi tunnel property */
 };
 
 using GraphicLayerInfo = struct {

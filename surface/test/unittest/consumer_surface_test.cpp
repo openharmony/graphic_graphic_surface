@@ -1651,23 +1651,23 @@ HWTEST_F(ConsumerSurfaceTest, TunnelHandle004, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo and GetTunnelLayerInfo with normal parameters
+* CaseDescription: 1. call SetTunnelLayerInfo and GetTunnelLayerInfo with STYLUS type
 *                  2. check ret and returned values
  */
 HWTEST_F(ConsumerSurfaceTest, TunnelLayerInfo001, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 3003;
-    constexpr uint32_t property = TUNNEL_PROP_POSTION | TUNNEL_PROP_BUFFER_ADDR;
-    uint64_t newTunnelLayerId = 0;
-    uint32_t newProperty = TUNNEL_PROP_INVALID;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
 
-    GSError ret = cs->SetTunnelLayerInfo(tunnelLayerId, property);
+    GSError ret = cs->SetTunnelLayerInfo(info);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
-    ret = cs->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    TunnelLayerState state;
+    ret = cs->GetTunnelLayerInfo(state);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ASSERT_EQ(newTunnelLayerId, tunnelLayerId);
-    ASSERT_EQ(newProperty, property);
+    ASSERT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_STYLUS);
+    ASSERT_EQ(state.tunnelLayerId, cs->GetUniqueId());
+    ASSERT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
 }
 
 /*
@@ -1680,15 +1680,14 @@ HWTEST_F(ConsumerSurfaceTest, TunnelLayerInfo001, TestSize.Level0)
  */
 HWTEST_F(ConsumerSurfaceTest, TunnelLayerInfo002, TestSize.Level0)
 {
-    constexpr uint64_t tunnelLayerId = 4004;
-    constexpr uint32_t property = TUNNEL_PROP_DEVICE_COMMIT;
-    uint64_t newTunnelLayerId = 0;
-    uint32_t newProperty = TUNNEL_PROP_INVALID;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_VIDEO;
 
-    GSError ret = surface_->SetTunnelLayerInfo(tunnelLayerId, property);
+    GSError ret = surface_->SetTunnelLayerInfo(info);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 
-    ret = surface_->GetTunnelLayerInfo(newTunnelLayerId, newProperty);
+    TunnelLayerState state;
+    ret = surface_->GetTunnelLayerInfo(state);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 

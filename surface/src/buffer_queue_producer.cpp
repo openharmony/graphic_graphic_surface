@@ -893,9 +893,10 @@ int32_t BufferQueueProducer::SetTunnelHandleRemote(MessageParcel &arguments, Mes
 int32_t BufferQueueProducer::SetTunnelLayerInfoRemote(MessageParcel &arguments, MessageParcel &reply,
                                                       MessageOption &option)
 {
-    uint64_t tunnelLayerId = arguments.ReadUint64();
-    uint32_t property = arguments.ReadUint32();
-    GSError sRet = SetTunnelLayerInfo(tunnelLayerId, property);
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = static_cast<TunnelTypeMask>(arguments.ReadUint32());
+    info.reserved = arguments.ReadUint64();
+    GSError sRet = SetTunnelLayerInfo(info);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1849,12 +1850,20 @@ GSError BufferQueueProducer::SetTunnelHandle(const GraphicExtDataHandle *handle)
     return bufferQueue_->SetTunnelHandle(tunnelHandle);
 }
 
-GSError BufferQueueProducer::SetTunnelLayerInfo(uint64_t tunnelLayerId, uint32_t property)
+GSError BufferQueueProducer::SetTunnelLayerInfo(const TunnelLayerInfo& info)
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-    return bufferQueue_->SetTunnelLayerInfo(tunnelLayerId, property);
+    return bufferQueue_->SetTunnelLayerInfo(info);
+}
+
+GSError BufferQueueProducer::GetTunnelLayerInfo(TunnelLayerState& info)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->GetTunnelLayerInfo(info);
 }
 
 GSError BufferQueueProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)

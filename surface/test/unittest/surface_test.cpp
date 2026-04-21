@@ -290,7 +290,8 @@ HWTEST_F(SurfaceTest, SurfaceTest001, TestSize.Level0)
     EXPECT_EQ(surface->GetMetaData(sequence, graphicHDRMetaDatas), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetMetaDataSet(sequence, key, metaDatas), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetTunnelHandle(), nullptr);
-    EXPECT_EQ(surface->SetTunnelLayerInfo(sequence, TUNNEL_PROP_INVALID), GSERROR_NOT_SUPPORT);
+    TunnelLayerInfo tunnelInfo;
+    EXPECT_EQ(surface->SetTunnelLayerInfo(tunnelInfo), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->SetPresentTimestamp(sequence, graphicPresentTimestamp), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetPresentTimestamp(sequence, graphicPresentTimestampType, time), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetDefaultFormat(), 0);

@@ -37,7 +37,6 @@ struct NativeWindow;
 namespace OHOS {
 class ProducerSurface : public Surface {
 public:
-    ProducerSurface(sptr<IBufferProducer>& producer);
     virtual ~ProducerSurface();
     /**
      * @brief Initialization function.
@@ -881,6 +880,7 @@ public:
      */
     GSError SetGameUpscaleProcessor(GameUpscaleProcessor processor) override;
 private:
+    ProducerSurface(sptr<IBufferProducer>& producer);
     GSError PropertyChangeCallback(const SurfaceProperty& property);
     GSError ResetPropertyListenerInner(uint64_t producerId);
     bool IsRemote();
@@ -933,6 +933,8 @@ private:
     std::string bufferTypeLeak_;
     int32_t flushBufferCountAfterCleanCache_ = -1;
     mutable std::mutex preCacheBufferMutex_;
+    
+    friend sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer);
 };
 } // namespace OHOS
 

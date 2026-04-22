@@ -22,6 +22,7 @@
 #include <producer_surface.h>
 
 #include "buffer_consumer_listener.h"
+#include "buffer_producer_listener.h"
 #include <native_window.h>
 #include "sync_fence.h"
 #include "producer_surface_delegator.h"
@@ -30,6 +31,7 @@
 #include "surface_aps_sdr_utils.h"
 #include "surface_buffer_impl.h"
 #include "buffer_extra_data_impl.h"
+#include "buffer_queue_producer.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -756,6 +758,7 @@ HWTEST_F(ProducerSurfaceTest, SetRequestBufferNoblockMode, TestSize.Level0)
     sptr<ProducerSurface> producerSurface = nullptr;
     producerSurface = new ProducerSurface(producer);
     ASSERT_NE(producerSurface, nullptr);
+    ASSERT_EQ(producerSurface->Init(), OHOS::GSERROR_OK);
     ASSERT_EQ(producerSurface->SetRequestBufferNoblockMode(true), OHOS::GSERROR_OK);
 }
 
@@ -1950,6 +1953,7 @@ HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence003, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     uint32_t sequenceOut = 0;
     OnReleaseFuncWithSequenceAndFence releaseFuncWithSequenceAndFence =
@@ -3351,6 +3355,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer002, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3394,6 +3399,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer003, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3449,6 +3455,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer001, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3494,6 +3501,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer002, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3542,6 +3550,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer003, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3581,6 +3590,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceUnlockAndFlushBuffer004, TestSize.L
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3621,6 +3631,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceCancelBufferLocked001, TestSize.Lev
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3660,6 +3671,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceBlockRequestAndNoBlockRequest001, T
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3731,6 +3743,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestAndFlushBuffer001, Te
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3826,6 +3839,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestAndReuseBuffer001, Te
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3920,6 +3934,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -3969,6 +3984,7 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceNoBlockRequestBufferLoopCallInterfa
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
 
     BufferRequestConfig requestConfig = {
         .width = 0x100,
@@ -4080,6 +4096,7 @@ HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakAndRequesBuffer, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
 
     pSurfaceTmpTest->SetBufferTypeLeak("test");
     ASSERT_TRUE(pSurfaceTmpTest->bufferTypeLeak_ == "test");
@@ -4199,6 +4216,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer001, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4227,6 +4245,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer002, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4256,6 +4275,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer003, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4293,6 +4313,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer004, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4329,6 +4350,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer005, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4374,6 +4396,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer006, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4405,6 +4428,7 @@ HWTEST_F(ProducerSurfaceTest, PreCacheBuffer007, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
 
     std::vector<sptr<SurfaceBuffer>> buffers;
     std::vector<sptr<SyncFence>> fences;
@@ -4699,5 +4723,46 @@ HWTEST_F(ProducerSurfaceTest, AddCacheLockedSyncFail001, TestSize.Level0)
 
     GSError ret = pSurfaceTmp->AddCacheLocked(bedataimpl, retval, requestConfig);
     EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
+
+/*
+ * Function: Init
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. test propertyListener callback when ProducerSurface is destroyed
+ *                  2. cover lines 97-103: strongThis == nullptr branch in lambda
+ */
+HWTEST_F(ProducerSurfaceTest, InitPropertyListenerDestroyed001, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    ASSERT_EQ(pSurfaceTmp->Init(), OHOS::GSERROR_OK);
+
+    sptr<IProducerListener> propertyListener = pSurfaceTmp->initInfo_.propertyListener;
+    ASSERT_NE(propertyListener, nullptr);
+
+    auto* realListener = static_cast<PropertyChangeProducerListener*>(propertyListener.GetRefPtr());
+    OnPropertyChangeFunc originalFunc = realListener->func_;
+
+    SurfaceProperty property;
+    GSError ret = propertyListener->OnPropertyChange(property);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    pSurfaceTmp = nullptr;
+
+    realListener->func_ = originalFunc;
+
+    property.transformHint = GraphicTransformType::GRAPHIC_ROTATE_90;
+    ret = propertyListener->OnPropertyChange(property);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    cSurfTmp = nullptr;
+    producer = nullptr;
+    propertyListener = nullptr;
 }
 }

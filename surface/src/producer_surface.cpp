@@ -62,29 +62,7 @@ sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 
 ProducerSurface::ProducerSurface(sptr<IBufferProducer>& producer)
 {
-    initInfo_.propertyListener = new PropertyChangeProducerListener([weakThis = wptr(this)](SurfaceProperty property) {
-        auto strongThis = weakThis.promote();
-        if (strongThis == nullptr) {
-            BLOGE("ProducerSurface has been destroyed.");
-            return GSERROR_INVALID_ARGUMENTS;
-        }
-        return strongThis->PropertyChangeCallback(property);
-    });
     producer_ = producer;
-    GetProducerInitInfo(initInfo_);
-    lastSetTransformHint_ = static_cast<GraphicTransformType>(initInfo_.transformHint);
-    windowConfig_.width = initInfo_.width;
-    windowConfig_.height = initInfo_.height;
-    windowConfig_.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
-    windowConfig_.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
-    windowConfig_.strideAlignment = 8;     // default stride is 8
-    windowConfig_.timeout = 3000;          // default timeout is 3000 ms
-    windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
-    windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
-    SurfaceApsSdrUtils::GetSdrRatio(initInfo_.appName, SDR_RATIO);
-    BLOGD("ProducerSurface ctor, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
-          " %{public}d, sdrRatio is %{public}f.",
-          initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList, SDR_RATIO);
 }
 
 ProducerSurface::~ProducerSurface()
@@ -109,10 +87,36 @@ GSError ProducerSurface::Init()
     if (inited_.load()) {
         return GSERROR_OK;
     }
+
+    initInfo_.propertyListener = new PropertyChangeProducerListener([weakThis = wptr(this)](SurfaceProperty property) {
+        auto strongThis = weakThis.promote();
+        if (strongThis == nullptr) {
+            BLOGE("ProducerSurface has been destroyed.");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        return strongThis->PropertyChangeCallback(property);
+    });
+
+    GetProducerInitInfo(initInfo_);
     name_ = initInfo_.name;
     queueId_ = initInfo_.uniqueId;
     bufferName_ = initInfo_.bufferName;
+    lastSetTransformHint_ = static_cast<GraphicTransformType>(initInfo_.transformHint);
+    windowConfig_.width = initInfo_.width;
+    windowConfig_.height = initInfo_.height;
+    windowConfig_.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_MEM_DMA;
+    windowConfig_.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+    windowConfig_.strideAlignment = 8;   // default stride is 8
+    windowConfig_.timeout = 3000;        // default timeout is 3000 ms
+    windowConfig_.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+    windowConfig_.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    SurfaceApsSdrUtils::GetSdrRatio(initInfo_.appName, SDR_RATIO);
+
     inited_.store(true);
+
+    BLOGD("ProducerSurface Init, name: %{public}s, uniqueId: %{public}" PRIu64 ", appName: %{public}s, isInHebcList:"
+          " %{public}d, sdrRatio is %{public}f.",
+          initInfo_.name.c_str(), initInfo_.uniqueId, initInfo_.appName.c_str(), initInfo_.isInHebcList, SDR_RATIO);
     return GSERROR_OK;
 }
 

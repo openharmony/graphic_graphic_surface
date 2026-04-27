@@ -554,11 +554,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         BLOGE("surfaceDelegator is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
-    if (!surfaceDelegator->SetClient(client)) {
-        BLOGE("SetClient failed");
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-
+    
     surfaceDelegator->SetSurface(this);
     {
         std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
@@ -584,6 +580,11 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         return static_cast<GSError>(error);
     };
     RegisterReleaseListenerBackup(releaseBufferCallBack);
+
+    if (!surfaceDelegator->SetClient(client)) {
+        BLOGE("SetClient failed");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     return GSERROR_OK;
 }
 

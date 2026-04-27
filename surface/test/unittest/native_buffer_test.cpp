@@ -565,6 +565,74 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue006, TestSize.Level0)
     ASSERT_EQ(ret, SURFACE_ERROR_INVALID_PARAM);
 }
 
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue with OH_REGION_OF_INTEREST_METADATA and size < 256
+*                  2. call OH_NativeBuffer_GetMetadataValue and verify data matches
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue007, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 128;
+    uint8_t outbuff[len];
+    for (int i = 0; i < len; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i);
+    }
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, len, outbuff);
+    if (ret != GSERROR_NOT_SUPPORT) {
+        ASSERT_EQ(ret, GSERROR_OK);
+        int32_t buffSize = 0;
+        uint8_t *buff = nullptr;
+        ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, &buffSize, &buff);
+        if (ret == GSERROR_OK && buff != nullptr) {
+            ASSERT_EQ(buffSize, len);
+            ASSERT_EQ(memcmp(outbuff, buff, len), 0);
+            delete[] buff;
+            buff = nullptr;
+        }
+    }
+}
+
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue with OH_REGION_OF_INTEREST_METADATA and size >= 256
+*                  2. call OH_NativeBuffer_GetMetadataValue and verify only first 256 bytes are stored
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValue008, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    int32_t len = 300;
+    uint8_t outbuff[len];
+    for (int i = 0; i < len; ++i) {
+        outbuff[i] = static_cast<uint8_t>(i % 256);
+    }
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, len, outbuff);
+    if (ret != GSERROR_NOT_SUPPORT) {
+        ASSERT_EQ(ret, GSERROR_OK);
+        int32_t buffSize = 0;
+        uint8_t *buff = nullptr;
+        ret = OH_NativeBuffer_GetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, &buffSize, &buff);
+        if (ret == GSERROR_OK && buff != nullptr) {
+            ASSERT_EQ(buffSize, 256);
+            ASSERT_EQ(memcmp(outbuff, buff, 256), 0);
+            delete[] buff;
+            buff = nullptr;
+        }
+    }
+}
+
 
 /*
 * Function: OH_NativeBuffer_GetMetadataValue

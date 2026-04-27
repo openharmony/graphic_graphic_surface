@@ -3440,6 +3440,109 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer003, TestSize.Level0)
 }
 
 /*
+* Function: ProducerSurfaceLockBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: create surface with valid config
+*                  2. operation: calls ProducerSurfaceLockBuffer with region.rectNumber == damagesMaxSize
+*                  3. result: region_.rects should be allocated and copied correctly
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer004, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+
+    constexpr int32_t damagesMaxSize = 1000;
+    Region::Rect* rects = new Region::Rect[damagesMaxSize];
+    for (int32_t i = 0; i < damagesMaxSize; i++) {
+        rects[i].x = i;
+        rects[i].y = i;
+        rects[i].w = 0x10;
+        rects[i].h = 0x10;
+    }
+    Region region = {.rects = rects, .rectNumber = damagesMaxSize};
+    sptr<SurfaceBuffer> buffer = nullptr;
+
+    GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_NE(pSurfaceTmp->region_.rects, nullptr);
+    ASSERT_EQ(pSurfaceTmp->region_.rectNumber, damagesMaxSize);
+    ASSERT_EQ(pSurfaceTmp->region_.rects[0].x, 0);
+    ASSERT_EQ(pSurfaceTmp->region_.rects[damagesMaxSize - 1].x, damagesMaxSize - 1);
+    ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
+
+    delete[] rects;
+}
+
+/*
+* Function: ProducerSurfaceLockBuffer
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. preSetUp: create surface with valid config
+*                  2. operation: calls ProducerSurfaceLockBuffer with region.rectNumber > damagesMaxSize
+*                  3. result: region_.rects should be nullptr, lock buffer should succeed
+*/
+HWTEST_F(ProducerSurfaceTest, ProducerSurfaceLockBuffer005, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+
+    constexpr int32_t damagesMaxSize = 1000;
+    constexpr int32_t overSize = damagesMaxSize + 1;
+    Region::Rect* rects = new Region::Rect[overSize];
+    for (int32_t i = 0; i < overSize; i++) {
+        rects[i].x = i;
+        rects[i].y = i;
+        rects[i].w = 0x10;
+        rects[i].h = 0x10;
+    }
+    Region region = {.rects = rects, .rectNumber = overSize};
+    sptr<SurfaceBuffer> buffer = nullptr;
+
+    GSError ret = pSurfaceTmp->ProducerSurfaceLockBuffer(requestConfig, region, buffer);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
+    ASSERT_EQ(pSurfaceTmp->region_.rectNumber, overSize);
+    ASSERT_NE(pSurfaceTmp->mLockedBuffer_, nullptr);
+    ASSERT_NE(buffer, nullptr);
+
+    ret = pSurfaceTmp->ProducerSurfaceUnlockAndFlushBuffer();
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(pSurfaceTmp->region_.rects, nullptr);
+
+    delete[] rects;
+}
+
+/*
 * Function: ProducerSurfaceUnlockAndFlushBuffer
 * Type: Function
 * Rank: Important(2)

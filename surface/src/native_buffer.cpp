@@ -337,7 +337,8 @@ int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
         }
         ret = MetadataHelper::SetHDRMetadataType(sbuffer, NATIVE_METADATATYPE_TO_HDI_MAP[hdrMetadataType]);
     } else if (metadataKey == OH_REGION_OF_INTEREST_METADATA) {
-        std::vector<uint8_t> mDRoi(metadata, metadata + ROI_METADATA_CAPACITY);
+        int32_t roiSize = (size < ROI_METADATA_CAPACITY) ? size : ROI_METADATA_CAPACITY;
+        std::vector<uint8_t> mDRoi(metadata, metadata + roiSize);
         ret = MetadataHelper::SetROIMetadata(sbuffer, mDRoi);
     } else {
         BLOGE("the metadataKey does not support it.");

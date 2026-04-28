@@ -207,6 +207,11 @@ public:
     {
         return std::string("");
     }
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override
+    {
+        (void)info;
+        return GSERROR_NOT_SUPPORT;
+    }
 
 private:
     const std::string name_ = "";

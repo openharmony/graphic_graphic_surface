@@ -2285,7 +2285,12 @@ GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
         case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
         case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
         case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
-        case TunnelTypeMask::TUNNEL_TYPE_ANCO:
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
+            return GSERROR_OK;
+        }
         case TunnelTypeMask::TUNNEL_TYPE_GAME: {
             tunnelLayerState_.tunnelLayerId = uniqueId_;
             tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;

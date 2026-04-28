@@ -32,7 +32,6 @@
 #include "surface_buffer_impl.h"
 #include "buffer_extra_data_impl.h"
 #include "buffer_queue_producer.h"
-#include "surface_utils.h"
 
 using namespace testing;
 using namespace testing::ext;

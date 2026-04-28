@@ -176,6 +176,7 @@ using TunnelLayerProperty = enum {
     TUNNEL_PROP_CLIENT_COMMIT = 1 << 2,    /**< tunnel layer update by client */
     TUNNEL_PROP_DEVICE_COMMIT = 1 << 3,    /**< tunnel layer update by device */
     TUNNEL_PROP_RS_FORCE = 1 << 4,
+    TUNNEL_PROP_WITH_RELEASE_FENCE = 1 << 5, /** tunnel layer update with release fence */
 };
 
 using TunnelTypeMask = enum TunnelTypeMask {
@@ -193,7 +194,8 @@ using TunnelLayerInfo = struct TunnelLayerInfo {
     TunnelTypeMask tunnelTypeMask = TUNNEL_TYPE_NONE; /**< Tunnel type mask */
     uint64_t reserved = {0}; /**< Reserved fields */
 
-    bool operator==(const TunnelLayerInfo& other) const {
+    bool operator==(const TunnelLayerInfo& other) const
+    {
         return tunnelTypeMask == other.tunnelTypeMask;
     }
 };

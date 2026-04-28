@@ -2271,19 +2271,32 @@ GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
     std::lock_guard<std::mutex> lockGuard(mutex_);
     tunnelLayerState_.tunnelLayerInfo = info;
     switch (info.tunnelTypeMask) {
+        case TunnelTypeMask::TUNNEL_TYPE_NONE: {
+            tunnelLayerState_.tunnelLayerId = 0;
+            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_LPP: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
         case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
-        case TunnelTypeMask::TUNNEL_TYPE_VIDEO: {
+        case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO:
+        case TunnelTypeMask::TUNNEL_TYPE_GAME: {
             tunnelLayerState_.tunnelLayerId = uniqueId_;
             tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
-            break;
+            return GSERROR_OK;
         }
         default: {
             tunnelLayerState_.tunnelLayerId = 0;
             tunnelLayerState_.property = TUNNEL_PROP_INVALID;
-            break;
+            return GSERROR_INVALID_ARGUMENTS;
         }
     }
-    return GSERROR_OK;
 }
 
 GSError BufferQueue::GetTunnelLayerInfo(TunnelLayerState& info)

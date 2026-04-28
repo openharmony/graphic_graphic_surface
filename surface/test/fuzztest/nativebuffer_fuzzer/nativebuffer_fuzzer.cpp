@@ -33,8 +33,13 @@
 using namespace g_fuzzCommon;
 
 namespace OHOS {
-    // Test edge cases and null pointer scenarios
-    void NativeBufferFuzzTestEdgeCases(OH_NativeBuffer *buffer)
+namespace {
+    constexpr int32_t ROI_METADATA_CAPACITY = 256;
+    constexpr int32_t ROI_METADATA_FUZZ_TEST_RANGE = 600;
+    constexpr uint8_t ROI_METADATA_FUZZ_INVALID_SIZE = 10;
+}
+
+void NativeBufferFuzzTestEdgeCases(OH_NativeBuffer *buffer)
     {
         OH_NativeBuffer_Config config;
         // Test GetConfig null pointer
@@ -132,14 +137,39 @@ namespace OHOS {
         OH_NativeBuffer_MetadataKey metadataKey = GetData<OH_NativeBuffer_MetadataKey>();
         uint32_t setSize = GetData<uint32_t>() % 1000;
         if (metadataKey == OH_REGION_OF_INTEREST_METADATA) {
-            setSize = 256; // 256：内部为固定size
+            setSize = GetData<uint32_t>() % ROI_METADATA_FUZZ_TEST_RANGE; // test sizes including truncation > 256
         }
         uint8_t *metadata = (uint8_t *)malloc(setSize * sizeof(uint8_t));
+        if (metadata != nullptr) {
+            for (uint32_t i = 0; i < setSize; ++i) {
+                metadata[i] = GetData<uint8_t>();
+            }
+        }
         OH_NativeBuffer_SetMetadataValue(buffer, metadataKey, static_cast<int32_t>(setSize), metadata);
         free(metadata);
+        metadata = nullptr;
+        // test invalid params for ROI metadata
+        if (metadataKey == OH_REGION_OF_INTEREST_METADATA || GetData<bool>()) {
+            uint8_t dummyBuff[ROI_METADATA_FUZZ_INVALID_SIZE] = {0};
+            OH_NativeBuffer_SetMetadataValue(nullptr, OH_REGION_OF_INTEREST_METADATA,
+                                             ROI_METADATA_FUZZ_INVALID_SIZE, dummyBuff);
+            OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, 0, dummyBuff);
+            OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, -1, dummyBuff);
+            OH_NativeBuffer_SetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, ROI_METADATA_CAPACITY, nullptr);
+        }
         int32_t getSize;
-        uint8_t *getMetadata;
+        uint8_t *getMetadata = nullptr;
         OH_NativeBuffer_GetMetadataValue(buffer, metadataKey, &getSize, &getMetadata);
+        if (getMetadata != nullptr) {
+            free(getMetadata);
+            getMetadata = nullptr;
+        }
+        // test invalid params for Get ROI metadata
+        if (metadataKey == OH_REGION_OF_INTEREST_METADATA || GetData<bool>()) {
+            OH_NativeBuffer_GetMetadataValue(nullptr, OH_REGION_OF_INTEREST_METADATA, &getSize, &getMetadata);
+            OH_NativeBuffer_GetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, nullptr, &getMetadata);
+            OH_NativeBuffer_GetMetadataValue(buffer, OH_REGION_OF_INTEREST_METADATA, &getSize, nullptr);
+        }
         OH_NativeBuffer_GetConfig(buffer, &checkConfig);
         OH_NativeBuffer_Reference(buffer);
         OH_NativeBuffer_Unreference(buffer);

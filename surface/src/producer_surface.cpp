@@ -1520,7 +1520,7 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
     }
     mLockedBuffer_ = buffer;
     region_.rectNumber = region.rectNumber;
-    if (region.rectNumber != 0 && region.rects != nullptr) {
+    if ((region_.rectNumber <= DAMAGES_MAX_SIZE) && (region_.rectNumber > 0) && region.rects != nullptr) {
         region_.rects = new Region::Rect[region.rectNumber];
         auto tmpRet = memcpy_s(region_.rects, region.rectNumber * sizeof(Region::Rect),
                                region.rects, region.rectNumber * sizeof(Region::Rect));

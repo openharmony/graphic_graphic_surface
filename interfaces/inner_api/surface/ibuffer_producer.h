@@ -120,7 +120,6 @@ public:
                                    const std::vector<uint8_t> &metaData) = 0;
     virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle) = 0;
     virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) = 0;
-    virtual GSError GetTunnelLayerInfo(TunnelLayerState& info) = 0;
     virtual GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) = 0;
 
     virtual sptr<NativeSurface> GetNativeSurface() = 0;

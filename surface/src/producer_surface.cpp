@@ -1204,14 +1204,6 @@ GSError ProducerSurface::SetTunnelLayerInfo(const TunnelLayerInfo& info)
     return producer_->SetTunnelLayerInfo(info);
 }
 
-GSError ProducerSurface::GetTunnelLayerInfo(TunnelLayerState& info)
-{
-    if (producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    return producer_->GetTunnelLayerInfo(info);
-}
-
 GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
                                              int64_t& time) const
 {

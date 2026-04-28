@@ -1858,14 +1858,6 @@ GSError BufferQueueProducer::SetTunnelLayerInfo(const TunnelLayerInfo& info)
     return bufferQueue_->SetTunnelLayerInfo(info);
 }
 
-GSError BufferQueueProducer::GetTunnelLayerInfo(TunnelLayerState& info)
-{
-    if (bufferQueue_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    return bufferQueue_->GetTunnelLayerInfo(info);
-}
-
 GSError BufferQueueProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)
 {
     if (bufferQueue_ == nullptr) {

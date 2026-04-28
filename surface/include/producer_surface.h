@@ -444,7 +444,6 @@ public:
      */
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
     GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override;
-    GSError GetTunnelLayerInfo(TunnelLayerState& info) override;
     /**
      * @brief Get the Present Timestamp from the surface buffer.
      * 

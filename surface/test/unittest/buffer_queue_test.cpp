@@ -2296,16 +2296,16 @@ HWTEST_F(BufferQueueTest, ReuseBuffer_ShouldRollbackUsage_WhenBufferUsageNeedRol
     std::mutex mutex;
     std::unique_lock<std::mutex> lock(mutex);
     retval.buffer = SurfaceBuffer::Create();
-    retval.sequence = 1;
+    retval.sequence = retval.buffer->GetSeqNum();
 
     BufferElement elem;
     elem.config = config;
     elem.config.usage = config.usage | BUFFER_USAGE_AUXILLARY_BUFFER0;
-    bq->bufferQueueCache_[1] = elem;
+    bq->bufferQueueCache_[retval.sequence] = elem;
 
     GSError result = bq->ReuseBuffer(config, bedata1, retval, lock, false);
     ASSERT_EQ(result, GSERROR_OK);
-    ASSERT_EQ(bq->bufferQueueCache_[1].config.usage, BUFFER_USAGE_CPU_READ);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].config.usage, BUFFER_USAGE_CPU_READ);
 }
 
 /*
@@ -2332,15 +2332,15 @@ HWTEST_F(BufferQueueTest, ReuseBuffer_NotModifyUsage_WhenBufferUsageNeedNotRollb
     std::mutex mutex;
     std::unique_lock<std::mutex> lock(mutex);
     retval.buffer = SurfaceBuffer::Create();
-    retval.sequence = 1;
+    retval.sequence = retval.buffer->GetSeqNum();
 
     BufferElement elem;
     elem.config = config;
-    bq->bufferQueueCache_[1] = elem;
+    bq->bufferQueueCache_[retval.sequence] = elem;
 
     GSError result = bq->ReuseBuffer(config, bedata1, retval, lock, false);
     ASSERT_EQ(result, GSERROR_OK);
-    ASSERT_EQ(bq->bufferQueueCache_[1].config.usage, BUFFER_USAGE_CPU_READ);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].config.usage, BUFFER_USAGE_CPU_READ);
 }
 
 /*

@@ -30,6 +30,34 @@
 
 using namespace g_fuzzCommon;
 namespace OHOS {
+    void FuzzSetTunnelLayerInfoRemote(const sptr<BufferQueueProducer> &bqp)
+    {
+        MessageParcel arguments;
+        MessageParcel reply;
+        MessageOption option;
+        uint32_t parcelType = GetData<uint32_t>() % 4; // 4 parcel write combinations
+
+        if (parcelType == 1) {
+            arguments.WriteUint32(GetData<uint32_t>());
+        } else if (parcelType == 2) {
+            arguments.WriteUint64(GetData<uint64_t>());
+        } else if (parcelType == 3) {
+            arguments.WriteUint32(GetData<uint32_t>());
+            arguments.WriteUint64(GetData<uint64_t>());
+        }
+
+        bqp->SetTunnelLayerInfoRemote(arguments, reply, option);
+    }
+
+    void FuzzSetTunnelLayerInfo(const sptr<BufferQueueProducer> &bqp)
+    {
+        TunnelLayerInfo info;
+        info.tunnelTypeMask = static_cast<TunnelTypeMask>(GetData<uint32_t>());
+        info.reserved = GetData<uint64_t>();
+        bqp->SetTunnelLayerInfo(info);
+        FuzzSetTunnelLayerInfoRemote(bqp);
+    }
+
     sptr<BufferExtraData> GetBufferExtraDataFromData()
     {
         // get data
@@ -103,6 +131,7 @@ namespace OHOS {
         int64_t time = 0;
         GraphicPresentTimestampType timestampType = GetData<GraphicPresentTimestampType>();
         bqp->GetPresentTimestamp(sequence, timestampType, time);
+        FuzzSetTunnelLayerInfo(bqp);
     }
 
     void BufferQueueProducerFuzzTest1(const sptr<BufferQueueProducer> &bqp)

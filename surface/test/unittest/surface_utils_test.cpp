@@ -583,15 +583,15 @@ HWTEST_F(SurfaceUtilsTest, NeedForceTunnelLayer002, TestSize.Level0)
     auto* surfaceUtils = SurfaceUtils::GetInstance();
     ASSERT_NE(surfaceUtils, nullptr);
 
-    constexpr char INVALID_NO_DELIM[] = "TunnelPrefixOnly";
-    constexpr char INVALID_EMPTY_BUNDLE[] = "+TunnelPrefix";
-    constexpr char INVALID_EMPTY_SURFACE[] = "com.bundle+";
-    surfaceUtils->RemoveTunnelLayerConfig(INVALID_NO_DELIM);
-    surfaceUtils->RemoveTunnelLayerConfig(INVALID_EMPTY_BUNDLE);
-    surfaceUtils->RemoveTunnelLayerConfig(INVALID_EMPTY_SURFACE);
-    surfaceUtils->AddTunnelLayerConfig(INVALID_NO_DELIM);
-    surfaceUtils->AddTunnelLayerConfig(INVALID_EMPTY_BUNDLE);
-    surfaceUtils->AddTunnelLayerConfig(INVALID_EMPTY_SURFACE);
+    constexpr char invalidNoDelim[] = "TunnelPrefixOnly";
+    constexpr char invalidEmptyBundle[] = "+TunnelPrefix";
+    constexpr char invalidEmptySurface[] = "com.bundle+";
+    surfaceUtils->RemoveTunnelLayerConfig(invalidNoDelim);
+    surfaceUtils->RemoveTunnelLayerConfig(invalidEmptyBundle);
+    surfaceUtils->RemoveTunnelLayerConfig(invalidEmptySurface);
+    surfaceUtils->AddTunnelLayerConfig(invalidNoDelim);
+    surfaceUtils->AddTunnelLayerConfig(invalidEmptyBundle);
+    surfaceUtils->AddTunnelLayerConfig(invalidEmptySurface);
 
     EXPECT_FALSE(surfaceUtils->NeedForceTunnelLayer("TunnelPrefixSurface", "com.bundle"));
 }

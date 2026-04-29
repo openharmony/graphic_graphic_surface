@@ -681,7 +681,16 @@ public:
         return GSERROR_NOT_SUPPORT;
     }
 
-    virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) = 0;
+    /**
+     * @brief Set tunnel layer info for a direct display path.
+     * @param info Indicates the tunnel layer info to be set.
+     * @return Returns {@link GSERROR_NOT_SUPPORT} by default.
+     */
+    virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info)
+    {
+        (void)info;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

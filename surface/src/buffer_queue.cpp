@@ -386,7 +386,7 @@ GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr
 
 bool BufferQueue::IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig)
 {
-    if ((config.usage ^ cacheConfig) != rollbackableUsage_) {
+    if ((config.usage ^ cacheConfig.usage) != rollbackableUsage_) {
         return false;
     }
     cacheConfig.usage = config.usage;
@@ -1846,7 +1846,7 @@ GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     rollbackUsage_ = usage & rollbackableUsage_;
-    defaultUsage = usage & ~rollbackableUsage_
+    defaultUsage_ = usage & ~rollbackableUsage_;
     return GSERROR_OK;
 }
 

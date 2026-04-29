@@ -15,8 +15,8 @@
 
 #include "surfaceutils_fuzzer.h"
 
-#include <array>
 #include <securec.h>
+#include <vector>
 
 #include "data_generate.h"
 #include "iconsumer_surface.h"
@@ -38,7 +38,7 @@ namespace OHOS {
         std::string noDelimConfig = GetStringFromData(STR_LEN);
         std::string extraSurfaceName = GetStringFromData(STR_LEN);
 
-        std::array<std::string, 5> tunnelConfigs = {
+        std::vector<std::string> tunnelConfigs = {
             bundleName + "+" + surfaceName,
             "+" + surfaceName,
             bundleName + "+",

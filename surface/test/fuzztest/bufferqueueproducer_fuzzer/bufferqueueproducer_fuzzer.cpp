@@ -30,20 +30,45 @@
 
 using namespace g_fuzzCommon;
 namespace OHOS {
+    namespace {
+        constexpr uint32_t PARCEL_WRITE_MODE_COUNT = 4;
+        enum class ParcelWriteMode : uint32_t {
+            EMPTY = 0,
+            TYPE_ONLY,
+            RESERVED_ONLY,
+            FULL,
+        };
+    }
+
     void FuzzSetTunnelLayerInfoRemote(const sptr<BufferQueueProducer> &bqp)
     {
         MessageParcel arguments;
         MessageParcel reply;
         MessageOption option;
-        uint32_t parcelType = GetData<uint32_t>() % 4; // 4 parcel write combinations
+        auto parcelWriteMode = static_cast<ParcelWriteMode>(GetData<uint32_t>() % PARCEL_WRITE_MODE_COUNT);
 
-        if (parcelType == 1) {
-            arguments.WriteUint32(GetData<uint32_t>());
-        } else if (parcelType == 2) {
-            arguments.WriteUint64(GetData<uint64_t>());
-        } else if (parcelType == 3) {
-            arguments.WriteUint32(GetData<uint32_t>());
-            arguments.WriteUint64(GetData<uint64_t>());
+        switch (parcelWriteMode) {
+            case ParcelWriteMode::TYPE_ONLY:
+                if (!arguments.WriteUint32(GetData<uint32_t>())) {
+                    return;
+                }
+                break;
+            case ParcelWriteMode::RESERVED_ONLY:
+                if (!arguments.WriteUint64(GetData<uint64_t>())) {
+                    return;
+                }
+                break;
+            case ParcelWriteMode::FULL:
+                if (!arguments.WriteUint32(GetData<uint32_t>())) {
+                    return;
+                }
+                if (!arguments.WriteUint64(GetData<uint64_t>())) {
+                    return;
+                }
+                break;
+            case ParcelWriteMode::EMPTY:
+            default:
+                break;
         }
 
         bqp->SetTunnelLayerInfoRemote(arguments, reply, option);

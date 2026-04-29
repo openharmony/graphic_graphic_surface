@@ -386,8 +386,7 @@ GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr
 
 bool BufferQueue::IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig)
 {
-    if ((config.usage ^ cacheConfig) != rollbackableUsage_)
-    {
+    if ((config.usage ^ cacheConfig) != rollbackableUsage_) {
         return false;
     }
     cacheConfig.usage = config.usage;

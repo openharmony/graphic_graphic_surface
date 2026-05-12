@@ -404,7 +404,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 
     // check param
     BufferRequestConfig updateConfig = config;
-    updateConfig.usage |= defaultUsage_ | rollbackUsage_;
+    updateConfig.usage |= (defaultUsage_ | rollbackUsage_);
     ret = CheckRequestConfig(updateConfig);
     if (ret != GSERROR_OK) {
         BLOGE("CheckRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
@@ -538,6 +538,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
+    // When config is different only in rollbackUsage_, The usage is deleted to reuse the buffer.
     if (IsBufferUsageNeedRollback(config, mapIter->second.config)) {
         mapIter->second.config.usage &= ~rollbackableUsage_;
         SURFACE_TRACE_NAME("ReuseBufferUsage rollback");

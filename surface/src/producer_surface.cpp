@@ -1630,7 +1630,7 @@ GSError ProducerSurface::SyncProducerCacheLocked()
         str += " seqNum:" + std::to_string(seqNum);
         bufferProducerCache_[seqNum] = buffer;
     }
-    BLOGI("%s", str.c_str());
+    BLOGI("%{public}s", str.c_str());
     return GSERROR_OK;
 }
 } // namespace OHOS

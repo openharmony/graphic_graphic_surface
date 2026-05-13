@@ -212,4 +212,48 @@ HWTEST_F(SyncFenceTrackerTest, GetSyncFenceTrackerTest, Function | MediumTest | 
     ret = SyncFenceTrackerManager::GetSyncFenceTracker("test2", 1);
     ASSERT_NE(ret, nullptr);
 }
+
+/*
+ * Function: MergeFence
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call MergeFence with nullptr fence1
+ *                  2. check ret returns INVALID_FENCE
+ */
+HWTEST_F(SyncFenceTrackerTest, MergeFenceNullFence1Test, Function | MediumTest | Level2)
+{
+    sptr<SyncFence> fence2 = new SyncFence(-1);
+    auto ret = SyncFence::MergeFence("test_null_fence1", nullptr, fence2);
+    EXPECT_EQ(ret, SyncFence::INVALID_FENCE);
+}
+
+/*
+ * Function: MergeFence
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call MergeFence with nullptr fence2
+ *                  2. check ret returns INVALID_FENCE
+ */
+HWTEST_F(SyncFenceTrackerTest, MergeFenceNullFence2Test, Function | MediumTest | Level2)
+{
+    sptr<SyncFence> fence1 = new SyncFence(-1);
+    auto ret = SyncFence::MergeFence("test_null_fence2", fence1, nullptr);
+    EXPECT_EQ(ret, SyncFence::INVALID_FENCE);
+}
+
+/*
+ * Function: MergeFence
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call MergeFence with both fences nullptr
+ *                  2. check ret returns INVALID_FENCE
+ */
+HWTEST_F(SyncFenceTrackerTest, MergeFenceBothNullTest, Function | MediumTest | Level2)
+{
+    auto ret = SyncFence::MergeFence("test_both_null", nullptr, nullptr);
+    EXPECT_EQ(ret, SyncFence::INVALID_FENCE);
+}
 }

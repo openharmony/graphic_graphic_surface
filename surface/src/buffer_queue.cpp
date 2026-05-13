@@ -923,7 +923,8 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCacheLocked()
         " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
     if (str.compare(acquireBufferStateStr_) != 0) {
         acquireBufferStateStr_ = str;
-        BLOGE("there is no dirty buffer or no dirty buffer ready, uniqueId: %{public}s", str.c_str());
+        BLOGE("there is no dirty buffer or no dirty buffer ready, producer pid: %{public}u, "
+              "consumer pid: %{public}u, uniqueId: %{public}s", connectedPid_, getpid(), str.c_str());
     }
 }
 

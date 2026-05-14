@@ -113,6 +113,10 @@ int32_t SyncFence::SyncMerge(const char *name, int32_t fd1, int32_t fd2, int32_t
 sptr<SyncFence> SyncFence::MergeFence(const std::string &name,
                                       const sptr<SyncFence>& fence1, const sptr<SyncFence>& fence2)
 {
+    if (fence1 == nullptr || fence2 == nullptr) {
+        UTILS_LOGE("fence1 or fence2 is nullptr");
+        return INVALID_FENCE;
+    }
     int32_t newFenceFd = INVALID_FD;
     int32_t fenceFd1 = fence1->fenceFd_;
     int32_t fenceFd2 = fence2->fenceFd_;

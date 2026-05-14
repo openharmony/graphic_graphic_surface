@@ -1526,9 +1526,14 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
         auto tmpRet = memcpy_s(region_.rects, region.rectNumber * sizeof(Region::Rect),
                                region.rects, region.rectNumber * sizeof(Region::Rect));
         if (tmpRet != EOK) {
-            auto tmpRet = ProducerSurfaceCancelBufferLocked(buffer);
+            auto cancelRet = ProducerSurfaceCancelBufferLocked(buffer);
+            if (cancelRet != GSERROR_OK) {
+                delete[] region_.rects;
+                region_.rects = nullptr;
+                region_.rectNumber = 0;
+            }
             BLOGE("memcpy_s failed, ret:%{public}d, cancelBuffer tmpRet:%{public}d,"
-                "uniqueId: %{public}" PRIu64 ".", ret, tmpRet, GetUniqueId());
+                "uniqueId: %{public}" PRIu64 ".", ret, cancelRet, GetUniqueId());
             buffer = nullptr;
             return SURFACE_ERROR_UNKOWN;
         }
@@ -1625,7 +1630,7 @@ GSError ProducerSurface::SyncProducerCacheLocked()
         str += " seqNum:" + std::to_string(seqNum);
         bufferProducerCache_[seqNum] = buffer;
     }
-    BLOGI("%s", str.c_str());
+    BLOGI("%{public}s", str.c_str());
     return GSERROR_OK;
 }
 } // namespace OHOS

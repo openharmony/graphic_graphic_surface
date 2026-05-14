@@ -342,6 +342,7 @@ private:
     GSError CheckBufferQueueCacheLocked(uint32_t sequence);
     GSError DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
+    bool IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig);
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
         bool listenerSeqAndFence = false);
@@ -375,6 +376,8 @@ private:
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
+    uint32_t rollbackableUsage_ = BUFFER_USAGE_AUXILLARY_BUFFER0;
+    uint32_t rollbackUsage_ = 0;
     uint32_t bufferQueueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;

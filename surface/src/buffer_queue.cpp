@@ -384,6 +384,15 @@ GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr
     return ret;
 }
 
+bool BufferQueue::IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig)
+{
+    if ((config.usage ^ cacheConfig.usage) != rollbackableUsage_) {
+        return false;
+    }
+    cacheConfig.usage = config.usage;
+    return config == cacheConfig;
+}
+
 GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
     bool listenerSeqAndFence)
@@ -395,7 +404,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 
     // check param
     BufferRequestConfig updateConfig = config;
-    updateConfig.usage |= defaultUsage_;
+    updateConfig.usage |= (defaultUsage_ | rollbackUsage_);
     ret = CheckRequestConfig(updateConfig);
     if (ret != GSERROR_OK) {
         BLOGE("CheckRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
@@ -528,6 +537,11 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     if (mapIter == bufferQueueCache_.end()) {
         BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
+    }
+    // When config is different only in rollbackUsage_, The usage is deleted to reuse the buffer.
+    if (IsBufferUsageNeedRollback(config, mapIter->second.config)) {
+        mapIter->second.config.usage &= ~rollbackableUsage_;
+        SURFACE_TRACE_NAME("ReuseBufferUsage rollback");
     }
     auto &cacheConfig = mapIter->second.config;
     SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
@@ -1832,7 +1846,8 @@ int32_t BufferQueue::GetDefaultHeight()
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    defaultUsage_ = usage;
+    rollbackUsage_ = usage & rollbackableUsage_;
+    defaultUsage_ = usage & ~rollbackableUsage_;
     return GSERROR_OK;
 }
 

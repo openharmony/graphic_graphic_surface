@@ -1769,6 +1769,28 @@ GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t producerId)
     return BufferUtilUnRegisterPropertyListener(producerId, propertyChangeListeners_);
 }
 
+GSError BufferQueue::NotifyLayerStateChanged(LayerStateChange state)
+{
+    std::map<uint64_t, sptr<IProducerListener>> propertyListeners;
+    {
+        std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
+        if (propertyChangeListeners_.empty()) {
+            return GSERROR_OK;
+        }
+        propertyListeners = propertyChangeListeners_;
+    }
+
+    for (const auto& item : propertyListeners) {
+        if (item.second == nullptr) {
+            continue;
+        }
+        if (item.second->OnLayerStateChanged(state) != GSERROR_OK) {
+            BLOGE("OnLayerStateChanged failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        }
+    }
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
@@ -2258,6 +2280,51 @@ sptr<SurfaceTunnelHandle> BufferQueue::GetTunnelHandle()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return tunnelHandle_;
+}
+
+GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    tunnelLayerState_.tunnelLayerInfo = info;
+    switch (info.tunnelTypeMask) {
+        case TunnelTypeMask::TUNNEL_TYPE_NONE: {
+            tunnelLayerState_.tunnelLayerId = 0;
+            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_LPP: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
+        case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
+        case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_GAME: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
+            return GSERROR_OK;
+        }
+        default: {
+            tunnelLayerState_.tunnelLayerId = 0;
+            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+    }
+}
+
+GSError BufferQueue::GetTunnelLayerInfo(TunnelLayerState& info)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    info = tunnelLayerState_;
+    return GSERROR_OK;
 }
 
 GSError BufferQueue::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
@@ -3048,4 +3115,3 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
     return GSERROR_OK;
 }
 }; // namespace OHOS
-

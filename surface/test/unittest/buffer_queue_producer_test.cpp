@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <surface.h>
 #include <sys/mman.h>
+#include <vector>
 #include <buffer_extra_data_impl.h>
 #include <buffer_queue_producer.h>
 #include "buffer_consumer_listener.h"
@@ -483,6 +484,218 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelHandleRemote002, TestSize.Level0)
         EXPECT_EQ(close(fd), 0);
     }
     system("rm -rf /data/SurfaceTestTmp");
+}
+
+/*
+* Function: SetTunnelLayerInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with STYLUS type
+*                  2. check ret and saved values
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo001, TestSize.Level0)
+{
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
+
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_STYLUS);
+    EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
+}
+
+/*
+* Function: SetTunnelLayerInfo002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with VIDEO type
+*                  2. check ret and saved values
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo002, TestSize.Level0)
+{
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_VIDEO;
+
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_VIDEO);
+    EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
+}
+
+/*
+* Function: SetTunnelLayerInfo003
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with NONE type
+*                  2. check tunnelLayerId and property are reset
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo003, TestSize.Level0)
+{
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_NONE;
+
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_NONE);
+    EXPECT_EQ(state.tunnelLayerId, 0);
+    EXPECT_EQ(state.property, TUNNEL_PROP_INVALID);
+}
+
+/*
+* Function: SetTunnelLayerInfo004
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with HARD_CURSOR type
+*                  2. check ret and saved values
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo004, TestSize.Level0)
+{
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR;
+
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR);
+    EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
+}
+
+/*
+* Function: SetTunnelLayerInfo005
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with LPP type
+*                  2. check ret and saved values
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo005, TestSize.Level0)
+{
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_LPP;
+
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_LPP);
+    EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
+}
+
+/*
+* Function: SetTunnelLayerInfo006
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with ANCO/GAME types
+*                  2. check ret and saved values
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo006, TestSize.Level0)
+{
+    const std::vector<TunnelTypeMask> tunnelTypes = {
+        TunnelTypeMask::TUNNEL_TYPE_ANCO,
+        TunnelTypeMask::TUNNEL_TYPE_GAME,
+    };
+    for (auto tunnelType : tunnelTypes) {
+        TunnelLayerInfo info;
+        info.tunnelTypeMask = tunnelType;
+        EXPECT_EQ(bqp_->SetTunnelLayerInfo(info), GSERROR_OK);
+
+        TunnelLayerState state;
+        EXPECT_EQ(bq_->GetTunnelLayerInfo(state), GSERROR_OK);
+        EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, tunnelType);
+        EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
+        EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
+    }
+}
+
+/*
+* Function: SetTunnelLayerInfo007
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo with invalid type
+*                  2. verify tunnelLayerId and property are reset
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo007, TestSize.Level0)
+{
+    constexpr uint32_t INVALID_TUNNEL_TYPE = 100;
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = static_cast<TunnelTypeMask>(INVALID_TUNNEL_TYPE);
+
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(info), GSERROR_INVALID_ARGUMENTS);
+
+    TunnelLayerState state;
+    EXPECT_EQ(bq_->GetTunnelLayerInfo(state), GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerId, 0);
+    EXPECT_EQ(state.property, TUNNEL_PROP_INVALID);
+}
+
+/*
+ * Function: SetTunnelLayerInfoRemote002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelLayerInfoRemote with invalid type
+ *                  2. check ret and reply
+ */
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfoRemote002, TestSize.Level0)
+{
+    constexpr uint32_t INVALID_TUNNEL_TYPE = 100;
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+
+    arguments.WriteUint32(INVALID_TUNNEL_TYPE);
+    arguments.WriteUint64(0);
+    int32_t ret = bqp_->SetTunnelLayerInfoRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(reply.ReadInt32(), GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: SetTunnelLayerInfoRemote
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call SetTunnelLayerInfoRemote
+ *                  2. check ret and reply
+ */
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfoRemote001, TestSize.Level0)
+{
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+
+    arguments.WriteUint32(static_cast<uint32_t>(TunnelTypeMask::TUNNEL_TYPE_STYLUS));
+    arguments.WriteUint64(0);
+    int32_t ret = bqp_->SetTunnelLayerInfoRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(reply.ReadInt32(), GSERROR_OK);
 }
 
 /*

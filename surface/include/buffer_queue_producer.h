@@ -101,6 +101,7 @@ public:
     GSError SetGlobalAlpha(int32_t alpha) override;
     GSError SetRequestBufferNoblockMode(bool noblock) override;
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override;
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) override;
 
     bool GetStatus() const;
@@ -179,6 +180,7 @@ private:
     int32_t SetMetaDataRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetMetaDataSetRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetTunnelHandleRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetTunnelLayerInfoRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GoBackgroundRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetPresentTimestampRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t GetLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

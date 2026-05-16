@@ -793,6 +793,17 @@ GSError BufferClientProducer::SetTunnelHandle(const GraphicExtDataHandle *handle
     return CheckRetval(reply);
 }
 
+GSError BufferClientProducer::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteUint32(static_cast<uint32_t>(info.tunnelTypeMask)) ||
+        !arguments.WriteUint64(info.reserved)) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
 GSError BufferClientProducer::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);

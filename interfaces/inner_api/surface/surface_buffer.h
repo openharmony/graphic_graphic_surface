@@ -281,10 +281,16 @@ struct SurfaceProperty {
     GraphicTransformType transformHint = GraphicTransformType::GRAPHIC_ROTATE_NONE;
 };
 
+enum class LayerStateChange : uint32_t {
+    AVAILABLE = 0,
+    UNAVAILABLE,
+};
+
 using OnReleaseFunc = std::function<GSError(sptr<SurfaceBuffer> &)>;
 using OnDeleteBufferFunc = std::function<void(uint64_t)>;
 using OnReleaseFuncWithFence = std::function<GSError(const sptr<SurfaceBuffer>&, const sptr<SyncFence>&)>;
 using OnReleaseFuncWithSequenceAndFence = std::function<GSError(uint32_t sequence, const sptr<SyncFence>&)>;
+using OnLayerStateChangedFunc = std::function<void(LayerStateChange)>;
 using OnUserDataChangeFunc = std::function<void(const std::string& key, const std::string& value)>;
 using OnPropertyChangeFunc = std::function<GSError(const SurfaceProperty&)>;
 } // namespace OHOS

@@ -16,6 +16,7 @@
 #include "surfaceutils_fuzzer.h"
 
 #include <securec.h>
+#include <vector>
 
 #include "data_generate.h"
 #include "iconsumer_surface.h"
@@ -27,6 +28,33 @@ namespace OHOS {
     namespace {
         constexpr uint32_t MATRIX_SIZE = 16;
     }
+
+    void FuzzTunnelLayerConfig(SurfaceUtils* utils)
+    {
+        std::string bundleName = GetStringFromData(STR_LEN);
+        std::string surfaceName = GetStringFromData(STR_LEN);
+        std::string queryBundleName = GetStringFromData(STR_LEN);
+        std::string querySurfaceName = GetStringFromData(STR_LEN);
+        std::string noDelimConfig = GetStringFromData(STR_LEN);
+        std::string extraSurfaceName = GetStringFromData(STR_LEN);
+
+        std::vector<std::string> tunnelConfigs = {
+            bundleName + "+" + surfaceName,
+            "+" + surfaceName,
+            bundleName + "+",
+            noDelimConfig,
+            bundleName + "+" + surfaceName + "+" + extraSurfaceName,
+        };
+
+        for (const auto& tunnelConfig : tunnelConfigs) {
+            utils->RemoveTunnelLayerConfig(tunnelConfig);
+            utils->AddTunnelLayerConfig(tunnelConfig);
+            utils->NeedForceTunnelLayer(surfaceName, bundleName);
+            utils->NeedForceTunnelLayer(querySurfaceName, queryBundleName);
+            utils->RemoveTunnelLayerConfig(tunnelConfig);
+        }
+    }
+
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         if (data == nullptr) {
@@ -63,6 +91,7 @@ namespace OHOS {
         utils->ComputeTransformMatrix(matrix, matrixSize, buffer, transformType, crop);
         utils->ComputeTransformMatrixV2(matrix, matrixSize, buffer, transformType, crop);
         utils->GetNativeWindow(uniqueId1);
+        FuzzTunnelLayerConfig(utils);
         return true;
     }
 } // namespace OHOS
@@ -74,4 +103,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     OHOS::DoSomethingInterestingWithMyAPI(data, size);
     return 0;
 }
-

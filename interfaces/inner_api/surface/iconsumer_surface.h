@@ -217,6 +217,11 @@ public:
     {
         return nullptr;
     }
+    virtual GSError NotifyLayerStateChanged(LayerStateChange state)
+    {
+        (void)state;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
     {
         (void)sequence;
@@ -392,6 +397,12 @@ public:
     virtual GSError SetDropFrameLevel(int32_t level)
     {
         (void)level;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
+    virtual GSError GetTunnelLayerInfo(TunnelLayerState& info)
+    {
+        (void)info;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
 protected:

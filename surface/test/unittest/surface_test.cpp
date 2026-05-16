@@ -207,6 +207,11 @@ public:
     {
         return std::string("");
     }
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override
+    {
+        (void)info;
+        return GSERROR_NOT_SUPPORT;
+    }
 
 private:
     const std::string name_ = "";
@@ -290,6 +295,8 @@ HWTEST_F(SurfaceTest, SurfaceTest001, TestSize.Level0)
     EXPECT_EQ(surface->GetMetaData(sequence, graphicHDRMetaDatas), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetMetaDataSet(sequence, key, metaDatas), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetTunnelHandle(), nullptr);
+    TunnelLayerInfo tunnelInfo;
+    EXPECT_EQ(surface->SetTunnelLayerInfo(tunnelInfo), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->SetPresentTimestamp(sequence, graphicPresentTimestamp), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetPresentTimestamp(sequence, graphicPresentTimestampType, time), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetDefaultFormat(), 0);
@@ -334,5 +341,20 @@ HWTEST_F(SurfaceTest, SurfaceTest002, TestSize.Level0)
     EXPECT_EQ(surface->ReleaseLastFlushedBuffer(buffer), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->SetGlobalAlpha(alpha), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->IsInHebcList(), false);
+}
+
+/*
+* Function: RegisterLayerStateChangedListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterLayerStateChangedListener on base Surface
+*                  2. check ret
+*/
+HWTEST_F(SurfaceTest, SurfaceTestLayerCreated001, TestSize.Level0)
+{
+    EXPECT_EQ(surface->RegisterLayerStateChangedListener([](LayerStateChange state) {
+        (void)state;
+    }), GSERROR_NOT_SUPPORT);
 }
 } // namespace OHOS::Rosen

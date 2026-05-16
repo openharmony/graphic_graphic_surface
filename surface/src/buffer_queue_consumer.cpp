@@ -239,6 +239,22 @@ sptr<SurfaceTunnelHandle> BufferQueueConsumer::GetTunnelHandle() const
     return bufferQueue_->GetTunnelHandle();
 }
 
+GSError BufferQueueConsumer::GetTunnelLayerInfo(TunnelLayerState& info) const
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->GetTunnelLayerInfo(info);
+}
+
+GSError BufferQueueConsumer::NotifyLayerStateChanged(LayerStateChange state)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->NotifyLayerStateChanged(state);
+}
+
 GSError BufferQueueConsumer::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
 {
     if (bufferQueue_ == nullptr) {

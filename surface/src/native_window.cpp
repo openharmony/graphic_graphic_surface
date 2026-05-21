@@ -16,6 +16,7 @@
 #include "native_window.h"
 
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <cinttypes>
 #include <securec.h>
@@ -395,10 +396,16 @@ static void HandleNativeWindowSetSurfaceSourceType(OHNativeWindow *window, va_li
 static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window, va_list args)
 {
     char* appFrameworkType = va_arg(args, char*);
-    if (appFrameworkType != nullptr) {
-        std::string typeStr(appFrameworkType);
-        window->surface->SetSurfaceAppFrameworkType(typeStr);
+    if (appFrameworkType == nullptr) {
+        return;
     }
+    size_t len = strnlen(appFrameworkType, MAXIMUM_LENGTH_OF_APP_FRAMEWORK);
+    if (len == 0 || len >= MAXIMUM_LENGTH_OF_APP_FRAMEWORK) {
+        BLOGE("Invalid appFrameworkType: invalid length %{public}zu", len);
+        return;
+    }
+    std::string typeStr(appFrameworkType);
+    window->surface->SetSurfaceAppFrameworkType(typeStr);
 }
 
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)

@@ -34,6 +34,36 @@ using namespace testing;
 using namespace testing::ext;
 
 namespace OHOS::Rosen {
+namespace {
+class DropBufferListener : public IBufferConsumerListener {
+public:
+    void OnBufferAvailable() override
+    {
+    }
+
+    void OnDropBuffer() override
+    {
+        dropBufferCount++;
+    }
+
+    int32_t dropBufferCount = 0;
+};
+
+class DropBufferListenerClazz : public IBufferConsumerListenerClazz {
+public:
+    void OnBufferAvailable() override
+    {
+    }
+
+    void OnDropBuffer() override
+    {
+        dropBufferCount++;
+    }
+
+    int32_t dropBufferCount = 0;
+};
+}
+
 class BufferQueueTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -2681,6 +2711,71 @@ HWTEST_F(BufferQueueTest, DropBuffersByLevel005, TestSize.Level0)
     ASSERT_EQ(bq->bufferQueueCache_[retval1.sequence].state, BUFFER_STATE_RELEASED);
 
     bq->CleanCache(false, nullptr);
+}
+
+/*
+ * Function: ReleaseDropBuffers001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test ReleaseDropBuffers with empty input (no listener callback)
+ */
+HWTEST_F(BufferQueueTest, ReleaseDropBuffers001, TestSize.Level0)
+{
+    std::vector<BufferAndFence> dropBuffers;
+    bq->ReleaseDropBuffers(dropBuffers);
+    ASSERT_TRUE(dropBuffers.empty());
+}
+
+/*
+ * Function: ReleaseDropBuffers002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test ReleaseDropBuffers listener branch
+ */
+HWTEST_F(BufferQueueTest, ReleaseDropBuffers002, TestSize.Level0)
+{
+    bq->UnregisterConsumerListener();
+    sptr<DropBufferListener> listener = new DropBufferListener();
+    sptr<IBufferConsumerListener> listenerBase = listener;
+    bq->RegisterConsumerListener(listenerBase);
+
+    std::vector<BufferAndFence> dropBuffers;
+    sptr<SurfaceBuffer> invalidBuffer = new SurfaceBufferImpl();
+    dropBuffers.emplace_back(invalidBuffer, SyncFence::InvalidFence());
+
+    bq->ReleaseDropBuffers(dropBuffers);
+    ASSERT_EQ(listener->dropBufferCount, 1);
+
+    bq->UnregisterConsumerListener();
+    sptr<IBufferConsumerListener> defaultListener = new BufferConsumerListener();
+    bq->RegisterConsumerListener(defaultListener);
+}
+
+/*
+ * Function: ReleaseDropBuffers003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: Test ReleaseDropBuffers listenerClazz branch
+ */
+HWTEST_F(BufferQueueTest, ReleaseDropBuffers003, TestSize.Level0)
+{
+    bq->UnregisterConsumerListener();
+    DropBufferListenerClazz listenerClazz;
+    bq->RegisterConsumerListener(&listenerClazz);
+
+    std::vector<BufferAndFence> dropBuffers;
+    sptr<SurfaceBuffer> invalidBuffer = new SurfaceBufferImpl();
+    dropBuffers.emplace_back(invalidBuffer, SyncFence::InvalidFence());
+
+    bq->ReleaseDropBuffers(dropBuffers);
+    ASSERT_EQ(listenerClazz.dropBufferCount, 1);
+
+    bq->UnregisterConsumerListener();
+    sptr<IBufferConsumerListener> defaultListener = new BufferConsumerListener();
+    bq->RegisterConsumerListener(defaultListener);
 }
 
 /*

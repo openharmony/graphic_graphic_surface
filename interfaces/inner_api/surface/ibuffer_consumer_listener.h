@@ -31,6 +31,7 @@ public:
         (void)bufSeqNum;
     }
     virtual void OnTransformChange() {};
+    virtual void OnDropBuffer() {};
 };
 
 class IBufferConsumerListenerClazz {
@@ -44,6 +45,7 @@ public:
         (void)bufSeqNum;
     }
     virtual void OnTransformChange() {};
+    virtual void OnDropBuffer() {};
 };
 } // namespace OHOS
 

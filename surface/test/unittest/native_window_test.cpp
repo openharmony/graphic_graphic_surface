@@ -3223,7 +3223,8 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_NoNullTerminator001, TestSize.Lev
     constexpr size_t bufSize = 128;
     char* nonTerminated = static_cast<char*>(malloc(bufSize));
     ASSERT_NE(nonTerminated, nullptr);
-    memset(nonTerminated, 'A', bufSize);
+    errno_t memRet = memset_s(nonTerminated, bufSize, 'A', bufSize);
+    ASSERT_EQ(memRet, EOK);
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, nonTerminated),
               OHOS::GSERROR_INVALID_ARGUMENTS);
     free(nonTerminated);
@@ -3260,14 +3261,16 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_BoundaryLength001, TestSize.Level
     int code = SET_APP_FRAMEWORK_TYPE;
     constexpr size_t maxLen = 64;
     char validStr[maxLen + 1];
-    memset(validStr, 'B', maxLen);
+    errno_t memRet = memset_s(validStr, sizeof(validStr), 'B', maxLen);
+    ASSERT_EQ(memRet, EOK);
     validStr[maxLen] = '\0';
     ASSERT_EQ(strlen(validStr), maxLen);
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, validStr), OHOS::GSERROR_OK);
 
     constexpr size_t overLen = 65;
     char overStr[overLen + 1];
-    memset(overStr, 'C', overLen);
+    memRet = memset_s(overStr, sizeof(overStr), 'C', overLen);
+    ASSERT_EQ(memRet, EOK);
     overStr[overLen] = '\0';
     ASSERT_EQ(strlen(overStr), overLen);
     ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, overStr),

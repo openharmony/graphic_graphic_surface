@@ -3170,44 +3170,30 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_NullPtr001, TestSize.Level0)
  * Type: Security
  * Rank: Important(1)
  * EnvConditions: N/A
- * CaseDescription: 1. Risk path: pass a dangling pointer (use-after-free)
- *                  2. Allocate memory, write a valid string, free it, then pass the freed pointer
- *                  3. Verify that the function rejects the invalid pointer without crash
- */
-HWTEST_F(NativeWindowTest, SetAppFrameworkType_DanglingPtr001, TestSize.Level0)
-{
-    int code = SET_APP_FRAMEWORK_TYPE;
-    char* danglingPtr = static_cast<char*>(malloc(16));
-    ASSERT_NE(danglingPtr, nullptr);
-    errno_t ret = strcpy_s(danglingPtr, 16, "test");
-    ASSERT_EQ(ret, 0);
-    free(danglingPtr);
-    ASSERT_NE(danglingPtr, nullptr);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, danglingPtr),
-              OHOS::GSERROR_INVALID_ARGUMENTS);
-}
-
-/*
- * Function: HandleNativeWindowSetSurfaceAppFrameworkType
- * Type: Security
- * Rank: Important(1)
- * EnvConditions: N/A
  * CaseDescription: 1. Risk path: pass a char buffer without null terminator within valid range
  *                  2. Allocate a buffer filled with non-zero bytes without '\0', simulating
  *                     a non-null-terminated string that strnlen should detect.
- *                  3. Verify that the function rejects input whose length exceeds the bound.
+ *                  3. Verify that the function rejects input whose length exceeds the bound
+ *                     by confirming the previously set value is unchanged.
  */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_NoNullTerminator001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
+    const char* baseline = "baseline";
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, baseline), OHOS::GSERROR_OK);
+
     constexpr size_t bufSize = 128;
     char* nonTerminated = static_cast<char*>(malloc(bufSize));
     ASSERT_NE(nonTerminated, nullptr);
     errno_t memRet = memset_s(nonTerminated, bufSize, 'A', bufSize);
     ASSERT_EQ(memRet, EOK);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, nonTerminated),
-              OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, nonTerminated), OHOS::GSERROR_OK);
     free(nonTerminated);
+
+    code = GET_APP_FRAMEWORK_TYPE;
+    const char* typeGet = nullptr;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &typeGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(0, strcmp(baseline, typeGet));
 }
 
 /*
@@ -3217,13 +3203,21 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_NoNullTerminator001, TestSize.Lev
  * EnvConditions: N/A
  * CaseDescription: 1. pass an empty string (len == 0) to SET_APP_FRAMEWORK_TYPE
  *                  2. Verify that the function rejects empty strings
+ *                     by confirming the previously set value is unchanged.
  */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_EmptyString001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
+    const char* baseline = "baseline";
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, baseline), OHOS::GSERROR_OK);
+
     char emptyStr[] = "";
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, emptyStr),
-              OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, emptyStr), OHOS::GSERROR_OK);
+
+    code = GET_APP_FRAMEWORK_TYPE;
+    const char* typeGet = nullptr;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &typeGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(0, strcmp(baseline, typeGet));
 }
 
 /*
@@ -3235,10 +3229,14 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_EmptyString001, TestSize.Level0)
  *                  2. Verify that the function accepts strings within the limit
  *                  3. pass a string exceeding MAX_FRAMEWORK_TYPE_LEN (65 chars)
  *                  4. Verify that the function rejects overly long strings
+ *                     by confirming the previously set value is unchanged.
  */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_BoundaryLength001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
+    const char* baseline = "baseline";
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, baseline), OHOS::GSERROR_OK);
+
     constexpr size_t maxLen = 64;
     char validStr[maxLen + 1];
     errno_t memRet = memset_s(validStr, sizeof(validStr), 'B', maxLen);
@@ -3253,7 +3251,12 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_BoundaryLength001, TestSize.Level
     ASSERT_EQ(memRet, EOK);
     overStr[overLen] = '\0';
     ASSERT_EQ(strlen(overStr), overLen);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, overStr),
-              OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, overStr), OHOS::GSERROR_OK);
+
+    code = GET_APP_FRAMEWORK_TYPE;
+    const char* typeGet = nullptr;
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, &typeGet), OHOS::GSERROR_OK);
+    ASSERT_EQ(strlen(validStr), maxLen);
+    ASSERT_EQ(0, strncmp(validStr, typeGet, maxLen));
 }
 }

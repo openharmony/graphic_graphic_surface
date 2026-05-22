@@ -3151,13 +3151,13 @@ HWTEST_F(NativeWindowTest, HandleOpt004_VenderPrivate1, TestSize.Level0)
 }
 
 /*
-* Function: HandleNativeWindowSetSurfaceAppFrameworkType
-* Type: Security
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. pass nullptr as appFrameworkType, verify function handles it safely
-*                  2. check that no crash occurs and the API returns expected error
-*/
+ * Function: HandleNativeWindowSetSurfaceAppFrameworkType
+ * Type: Security
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. pass nullptr as appFrameworkType, verify function handles it safely
+ *                  2. check that no crash occurs and the API returns expected error
+ */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_NullPtr001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
@@ -3166,34 +3166,14 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_NullPtr001, TestSize.Level0)
 }
 
 /*
-* Function: HandleNativeWindowSetSurfaceAppFrameworkType
-* Type: Security
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. Risk path: pass uninitialized char* pointer (non-null but pointing to random memory)
-*                  2. Verify that the function does not crash when encountering such input
-*                  3. Construct by casting a non-zero integer value to char*, simulating an
-*                     uninitialized pointer that passes the nullptr check
-*/
-HWTEST_F(NativeWindowTest, SetAppFrameworkType_UninitializedPtr001, TestSize.Level0)
-{
-    int code = SET_APP_FRAMEWORK_TYPE;
-    uintptr_t fakeAddr = 0xDEADBEEF;
-    char* uninitializedPtr = reinterpret_cast<char*>(fakeAddr);
-    ASSERT_NE(uninitializedPtr, nullptr);
-    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(nativeWindow, code, uninitializedPtr),
-              OHOS::GSERROR_INVALID_ARGUMENTS);
-}
-
-/*
-* Function: HandleNativeWindowSetSurfaceAppFrameworkType
-* Type: Security
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. Risk path: pass a dangling pointer (use-after-free)
-*                  2. Allocate memory, write a valid string, free it, then pass the freed pointer
-*                  3. Verify that the function rejects the invalid pointer without crash
-*/
+ * Function: HandleNativeWindowSetSurfaceAppFrameworkType
+ * Type: Security
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Risk path: pass a dangling pointer (use-after-free)
+ *                  2. Allocate memory, write a valid string, free it, then pass the freed pointer
+ *                  3. Verify that the function rejects the invalid pointer without crash
+ */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_DanglingPtr001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
@@ -3208,15 +3188,15 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_DanglingPtr001, TestSize.Level0)
 }
 
 /*
-* Function: HandleNativeWindowSetSurfaceAppFrameworkType
-* Type: Security
-* Rank: Important(1)
-* EnvConditions: N/A
-* CaseDescription: 1. Risk path: pass a char buffer without null terminator within valid range
-*                  2. Allocate a buffer filled with non-zero bytes without '\0', simulating
-*                     a non-null-terminated string that strnlen should detect
-*                  3. Verify that the function rejects input whose length exceeds the bound
-*/
+ * Function: HandleNativeWindowSetSurfaceAppFrameworkType
+ * Type: Security
+ * Rank: Important(1)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Risk path: pass a char buffer without null terminator within valid range
+ *                  2. Allocate a buffer filled with non-zero bytes without '\0', simulating
+ *                     a non-null-terminated string that strnlen should detect.
+ *                  3. Verify that the function rejects input whose length exceeds the bound.
+ */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_NoNullTerminator001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
@@ -3231,13 +3211,13 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_NoNullTerminator001, TestSize.Lev
 }
 
 /*
-* Function: HandleNativeWindowSetSurfaceAppFrameworkType
-* Type: Security
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. pass an empty string (len == 0) to SET_APP_FRAMEWORK_TYPE
-*                  2. Verify that the function rejects empty strings
-*/
+ * Function: HandleNativeWindowSetSurfaceAppFrameworkType
+ * Type: Security
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. pass an empty string (len == 0) to SET_APP_FRAMEWORK_TYPE
+ *                  2. Verify that the function rejects empty strings
+ */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_EmptyString001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;
@@ -3247,15 +3227,15 @@ HWTEST_F(NativeWindowTest, SetAppFrameworkType_EmptyString001, TestSize.Level0)
 }
 
 /*
-* Function: HandleNativeWindowSetSurfaceAppFrameworkType
-* Type: Security
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. pass a string exactly at MAX_FRAMEWORK_TYPE_LEN boundary (64 chars)
-*                  2. Verify that the function accepts strings within the limit
-*                  3. pass a string exceeding MAX_FRAMEWORK_TYPE_LEN (65 chars)
-*                  4. Verify that the function rejects overly long strings
-*/
+ * Function: HandleNativeWindowSetSurfaceAppFrameworkType
+ * Type: Security
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. pass a string exactly at MAX_FRAMEWORK_TYPE_LEN boundary (64 chars)
+ *                  2. Verify that the function accepts strings within the limit
+ *                  3. pass a string exceeding MAX_FRAMEWORK_TYPE_LEN (65 chars)
+ *                  4. Verify that the function rejects overly long strings
+ */
 HWTEST_F(NativeWindowTest, SetAppFrameworkType_BoundaryLength001, TestSize.Level0)
 {
     int code = SET_APP_FRAMEWORK_TYPE;

@@ -30,6 +30,59 @@
 
 using namespace g_fuzzCommon;
 namespace OHOS {
+    namespace {
+        constexpr uint32_t PARCEL_WRITE_MODE_COUNT = 4;
+        enum class ParcelWriteMode : uint32_t {
+            EMPTY = 0,
+            TYPE_ONLY,
+            RESERVED_ONLY,
+            FULL,
+        };
+    }
+
+    void FuzzSetTunnelLayerInfoRemote(const sptr<BufferQueueProducer> &bqp)
+    {
+        MessageParcel arguments;
+        MessageParcel reply;
+        MessageOption option;
+        auto parcelWriteMode = static_cast<ParcelWriteMode>(GetData<uint32_t>() % PARCEL_WRITE_MODE_COUNT);
+
+        switch (parcelWriteMode) {
+            case ParcelWriteMode::TYPE_ONLY:
+                if (!arguments.WriteUint32(GetData<uint32_t>())) {
+                    return;
+                }
+                break;
+            case ParcelWriteMode::RESERVED_ONLY:
+                if (!arguments.WriteUint64(GetData<uint64_t>())) {
+                    return;
+                }
+                break;
+            case ParcelWriteMode::FULL:
+                if (!arguments.WriteUint32(GetData<uint32_t>())) {
+                    return;
+                }
+                if (!arguments.WriteUint64(GetData<uint64_t>())) {
+                    return;
+                }
+                break;
+            case ParcelWriteMode::EMPTY:
+            default:
+                break;
+        }
+
+        bqp->SetTunnelLayerInfoRemote(arguments, reply, option);
+    }
+
+    void FuzzSetTunnelLayerInfo(const sptr<BufferQueueProducer> &bqp)
+    {
+        TunnelLayerInfo info;
+        info.tunnelTypeMask = static_cast<TunnelTypeMask>(GetData<uint32_t>());
+        info.reserved = GetData<uint64_t>();
+        bqp->SetTunnelLayerInfo(info);
+        FuzzSetTunnelLayerInfoRemote(bqp);
+    }
+
     sptr<BufferExtraData> GetBufferExtraDataFromData()
     {
         // get data
@@ -103,6 +156,7 @@ namespace OHOS {
         int64_t time = 0;
         GraphicPresentTimestampType timestampType = GetData<GraphicPresentTimestampType>();
         bqp->GetPresentTimestamp(sequence, timestampType, time);
+        FuzzSetTunnelLayerInfo(bqp);
     }
 
     void BufferQueueProducerFuzzTest1(const sptr<BufferQueueProducer> &bqp)

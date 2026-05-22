@@ -82,6 +82,70 @@ SurfaceError SurfaceUtils::Remove(uint64_t uniqueId)
     return GSERROR_OK;
 }
 
+void SurfaceUtils::AddTunnelLayerConfig(const std::string& tunnelLayerInfo)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    TunnelLayerInfoPair parsedInfo {};
+    if (!GetTunnelLayerInfo(tunnelLayerInfo, parsedInfo)) {
+        return;
+    }
+    tunnelLayerPrefix_.push_back(parsedInfo);
+}
+
+void SurfaceUtils::RemoveTunnelLayerConfig(const std::string& tunnelLayerInfo)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    TunnelLayerInfoPair parsedInfo {};
+    if (!GetTunnelLayerInfo(tunnelLayerInfo, parsedInfo)) {
+        return;
+    }
+
+    for (auto it = tunnelLayerPrefix_.begin(); it != tunnelLayerPrefix_.end();) {
+        if (it->first == parsedInfo.first && it->second == parsedInfo.second) {
+            it = tunnelLayerPrefix_.erase(it);
+            return;
+        }
+        ++it;
+    }
+}
+
+bool SurfaceUtils::GetTunnelLayerInfo(const std::string& tunnelLayerInfo, TunnelLayerInfoPair& parsedInfo) const
+{
+    if (tunnelLayerInfo.empty()) {
+        return false;
+    }
+
+    constexpr char PAIR_DELIM = '+';
+    const size_t splitPos = tunnelLayerInfo.find(PAIR_DELIM);
+    if (splitPos == std::string::npos) {
+        BLOGW("Tunnel layer config has no bundle delimiter, skip config: %{public}s", tunnelLayerInfo.c_str());
+        return false;
+    }
+
+    parsedInfo.first = tunnelLayerInfo.substr(0, splitPos);
+    parsedInfo.second = tunnelLayerInfo.substr(splitPos + 1);
+    if (parsedInfo.first.empty() || parsedInfo.second.empty()) {
+        BLOGD("Tunnel layer config has empty bundle or surface, skip config: %{public}s", tunnelLayerInfo.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool SurfaceUtils::NeedForceTunnelLayer(const std::string& surfaceName, const std::string& bundleName)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (tunnelLayerPrefix_.empty() || surfaceName.empty() || bundleName.empty()) {
+        return false;
+    }
+    for (const auto &[cfgBundleName, cfgSurfaceName] : tunnelLayerPrefix_) {
+        if (bundleName.rfind(cfgBundleName, 0) == 0 &&
+            surfaceName.rfind(cfgSurfaceName, 0) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::array<float, MATRIX_ARRAY_SIZE> SurfaceUtils::MatrixProduct(const std::array<float, MATRIX_ARRAY_SIZE>& lMat,
     const std::array<float, MATRIX_ARRAY_SIZE>& rMat)
 {

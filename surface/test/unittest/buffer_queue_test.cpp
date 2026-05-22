@@ -64,6 +64,41 @@ public:
 };
 }
 
+class LayerStateChangedProducerListenerTest : public ProducerListenerStub {
+public:
+    explicit LayerStateChangedProducerListenerTest(std::vector<LayerStateChange>& results) : results_(results) {}
+    ~LayerStateChangedProducerListenerTest() override = default;
+
+    GSError OnBufferReleased() override
+    {
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    GSError OnBufferReleasedWithFence(const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence) override
+    {
+        (void)buffer;
+        (void)fence;
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    GSError OnPropertyChange(const SurfaceProperty& property) override
+    {
+        (void)property;
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    GSError OnLayerStateChanged(LayerStateChange state) override
+    {
+        results_.emplace_back(state);
+        return GSERROR_OK;
+    }
+
+    void ResetReleaseFunc() override {}
+
+private:
+    std::vector<LayerStateChange>& results_;
+};
+
 class BufferQueueTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -1269,6 +1304,34 @@ HWTEST_F(BufferQueueTest, SetTransformHint001, TestSize.Level0)
 }
 
 /*
+* Function: NotifyLayerCreated
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. register producer property listener
+*                  2. call NotifyLayerStateChanged repeatedly
+*                  3. verify listener receives every state event
+*/
+HWTEST_F(BufferQueueTest, NotifyLayerStateChanged001, TestSize.Level0)
+{
+    constexpr uint64_t producerId = 7;
+    std::vector<LayerStateChange> results;
+    sptr<IProducerListener> listener = new LayerStateChangedProducerListenerTest(results);
+
+    GSError ret = bq->RegisterProducerPropertyListener(listener, producerId);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq->NotifyLayerStateChanged(LayerStateChange::AVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ret = bq->NotifyLayerStateChanged(LayerStateChange::UNAVAILABLE);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ASSERT_EQ(results.size(), 2u);
+    EXPECT_EQ(results[0], LayerStateChange::AVAILABLE);
+    EXPECT_EQ(results[1], LayerStateChange::UNAVAILABLE);
+}
+
+/*
  * Function: PreAllocBuffers
  * Type: Function
  * Rank: Important(2)
@@ -2177,6 +2240,200 @@ HWTEST_F(BufferQueueTest, SetLppBufferConfig001, TestSize.Level0)
     buffer = SurfaceBuffer::Create();
     tmpBq->SetLppBufferConfig(buffer, damages, slot);
     ASSERT_EQ(buffer->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
+}
+
+/*
+ * Function: IsBufferUsageNeedRollback001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Set config.usage without rollbackableUsage_,cacheConfig with rollbackableUsage_
+ *                  2. Call IsBufferUsageNeedRollback
+ *                  3. Check result is true when usage diff equals rollbackableUsage_
+ */
+HWTEST_F(BufferQueueTest, IsBufferUsageNeedRollback001, TestSize.Level1)
+{
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig cacheConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_AUXILLARY_BUFFER0,
+        .timeout = 0,
+    };
+
+    bool result = bq->IsBufferUsageNeedRollback(config, cacheConfig);
+    ASSERT_TRUE(result);
+}
+
+/*
+ * Function: IsBufferUsageNeedRollback002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Set config.usage same as cacheConfig.usage
+ *                  2. Call IsBufferUsageNeedRollback
+ *                  3. Check result is false
+ */
+HWTEST_F(BufferQueueTest, IsBufferUsageNeedRollback002, TestSize.Level1)
+{
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ,
+        .timeout = 0,
+    };
+    BufferRequestConfig cacheConfig = config;
+    bool result = bq->IsBufferUsageNeedRollback(config, cacheConfig);
+    ASSERT_FALSE(result);
+}
+
+/*
+ * Function: IsBufferUsageNeedRollback003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Both config and cacheConfig have rollbackableUsage_, but other usage bits diff
+ *                  2. Call IsBufferUsageNeedRollback
+ *                  3. Check result is fasle when usage diff is not exactly rollbackableUsage_
+ */
+HWTEST_F(BufferQueueTest, IsBufferUsageNeedRollback003, TestSize.Level1)
+{
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig cacheConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_AUXILLARY_BUFFER0,
+        .timeout = 0,
+    };
+
+    bool result = bq->IsBufferUsageNeedRollback(config, cacheConfig);
+    ASSERT_FALSE(result);
+}
+
+/*
+ * Function: IsBufferUsageNeedRollback004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Set config.width different from cacheConfig.width
+ *                  2. Call IsBufferUsageNeedRollback
+ *                  3. Check result is fasle when usage diff is not exactly rollbackableUsage_
+ */
+HWTEST_F(BufferQueueTest, IsBufferUsageNeedRollback004, TestSize.Level1)
+{
+    BufferRequestConfig config = {
+        .width = 0x200,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ,
+        .timeout = 0,
+    };
+
+    BufferRequestConfig cacheConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_AUXILLARY_BUFFER0,
+        .timeout = 0,
+    };
+
+    bool result = bq->IsBufferUsageNeedRollback(config, cacheConfig);
+    ASSERT_FALSE(result);
+}
+
+/*
+ * Function: ReuseBuffer_ShouldRollbackUsage_WhenBufferUsageNeedRollback
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Set IsBufferUsageNeedRollback return true
+ *                  2. Call ReuseBuffer
+ *                  3. Check result is GSERROR_OK
+ */
+HWTEST_F(BufferQueueTest, ReuseBuffer_ShouldRollbackUsage_WhenBufferUsageNeedRollback, TestSize.Level1)
+{
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ,
+        .timeout = 0,
+    };
+    sptr<BufferExtraData> bedata1;
+    IBufferProducer::RequestBufferReturnValue retval;
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock(mutex);
+    retval.buffer = SurfaceBuffer::Create();
+    retval.sequence = retval.buffer->GetSeqNum();
+
+    BufferElement elem;
+    elem.config = config;
+    elem.config.usage = config.usage | BUFFER_USAGE_AUXILLARY_BUFFER0;
+    bq->bufferQueueCache_[retval.sequence] = elem;
+
+    GSError result = bq->ReuseBuffer(config, bedata1, retval, lock, false);
+    ASSERT_EQ(result, GSERROR_OK);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].config.usage, BUFFER_USAGE_CPU_READ);
+}
+
+/*
+ * Function: ReuseBuffer_NotModifyUsage_WhenBufferUsageNeedNotRollback
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. Set IsBufferUsageNeedRollback return false
+ *                  2. Call ReuseBuffer
+ *                  3. Check result is GSERROR_OK
+ */
+HWTEST_F(BufferQueueTest, ReuseBuffer_NotModifyUsage_WhenBufferUsageNeedNotRollback, TestSize.Level1)
+{
+    BufferRequestConfig config = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ,
+        .timeout = 0,
+    };
+    sptr<BufferExtraData> bedata1;
+    IBufferProducer::RequestBufferReturnValue retval;
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock(mutex);
+    retval.buffer = SurfaceBuffer::Create();
+    retval.sequence = retval.buffer->GetSeqNum();
+
+    BufferElement elem;
+    elem.config = config;
+    bq->bufferQueueCache_[retval.sequence] = elem;
+
+    GSError result = bq->ReuseBuffer(config, bedata1, retval, lock, false);
+    ASSERT_EQ(result, GSERROR_OK);
+    ASSERT_EQ(bq->bufferQueueCache_[retval.sequence].config.usage, BUFFER_USAGE_CPU_READ);
 }
 
 /*

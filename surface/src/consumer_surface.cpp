@@ -522,12 +522,36 @@ GSError ConsumerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
     return producer_->SetTunnelHandle(handle);
 }
 
+GSError ConsumerSurface::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetTunnelLayerInfo(info);
+}
+
 sptr<SurfaceTunnelHandle> ConsumerSurface::GetTunnelHandle() const
 {
     if (consumer_ == nullptr) {
         return nullptr;
     }
     return consumer_->GetTunnelHandle();
+}
+
+GSError ConsumerSurface::GetTunnelLayerInfo(TunnelLayerState& info)
+{
+    if (consumer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return consumer_->GetTunnelLayerInfo(info);
+}
+
+GSError ConsumerSurface::NotifyLayerStateChanged(LayerStateChange state)
+{
+    if (consumer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return consumer_->NotifyLayerStateChanged(state);
 }
 
 void ConsumerSurface::SetBufferHold(bool hold)

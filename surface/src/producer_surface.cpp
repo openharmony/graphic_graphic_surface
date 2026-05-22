@@ -88,14 +88,23 @@ GSError ProducerSurface::Init()
         return GSERROR_OK;
     }
 
-    initInfo_.propertyListener = new PropertyChangeProducerListener([weakThis = wptr(this)](SurfaceProperty property) {
-        auto strongThis = weakThis.promote();
-        if (strongThis == nullptr) {
-            BLOGE("ProducerSurface has been destroyed.");
-            return GSERROR_INVALID_ARGUMENTS;
-        }
-        return strongThis->PropertyChangeCallback(property);
-    });
+    initInfo_.propertyListener = new PropertyChangeProducerListener(
+        [weakThis = wptr(this)](SurfaceProperty property) {
+            auto strongThis = weakThis.promote();
+            if (strongThis == nullptr) {
+                BLOGE("ProducerSurface has been destroyed.");
+                return GSERROR_INVALID_ARGUMENTS;
+            }
+            return strongThis->PropertyChangeCallback(property);
+        },
+        [weakThis = wptr(this)](LayerStateChange state) {
+            auto strongThis = weakThis.promote();
+            if (strongThis == nullptr) {
+                BLOGE("ProducerSurface has been destroyed.");
+                return;
+            }
+            strongThis->OnLayerStateChanged(state);
+        });
 
     GetProducerInitInfo(initInfo_);
     name_ = initInfo_.name;
@@ -782,10 +791,33 @@ GSError ProducerSurface::RegisterReleaseListener(OnReleaseFuncWithFence funcWith
     return producer_->RegisterReleaseListener(listener);
 }
 
+GSError ProducerSurface::RegisterLayerStateChangedListener(OnLayerStateChangedFunc func)
+{
+    if (!func || producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    onLayerStateChangedFunc_ = std::move(func);
+    return GSERROR_OK;
+}
+
 GSError ProducerSurface::PropertyChangeCallback(const SurfaceProperty& property)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     lastSetTransformHint_ = property.transformHint;
+    return GSERROR_OK;
+}
+
+GSError ProducerSurface::OnLayerStateChanged(LayerStateChange state)
+{
+    OnLayerStateChangedFunc func = nullptr;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        func = onLayerStateChangedFunc_;
+    }
+    if (func != nullptr) {
+        func(state);
+    }
     return GSERROR_OK;
 }
 
@@ -1157,6 +1189,14 @@ GSError ProducerSurface::SetTunnelHandle(const GraphicExtDataHandle *handle)
     return producer_->SetTunnelHandle(handle);
 }
 
+GSError ProducerSurface::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetTunnelLayerInfo(info);
+}
+
 GSError ProducerSurface::GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type,
                                              int64_t& time) const
 {
@@ -1526,9 +1566,14 @@ GSError ProducerSurface::ProducerSurfaceLockBuffer(BufferRequestConfig &config, 
         auto tmpRet = memcpy_s(region_.rects, region.rectNumber * sizeof(Region::Rect),
                                region.rects, region.rectNumber * sizeof(Region::Rect));
         if (tmpRet != EOK) {
-            auto tmpRet = ProducerSurfaceCancelBufferLocked(buffer);
+            auto cancelRet = ProducerSurfaceCancelBufferLocked(buffer);
+            if (cancelRet != GSERROR_OK) {
+                delete[] region_.rects;
+                region_.rects = nullptr;
+                region_.rectNumber = 0;
+            }
             BLOGE("memcpy_s failed, ret:%{public}d, cancelBuffer tmpRet:%{public}d,"
-                "uniqueId: %{public}" PRIu64 ".", ret, tmpRet, GetUniqueId());
+                "uniqueId: %{public}" PRIu64 ".", ret, cancelRet, GetUniqueId());
             buffer = nullptr;
             return SURFACE_ERROR_UNKOWN;
         }
@@ -1625,7 +1670,7 @@ GSError ProducerSurface::SyncProducerCacheLocked()
         str += " seqNum:" + std::to_string(seqNum);
         bufferProducerCache_[seqNum] = buffer;
     }
-    BLOGI("%s", str.c_str());
+    BLOGI("%{public}s", str.c_str());
     return GSERROR_OK;
 }
 } // namespace OHOS

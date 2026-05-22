@@ -384,6 +384,15 @@ GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr
     return ret;
 }
 
+bool BufferQueue::IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig)
+{
+    if ((config.usage ^ cacheConfig.usage) != rollbackableUsage_) {
+        return false;
+    }
+    cacheConfig.usage = config.usage;
+    return config == cacheConfig;
+}
+
 GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
     bool listenerSeqAndFence)
@@ -395,7 +404,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 
     // check param
     BufferRequestConfig updateConfig = config;
-    updateConfig.usage |= defaultUsage_;
+    updateConfig.usage |= (defaultUsage_ | rollbackUsage_);
     ret = CheckRequestConfig(updateConfig);
     if (ret != GSERROR_OK) {
         BLOGE("CheckRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
@@ -528,6 +537,11 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
     if (mapIter == bufferQueueCache_.end()) {
         BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
+    }
+    // When config is different only in rollbackUsage_, The usage is deleted to reuse the buffer.
+    if (IsBufferUsageNeedRollback(config, mapIter->second.config)) {
+        mapIter->second.config.usage &= ~rollbackableUsage_;
+        SURFACE_TRACE_NAME("ReuseBufferUsage rollback");
     }
     auto &cacheConfig = mapIter->second.config;
     SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
@@ -923,7 +937,8 @@ void BufferQueue::LogAndTraceAllBufferInBufferQueueCacheLocked()
         " Acquired: " + std::to_string(bufferState[BUFFER_STATE_ACQUIRED]);
     if (str.compare(acquireBufferStateStr_) != 0) {
         acquireBufferStateStr_ = str;
-        BLOGE("there is no dirty buffer or no dirty buffer ready, uniqueId: %{public}s", str.c_str());
+        BLOGE("there is no dirty buffer or no dirty buffer ready, producer pid: %{public}u, "
+              "consumer pid: %{public}u, uniqueId: %{public}s", connectedPid_, getpid(), str.c_str());
     }
 }
 
@@ -1771,6 +1786,28 @@ GSError BufferQueue::UnRegisterProducerPropertyListener(uint64_t producerId)
     return BufferUtilUnRegisterPropertyListener(producerId, propertyChangeListeners_);
 }
 
+GSError BufferQueue::NotifyLayerStateChanged(LayerStateChange state)
+{
+    std::map<uint64_t, sptr<IProducerListener>> propertyListeners;
+    {
+        std::lock_guard<std::mutex> lockGuard(propertyChangeMutex_);
+        if (propertyChangeListeners_.empty()) {
+            return GSERROR_OK;
+        }
+        propertyListeners = propertyChangeListeners_;
+    }
+
+    for (const auto& item : propertyListeners) {
+        if (item.second == nullptr) {
+            continue;
+        }
+        if (item.second->OnLayerStateChanged(state) != GSERROR_OK) {
+            BLOGE("OnLayerStateChanged failed, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        }
+    }
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::RegisterProducerReleaseListenerBackup(sptr<IProducerListener> listener)
 {
     std::lock_guard<std::mutex> lockGuard(producerListenerMutex_);
@@ -1849,7 +1886,8 @@ int32_t BufferQueue::GetDefaultHeight()
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    defaultUsage_ = usage;
+    rollbackUsage_ = usage & rollbackableUsage_;
+    defaultUsage_ = usage & ~rollbackableUsage_;
     return GSERROR_OK;
 }
 
@@ -2259,6 +2297,51 @@ sptr<SurfaceTunnelHandle> BufferQueue::GetTunnelHandle()
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return tunnelHandle_;
+}
+
+GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    tunnelLayerState_.tunnelLayerInfo = info;
+    switch (info.tunnelTypeMask) {
+        case TunnelTypeMask::TUNNEL_TYPE_NONE: {
+            tunnelLayerState_.tunnelLayerId = 0;
+            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_LPP: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
+        case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
+        case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_GAME: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
+            return GSERROR_OK;
+        }
+        default: {
+            tunnelLayerState_.tunnelLayerId = 0;
+            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+    }
+}
+
+GSError BufferQueue::GetTunnelLayerInfo(TunnelLayerState& info)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    info = tunnelLayerState_;
+    return GSERROR_OK;
 }
 
 GSError BufferQueue::SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp)
@@ -3049,4 +3132,3 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
     return GSERROR_OK;
 }
 }; // namespace OHOS
-

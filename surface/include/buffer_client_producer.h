@@ -91,6 +91,7 @@ public:
     GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                            const std::vector<uint8_t> &metaData) override;
     GSError SetTunnelHandle(const GraphicExtDataHandle *handle) override;
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) override;
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) override;
 
     sptr<NativeSurface> GetNativeSurface() override;

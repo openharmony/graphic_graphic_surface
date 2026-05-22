@@ -162,6 +162,7 @@ public:
     GSError UnregisterConsumerListener();
     GSError RegisterProducerPropertyListener(sptr<IProducerListener> listener, uint64_t producerId);
     GSError UnRegisterProducerPropertyListener(uint64_t producerId);
+    GSError NotifyLayerStateChanged(LayerStateChange state);
 
     GSError SetDefaultWidthAndHeight(int32_t width, int32_t height);
     int32_t GetDefaultWidth();
@@ -200,6 +201,8 @@ public:
                            std::vector<uint8_t> &metaData);
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
     sptr<SurfaceTunnelHandle> GetTunnelHandle();
+    GSError SetTunnelLayerInfo(const TunnelLayerInfo& info);
+    GSError GetTunnelLayerInfo(TunnelLayerState& info);
     GSError SetPresentTimestamp(uint32_t sequence, const GraphicPresentTimestamp &timestamp);
     GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time);
 
@@ -342,6 +345,7 @@ private:
     GSError CheckBufferQueueCacheLocked(uint32_t sequence);
     GSError DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
         sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock);
+    bool IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig);
     GSError RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
         bool listenerSeqAndFence = false);
@@ -375,6 +379,8 @@ private:
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
+    uint32_t rollbackableUsage_ = BUFFER_USAGE_AUXILLARY_BUFFER0;
+    uint32_t rollbackUsage_ = 0;
     uint32_t bufferQueueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
@@ -404,6 +410,7 @@ private:
     std::condition_variable waitReqCon_;
     std::condition_variable waitAttachCon_;
     sptr<SurfaceTunnelHandle> tunnelHandle_ = nullptr;
+    TunnelLayerState tunnelLayerState_;
     bool isValidStatus_ = true;
     bool producerCacheClean_ = false;
     const bool isLocalRender_;

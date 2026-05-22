@@ -399,8 +399,8 @@ static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window,
     if (appFrameworkType == nullptr) {
         return;
     }
-    size_t len = strnlen(appFrameworkType, MAXIMUM_LENGTH_OF_APP_FRAMEWORK);
-    if (len == 0 || len >= MAXIMUM_LENGTH_OF_APP_FRAMEWORK) {
+    size_t len = strnlen(appFrameworkType, MAXIMUM_LENGTH_OF_APP_FRAMEWORK + 1);
+    if (len == 0 || len > MAXIMUM_LENGTH_OF_APP_FRAMEWORK) {
         BLOGE("Invalid appFrameworkType: invalid length %{public}zu", len);
         return;
     }

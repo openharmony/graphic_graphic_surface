@@ -1061,6 +1061,23 @@ void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
                 ret, dropBuffer.first->GetSeqNum(), uniqueId_);
         }
     }
+
+    if (!dropBuffers.empty()) {
+        SURFACE_TRACE_NAME_FMT("ReleaseDropBuffers name: %s queueId: %" PRIu64 " dropCount: %zu", name_.c_str(),
+            uniqueId_, dropBuffers.size());
+        sptr<IBufferConsumerListener> listener;
+        IBufferConsumerListenerClazz *listenerClazz = nullptr;
+        {
+            std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+            listener = listener_;
+            listenerClazz = listenerClazz_;
+        }
+        if (listener != nullptr) {
+            listener->OnDropBuffer();
+        } else if (listenerClazz != nullptr) {
+            listenerClazz->OnDropBuffer();
+        }
+    }
 }
 
 void BufferQueue::DropBuffersByLevel(std::vector<BufferAndFence> &dropBuffers)

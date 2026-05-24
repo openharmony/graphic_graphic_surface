@@ -144,6 +144,7 @@ public:
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
     GSError GetAvailableBufferCount(uint32_t &count) override;
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
+    GSError CleanProducerBySeqNum(std::vector<uint32_t> seqNums) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);

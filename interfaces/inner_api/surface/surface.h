@@ -506,7 +506,7 @@ public:
         (void)config;
         return GSERROR_NOT_SUPPORT;
     }
-    
+
     /**
      * @brief Merge AttachBufferToQueue And FlushBuffer function to reduce once ipc.
      */
@@ -689,6 +689,12 @@ public:
     virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info)
     {
         (void)info;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError CleanCache(bool cleanAll, uint32_t& bufferSeq)
+    {
+        (void)cleanAll;
+        (void)bufferSeq;
         return GSERROR_NOT_SUPPORT;
     }
 protected:

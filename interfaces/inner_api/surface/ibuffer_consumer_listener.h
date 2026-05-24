@@ -18,8 +18,15 @@
 
 #include <refbase.h>
 #include "surface_type.h"
+#include "sync_fence.h"
+#include "surface_buffer.h"
 
 namespace OHOS {
+struct CleanCacheBufferInfo {
+    sptr<SurfaceBuffer> buffer;
+    sptr<SyncFence> fence;
+    bool isAcquired;
+};
 class IBufferConsumerListener : public RefBase {
 public:
     virtual ~IBufferConsumerListener() = default;
@@ -32,6 +39,8 @@ public:
     }
     virtual void OnTransformChange() {};
     virtual void OnDropBuffer() {};
+    virtual void OnCleanCacheForBufferInfoMap(std::vector<CleanCacheBufferInfo>& infos) { (void)infos; };
+    virtual bool IsNeedBufferInfo() { return false; };
 };
 
 class IBufferConsumerListenerClazz {

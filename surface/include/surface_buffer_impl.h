@@ -88,6 +88,9 @@ public:
 
     GSError WriteBufferRequestConfig(MessageParcel &parcel) override;
     GSError ReadBufferRequestConfig(MessageParcel &parcel) override;
+    GSError ReadBufferProperty(MessageParcel &parcel) override;
+    GSError WriteBufferProperty(MessageParcel &parcel) override;
+    GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
     BufferRequestConfig GetBufferRequestConfig() const override;
     void SetBufferRequestConfig(const BufferRequestConfig &config) override;
     void SetConsumerAttachBufferFlag(bool value) override;
@@ -109,7 +112,7 @@ public:
     uint64_t GetFlushedTimestamp() const override;
     void SetFlushTimestamp(uint64_t timestamp) override;
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
-    void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
+    bool RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
     void UnRegisterBufferDestructorCallBack() override;
     GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel) override;
     GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,

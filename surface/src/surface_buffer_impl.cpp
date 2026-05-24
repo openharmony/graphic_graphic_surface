@@ -655,6 +655,57 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     return GSERROR_OK;
 }
 
+GSError SurfaceBufferImpl::WriteBufferProperty(MessageParcel& parcel)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!parcel.WriteInt32(bufferRequestConfig_.width) || !parcel.WriteInt32(bufferRequestConfig_.height) ||
+        !parcel.WriteInt32(bufferRequestConfig_.strideAlignment) || !parcel.WriteInt32(bufferRequestConfig_.format) ||
+        !parcel.WriteUint64(bufferRequestConfig_.usage) || !parcel.WriteInt32(bufferRequestConfig_.timeout) ||
+        !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
+        !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.transform)) ||
+        !parcel.WriteInt32(scalingMode_) || !parcel.WriteInt32(transform_)) {
+        BLOGE("parcel write fail, seq: %{public}u.", sequenceNumber_);
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return GSERROR_OK;
+}
+
+GSError SurfaceBufferImpl::ReadBufferProperty(MessageParcel& parcel)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    uint32_t colorGamut = 0;
+    uint32_t transform = 0;
+    int32_t scalingMode = {};
+    uint32_t configTransform = 0;
+    if (!parcel.ReadInt32(bufferRequestConfig_.width) || !parcel.ReadInt32(bufferRequestConfig_.height) ||
+        !parcel.ReadInt32(bufferRequestConfig_.strideAlignment) || !parcel.ReadInt32(bufferRequestConfig_.format) ||
+        !parcel.ReadUint64(bufferRequestConfig_.usage) || !parcel.ReadInt32(bufferRequestConfig_.timeout) ||
+        !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(configTransform) || !parcel.ReadInt32(scalingMode) ||
+        !parcel.ReadUint32(transform)) {
+        BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+    surfaceBufferColorGamut_ = static_cast(colorGamut);
+    transform_ = static_cast(transform);
+    surfaceBufferWidth_ = bufferRequestConfig_.width;
+    surfaceBufferHeight_ = bufferRequestConfig_.height;
+    scalingMode_ = static_cast(scalingMode);
+    bufferRequestConfig_.colorGamut = static_cast(colorGamut);
+    bufferRequestConfig_.transform = static_cast(configTransform);
+    return GSERROR_OK;
+}
+
+GSError SurfaceBufferImpl::ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
+{
+    bufferRequestConfig_ = bufferInfo.bufferRequestConfig;
+    surfaceBufferWidth_ = bufferInfo.surfaceBufferWidth;
+    surfaceBufferHeight_ = bufferInfo.surfaceBufferHeight;
+    scalingMode_ = bufferInfo.scalingMode;
+    transform_ = bufferInfo.transform;
+    surfaceBufferColorGamut_ = bufferInfo.surfaceBufferColorGamut;
+    return GSERROR_OK;
+}
+
 GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc)
 {
@@ -967,12 +1018,14 @@ BufferHandle* SurfaceBufferImpl::CloneBufferHandle(const BufferHandle* handle) c
     return outHandle;
 }
 
-void SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::function<void(uint64_t)> bufferDtorCb)
+bool SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::function<void(uint64_t)> bufferDtorCb)
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     if (bufferDtorCb_ == nullptr) {
         bufferDtorCb_ = bufferDtorCb;
+        return true;
     }
+    return false;
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallBack()

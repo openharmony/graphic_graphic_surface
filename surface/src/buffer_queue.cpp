@@ -1241,7 +1241,7 @@ void BufferQueue::RequestBuffersForListenerLocked(
         if (mapIter == bufferQueueCache_.end()) {
             continue;
         }
-        
+
         BufferRequestConfig config = mapIter->second.buffer->GetBufferRequestConfig();
         config.timeout = 0;
         bool isExist = false;
@@ -1490,6 +1490,23 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool
     }
     buffer->SetSurfaceBufferWidth(buffer->GetWidth());
     buffer->SetSurfaceBufferHeight(buffer->GetHeight());
+}
+
+void BufferQueue::CleanProducerBySeqNum(std::vector<uint32_t> seqNums)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    SURFACE_TRACE_NAME_FMT("CleanProducerBySeqNum: bufferQueueSize: %u, usedSize:%u, uniqueId: %llu, seqNumSize=%u",
+        bufferQueueSize_, GetUsedSize(), uniqueId_, seqNums,size());
+    for (auto it = seqNums.begin(); it != seqNums.end(); it++) {
+        auto mapIter = bufferQueueCache_.find(*it);
+        if (mapIter != bufferQueueCache_.end()) {
+            OnBufferDeletedForRS(*it);
+            freeList_.remove(*it);
+            dirtyList.remove(*it);
+            SURFACE_TRACE_NAME_FMT("CleanProducerBySeqNum: SeqNum=%u", *it);
+            bufferQueueCache_.erase(mapIter);
+        }
+    }
 }
 
 GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, InvokerType invokerType, bool needMap)
@@ -1897,12 +1914,28 @@ uint64_t BufferQueue::GetDefaultUsage()
     return defaultUsage_;
 }
 
-void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock)
+void BufferQueue::OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener)
+{
+    if (!listener || !listener->IsNeedBufferInfo()) {
+        return;
+    }
+    bufferInfoMap_.clear();
+    for (auto &[id, element] : bufferQueueCache_) {
+        CleanCacheBufferInfo info;
+        info.buffer = bufferQueueCache_[id].buffer;
+        info.fence = bufferQueueCache_[id].fence;
+        info.isAcquired = (bufferQueueCache_[id].state == BUFFER_STATE_ACQUIRED);
+        bufferInfoMap_.push_back(info);
+    }
+}
+
+void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock, sptr<IBufferConsumerListener> listener)
 {
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
-    for (auto &[id, _] : bufferQueueCache_) {
+    for (auto &[id, element] : bufferQueueCache_) {
         OnBufferDeleteForRS(id);
     }
+    OnCleanCacheForBufferInfoMapLocked(listener);
     bufferQueueCache_.clear();
     freeList_.clear();
     dirtyList_.clear();
@@ -1958,12 +1991,19 @@ GSError BufferQueue::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
             listenerClazz->OnCleanCache(bufSeqNum);
         }
     }
-    std::unique_lock<std::mutex> lock(mutex_);
-    if (!cleanAll && bufSeqNum != nullptr) {
-        MarkBufferReclaimableByIdLocked(*bufSeqNum);
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (!cleanAll && bufSeqNum != nullptr) {
+            MarkBufferReclaimableByIdLocked(*bufSeqNum);
+        }
+        ClearLocked(lock);
+        waitReqCon_.notify_all();
     }
-    ClearLocked(lock);
-    waitReqCon_.notify_all();
+    if (listener && !bufferInfoMap_.empty()) {
+        BLOGE("cleancachetest call OnCleanCacheForBufferInfoMap, name=%{public}s", name_.c_str());
+        listener->OnCleanCacheForBufferInfoMap_(bufferInfoMap_);
+        bufferInfoMap_.clear();
+    }
     return GSERROR_OK;
 }
 
@@ -2922,7 +2962,7 @@ GSError BufferQueue::AcquireLppBuffer(
     lastLppWriteOffset_ = slotInfo.writeOffset;
     lastLppWriteTimestamp_ = slotInfo.slot[lastLppWriteOffset_].timestamp;
     uint32_t seqId = bufferSlot.seqId;
- 
+
     auto mapIter = bufferQueueCache_.find(seqId);
     if (mapIter == bufferQueueCache_.end()) {
         lppSlotInfo_->slot[readOffset].isRsUsing = false;

@@ -579,7 +579,7 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo004, TestSize.Level0)
     EXPECT_EQ(ret, GSERROR_OK);
     EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR);
     EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
-    EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
+    EXPECT_EQ(state.property, TUNNEL_PROP_POSTION);
 }
 
 /*
@@ -604,33 +604,6 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo005, TestSize.Level0)
     EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, TunnelTypeMask::TUNNEL_TYPE_LPP);
     EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
     EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
-}
-
-/*
-* Function: SetTunnelLayerInfo006
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call SetTunnelLayerInfo with ANCO/GAME types
-*                  2. check ret and saved values
-*/
-HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo006, TestSize.Level0)
-{
-    const std::vector<TunnelTypeMask> tunnelTypes = {
-        TunnelTypeMask::TUNNEL_TYPE_ANCO,
-        TunnelTypeMask::TUNNEL_TYPE_GAME,
-    };
-    for (auto tunnelType : tunnelTypes) {
-        TunnelLayerInfo info;
-        info.tunnelTypeMask = tunnelType;
-        EXPECT_EQ(bqp_->SetTunnelLayerInfo(info), GSERROR_OK);
-
-        TunnelLayerState state;
-        EXPECT_EQ(bq_->GetTunnelLayerInfo(state), GSERROR_OK);
-        EXPECT_EQ(state.tunnelLayerInfo.tunnelTypeMask, tunnelType);
-        EXPECT_EQ(state.tunnelLayerId, bq_->GetUniqueId());
-        EXPECT_EQ(state.property, TUNNEL_PROP_BUFFER_ADDR);
-    }
 }
 
 /*

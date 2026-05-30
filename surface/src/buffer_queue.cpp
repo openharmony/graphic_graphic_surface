@@ -2315,16 +2315,13 @@ GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
                 TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
             return GSERROR_OK;
         }
-        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
-        case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
-        case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
-        case TunnelTypeMask::TUNNEL_TYPE_ANCO: {
+        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR: {
             tunnelLayerState_.tunnelLayerId = uniqueId_;
-            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
-                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
+            tunnelLayerState_.property = TUNNEL_PROP_POSTION;
             return GSERROR_OK;
         }
-        case TunnelTypeMask::TUNNEL_TYPE_GAME: {
+        case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
+        case TunnelTypeMask::TUNNEL_TYPE_VIDEO: {
             tunnelLayerState_.tunnelLayerId = uniqueId_;
             tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
             return GSERROR_OK;

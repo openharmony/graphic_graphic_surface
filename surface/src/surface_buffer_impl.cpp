@@ -1018,14 +1018,14 @@ BufferHandle* SurfaceBufferImpl::CloneBufferHandle(const BufferHandle* handle) c
     return outHandle;
 }
 
-bool SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::function<void(uint64_t)> bufferDtorCb)
+void SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::function<void(uint64_t)> bufferDtorCb)
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     if (bufferDtorCb_ == nullptr) {
         bufferDtorCb_ = bufferDtorCb;
-        return true;
+        return;
     }
-    return false;
+    return;
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallBack()

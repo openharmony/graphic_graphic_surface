@@ -271,10 +271,10 @@ public:
         (void)handle;
         return nullptr;
     }
-    virtual bool RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack)
+    virtual void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack)
     {
         (void)callBack;
-        return false;
+        return;
     }
     virtual void UnRegisterBufferDestructorCallBack()
     {

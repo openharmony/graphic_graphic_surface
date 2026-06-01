@@ -2962,7 +2962,7 @@ GSError BufferQueue::AcquireLppBuffer(
     lastLppWriteOffset_ = slotInfo.writeOffset;
     lastLppWriteTimestamp_ = slotInfo.slot[lastLppWriteOffset_].timestamp;
     uint32_t seqId = bufferSlot.seqId;
-
+ 
     auto mapIter = bufferQueueCache_.find(seqId);
     if (mapIter == bufferQueueCache_.end()) {
         lppSlotInfo_->slot[readOffset].isRsUsing = false;

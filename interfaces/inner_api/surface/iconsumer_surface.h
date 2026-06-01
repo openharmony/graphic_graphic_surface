@@ -405,7 +405,6 @@ public:
         (void)info;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
-    
 protected:
     IConsumerSurface() = default;
 };

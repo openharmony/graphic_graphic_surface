@@ -17,7 +17,7 @@
 
 #include <cinttypes>
 #include <sys/ioctl.h>
-
+ 
 #include <linux/dma-buf.h>
 
 #include "buffer_log.h"
@@ -278,7 +278,7 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
                 ioctl(fd, DMA_BUF_SET_LEAK_TYPE, "external");
             }
         }
-
+        
         if (!bufferTypeLeak_.empty()) {
             int fd = retval.buffer->GetFileDescriptor();
             if (fd > 0) {
@@ -563,7 +563,7 @@ GSError ProducerSurface::RegisterSurfaceDelegator(sptr<IRemoteObject> client)
         BLOGE("surfaceDelegator is nullptr");
         return GSERROR_INVALID_ARGUMENTS;
     }
-
+    
     surfaceDelegator->SetSurface(this);
     {
         std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
@@ -903,11 +903,11 @@ GSError ProducerSurface::OnBufferReleasedWithSequenceAndFence(uint32_t sequence,
         }
         buffer = iter->second;
     }
-
+    
     if (funcWithSequenceAndFence != nullptr) {
         return funcWithSequenceAndFence(sequence, fence);
     }
-
+    
     BLOGW("funcWithSequenceAndFence_ is nullptr, uniqueId: %{public}" PRIu64 ".", queueId_);
     CancelBuffer(buffer);
     return GSERROR_INVALID_ARGUMENTS;
@@ -1030,6 +1030,23 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     return CleanCacheLocked(cleanAll);
+}
+
+GSError ProducerSurface::CleanCache(bool cleanAll, uint32_t& bufferSeq)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    uint32_t bufSeqNum = 0;
+    GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
+    CleanAllLocked(&bufSeqNum);
+    if (cleanAll) {
+        std::lock_guard<std::mutex> preCacheLock(preCacheBufferMutex_);
+        preCacheBuffer_ = nullptr;
+    }
+    bufferSeq = bufSeqNum;
+    return ret;
 }
 
 GSError ProducerSurface::GoBackground()
@@ -1672,22 +1689,5 @@ GSError ProducerSurface::SyncProducerCacheLocked()
     }
     BLOGI("%{public}s", str.c_str());
     return GSERROR_OK;
-}
-
-GSError ProducerSurface::ClearCache(bool clearAll, uint32_t &bufferSeq)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    if (producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    uint32_t bufSeqNum = 0;
-    GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
-    CleanAllLocked(&bufSeqNum);
-    if (cleanAll) {
-        std::lock_guard<std::mutex> lockGuard(preCacheBufferMutex_);
-        preCacheBuffer_ = nullptr;
-    }
-    bufferSeq = bufSeqNum;
-    return ret;
 }
 } // namespace OHOS

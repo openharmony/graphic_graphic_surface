@@ -1293,4 +1293,156 @@ HWTEST_F(SurfaceBufferImplTest, WriteAllPropertiesWithReclaimedFlag, TestSize.Le
     ASSERT_EQ(out.w, 1920);
     ASSERT_EQ(out.h, 1080);
 }
+
+/*
+ * Function: WriteBufferProperty and ReadBufferProperty round trip
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test writing and reading buffer properties through MessageParcel
+ */
+HWTEST_F(SurfaceBufferImplTest, BufferPropertyParcelRoundTrip001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_CROP);
+    sbi->SetSurfaceBufferWidth(320);
+    sbi->SetSurfaceBufferHeight(240);
+
+    BufferRequestConfig requestConfig = {
+        .width = 320,
+        .height = 240,
+        .strideAlignment = 16,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE,
+        .timeout = 99,
+        .colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3,
+        .transform = GraphicTransformType::GRAPHIC_ROTATE_270,
+    };
+    sbi->SetBufferRequestConfig(requestConfig);
+
+    MessageParcel parcel;
+    ASSERT_EQ(sbi->WriteBufferProperty(parcel), GSERROR_OK);
+
+    sptr<SurfaceBufferImpl> sbiIn = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn->ReadBufferProperty(parcel), GSERROR_OK);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferWidth(), 320);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferHeight(), 240);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_CROP);
+
+    BufferRequestConfig actualConfig = sbiIn->GetBufferRequestConfig();
+    ASSERT_EQ(actualConfig.width, 320);
+    ASSERT_EQ(actualConfig.height, 240);
+    ASSERT_EQ(actualConfig.strideAlignment, 16);
+    ASSERT_EQ(actualConfig.format, GRAPHIC_PIXEL_FMT_RGBA_8888);
+    ASSERT_EQ(actualConfig.usage, BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE);
+    ASSERT_EQ(actualConfig.timeout, 99);
+    ASSERT_EQ(actualConfig.colorGamut, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(actualConfig.transform, GraphicTransformType::GRAPHIC_ROTATE_270);
+}
+
+/*
+ * Function: ReadBufferProperty failure when parcel data is incomplete
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test the read failure branch when the last property is missing
+ */
+HWTEST_F(SurfaceBufferImplTest, BufferPropertyReadFailMissingTransform001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    ASSERT_TRUE(parcel.WriteInt32(320));
+    ASSERT_TRUE(parcel.WriteInt32(240));
+    ASSERT_TRUE(parcel.WriteInt32(16));
+    ASSERT_TRUE(parcel.WriteInt32(GRAPHIC_PIXEL_FMT_RGBA_8888));
+    ASSERT_TRUE(parcel.WriteUint64(BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE));
+    ASSERT_TRUE(parcel.WriteInt32(99));
+    ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3)));
+    ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(GraphicTransformType::GRAPHIC_ROTATE_270)));
+    ASSERT_TRUE(parcel.WriteInt32(static_cast<int32_t>(ScalingMode::SCALING_MODE_SCALE_CROP)));
+    // Missing the final transform field
+
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    ASSERT_EQ(sbi->ReadBufferProperty(parcel), GSERROR_API_FAILED);
+}
+
+/*
+ * Function: WriteBufferProperty failure when parcel is full
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test the write failure branch when MessageParcel has no writable space
+ */
+HWTEST_F(SurfaceBufferImplTest, BufferPropertyWriteFailWhenParcelFull001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    BufferRequestConfig requestConfig = {
+        .width = 320,
+        .height = 240,
+        .strideAlignment = 16,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE,
+        .timeout = 99,
+        .colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3,
+        .transform = GraphicTransformType::GRAPHIC_ROTATE_270,
+    };
+    sbi->SetBufferRequestConfig(requestConfig);
+    sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_270);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_CROP);
+
+    constexpr size_t BUFFER_SIZE = 200 * 1024;
+    std::vector<uint8_t> fillBuffer(BUFFER_SIZE, 0xFF);
+
+    MessageParcel parcel;
+    ASSERT_TRUE(parcel.SetMaxCapacity(BUFFER_SIZE));
+    ASSERT_TRUE(parcel.WriteBuffer(fillBuffer.data(), BUFFER_SIZE));
+    ASSERT_EQ(sbi->WriteBufferProperty(parcel), SURFACE_ERROR_UNKOWN);
+}
+
+/*
+ * Function: ReadFromBufferInfo
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: Test copying buffer info into SurfaceBufferImpl
+ */
+HWTEST_F(SurfaceBufferImplTest, ReadFromBufferInfo001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    RSBufferInfo bufferInfo = {
+        .surfaceBufferColorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3,
+        .transform = GraphicTransformType::GRAPHIC_ROTATE_180,
+        .scalingMode = ScalingMode::SCALING_MODE_NO_SCALE_CROP,
+        .surfaceBufferWidth = 1234,
+        .surfaceBufferHeight = 5678,
+        .sequence = 42,
+        .bufferRequestConfig = {
+            .width = 1234,
+            .height = 5678,
+            .strideAlignment = 8,
+            .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+            .usage = BUFFER_USAGE_CPU_READ,
+            .timeout = 77,
+            .colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3,
+            .transform = GraphicTransformType::GRAPHIC_ROTATE_180,
+        },
+    };
+
+    ASSERT_EQ(sbi->ReadFromBufferInfo(bufferInfo), GSERROR_OK);
+    ASSERT_EQ(sbi->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(sbi->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_180);
+    ASSERT_EQ(sbi->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    ASSERT_EQ(sbi->GetSurfaceBufferWidth(), 1234);
+    ASSERT_EQ(sbi->GetSurfaceBufferHeight(), 5678);
+
+    BufferRequestConfig actualConfig = sbi->GetBufferRequestConfig();
+    ASSERT_EQ(actualConfig.width, 1234);
+    ASSERT_EQ(actualConfig.height, 5678);
+    ASSERT_EQ(actualConfig.strideAlignment, 8);
+    ASSERT_EQ(actualConfig.format, GRAPHIC_PIXEL_FMT_RGBA_8888);
+    ASSERT_EQ(actualConfig.usage, BUFFER_USAGE_CPU_READ);
+    ASSERT_EQ(actualConfig.timeout, 77);
+    ASSERT_EQ(actualConfig.colorGamut, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(actualConfig.transform, GraphicTransformType::GRAPHIC_ROTATE_180);
+}
 }

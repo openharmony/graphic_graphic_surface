@@ -18,7 +18,6 @@
 
 #include <refbase.h>
 #include "surface_type.h"
-#include "sync_fence.h"
 #include "surface_buffer.h"
 
 namespace OHOS {

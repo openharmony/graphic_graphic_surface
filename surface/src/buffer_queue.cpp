@@ -1496,13 +1496,13 @@ void BufferQueue::CleanProducerBySeqNum(std::vector<uint32_t> seqNums)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     SURFACE_TRACE_NAME_FMT("CleanProducerBySeqNum: bufferQueueSize: %u, usedSize:%u, uniqueId: %llu, seqNumSize=%u",
-        bufferQueueSize_, GetUsedSize(), uniqueId_, seqNums,size());
+        bufferQueueSize_, GetUsedSize(), uniqueId_, seqNums.size());
     for (auto it = seqNums.begin(); it != seqNums.end(); it++) {
         auto mapIter = bufferQueueCache_.find(*it);
         if (mapIter != bufferQueueCache_.end()) {
-            OnBufferDeletedForRS(*it);
+            OnBufferDeleteForRS(*it);
             freeList_.remove(*it);
-            dirtyList.remove(*it);
+            dirtyList_.remove(*it);
             SURFACE_TRACE_NAME_FMT("CleanProducerBySeqNum: SeqNum=%u", *it);
             bufferQueueCache_.erase(mapIter);
         }
@@ -2001,7 +2001,7 @@ GSError BufferQueue::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
     }
     if (listener && !bufferInfoMap_.empty()) {
         BLOGE("cleancachetest call OnCleanCacheForBufferInfoMap, name=%{public}s", name_.c_str());
-        listener->OnCleanCacheForBufferInfoMap_(bufferInfoMap_);
+        listener->OnCleanCacheForBufferInfoMap(bufferInfoMap_);
         bufferInfoMap_.clear();
     }
     return GSERROR_OK;

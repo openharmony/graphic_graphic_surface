@@ -1032,8 +1032,22 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->PreAllocBuffers(config, 0), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetRequestBufferNoblockMode(true), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetAlphaType(GraphicAlphaType::GRAPHIC_ALPHATYPE_UNKNOWN), OHOS::SURFACE_ERROR_UNKOWN);
+    EXPECT_EQ(bqpTmp->CleanProducerBySeqNum(sequences), OHOS::SURFACE_ERROR_UNKOWN);
     bqTmp = nullptr;
     bqpTmp = nullptr;
+}
+
+/*
+ * Function: CleanProducerBySeqNum
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: call CleanProducerBySeqNum with valid bufferQueue_
+ */
+HWTEST_F(BufferQueueProducerTest, CleanProducerBySeqNum001, TestSize.Level0)
+{
+    std::vector<uint32_t> sequences = { 1, 2, 3 };
+    EXPECT_EQ(bqp_->CleanProducerBySeqNum(sequences), OHOS::SURFACE_ERROR_OK);
 }
 
 /*

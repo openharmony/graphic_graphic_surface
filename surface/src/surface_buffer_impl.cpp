@@ -1023,9 +1023,7 @@ void SurfaceBufferImpl::RegisterBufferDestructorCallBack(std::function<void(uint
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     if (bufferDtorCb_ == nullptr) {
         bufferDtorCb_ = bufferDtorCb;
-        return;
     }
-    return;
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallBack()

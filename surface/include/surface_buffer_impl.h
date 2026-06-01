@@ -112,7 +112,7 @@ public:
     uint64_t GetFlushedTimestamp() const override;
     void SetFlushTimestamp(uint64_t timestamp) override;
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
-    bool RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
+    void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
     void UnRegisterBufferDestructorCallBack() override;
     GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel) override;
     GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,

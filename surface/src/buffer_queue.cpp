@@ -1241,7 +1241,7 @@ void BufferQueue::RequestBuffersForListenerLocked(
         if (mapIter == bufferQueueCache_.end()) {
             continue;
         }
-
+        
         BufferRequestConfig config = mapIter->second.buffer->GetBufferRequestConfig();
         config.timeout = 0;
         bool isExist = false;

@@ -506,7 +506,7 @@ public:
         (void)config;
         return GSERROR_NOT_SUPPORT;
     }
-
+    
     /**
      * @brief Merge AttachBufferToQueue And FlushBuffer function to reduce once ipc.
      */

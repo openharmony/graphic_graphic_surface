@@ -538,16 +538,18 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
+    BufferRequestConfig updateConfig = config;
     // When config is different only in rollbackUsage_, The usage is deleted to reuse the buffer.
     if (IsBufferUsageNeedRollback(config, mapIter->second.config)) {
         mapIter->second.config.usage &= ~rollbackableUsage_;
+        updateConfig.usage &= ~rollbackableUsage_;
         SURFACE_TRACE_NAME("ReuseBufferUsage rollback");
     }
     auto &cacheConfig = mapIter->second.config;
     SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
         cacheConfig.width, cacheConfig.height, cacheConfig.usage, cacheConfig.format, retval.sequence);
 
-    bool needRealloc = (config != mapIter->second.config);
+    bool needRealloc = (updateConfig != mapIter->second.config);
     // config, realloc
     if (needRealloc) {
         if (listenerSeqAndFence) {
@@ -556,7 +558,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
                 " buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
             return GSERROR_NO_BUFFER;
         }
-        auto sret = ReallocBufferLocked(config, retval, lock);
+        auto sret = ReallocBufferLocked(updateConfig, retval, lock);
         if (sret != GSERROR_OK) {
             return sret;
         }

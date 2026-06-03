@@ -62,6 +62,62 @@ public:
 
     int32_t dropBufferCount = 0;
 };
+
+class CleanCacheBufferInfoListener : public IBufferConsumerListener {
+public:
+    explicit CleanCacheBufferInfoListener(bool needBufferInfo) : needBufferInfo_(needBufferInfo) {}
+
+    void OnBufferAvailable() override
+    {
+    }
+
+    bool IsNeedBufferInfo() override
+    {
+        return needBufferInfo_;
+    }
+
+    void OnCleanCacheForBufferInfoMap(std::vector<CleanCacheBufferInfo>& infos) override
+    {
+        cleanCacheInfoCallCount_++;
+        cleanCacheInfoSize_ = infos.size();
+        acquiredInfoCount_ = 0;
+        nonAcquiredInfoCount_ = 0;
+        for (const auto& info : infos) {
+            if (info.isAcquired) {
+                acquiredInfoCount_++;
+            } else {
+                nonAcquiredInfoCount_++;
+            }
+        }
+    }
+
+    bool needBufferInfo_ = false;
+    int32_t cleanCacheInfoCallCount_ = 0;
+    size_t cleanCacheInfoSize_ = 0;
+    int32_t acquiredInfoCount_ = 0;
+    int32_t nonAcquiredInfoCount_ = 0;
+};
+
+class CleanCacheNoNeedInfoListener : public IBufferConsumerListener {
+public:
+    void OnBufferAvailable() override
+    {
+    }
+
+    void OnCleanCacheForBufferInfoMap(std::vector<CleanCacheBufferInfo>& infos) override
+    {
+        cleanCacheForBufferInfoMapCount++;
+        bufferInfos = infos;
+    }
+
+    bool IsNeedBufferInfo() override
+    {
+        return false;
+    }
+
+    uint32_t cleanCacheForBufferInfoMapCount = 0;
+    std::vector<CleanCacheBufferInfo> bufferInfos;
+};
 }
 
 class LayerStateChangedProducerListenerTest : public ProducerListenerStub {
@@ -930,6 +986,143 @@ HWTEST_F(BufferQueueTest, CleanCache001, TestSize.Level0)
 {
     GSError ret = bq->CleanCache(false, nullptr);
     ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: CleanCacheBufferInfoMap001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Register listener that needs buffer info
+*                  2. Prepare acquired/non-acquired buffers
+*                  3. call CleanCache and check OnCleanCacheForBufferInfoMap callback
+*/
+HWTEST_F(BufferQueueTest, CleanCacheBufferInfoMap001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    sptr<CleanCacheBufferInfoListener> cleanCacheListener = new CleanCacheBufferInfoListener(true);
+    sptr<IBufferConsumerListener> listener = cleanCacheListener;
+    ASSERT_EQ(bq->RegisterConsumerListener(listener), GSERROR_OK);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    sptr<BufferExtraData> bedata1 = new OHOS::BufferExtraDataImpl;
+    sptr<BufferExtraData> bedata2 = new OHOS::BufferExtraDataImpl;
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+
+    ASSERT_EQ(bq->RequestBuffer(requestConfig, bedata1, retval1), GSERROR_OK);
+    ASSERT_EQ(bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, flushConfig), GSERROR_OK);
+    ASSERT_EQ(bq->RequestBuffer(requestConfig, bedata2, retval2), GSERROR_OK);
+    ASSERT_EQ(bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, flushConfig), GSERROR_OK);
+
+    sptr<SurfaceBuffer> acquiredBuffer = nullptr;
+    sptr<SyncFence> acquiredFence = SyncFence::INVALID_FENCE;
+    int64_t acquiredTimestamp = 0;
+    std::vector<Rect> acquiredDamages;
+    ASSERT_EQ(bq->AcquireBuffer(acquiredBuffer, acquiredFence, acquiredTimestamp, acquiredDamages), GSERROR_OK);
+
+    ASSERT_EQ(bq->CleanCache(false, nullptr), GSERROR_OK);
+    ASSERT_EQ(cleanCacheListener->cleanCacheInfoCallCount_, 1);
+    ASSERT_EQ(cleanCacheListener->cleanCacheInfoSize_, 2u);
+    ASSERT_GE(cleanCacheListener->acquiredInfoCount_, 1);
+    ASSERT_GE(cleanCacheListener->nonAcquiredInfoCount_, 1);
+
+    sptr<IBufferConsumerListener> defaultListener = new BufferConsumerListener();
+    ASSERT_EQ(bq->RegisterConsumerListener(defaultListener), GSERROR_OK);
+}
+
+/*
+* Function: CleanCacheBufferInfoMap002
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Register listener that does not need buffer info
+*                  2. call CleanCache and check OnCleanCacheForBufferInfoMap is not called
+*/
+HWTEST_F(BufferQueueTest, CleanCacheBufferInfoMap002, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+
+    sptr<CleanCacheBufferInfoListener> cleanCacheListener = new CleanCacheBufferInfoListener(false);
+    sptr<IBufferConsumerListener> listener = cleanCacheListener;
+    ASSERT_EQ(bq->RegisterConsumerListener(listener), GSERROR_OK);
+
+    ASSERT_EQ(bq->CleanCache(false, nullptr), GSERROR_OK);
+    ASSERT_EQ(cleanCacheListener->cleanCacheInfoCallCount_, 0);
+
+    sptr<IBufferConsumerListener> defaultListener = new BufferConsumerListener();
+    ASSERT_EQ(bq->RegisterConsumerListener(defaultListener), GSERROR_OK);
+}
+
+ /*
+ * Function: OnCleanCacheForBufferInfoMapLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call with nullptr listener
+ *                  2. call with listener not needing buffer info
+ *                  3. verify function returns early and no cache info is collected
+ */
+ HWTEST_F(BufferQueueTest, OnCleanCacheForBufferInfoMapLocked001, TestSize.Level0)
+ {
+     BufferQueue localBq("cleanCacheNoNeedInfoTest");
+ 
+     localBq.bufferInfoMap_.push_back({});
+     localBq.OnCleanCacheForBufferInfoMapLocked(nullptr);
+     ASSERT_EQ(localBq.bufferInfoMap_.size(), 1u);
+ 
+     sptr<CleanCacheNoNeedInfoListener> listener = new CleanCacheNoNeedInfoListener();
+     localBq.OnCleanCacheForBufferInfoMapLocked(listener);
+     ASSERT_EQ(localBq.bufferInfoMap_.size(), 1u);
+     ASSERT_EQ(listener->cleanCacheForBufferInfoMapCount, 0u);
+ }
+
+/*
+* Function: CleanProducerBySeqNum001
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Prepare multiple producer buffers
+*                  2. call CleanProducerBySeqNum with existing and non-existing seq
+*                  3. check cache/list cleanup
+*/
+HWTEST_F(BufferQueueTest, CleanProducerBySeqNum001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    IBufferProducer::RequestBufferReturnValue retval2;
+    sptr<BufferExtraData> bedata1 = new OHOS::BufferExtraDataImpl;
+    sptr<BufferExtraData> bedata2 = new OHOS::BufferExtraDataImpl;
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+
+    ASSERT_EQ(bq->RequestBuffer(requestConfig, bedata1, retval1), GSERROR_OK);
+    ASSERT_EQ(bq->FlushBuffer(retval1.sequence, bedata1, acquireFence, flushConfig), GSERROR_OK);
+    ASSERT_EQ(bq->RequestBuffer(requestConfig, bedata2, retval2), GSERROR_OK);
+    ASSERT_EQ(bq->FlushBuffer(retval2.sequence, bedata2, acquireFence, flushConfig), GSERROR_OK);
+
+    ASSERT_NE(bq->bufferQueueCache_.find(retval1.sequence), bq->bufferQueueCache_.end());
+    ASSERT_NE(bq->bufferQueueCache_.find(retval2.sequence), bq->bufferQueueCache_.end());
+
+    std::vector<uint32_t> seqNums = { retval1.sequence, 0xFFFFFFFF };
+    bq->CleanProducerBySeqNum(seqNums);
+
+    ASSERT_EQ(bq->bufferQueueCache_.find(retval1.sequence), bq->bufferQueueCache_.end());
+    ASSERT_NE(bq->bufferQueueCache_.find(retval2.sequence), bq->bufferQueueCache_.end());
+
+    bool inDirtyList = false;
+    for (const auto seqNum : bq->dirtyList_) {
+        if (seqNum == retval1.sequence) {
+            inDirtyList = true;
+            break;
+        }
+    }
+    ASSERT_FALSE(inDirtyList);
+
+    bq->CleanCache(false, nullptr);
 }
 /*
 * Function: AttachBufferUpdateStatus

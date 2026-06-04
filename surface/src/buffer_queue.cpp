@@ -1922,9 +1922,9 @@ void BufferQueue::OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListene
     bufferInfoMap_.clear();
     for (auto &[id, element] : bufferQueueCache_) {
         CleanCacheBufferInfo info;
-        info.buffer = bufferQueueCache_[id].buffer;
-        info.fence = bufferQueueCache_[id].fence;
-        info.isAcquired = (bufferQueueCache_[id].state == BUFFER_STATE_ACQUIRED);
+        info.buffer = element.buffer;
+        info.fence = element.fence;
+        info.isAcquired = (element.state == BUFFER_STATE_ACQUIRED);
         bufferInfoMap_.push_back(info);
     }
 }

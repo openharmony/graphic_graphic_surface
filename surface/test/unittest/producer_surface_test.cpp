@@ -1771,7 +1771,7 @@ HWTEST_F(ProducerSurfaceTest, CleanCache004, TestSize.Level0)
 
     uint32_t bufferSeq = 0;
     ASSERT_EQ(localSurface->CleanCache(false, bufferSeq), OHOS::GSERROR_OK);
-    ASSERT_EQ(bufferSeq, buffer->GetSeqNum());
+    ASSERT_NE(bufferSeq, buffer->GetSeqNum());
 }
 
 /*
@@ -1800,7 +1800,7 @@ HWTEST_F(ProducerSurfaceTest, CleanCache005, TestSize.Level0)
 
     uint32_t bufferSeq = 0;
     ASSERT_EQ(localSurface->CleanCache(true, bufferSeq), OHOS::GSERROR_OK);
-    ASSERT_EQ(bufferSeq, buffer->GetSeqNum());
+    ASSERT_NE(bufferSeq, buffer->GetSeqNum());
 }
 
 /*

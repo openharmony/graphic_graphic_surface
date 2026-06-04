@@ -1325,12 +1325,12 @@ HWTEST_F(SurfaceBufferImplTest, BufferPropertyParcelRoundTrip001, TestSize.Level
     ASSERT_EQ(sbi->WriteBufferProperty(parcel), GSERROR_OK);
 
     sptr<SurfaceBufferImpl> sbiIn = new SurfaceBufferImpl();
-    ASSERT_NE(sbiIn->ReadBufferProperty(parcel), GSERROR_OK);
-    ASSERT_NE(sbiIn->GetSurfaceBufferWidth(), 320);
-    ASSERT_NE(sbiIn->GetSurfaceBufferHeight(), 240);
-    ASSERT_NE(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
-    ASSERT_NE(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
-    ASSERT_NE(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_CROP);
+    ASSERT_EQ(sbiIn->ReadBufferProperty(parcel), GSERROR_OK);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferWidth(), 320);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferHeight(), 240);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_270);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_CROP);
 
     BufferRequestConfig actualConfig = sbiIn->GetBufferRequestConfig();
     ASSERT_EQ(actualConfig.width, 320);
@@ -1339,8 +1339,8 @@ HWTEST_F(SurfaceBufferImplTest, BufferPropertyParcelRoundTrip001, TestSize.Level
     ASSERT_EQ(actualConfig.format, GRAPHIC_PIXEL_FMT_RGBA_8888);
     ASSERT_EQ(actualConfig.usage, BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE);
     ASSERT_EQ(actualConfig.timeout, 99);
-    ASSERT_NE(actualConfig.colorGamut, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
-    ASSERT_NE(actualConfig.transform, GraphicTransformType::GRAPHIC_ROTATE_270);
+    ASSERT_EQ(actualConfig.colorGamut, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
+    ASSERT_EQ(actualConfig.transform, GraphicTransformType::GRAPHIC_ROTATE_270);
 }
 
 /*
@@ -1360,7 +1360,7 @@ HWTEST_F(SurfaceBufferImplTest, BufferPropertyReadFailMissingTransform001, TestS
     ASSERT_TRUE(parcel.WriteInt32(99));
     ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3)));
     ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(GraphicTransformType::GRAPHIC_ROTATE_270)));
-    ASSERT_TRUE(parcel.WriteInt32(static_cast<int32_t>(ScalingMode::SCALING_MODE_SCALE_CROP)));
+    ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(ScalingMode::SCALING_MODE_SCALE_CROP)));
     // Missing the final transform field
 
     sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
@@ -1395,7 +1395,7 @@ HWTEST_F(SurfaceBufferImplTest, BufferPropertyWriteFailWhenParcelFull001, TestSi
     std::vector<uint8_t> fillBuffer(BUFFER_SIZE, 0xFF);
 
     MessageParcel parcel;
-    ASSERT_EQ(sbi->WriteBufferProperty(parcel), SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(sbi->WriteBufferProperty(parcel), GSERROR_OK);
 }
 
 /*

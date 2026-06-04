@@ -663,7 +663,7 @@ GSError SurfaceBufferImpl::WriteBufferProperty(MessageParcel& parcel)
         !parcel.WriteUint64(bufferRequestConfig_.usage) || !parcel.WriteInt32(bufferRequestConfig_.timeout) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.transform)) ||
-        !parcel.WriteInt32(scalingMode_) || !parcel.WriteInt32(transform_);
+        !parcel.WriteUint32(scalingMode_) || !parcel.WriteUint32(transform_);
     if (ret) {
         BLOGE("parcel write fail, seq: %{public}u.", sequenceNumber_);
         return SURFACE_ERROR_UNKOWN;
@@ -676,12 +676,12 @@ GSError SurfaceBufferImpl::ReadBufferProperty(MessageParcel& parcel)
     std::lock_guard<std::mutex> lock(mutex_);
     uint32_t colorGamut = 0;
     uint32_t transform = 0;
-    int32_t scalingMode = {};
+    uint32_t scalingMode = {};
     uint32_t configTransform = 0;
     bool ret = !parcel.ReadInt32(bufferRequestConfig_.width) || !parcel.ReadInt32(bufferRequestConfig_.height) ||
         !parcel.ReadInt32(bufferRequestConfig_.strideAlignment) || !parcel.ReadInt32(bufferRequestConfig_.format) ||
         !parcel.ReadUint64(bufferRequestConfig_.usage) || !parcel.ReadInt32(bufferRequestConfig_.timeout) ||
-        !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(configTransform) || !parcel.ReadInt32(scalingMode) ||
+        !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(configTransform) || !parcel.ReadUint32(scalingMode) ||
         !parcel.ReadUint32(transform);
     if (ret) {
         BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);

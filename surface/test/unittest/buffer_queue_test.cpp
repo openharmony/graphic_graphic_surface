@@ -1056,28 +1056,28 @@ HWTEST_F(BufferQueueTest, CleanCacheBufferInfoMap002, TestSize.Level0)
     ASSERT_EQ(bq->RegisterConsumerListener(defaultListener), GSERROR_OK);
 }
 
- /*
- * Function: OnCleanCacheForBufferInfoMapLocked
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- * CaseDescription: 1. call with nullptr listener
- *                  2. call with listener not needing buffer info
- *                  3. verify function returns early and no cache info is collected
- */
- HWTEST_F(BufferQueueTest, OnCleanCacheForBufferInfoMapLocked001, TestSize.Level0)
- {
-     BufferQueue localBq("cleanCacheNoNeedInfoTest");
- 
-     localBq.bufferInfoMap_.push_back({});
-     localBq.OnCleanCacheForBufferInfoMapLocked(nullptr);
-     ASSERT_EQ(localBq.bufferInfoMap_.size(), 1u);
- 
-     sptr<CleanCacheNoNeedInfoListener> listener = new CleanCacheNoNeedInfoListener();
-     localBq.OnCleanCacheForBufferInfoMapLocked(listener);
-     ASSERT_EQ(localBq.bufferInfoMap_.size(), 1u);
-     ASSERT_EQ(listener->cleanCacheForBufferInfoMapCount, 0u);
- }
+/*
+* Function: OnCleanCacheForBufferInfoMapLocked
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call with nullptr listener
+*                  2. call with listener not needing buffer info
+*                  3. verify function returns early and no cache info is collected
+*/
+HWTEST_F(BufferQueueTest, OnCleanCacheForBufferInfoMapLocked001, TestSize.Level0)
+{
+    BufferQueue localBq("cleanCacheNoNeedInfoTest");
+
+    localBq.bufferInfoMap_.push_back({});
+    localBq.OnCleanCacheForBufferInfoMapLocked(nullptr);
+    ASSERT_EQ(localBq.bufferInfoMap_.size(), 1u);
+
+    sptr<CleanCacheNoNeedInfoListener> listener = new CleanCacheNoNeedInfoListener();
+    localBq.OnCleanCacheForBufferInfoMapLocked(listener);
+    ASSERT_EQ(localBq.bufferInfoMap_.size(), 1u);
+    ASSERT_EQ(listener->cleanCacheForBufferInfoMapCount, 0u);
+}
 
 /*
 * Function: CleanProducerBySeqNum001

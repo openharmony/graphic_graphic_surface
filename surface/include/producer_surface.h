@@ -369,7 +369,6 @@ public:
      * {@link GSERROR_CONSUMER_IS_CONNECTED} 41206000 - surface is connected by other client.
      */
     GSError CleanCache(bool cleanAll = false) override;
-    GSError CleanCache(bool cleanAll, uint32_t& bufferSeq) override;
     /**
      * @brief Clean the surface buffer cache and inform consumer.
      * This interface will empty all caches of the current process.
@@ -907,6 +906,7 @@ private:
     GSError ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& buffer);
     GSError OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence> &fence);
     GSError SyncProducerCacheLocked();
+    GSError CleanCache(bool cleanAll, uint32_t& bufferSeq) override;
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;

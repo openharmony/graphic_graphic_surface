@@ -183,21 +183,6 @@ public:
     {
         return {};
     }
-    virtual GSError ReadBufferProperty(MessageParcel &parcel)
-    {
-        (void)parcel;
-        return GSERROR_OK;
-    }
-    virtual GSError WriteBufferProperty(MessageParcel &parcel)
-    {
-        (void)parcel;
-        return GSERROR_OK;
-    }
-    virtual GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
-    {
-        (void)bufferInfo;
-        return GSERROR_OK;
-    }
     virtual void SetBufferRequestConfig(const BufferRequestConfig &config)
     {
         (void)config;
@@ -292,6 +277,21 @@ public:
     {
         (void)parcel;
         (void)readSafeFdFunc;
+        return GSERROR_OK;
+    }
+    virtual GSError ReadBufferProperty(MessageParcel &parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    }
+    virtual GSError WriteBufferProperty(MessageParcel &parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    }
+    virtual GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
+    {
+        (void)bufferInfo;
         return GSERROR_OK;
     }
 

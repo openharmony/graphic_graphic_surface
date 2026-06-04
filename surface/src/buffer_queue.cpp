@@ -1932,7 +1932,7 @@ void BufferQueue::OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListene
 void BufferQueue::ClearLocked(std::unique_lock<std::mutex> &lock, sptr<IBufferConsumerListener> listener)
 {
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
-    for (auto &[id, element] : bufferQueueCache_) {
+    for (auto &[id, _] : bufferQueueCache_) {
         OnBufferDeleteForRS(id);
     }
     OnCleanCacheForBufferInfoMapLocked(listener);

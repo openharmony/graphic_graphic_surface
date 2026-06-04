@@ -2059,7 +2059,7 @@ int32_t BufferQueueProducer::SyncProducerCacheRemote(MessageParcel &arguments, M
     return ret;
 }
 
-GSError BufferQueueProducer::CleanProducerBySeqNum(std::vector<uint32_t> seqNums)
+GSError BufferQueueProducer::CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums)
 {
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;

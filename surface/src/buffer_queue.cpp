@@ -1492,7 +1492,7 @@ void BufferQueue::AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool
     buffer->SetSurfaceBufferHeight(buffer->GetHeight());
 }
 
-void BufferQueue::CleanProducerBySeqNum(std::vector<uint32_t> seqNums)
+void BufferQueue::CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     SURFACE_TRACE_NAME_FMT("CleanProducerBySeqNum: bufferQueueSize: %u, usedSize:%u, uniqueId: %llu, seqNumSize=%u",

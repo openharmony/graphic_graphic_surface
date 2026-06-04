@@ -287,7 +287,7 @@ public:
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Invalid argument.
      */
     GSError SetDropFrameLevel(int32_t level);
-    void CleanProducerBySeqNum(std::vector<uint32_t> seqNums);
+    void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);

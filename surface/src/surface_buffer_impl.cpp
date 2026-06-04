@@ -664,7 +664,7 @@ GSError SurfaceBufferImpl::WriteBufferProperty(MessageParcel& parcel)
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.transform)) ||
         !parcel.WriteInt32(scalingMode_) || !parcel.WriteInt32(transform_);
-    if (!ret) {
+    if (ret) {
         BLOGE("parcel write fail, seq: %{public}u.", sequenceNumber_);
         return SURFACE_ERROR_UNKOWN;
     }
@@ -683,7 +683,7 @@ GSError SurfaceBufferImpl::ReadBufferProperty(MessageParcel& parcel)
         !parcel.ReadUint64(bufferRequestConfig_.usage) || !parcel.ReadInt32(bufferRequestConfig_.timeout) ||
         !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(configTransform) || !parcel.ReadInt32(scalingMode) ||
         !parcel.ReadUint32(transform);
-    if (!ret) {
+    if (ret) {
         BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);
         return GSERROR_API_FAILED;
     }

@@ -1794,7 +1794,7 @@ HWTEST_F(BufferQueueTest, AcquireLppBuffer001, TestSize.Level0)
  
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1, .writeOffset = -1,
         .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
-        .frameRate = 30, .isStopShbDraw = false};
+        .frameRate = 30, .isStopShbDraw = 0};
     ASSERT_EQ(tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage), OHOS::GSERROR_INVALID_ARGUMENTS);
 
     uint32_t seqId1 = 100;
@@ -1906,7 +1906,7 @@ HWTEST_F(BufferQueueTest, FlushLppBuffer001, TestSize.Level0)
         .writeOffset = 1,
         .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
         .frameRate = 30,
-        .isStopShbDraw = false};
+        .isStopShbDraw = 0};
     tmpBq->isRsDrawLpp_ = false;
     BufferElement ele = {
         .buffer = SurfaceBuffer::Create(), .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
@@ -1938,7 +1938,7 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
         .writeOffset = 1,
         .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
         .frameRate = 30,
-        .isStopShbDraw = false};
+        .isStopShbDraw = 0};
     tmpBq->lppSkipCount_ = 11;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OUT_OF_RANGE);
 
@@ -1946,10 +1946,10 @@ HWTEST_F(BufferQueueTest, SetLppDrawSource001, TestSize.Level0)
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_OK);
 
     isShbDrawLpp = true;
-    tmpBq->lppSlotInfo_->isStopShbDraw = true;
+    tmpBq->lppSlotInfo_->isStopShbDraw = 1;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_NO_CONSUMER);
 
-    tmpBq->lppSlotInfo_->isStopShbDraw = false;
+    tmpBq->lppSlotInfo_->isStopShbDraw = 0;
     tmpBq->lastLppWriteOffset_ = 0;
     tmpBq->lastRsToShbWriteOffset_ = 0;
     ASSERT_EQ(tmpBq->SetLppDrawSource(isShbDrawLpp, isRsDrawLpp), OHOS::GSERROR_NO_CONSUMER);
@@ -2205,8 +2205,8 @@ HWTEST_F(BufferQueueTest, CheckLppFenceLocked001, TestSize.Level0)
     ASSERT_EQ(tmpBq->CheckLppFenceLocked(), false);
 
     tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = -1, .writeOffset = -1,
-        .slot = {{.seqId = 100, .timestamp = 1000, .isRsUsing = true, .crop = {1, 2, 3, 4}}},
-        .frameRate = 30, .isStopShbDraw = false};
+        .slot = {{.seqId = 100, .timestamp = 1000, .isRsUsing = 1, .crop = {1, 2, 3, 4}}},
+        .frameRate = 30, .isStopShbDraw = 0};
     tmpBq->lppFenceMap_[100] = nullptr;
     ASSERT_EQ(tmpBq->CheckLppFenceLocked(), true);
 

@@ -22,7 +22,10 @@ ohos_fuzztest("FrameReportFuzzTest") {
   fuzz_config_file = "../framereport_fuzzer"
   module_out_path = module_output_path
 
-  include_dirs = [ "$graphic_surface_root/utils/frame_report/include" ]
+  include_dirs = [
+    "$graphic_surface_root/utils/frame_report/include",
+    "$graphic_surface_root/interfaces/inner_api/utils",
+  ]
   cflags = [
     "-g",
     "-O0",

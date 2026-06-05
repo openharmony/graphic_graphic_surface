@@ -26,9 +26,13 @@ ohos_unittest("frame_report_test") {
   sources = [ "frame_report_test.cpp" ]
   deps = [
     ":frame_report_test_common",
-    "$graphic_surface_root/surface:surface"
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/sync_fence:sync_fence"
   ]
-  external_deps = [ "hilog:libhilog" ]
+  external_deps = [
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
 }
 
 config("frame_report_test_config") {
@@ -46,7 +50,7 @@ ohos_static_library("frame_report_test_common") {
   testonly = true
   public_configs = [ ":frame_report_test_config" ]
 
-  deps = [ "$graphic_surface_root/surface:surface" ]
+  deps = [ "$graphic_surface_root/surface:surface_static" ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"

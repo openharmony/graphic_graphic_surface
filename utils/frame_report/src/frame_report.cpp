@@ -152,9 +152,11 @@ void FrameReport::SetAcquireBufferSeqWithUniqueId(uint64_t uniqueId, uint32_t se
     }
 }
 
-void FrameReport::SetPresentTimeWithUniqueId(uint64_t uniqueId, int64_t presentFenceSysTime, uint32_t sequence)
+void FrameReport::SetPresentTimeWithUniqueId(
+    uint64_t uniqueId, const sptr<SyncFence>& preBufferReleasedFence, uint32_t sequence)
 {
     if (IsActiveGameWithUniqueId(uniqueId)) {
+        int64_t presentFenceSysTime = preBufferReleasedFence->SyncFileReadTimestamp();
         // if presentFenceSysTime is wrong, use lastReleaseSysTime instead
         if (presentFenceSysTime == INT64_MAX) {
             presentFenceSysTime = lastReleaseSysTime_.load();

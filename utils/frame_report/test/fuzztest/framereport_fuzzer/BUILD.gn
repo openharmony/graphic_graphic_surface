@@ -30,10 +30,14 @@ ohos_fuzztest("FrameReportFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [ "framereport_fuzzer.cpp" ]
-  deps = [ "$graphic_surface_root/surface:surface" ]
+  deps = [
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/sync_fence:sync_fence"
+  ]
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "ipc:ipc_single",
   ]
 }
 

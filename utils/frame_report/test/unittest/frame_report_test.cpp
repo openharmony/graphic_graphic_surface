@@ -379,12 +379,11 @@ HWTEST_F(FrameReportTest, SetAcquireBufferSeqWithUniqueId002, Function | MediumT
 */
 HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId001, Function | MediumTest | Level2)
 {
-    static const int64_t FRT_PRESENT_FENCE_TIME = 3000;
     static const uint32_t FRT_PRESENT_SEQUENCE = 300;
 
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
-    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID_NOT, FRT_PRESENT_FENCE_TIME,
-                                                                  FRT_PRESENT_SEQUENCE);
+    sptr<SyncFence> fence = new SyncFence(-1);
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID_NOT, fence, FRT_PRESENT_SEQUENCE);
 
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() == 0);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSequence_.load() == 0);
@@ -396,20 +395,20 @@ HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId001, Function | MediumTest |
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetPresentTimeWithUniqueId with matching uniqueId and normal timestamp
+* CaseDescription: 1. call SetPresentTimeWithUniqueId with matching uniqueId
 *                  2. check presentFenceSysTime_, presentFenceSequence_ and lastReleaseSysTime_ are set correctly
 */
 HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId002, Function | MediumTest | Level2)
 {
-    static const int64_t FRT_PRESENT_FENCE_TIME = 3001;
     static const uint32_t FRT_PRESENT_SEQUENCE = 301;
 
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
-    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, FRT_PRESENT_FENCE_TIME,
-                                                                  FRT_PRESENT_SEQUENCE);
+    sptr<SyncFence> fence = new SyncFence(-1);
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, fence, FRT_PRESENT_SEQUENCE);
 
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() == FRT_PRESENT_FENCE_TIME);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() <
+                Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load());
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSequence_.load() == FRT_PRESENT_SEQUENCE);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load() > 0);
 }
@@ -419,27 +418,27 @@ HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId002, Function | MediumTest |
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call SetPresentTimeWithUniqueId with FENCE_PENDING_TIMESTAMP
-*                  2. check presentFenceSysTime_ uses lastReleaseSysTime_ when FENCE_PENDING_TIMESTAMP is passed
+* CaseDescription: 1. call SetPresentTimeWithUniqueId twice with invalid fence
+*                  2. check presentFenceSysTime_ uses lastReleaseSysTime_ when fence returns INT64_MAX
 */
 HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId003, Function | MediumTest | Level2)
 {
-    static const int64_t FRT_PENDING_TIMESTAMP = INT64_MAX;
     static const uint32_t FRT_PRESENT_SEQUENCE = 302;
 
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(FRT_GAME_UNIQUEID, FRT_SURFACE_NAME, FRT_GAME_BUFFER_TIME);
 
+    sptr<SyncFence> fence = new SyncFence(-1);
+
     // First call to set lastReleaseSysTime_
-    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, 1000, 301);
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, fence, 301);
     int64_t firstReleaseTime = Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load();
 
     // wait next buffer
     usleep(1000); // sleep 1000 microseconds (equals 1 milliseconds)
 
-    // Second call with FENCE_PENDING_TIMESTAMP should use lastReleaseSysTime_
-    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, FRT_PENDING_TIMESTAMP,
-                                                                  FRT_PRESENT_SEQUENCE);
+    // Second call with invalid fence should use lastReleaseSysTime_
+    Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(FRT_GAME_UNIQUEID, fence, FRT_PRESENT_SEQUENCE);
 
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSysTime_.load() == firstReleaseTime);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().presentFenceSequence_.load() == FRT_PRESENT_SEQUENCE);

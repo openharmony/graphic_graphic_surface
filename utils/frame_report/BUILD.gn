@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//foundation/graphic/graphic_surface/graphic_surface_config.gni")
 
 ## Build frame_report.a {{{
 config("frame_report_config") {
@@ -47,6 +48,10 @@ ohos_static_library("frame_report") {
       defined(global_parts_info.hdf_drivers_interface_hwsched)) {
     defines += [ "AI_SCHED_ENABLE" ]
   }
+
+  deps = [
+    "$graphic_surface_root/sync_fence:sync_fence",
+  ]
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"

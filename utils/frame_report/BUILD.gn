@@ -26,7 +26,10 @@ config("frame_report_config") {
 }
 
 config("frame_report_public_config") {
-  include_dirs = [ "export" ]
+  include_dirs = [
+    "export",
+    "$graphic_surface_root/interfaces/inner_api/utils",
+  ]
 }
 
 ohos_static_library("frame_report") {

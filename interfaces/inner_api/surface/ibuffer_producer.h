@@ -265,6 +265,11 @@ public:
         (void)buffers;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums)
+    {
+        (void)seqNums;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:

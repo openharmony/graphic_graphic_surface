@@ -115,6 +115,9 @@ public:
     GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
         std::function<int(MessageParcel &parcel,
             std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr) override;
+    GSError ReadBufferProperty(MessageParcel &parcel) override;
+    GSError WriteBufferProperty(MessageParcel &parcel) override;
+    GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
 
 private:
     void FreeBufferHandleLocked();

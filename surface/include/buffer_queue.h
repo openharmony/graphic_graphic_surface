@@ -287,6 +287,7 @@ public:
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Invalid argument.
      */
     GSError SetDropFrameLevel(int32_t level);
+    void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -302,7 +303,7 @@ private:
     GSError CheckFlushConfig(const BufferFlushConfigWithDamages &config);
     void DumpCache(std::string &result);
     void DumpMetadata(std::string &result, BufferElement element);
-    void ClearLocked(std::unique_lock<std::mutex> &lock);
+    void ClearLocked(std::unique_lock<std::mutex> &lock, sptr<IBufferConsumerListener> listener = nullptr);
     bool CheckProducerCacheListLocked();
     GSError SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock);
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence,
@@ -376,6 +377,7 @@ private:
     bool CheckLppFenceLocked();
     GSError ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
         std::unique_lock<std::mutex> &lock);
+    void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -459,6 +461,7 @@ private:
     bool isPriorityAlloc_ = false;
     bool isOnReleaseBufferWithSequenceAndFence_ = false;
     int32_t dropFrameLevel_ = 0;  // Drop frame level: 0=no drop, >0=keep latest N frames
+    std::vector<CleanCacheBufferInfo> bufferInfoMap_;
 };
 }; // namespace OHOS
 

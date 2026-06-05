@@ -1032,6 +1032,23 @@ GSError ProducerSurface::CleanCache(bool cleanAll)
     return CleanCacheLocked(cleanAll);
 }
 
+GSError ProducerSurface::CleanCache(bool cleanAll, uint32_t& bufferSeq)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    uint32_t bufSeqNum = 0;
+    GSError ret = producer_->CleanCache(cleanAll, &bufSeqNum);
+    CleanAllLocked(&bufSeqNum);
+    if (cleanAll) {
+        std::lock_guard<std::mutex> preCacheLock(preCacheBufferMutex_);
+        preCacheBuffer_ = nullptr;
+    }
+    bufferSeq = bufSeqNum;
+    return ret;
+}
+
 GSError ProducerSurface::GoBackground()
 {
     if (producer_ == nullptr) {

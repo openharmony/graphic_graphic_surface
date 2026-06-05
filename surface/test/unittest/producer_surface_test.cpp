@@ -1731,6 +1731,79 @@ HWTEST_F(ProducerSurfaceTest, CleanCache002, TestSize.Level0)
 }
 
 /*
+* Function: CleanCache
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call CleanCache with producer_ is nullptr and bufferSeq stays unchanged
+ */
+HWTEST_F(ProducerSurfaceTest, CleanCache003, TestSize.Level0)
+{
+    uint32_t bufferSeq = 0x12345678;
+    GSError ret = surface_->CleanCache(true, bufferSeq);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(bufferSeq, 0x12345678);
+}
+
+/*
+* Function: CleanCache
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call CleanCache(false, bufferSeq) and check ret and seq
+ */
+HWTEST_F(ProducerSurfaceTest, CleanCache004, TestSize.Level0)
+{
+    sptr<IConsumerSurface> localConsumer = IConsumerSurface::Create();
+    ASSERT_NE(localConsumer, nullptr);
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    localConsumer->RegisterConsumerListener(listener);
+    sptr<IBufferProducer> localProducer = localConsumer->GetProducer();
+    ASSERT_NE(localProducer, nullptr);
+    sptr<ProducerSurface> localSurface = new ProducerSurface(localProducer);
+    ASSERT_NE(localSurface, nullptr);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> fence = nullptr;
+    BufferRequestConfig config = requestConfig;
+    ASSERT_EQ(localSurface->RequestBuffer(buffer, fence, config), OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    uint32_t bufferSeq = 0;
+    ASSERT_EQ(localSurface->CleanCache(false, bufferSeq), OHOS::GSERROR_OK);
+    ASSERT_NE(bufferSeq, buffer->GetSeqNum());
+}
+
+/*
+* Function: CleanCache
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call CleanCache(true, bufferSeq) and check ret and seq
+ */
+HWTEST_F(ProducerSurfaceTest, CleanCache005, TestSize.Level0)
+{
+    sptr<IConsumerSurface> localConsumer = IConsumerSurface::Create();
+    ASSERT_NE(localConsumer, nullptr);
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    localConsumer->RegisterConsumerListener(listener);
+    sptr<IBufferProducer> localProducer = localConsumer->GetProducer();
+    ASSERT_NE(localProducer, nullptr);
+    sptr<ProducerSurface> localSurface = new ProducerSurface(localProducer);
+    ASSERT_NE(localSurface, nullptr);
+
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> fence = nullptr;
+    BufferRequestConfig config = requestConfig;
+    ASSERT_EQ(localSurface->RequestBuffer(buffer, fence, config), OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    uint32_t bufferSeq = 0;
+    ASSERT_EQ(localSurface->CleanCache(true, bufferSeq), OHOS::GSERROR_OK);
+    ASSERT_NE(bufferSeq, buffer->GetSeqNum());
+}
+
+/*
 * Function: GoBackground
 * Type: Function
 * Rank: Important(1)

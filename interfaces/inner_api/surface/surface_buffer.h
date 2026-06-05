@@ -53,6 +53,16 @@ enum class BufferDeletedFlag : uint32_t {
     DELETED_FROM_RS = 1 << 1
 };
 
+struct RSBufferInfo {
+    GraphicColorGamut surfaceBufferColorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    ScalingMode scalingMode = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    int32_t surfaceBufferWidth = 0;
+    int32_t surfaceBufferHeight = 0;
+    uint32_t sequence = 0;
+    BufferRequestConfig bufferRequestConfig;
+};
+
 constexpr BufferDeletedFlag operator&(BufferDeletedFlag lhs, BufferDeletedFlag rhs)
 {
     return static_cast<BufferDeletedFlag>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
@@ -267,6 +277,21 @@ public:
     {
         (void)parcel;
         (void)readSafeFdFunc;
+        return GSERROR_OK;
+    }
+    virtual GSError ReadBufferProperty(MessageParcel &parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    }
+    virtual GSError WriteBufferProperty(MessageParcel &parcel)
+    {
+        (void)parcel;
+        return GSERROR_OK;
+    }
+    virtual GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
+    {
+        (void)bufferInfo;
         return GSERROR_OK;
     }
 

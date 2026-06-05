@@ -691,6 +691,12 @@ public:
         (void)info;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError CleanCache(bool cleanAll, uint32_t& bufferSeq)
+    {
+        (void)cleanAll;
+        (void)bufferSeq;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

@@ -906,6 +906,7 @@ private:
     GSError ProducerSurfaceCancelBufferLocked(sptr<SurfaceBuffer>& buffer);
     GSError OnBufferReleasedWithSequenceAndFence(uint32_t sequence, const sptr<SyncFence> &fence);
     GSError SyncProducerCacheLocked();
+    GSError CleanCache(bool cleanAll, uint32_t& bufferSeq) override;
 
     mutable std::mutex mutex_;
     std::atomic_bool inited_ = false;

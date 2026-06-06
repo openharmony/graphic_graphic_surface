@@ -53,7 +53,7 @@ ohos_static_library("frame_report") {
   }
 
   deps = [
-    "$graphic_surface_root/sync_fence:sync_fence",
+    "$graphic_surface_root/sync_fence:sync_fence_static",
   ]
 
   subsystem_name = "graphic"

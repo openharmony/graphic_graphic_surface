@@ -22,7 +22,10 @@ ohos_fuzztest("FrameReportFuzzTest") {
   fuzz_config_file = "../framereport_fuzzer"
   module_out_path = module_output_path
 
-  include_dirs = [ "$graphic_surface_root/utils/frame_report/include" ]
+  include_dirs = [
+    "$graphic_surface_root/utils/frame_report/include",
+    "$graphic_surface_root/interfaces/inner_api/utils",
+  ]
   cflags = [
     "-g",
     "-O0",
@@ -30,10 +33,14 @@ ohos_fuzztest("FrameReportFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [ "framereport_fuzzer.cpp" ]
-  deps = [ "$graphic_surface_root/surface:surface" ]
+  deps = [
+    "$graphic_surface_root/surface:surface",
+    "$graphic_surface_root/sync_fence:sync_fence"
+  ]
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "ipc:ipc_single",
   ]
 }
 

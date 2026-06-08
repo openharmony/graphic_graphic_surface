@@ -1220,8 +1220,7 @@ GSError BufferQueue::ReleaseBuffer(sptr<SurfaceBuffer> &buffer, const sptr<SyncF
             RequestBuffersForListenerLocked(requestBuffersAndFences, lock);
         }
         if (preBufferReleasedFence_) {
-            int64_t presentFenceTimeNs = preBufferReleasedFence_->SyncFileReadTimestamp();
-            Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(uniqueId_, presentFenceTimeNs, sequence);
+            Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(uniqueId_, preBufferReleasedFence_, sequence);
         }
         preBufferReleasedFence_ = fence;
     }

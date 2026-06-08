@@ -16,6 +16,8 @@
 #ifndef UTILS_INCLUDE_FRAME_REPORT_H
 #define UTILS_INCLUDE_FRAME_REPORT_H
 
+#include "sync_fence.h"
+
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -42,7 +44,8 @@ public:
     void SetFlushBufferSequence(uint32_t sequence);
     void SetAcquireBufferSysTime();
     void SetAcquireBufferSeqWithUniqueId(uint64_t uniqueId, uint32_t sequence);
-    void SetPresentTimeWithUniqueId(uint64_t uniqueId, int64_t presentFenceSysTime, uint32_t sequence);
+    void SetPresentTimeWithUniqueId(
+        uint64_t uniqueId, const sptr<SyncFence>& preBufferReleasedFence, uint32_t sequence);
     void SetPendingBufferNum(uint64_t uniqueId, const std::string& layerName, int32_t pendingBufferNum);
     void Report(const std::string& layerName);
 

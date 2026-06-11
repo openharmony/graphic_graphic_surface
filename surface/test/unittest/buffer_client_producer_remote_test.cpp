@@ -861,6 +861,19 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.L
 }
 
 /*
+* Function: RegisterPropertyListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterPropertyListener with nullptr listener
+*/
+HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener002, TestSize.Level0)
+{
+    GSError ret = bp->RegisterPropertyListener(nullptr, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: PreAllocBuffers
 * Type: Function
 * Rank: Important(1)

@@ -637,6 +637,9 @@ int32_t BufferQueueProducer::RegisterReleaseListenerRemote(MessageParcel &argume
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    if (listener == nullptr) {
+        return ERR_INVALID_REPLY;
+    }
     GSError sRet = RegisterReleaseListener(listener, isOnReleaseBufferWithSequenceAndFence);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -1573,7 +1576,7 @@ GSError BufferQueueProducer::UnRegisterPropertyListener(uint64_t producerId)
 GSError BufferQueueProducer::RegisterReleaseListener(sptr<IProducerListener> listener,
     bool isOnReleaseBufferWithSequenceAndFence)
 {
-    if (bufferQueue_ == nullptr) {
+    if (bufferQueue_ == nullptr || listener == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     if (isOnReleaseBufferWithSequenceAndFence) {

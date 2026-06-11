@@ -1576,4 +1576,40 @@ HWTEST_F(BufferQueueProducerTest, SyncProducerCache003, Function | MediumTest | 
     int32_t ret = bqpTmp->SyncProducerCacheRemote(arguments, reply, option);
     EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
+
+/*
+* Function: RegisterReleaseListener
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterReleaseListener with nullptr listener and valid bufferQueue_
+*/
+HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerNullListener001, TestSize.Level0)
+{
+    sptr<IProducerListener> listener = nullptr;
+    GSError ret = bqp_->RegisterReleaseListener(listener);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: RegisterReleaseListenerRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call RegisterReleaseListenerRemote with mock remote object that makes iface_cast return nullptr
+*                  2. check ret is ERR_INVALID_REPLY
+*/
+HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerRemote001, TestSize.Level0)
+{
+    MessageParcel arguments;
+    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
+    EXPECT_NE(remoteObjectMocker, nullptr);
+    arguments.WriteRemoteObject(remoteObjectMocker);
+    arguments.WriteBool(false);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->RegisterReleaseListenerRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_INVALID_REPLY);
+    remoteObjectMocker = nullptr;
+}
 }

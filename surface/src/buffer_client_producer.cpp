@@ -415,6 +415,9 @@ GSError BufferClientProducer::RegisterReleaseListener(sptr<IProducerListener> li
 
 GSError BufferClientProducer::RegisterPropertyListener(sptr<IProducerListener> listener, uint64_t producerId)
 {
+    if (listener == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
 
     if (!arguments.WriteRemoteObject(listener->AsObject())) {

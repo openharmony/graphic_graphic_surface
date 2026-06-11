@@ -425,7 +425,7 @@ void NativeWindowFuzzTestCreateBufferFromNative(OHNativeWindow *nativeWindow)
             }
             OH_NativeBuffer_Unreference(nativeBuffer);
         }
-        DestroyNativeWindowBuffer(nwBuffer);
+        NativeWindowCancelBuffer(nativeWindow, nwBuffer);
     }
 
     OHNativeWindowBuffer *nullBuffer = CreateNativeWindowBufferFromNativeBuffer(nullptr);

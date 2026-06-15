@@ -1578,12 +1578,12 @@ HWTEST_F(BufferQueueProducerTest, SyncProducerCache003, Function | MediumTest | 
 }
 
 /*
-* Function: RegisterReleaseListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterReleaseListener with nullptr listener and valid bufferQueue_
-*/
+ * Function: RegisterReleaseListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterReleaseListener with nullptr listener and valid bufferQueue_
+ */
 HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerNullListener001, TestSize.Level0)
 {
     sptr<IProducerListener> listener = nullptr;
@@ -1592,11 +1592,11 @@ HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerNullListener001, TestSi
 }
 
 /*
-* Function: RegisterReleaseListenerRemote
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-*/
+ * Function: RegisterReleaseListenerRemote
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
 HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerRemote001, TestSize.Level0)
 {
     MessageParcel arguments;

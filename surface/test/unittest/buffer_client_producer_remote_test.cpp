@@ -862,12 +862,12 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.L
 }
 
 /*
-* Function: RegisterPropertyListener
-* Type: Function
-* Rank: Important(2)
-* EnvConditions: N/A
-* CaseDescription: 1. call RegisterPropertyListener with nullptr listener
-*/
+ * Function: RegisterPropertyListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterPropertyListener with nullptr listener
+ */
 HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener002, TestSize.Level0)
 {
     sptr<IRemoteObjectMocker> remoteObject = new IRemoteObjectMocker();

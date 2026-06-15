@@ -1596,8 +1596,6 @@ HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerNullListener001, TestSi
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call RegisterReleaseListenerRemote with mock remote object that makes iface_cast return nullptr
-*                  2. check ret is ERR_INVALID_REPLY
 */
 HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerRemote001, TestSize.Level0)
 {

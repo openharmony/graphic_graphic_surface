@@ -384,15 +384,6 @@ GSError BufferQueue::ReuseBufferForNoBlockMode(sptr<SurfaceBuffer> &buffer, sptr
     return ret;
 }
 
-bool BufferQueue::IsBufferUsageNeedRollback(const BufferRequestConfig &config, BufferRequestConfig cacheConfig)
-{
-    if ((config.usage ^ cacheConfig.usage) != rollbackableUsage_) {
-        return false;
-    }
-    cacheConfig.usage = config.usage;
-    return config == cacheConfig;
-}
-
 GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval, std::unique_lock<std::mutex> &lock,
     bool listenerSeqAndFence)
@@ -404,7 +395,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 
     // check param
     BufferRequestConfig updateConfig = config;
-    updateConfig.usage |= (defaultUsage_ | rollbackUsage_);
+    updateConfig.usage |= defaultUsage_;
     ret = CheckRequestConfig(updateConfig);
     if (ret != GSERROR_OK) {
         BLOGE("CheckRequestConfig ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
@@ -538,18 +529,11 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
         BLOGE("cache not find the buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-    BufferRequestConfig updateConfig = config;
-    // When config is different only in rollbackUsage_, The usage is deleted to reuse the buffer.
-    if (IsBufferUsageNeedRollback(config, mapIter->second.config)) {
-        mapIter->second.config.usage &= ~rollbackableUsage_;
-        updateConfig.usage &= ~rollbackableUsage_;
-        SURFACE_TRACE_NAME("ReuseBufferUsage rollback");
-    }
     auto &cacheConfig = mapIter->second.config;
     SURFACE_TRACE_NAME_FMT("ReuseBuffer config width: %d height: %d usage: %llu format: %d id: %u",
         cacheConfig.width, cacheConfig.height, cacheConfig.usage, cacheConfig.format, retval.sequence);
 
-    bool needRealloc = (updateConfig != mapIter->second.config);
+    bool needRealloc = (config != mapIter->second.config);
     // config, realloc
     if (needRealloc) {
         if (listenerSeqAndFence) {
@@ -558,7 +542,7 @@ GSError BufferQueue::ReuseBuffer(const BufferRequestConfig &config, sptr<BufferE
                 " buffer(%{public}u), uniqueId: %{public}" PRIu64 ".", retval.sequence, uniqueId_);
             return GSERROR_NO_BUFFER;
         }
-        auto sret = ReallocBufferLocked(updateConfig, retval, lock);
+        auto sret = ReallocBufferLocked(config, retval, lock);
         if (sret != GSERROR_OK) {
             return sret;
         }
@@ -1904,8 +1888,7 @@ int32_t BufferQueue::GetDefaultHeight()
 GSError BufferQueue::SetDefaultUsage(uint64_t usage)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    rollbackUsage_ = usage & rollbackableUsage_;
-    defaultUsage_ = usage & ~rollbackableUsage_;
+    defaultUsage_ = usage;
     return GSERROR_OK;
 }
 

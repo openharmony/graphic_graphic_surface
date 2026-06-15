@@ -32,6 +32,7 @@
 #include "nativetoken_kit.h"
 #include "token_setproc.h"
 #include <buffer_producer_listener.h>
+#include "remote_object_mock.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -858,6 +859,21 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.L
     sptr<IProducerListener> listener = new BufferReleaseProducerListener(onBufferRelease);
     GSError ret = bp->RegisterPropertyListener(listener, 0);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/**
+ * Function: RegisterPropertyListener
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call RegisterPropertyListener with nullptr listener
+ */
+HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener002, TestSize.Level0)
+{
+    sptr<IRemoteObjectMocker> remoteObject = new IRemoteObjectMocker();
+    sptr<BufferClientProducer> bcp = new BufferClientProducer(remoteObject);
+    GSError ret = bcp->RegisterPropertyListener(nullptr, 0);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
 /*

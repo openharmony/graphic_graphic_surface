@@ -1577,7 +1577,7 @@ HWTEST_F(BufferQueueProducerTest, SyncProducerCache003, Function | MediumTest | 
     EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
 
-/*
+/**
  * Function: RegisterReleaseListener
  * Type: Function
  * Rank: Important(2)
@@ -1591,7 +1591,7 @@ HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerNullListener001, TestSi
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
-/*
+/**
  * Function: RegisterReleaseListenerRemote
  * Type: Function
  * Rank: Important(2)

@@ -861,7 +861,7 @@ HWTEST_F(BufferClientProducerRemoteTest, RegisterPropertyListener001, TestSize.L
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
-/*
+/**
  * Function: RegisterPropertyListener
  * Type: Function
  * Rank: Important(2)

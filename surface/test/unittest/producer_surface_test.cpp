@@ -1932,7 +1932,7 @@ HWTEST_F(ProducerSurfaceTest, OnBufferReleaseWithSequenceAndFence003, TestSize.L
     pSurfaceTmp->funcWithSequenceAndFence_ = nullptr;
     ret = cSurfTmp->ReleaseBuffer(buffer, -1);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ASSERT_EQ(sequenceOut, buffer->GetSeqNum());
+    ASSERT_EQ(sequenceOut, 0);
     ret = pSurfaceTmp->UnRegisterReleaseListener();
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
     ASSERT_EQ(pSurfaceTmp->CleanCache(), OHOS::GSERROR_OK);

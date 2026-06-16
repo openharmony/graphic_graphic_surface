@@ -39,7 +39,7 @@
 #include "surface_utils.h"
 #include "surface_trace.h"
 #include "v2_0/buffer_handle_meta_key_type.h"
-#include "frame_report.h"
+#include "frame_report.h" 
 
 #define DMA_BUF_SET_TYPE _IOW(DMA_BUF_BASE, 2, const char *)
 
@@ -2348,6 +2348,12 @@ GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
         case TunnelTypeMask::TUNNEL_TYPE_VIDEO: {
             tunnelLayerState_.tunnelLayerId = uniqueId_;
             tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
+            return GSERROR_OK;
+        }
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO: {
+            tunnelLayerState_.tunnelLayerId = uniqueId_;
+            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
             return GSERROR_OK;
         }
         default: {

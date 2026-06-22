@@ -77,7 +77,7 @@ void BufferQueueProducerRemoteTest::TearDownTestCase()
     bq = nullptr;
 }
 
-sptr CreateSurfaceBuffer(uint32_t pixelFormat, int32_t width, int32_t height)
+sptr<SurfaceBuffer> CreateSurfaceBuffer(uint32_t pixelFormat, int32_t width, int32_t height)
 {
     auto buffer = SurfaceBuffer::Create();
     if (nullptr == buffer) {
@@ -106,9 +106,9 @@ sptr CreateSurfaceBuffer(uint32_t pixelFormat, int32_t width, int32_t height)
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: 1. set connectedPid_ and activelyPid_ to the same value
-                   2. construct MessageParcel and call AttachAndFlushBufferRemote
-                   3. verify FrameReport active game logic is triggered
-                   4. verify AttachAndFlushBuffer succeeds
+*                  2. construct MessageParcel and call AttachAndFlushBufferRemote
+*                  3. verify FrameReport active game logic is triggered
+*                  4. verify AttachAndFlushBuffer succeeds
 */
 HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithActiveGame001, TestSize.Level0)
 {
@@ -155,9 +155,9 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithActiveGame
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: 1. set connectedPid_ to valid pid, activelyPid_ remains 0
-                   2. construct MessageParcel and call AttachAndFlushBufferRemote
-                   3. verify FrameReport active game logic is not triggered
-                   4. verify AttachAndFlushBuffer still succeeds
+*                  2. construct MessageParcel and call AttachAndFlushBufferRemote
+*                  3. verify FrameReport active game logic is not triggered
+*                  4. verify AttachAndFlushBuffer still succeeds
 */
 HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithNoActiveGame001, TestSize.Level0)
 {
@@ -202,9 +202,9 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithNoActiveGa
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: 1. set connectedPid_ = 0, activelyPid_ to valid pid
-                   2. construct MessageParcel and call AttachAndFlushBufferRemote
-                   3. verify IsActiveGameWithPid(0) returns false (pid <= 0)
-                   4. verify AttachAndFlushBuffer still succeeds
+*                  2. construct MessageParcel and call AttachAndFlushBufferRemote
+*                  3. verify IsActiveGameWithPid(0) returns false (pid <= 0)
+*                  4. verify AttachAndFlushBuffer still succeeds
 */
 HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithZeroPid001, TestSize.Level0)
 {
@@ -249,9 +249,9 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithZeroPid001
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: 1. set connectedPid_ and activelyPid_ to different values
-                   2. construct MessageParcel and call AttachAndFlushBufferRemote
-                   3. verify IsActiveGameWithPid returns false (mismatch)
-                   4. verify AttachAndFlushBuffer still succeeds
+*                  2. construct MessageParcel and call AttachAndFlushBufferRemote
+*                  3. verify IsActiveGameWithPid returns false (mismatch)
+*                  4. verify AttachAndFlushBuffer still succeeds
 */
 HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemotePidMismatch001, TestSize.Level0)
 {

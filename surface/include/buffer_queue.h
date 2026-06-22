@@ -89,7 +89,7 @@ struct BufferSlot {
      * [left, top, width, height]
      */
     int32_t crop[4];
-    bool isRsUsing = false;
+    uint32_t isRsUsing = 0;
 };
 
 struct LppSlotInfo {
@@ -100,7 +100,7 @@ struct LppSlotInfo {
      */
     BufferSlot slot[8];
     int32_t frameRate = 0;
-    bool isStopShbDraw = false;
+    uint32_t isStopShbDraw = 0;
 };
 
 using BufferAndFence = std::pair<sptr<SurfaceBuffer>, sptr<SyncFence>>;

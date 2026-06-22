@@ -2936,7 +2936,7 @@ GSError BufferQueue::AcquireLppBuffer(
         SURFACE_TRACE_NAME("AcquireLppBuffer no buffer update");
         return GSERROR_NO_BUFFER;
     }
-    lppSlotInfo_->slot[readOffset].isRsUsing = true;
+    lppSlotInfo_->slot[readOffset].isRsUsing = 1;
     lppSkipCount_ = 0;
     const auto bufferSlot = slotInfo.slot[readOffset];
     lppSlotInfo_->readOffset = readOffset;
@@ -2946,7 +2946,7 @@ GSError BufferQueue::AcquireLppBuffer(
  
     auto mapIter = bufferQueueCache_.find(seqId);
     if (mapIter == bufferQueueCache_.end()) {
-        lppSlotInfo_->slot[readOffset].isRsUsing = false;
+        lppSlotInfo_->slot[readOffset].isRsUsing = 0;
         SURFACE_TRACE_NAME_FMT("AcquireLppBuffer buffer cache no find buffer, seqId = [%u]", seqId);
         return GSERROR_NO_BUFFER;
     }
@@ -2998,13 +2998,13 @@ bool BufferQueue::CheckLppFenceLocked()
             lppFenceIter++;
             continue;
         }
-        slot->isRsUsing = false;
+        slot->isRsUsing = 0;
         lppFenceIter = lppFenceMap_.erase(lppFenceIter);
     }
     for (auto &slot : lppSlotInfo_->slot) {
         uint32_t seqId = slot.seqId;
-        if (lppFenceMap_.find(seqId) == lppFenceMap_.end() && slot.isRsUsing) {
-            slot.isRsUsing = false;
+        if (lppFenceMap_.find(seqId) == lppFenceMap_.end() && slot.isRsUsing == 1) {
+            slot.isRsUsing = 0;
         }
     }
     return lppFenceMap_.size() <= MAX_LPP_ACQUIRE_BUFFER_SIZE;
@@ -3073,7 +3073,8 @@ GSError BufferQueue::SetLppDrawSource(bool isShbSource, bool isRsSource)
         return GSERROR_TYPE_ERROR;
     }
     if (lppSkipCount_ >= MAX_LPP_SKIP_COUNT) {
-        lppSlotInfo_->isStopShbDraw = true;
+        isRsDrawLpp_ = false;
+        lppSlotInfo_->isStopShbDraw = !isShbSource;
         return GSERROR_OUT_OF_RANGE;
     }
 

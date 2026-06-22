@@ -12,16 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <gtest/gtest.h>
 #include <iservice_registry.h>
 #include <surface.h>
 #include <buffer_extra_data_impl.h>
+#include <buffer_utils.h>
 #include <buffer_queue_producer.h>
 #include "buffer_consumer_listener.h"
 #include "sync_fence.h"
 #include "accesstoken_kit.h"
 #include "nativetoken_kit.h"
 #include "token_setproc.h"
+#include "frame_report.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -73,6 +74,220 @@ void BufferQueueProducerRemoteTest::TearDownTestCase()
     bp = nullptr;
     bqp = nullptr;
     bq = nullptr;
+}
+
+sptr CreateSurfaceBuffer(uint32_t pixelFormat, int32_t width, int32_t height)
+{
+    auto buffer = SurfaceBuffer::Create();
+    if (nullptr == buffer) {
+        printf("Create surface buffer failed\n");
+        return nullptr;
+    }
+    BufferRequestConfig inputCfg;
+    inputCfg.height = height;
+    inputCfg.width = width;
+    inputCfg.strideAlignment = width;
+    inputCfg.usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE
+        | BUFFER_USAGE_HW_RENDER | BUFFER_USAGE_HW_TEXTURE | BUFFER_USAGE_MEM_MMZ_CACHE;
+    inputCfg.timeout = 0;
+    inputCfg.format = pixelFormat;
+    GSError err = buffer->Alloc(inputCfg);
+    if (GSERROR_OK != err) {
+        printf("Alloc surface buffer failed\n");
+        return nullptr;
+    }
+    return buffer;
+}
+
+/*
+* Function: AttachAndFlushBufferRemote with connectedPid_ matching activelyPid_
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. set connectedPid_ and activelyPid_ to the same value
+                   2. construct MessageParcel and call AttachAndFlushBufferRemote
+                   3. verify FrameReport active game logic is triggered
+                   4. verify AttachAndFlushBuffer succeeds
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithActiveGame001, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+    int32_t testPid = getpid();
+
+    bqp->connectedPid_ = testPid;
+    Rosen::FrameReport::GetInstance().SetGameScene(testPid, 2);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    ASSERT_EQ(remoteRet, ERR_NONE);
+    GSError sRet = static_cast<GSError>(reply.ReadInt32());
+    ASSERT_EQ(sRet, GSERROR_OK);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+
+    Rosen::FrameReport::GetInstance().SetGameScene(testPid, 0);
+}
+
+/*
+* Function: AttachAndFlushBufferRemote with no active game (activelyPid_ = 0)
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. set connectedPid_ to valid pid, activelyPid_ remains 0
+                   2. construct MessageParcel and call AttachAndFlushBufferRemote
+                   3. verify FrameReport active game logic is not triggered
+                   4. verify AttachAndFlushBuffer still succeeds
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithNoActiveGame001, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+    int32_t testPid = getpid();
+
+    bqp->connectedPid_ = testPid;
+    Rosen::FrameReport::GetInstance().SetGameScene(testPid, 0);
+    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    ASSERT_EQ(remoteRet, ERR_NONE);
+    GSError sRet = static_cast<GSError>(reply.ReadInt32());
+    ASSERT_EQ(sRet, GSERROR_OK);
+    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+}
+
+/*
+* Function: AttachAndFlushBufferRemote with connectedPid_ = 0
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. set connectedPid_ = 0, activelyPid_ to valid pid
+                   2. construct MessageParcel and call AttachAndFlushBufferRemote
+                   3. verify IsActiveGameWithPid(0) returns false (pid <= 0)
+                   4. verify AttachAndFlushBuffer still succeeds
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithZeroPid001, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    bqp->connectedPid_ = 0;
+    Rosen::FrameReport::GetInstance().SetGameScene(1, 2);
+    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(0));
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    ASSERT_EQ(remoteRet, ERR_NONE);
+    GSError sRet = static_cast<GSError>(reply.ReadInt32());
+    ASSERT_EQ(sRet, GSERROR_OK);
+
+    Rosen::FrameReport::GetInstance().SetGameScene(1, 0);
+}
+
+/*
+* Function: AttachAndFlushBufferRemote with connectedPid_ != activelyPid_
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. set connectedPid_ and activelyPid_ to different values
+                   2. construct MessageParcel and call AttachAndFlushBufferRemote
+                   3. verify IsActiveGameWithPid returns false (mismatch)
+                   4. verify AttachAndFlushBuffer still succeeds
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemotePidMismatch001, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    bqp->connectedPid_ = 999;
+    Rosen::FrameReport::GetInstance().SetGameScene(888, 2);
+    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(999));
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(888));
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    ASSERT_EQ(remoteRet, ERR_NONE);
+    GSError sRet = static_cast<GSError>(reply.ReadInt32());
+    ASSERT_EQ(sRet, GSERROR_OK);
+
+    Rosen::FrameReport::GetInstance().SetGameScene(888, 0);
 }
 
 /*

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <gtest/gtest.h>
 #include <iservice_registry.h>
 #include <surface.h>
 #include <buffer_extra_data_impl.h>

@@ -115,10 +115,11 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithActiveGame
     GSError ret;
     bp->SetQueueSize(8);
     int32_t testPid = getpid();
+    int32_t origConnectedPid = bqp->connectedPid_;
 
     bqp->connectedPid_ = testPid;
     Rosen::FrameReport::GetInstance().SetGameScene(testPid, 2);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+    EXPECT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
 
     auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
     ASSERT_NE(buffer, nullptr);
@@ -129,24 +130,25 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithActiveGame
     MessageParcel reply;
     MessageOption option;
     ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     ret = buffer->WriteBufferRequestConfig(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
     ret = bedataLocal->WriteToParcel(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
     ret = WriteFlushConfig(arguments, flushConfig);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(arguments.WriteBool(needMap));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
 
     int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
-    ASSERT_EQ(remoteRet, ERR_NONE);
+    EXPECT_EQ(remoteRet, ERR_NONE);
     GSError sRet = static_cast<GSError>(reply.ReadInt32());
-    ASSERT_EQ(sRet, GSERROR_OK);
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+    EXPECT_EQ(sRet, GSERROR_OK);
+    EXPECT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
 
     Rosen::FrameReport::GetInstance().SetGameScene(testPid, 0);
+    bqp->connectedPid_ = origConnectedPid;
 }
 
 /*
@@ -164,10 +166,11 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithNoActiveGa
     GSError ret;
     bp->SetQueueSize(8);
     int32_t testPid = getpid();
+    int32_t origConnectedPid = bqp->connectedPid_;
 
     bqp->connectedPid_ = testPid;
     Rosen::FrameReport::GetInstance().SetGameScene(testPid, 0);
-    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+    EXPECT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
 
     auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
     ASSERT_NE(buffer, nullptr);
@@ -178,22 +181,24 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithNoActiveGa
     MessageParcel reply;
     MessageOption option;
     ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     ret = buffer->WriteBufferRequestConfig(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
     ret = bedataLocal->WriteToParcel(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
     ret = WriteFlushConfig(arguments, flushConfig);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(arguments.WriteBool(needMap));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
 
     int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
-    ASSERT_EQ(remoteRet, ERR_NONE);
+    EXPECT_EQ(remoteRet, ERR_NONE);
     GSError sRet = static_cast<GSError>(reply.ReadInt32());
-    ASSERT_EQ(sRet, GSERROR_OK);
-    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+    EXPECT_EQ(sRet, GSERROR_OK);
+    EXPECT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(testPid));
+
+    bqp->connectedPid_ = origConnectedPid;
 }
 
 /*
@@ -210,10 +215,11 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithZeroPid001
 {
     GSError ret;
     bp->SetQueueSize(8);
+    int32_t origConnectedPid = bqp->connectedPid_;
 
     bqp->connectedPid_ = 0;
     Rosen::FrameReport::GetInstance().SetGameScene(1, 2);
-    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(0));
+    EXPECT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(0));
 
     auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
     ASSERT_NE(buffer, nullptr);
@@ -224,23 +230,24 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteWithZeroPid001
     MessageParcel reply;
     MessageOption option;
     ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     ret = buffer->WriteBufferRequestConfig(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
     ret = bedataLocal->WriteToParcel(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
     ret = WriteFlushConfig(arguments, flushConfig);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(arguments.WriteBool(needMap));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
 
     int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
-    ASSERT_EQ(remoteRet, ERR_NONE);
+    EXPECT_EQ(remoteRet, ERR_NONE);
     GSError sRet = static_cast<GSError>(reply.ReadInt32());
-    ASSERT_EQ(sRet, GSERROR_OK);
+    EXPECT_EQ(sRet, GSERROR_OK);
 
     Rosen::FrameReport::GetInstance().SetGameScene(1, 0);
+    bqp->connectedPid_ = origConnectedPid;
 }
 
 /*
@@ -257,11 +264,12 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemotePidMismatch001
 {
     GSError ret;
     bp->SetQueueSize(8);
+    int32_t origConnectedPid = bqp->connectedPid_;
 
     bqp->connectedPid_ = 999;
     Rosen::FrameReport::GetInstance().SetGameScene(888, 2);
-    ASSERT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(999));
-    ASSERT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(888));
+    EXPECT_FALSE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(999));
+    EXPECT_TRUE(Rosen::FrameReport::GetInstance().IsActiveGameWithPid(888));
 
     auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
     ASSERT_NE(buffer, nullptr);
@@ -272,23 +280,24 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemotePidMismatch001
     MessageParcel reply;
     MessageOption option;
     ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     ret = buffer->WriteBufferRequestConfig(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(ret, GSERROR_OK);
     sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
     ret = bedataLocal->WriteToParcel(arguments);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(fence->WriteToMessageParcel(arguments));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
     ret = WriteFlushConfig(arguments, flushConfig);
-    ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_TRUE(arguments.WriteBool(needMap));
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
 
     int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
-    ASSERT_EQ(remoteRet, ERR_NONE);
+    EXPECT_EQ(remoteRet, ERR_NONE);
     GSError sRet = static_cast<GSError>(reply.ReadInt32());
-    ASSERT_EQ(sRet, GSERROR_OK);
+    EXPECT_EQ(sRet, GSERROR_OK);
 
     Rosen::FrameReport::GetInstance().SetGameScene(888, 0);
+    bqp->connectedPid_ = origConnectedPid;
 }
 
 /*

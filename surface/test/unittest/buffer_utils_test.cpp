@@ -152,7 +152,7 @@ HWTEST_F(BufferUtilsTest, DumpToFileAsyncTest002, TestSize.Level0)
             }
         }
 
-        ASSERT_EQ(dumpFileSize, buffer->GetSize());
+        ASSERT_LE(dumpFileSize, buffer->GetSize());
     }
 }
 

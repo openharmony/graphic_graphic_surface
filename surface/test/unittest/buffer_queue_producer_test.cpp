@@ -1577,37 +1577,35 @@ HWTEST_F(BufferQueueProducerTest, SyncProducerCache003, Function | MediumTest | 
     EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
 
-/**
- * Function: RegisterReleaseListener
+/*
+ * Function: CleanReleasedBuffers
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
- * CaseDescription: 1. call RegisterReleaseListener with nullptr listener and valid bufferQueue_
+ * CaseDescription: CleanReleasedBuffers with buffers test
  */
-HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerNullListener001, TestSize.Level0)
+HWTEST_F(BufferQueueProducerTest, CleanReleasedBuffers001, Function | MediumTest | Level2)
 {
-    sptr<IProducerListener> listener = nullptr;
-    GSError ret = bqp_->RegisterReleaseListener(listener);
-    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
-}
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bqp_->RequestBuffer(requestConfig, bedata_, retval);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
 
-/**
- * Function: RegisterReleaseListenerRemote
- * Type: Function
- * Rank: Important(2)
- * EnvConditions: N/A
- */
-HWTEST_F(BufferQueueProducerTest, RegisterReleaseListenerRemote001, TestSize.Level0)
-{
-    MessageParcel arguments;
-    sptr<IRemoteObjectMocker> remoteObjectMocker = new IRemoteObjectMocker();
-    EXPECT_NE(remoteObjectMocker, nullptr);
-    arguments.WriteRemoteObject(remoteObjectMocker);
-    arguments.WriteBool(false);
-    MessageParcel reply;
-    MessageOption option;
-    int32_t ret = bqp_->RegisterReleaseListenerRemote(arguments, reply, option);
-    EXPECT_EQ(ret, ERR_INVALID_REPLY);
-    remoteObjectMocker = nullptr;
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bqp_->FlushBuffer(retval.sequence, bedata_, acquireFence, flushConfig);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer;
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    ret = bq_->AcquireBuffer(buffer, releaseFence, timestamp, damages);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = bq_->ReleaseBuffer(buffer, releaseFence);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
+
+    std::vector<uint32_t> cleanedSeqNums;
+    ret = bqp_->CleanReleasedBuffers(cleanedSeqNums);
+    EXPECT_EQ(ret, OHOS::GSERROR_OK);
 }
 }

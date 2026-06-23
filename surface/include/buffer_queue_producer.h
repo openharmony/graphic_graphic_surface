@@ -145,6 +145,7 @@ public:
     GSError GetAvailableBufferCount(uint32_t &count) override;
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
     GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums) override;
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -225,7 +226,7 @@ private:
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
     bool CheckIsAlive();
     int32_t PreAllocBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-
+    int32_t CleanReleasedBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
 

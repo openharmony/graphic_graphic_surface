@@ -881,6 +881,13 @@ public:
      * @return Returns the error code of the set of processor.
      */
     GSError SetGameUpscaleProcessor(GameUpscaleProcessor processor) override;
+    /**
+     * @brief Clean the released surface buffer cache.
+     *
+     * @param cleanedSeqNums The cleaned buffers sequence.
+     * @return Returns the error code of the CleanReleasedBuffers.
+     */
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
 private:
     ProducerSurface(sptr<IBufferProducer>& producer);
     GSError PropertyChangeCallback(const SurfaceProperty& property);

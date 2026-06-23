@@ -288,6 +288,7 @@ public:
      */
     GSError SetDropFrameLevel(int32_t level);
     void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -377,6 +378,7 @@ private:
     GSError ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
         std::unique_lock<std::mutex> &lock);
     void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
+    void CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock, std::vector<uint32_t> &cleanedSeqNums);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;

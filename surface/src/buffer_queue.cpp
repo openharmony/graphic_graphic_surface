@@ -3153,4 +3153,52 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
     }
     return GSERROR_OK;
 }
+
+GSError BufferQueue::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
+{
+    if (freeList_.empty()) {
+        return GSERROR_OK;
+    }
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        CleanReleasedBuffersLocked(lock, cleanedSeqNums);
+        waitReqCon_.notify_all();
+    }
+    if (cleanedSeqNums.empty()) {
+        return GSERROR_OK;
+    }
+
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (listener != nullptr) {
+        SURFACE_TRACE_NAME_FMT("CleanReleasedBuffers name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
+        listener->OnCleanCache();
+    } else if (listenerClazz != nullptr) {
+        SURFACE_TRACE_NAME_FMT("CleanReleasedBuffers name: %s queueId: %" PRIu64, name_.c_str(), uniqueId_);
+        listenerClazz->OnCleanCache();
+    }
+    return GSERROR_OK;
+}
+
+void BufferQueue::CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock, std::vector<uint32_t> &cleanedSeqNums)
+{
+    isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
+    for (auto it = freeList_.begin(); it != freeList_.end();) {
+        auto sequence = *it;
+        if (sequence == lastFlusedSequence_ || sequence == acquireLastFlushedBufSequence_) {
+            ++it;
+            continue;
+        }
+        cleanedSeqNums.push_back(sequence);
+        MarkBufferReclaimableByIdLocked(sequence);
+        OnBufferDeleteForRS(sequence);
+        bufferQueueCache_.erase(sequence);
+        it = freeList_.erase(it);
+    }
+}
 }; // namespace OHOS

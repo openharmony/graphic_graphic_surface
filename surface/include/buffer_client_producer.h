@@ -132,6 +132,7 @@ public:
     GSError SetLppShareFd(int fd, bool state) override;
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);

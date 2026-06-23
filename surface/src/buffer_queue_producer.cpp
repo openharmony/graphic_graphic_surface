@@ -112,6 +112,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_BUFFER_REALLOC_FLAG, SetBufferReallocFlagRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SYNC_PRODUCER_CACHE, SyncProducerCacheRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO, SetTunnelLayerInfoRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_RELEASED_BUFFERS, CleanReleasedBuffersRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -2069,5 +2070,36 @@ GSError BufferQueueProducer::CleanProducerBySeqNum(const std::vector<uint32_t>& 
     }
     bufferQueue_->CleanProducerBySeqNum(seqNums);
     return SURFACE_ERROR_OK;
+}
+
+int32_t BufferQueueProducer::CleanReleasedBuffersRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::vector<uint32_t> sequences;
+    GSError result = CleanReleasedBuffers(sequences);
+    if (!reply.WriteInt32(result)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    if (result == GSERROR_OK && !reply.WriteUInt32Vector(sequences)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+GSError BufferQueueProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto ret = CheckConnectLocked();
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
+    }
+
+    return bufferQueue_->CleanReleasedBuffers(cleanedSeqNums);
 }
 }; // namespace OHOS

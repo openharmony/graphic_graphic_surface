@@ -1151,6 +1151,20 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     MessageParcel &reply, MessageOption &option)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
+    int64_t startTimeNs = 0;
+    int64_t endTimeNs = 0;
+    bool isActiveGame = false;
+    int32_t connectedPid = 0;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        connectedPid = connectedPid_;
+    }
+    isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
+    if (isActiveGame) {
+        startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+    }
+
     auto ret = AttachBufferToQueueReadBuffer(arguments, reply, option, buffer);
     if (ret != ERR_NONE) {
         return ret;
@@ -1169,6 +1183,14 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     GSError sRet = AttachAndFlushBuffer(buffer, bedataimpl, fence, config, needMap);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+
+    if (isActiveGame) {
+        uint64_t uniqueId = GetUniqueId();
+        endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now().time_since_epoch()).count();
+        Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
+        Rosen::FrameReport::GetInstance().Report(name_);
     }
     return ERR_NONE;
 }

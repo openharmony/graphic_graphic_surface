@@ -4941,4 +4941,61 @@ HWTEST_F(ProducerSurfaceTest, InitPropertyListenerDestroyed001, TestSize.Level0)
     producer = nullptr;
     propertyListener = nullptr;
 }
+
+/*
+ * Function: CleanReleasedBuffers001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test CleanReleasedBuffers when producer_ is nullptr
+ */
+HWTEST_F(ProducerSurfaceTest, CleanReleasedBuffers001, TestSize.Level0)
+{
+    sptr<IBufferProducer> producer = nullptr;
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+    std::vector<uint32_t> cleanedSeqNums;
+    GSError ret = pSurfaceTmp->CleanReleasedBuffers(cleanedSeqNums);
+    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: CleanReleasedBuffers002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: test CleanReleasedBuffers successful cleaning
+ */
+HWTEST_F(ProducerSurfaceTest, CleanReleasedBuffers002, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
+    pSurfaceTmp->Init();
+
+    sptr<SurfaceBuffer> buffer1;
+    sptr<SyncFence> fence1 = SyncFence::InvalidFence();
+    GSError ret = pSurfaceTmp->RequestBuffer(buffer1, fence1, requestConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(buffer1 != nullptr);
+
+    ret = pSurfaceTmp->FlushBuffer(buffer1, fence1, flushConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    sptr<SurfaceBuffer> acquireBuffer;
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    ret = cSurfTmp->AcquireBuffer(acquireBuffer, acquireFence, timestamp, damages);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    ret = cSurfTmp->ReleaseBuffer(acquireBuffer, acquireFence);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    std::vector<uint32_t> cleanedSeqNums;
+    ret = pSurfaceTmp->CleanReleasedBuffers(cleanedSeqNums);
+    EXPECT_EQ(ret, GSERROR_OK);
+}
 }

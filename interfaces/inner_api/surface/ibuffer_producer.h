@@ -270,6 +270,11 @@ public:
         (void)seqNums;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
+    {
+        (void)cleanedSeqNums;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -340,6 +345,7 @@ protected:
         BUFFER_PRODUCER_BUFFER_REALLOC_FLAG,
         BUFFER_PRODUCER_SYNC_PRODUCER_CACHE,
         BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO,
+        BUFFER_PRODUCER_CLEAN_RELEASED_BUFFERS,
     };
 };
 } // namespace OHOS

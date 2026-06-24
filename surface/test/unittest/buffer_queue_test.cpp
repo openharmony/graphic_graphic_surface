@@ -3110,4 +3110,200 @@ HWTEST_F(BufferQueueTest, CleanProducerBySeqNum001, TestSize.Level0)
 
     bq->CleanCache(false, nullptr);
 }
+
+/*
+ * Function: CleanReleasedBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call CleanReleasedBuffers when freeList is empty
+ *                  2. check return value and cleanedSeqNums size
+ */
+HWTEST_F(BufferQueueTest, CleanReleasedBuffers001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    std::vector<uint32_t> cleanedSeqNums;
+    GSError ret = bq->CleanReleasedBuffers(cleanedSeqNums);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_EQ(cleanedSeqNums.size(), 0u);
+}
+
+/*
+ * Function: CleanReleasedBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. request, flush, acquire, release buffer
+ *                  2. request, flush another buffer (set lastFlusedSequence_)
+ *                  3. call CleanReleasedBuffers and check it skips lastFlusedSequence_
+ */
+HWTEST_F(BufferQueueTest, CleanReleasedBuffers002, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    ASSERT_EQ(bq->SetQueueSize(3), GSERROR_OK);
+
+    IBufferProducer::RequestBufferReturnValue retval1;
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval1);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(retval1.buffer, nullptr);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval1.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer1;
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    ret = bq->AcquireBuffer(buffer1, releaseFence, timestamp, damages);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    ret = bq->ReleaseBuffer(buffer1, releaseFence);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    IBufferProducer::RequestBufferReturnValue retval2;
+    ret = bq->RequestBuffer(requestConfig, bedata, retval2);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    ret = bq->FlushBuffer(retval2.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    uint32_t lastFlushedSeq = retval2.sequence;
+    ASSERT_EQ(bq->lastFlusedSequence_, lastFlushedSeq);
+
+    ASSERT_EQ(bq->freeList_.size(), 1u);
+
+    std::vector<uint32_t> cleanedSeqNums;
+    ret = bq->CleanReleasedBuffers(cleanedSeqNums);
+    ASSERT_EQ(ret, GSERROR_OK);
+    
+    bool containsLastFlushed = false;
+    for (auto seq : cleanedSeqNums) {
+        if (seq == lastFlushedSeq) {
+            containsLastFlushed = true;
+            break;
+        }
+    }
+    ASSERT_FALSE(containsLastFlushed);
+
+    bool buffer1InCleaned = false;
+    for (auto seq : cleanedSeqNums) {
+        if (seq == buffer1->GetSeqNum()) {
+            buffer1InCleaned = true;
+            break;
+        }
+    }
+    ASSERT_TRUE(buffer1InCleaned);
+}
+
+/*
+ * Function: CleanReleasedBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. request, flush, acquire, release multiple buffers
+ *                  2. call CleanReleasedBuffers
+ *                  3. check all released buffers are cleaned
+ */
+HWTEST_F(BufferQueueTest, CleanReleasedBuffers003, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    ASSERT_EQ(bq->SetQueueSize(5), GSERROR_OK);
+
+    std::vector<uint32_t> releasedSeqs;
+    for (int i = 0; i < 3; i++) {
+        IBufferProducer::RequestBufferReturnValue retval;
+        GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+        ASSERT_EQ(ret, GSERROR_OK);
+
+        sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+        ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+        ASSERT_EQ(ret, GSERROR_OK);
+
+        sptr<SurfaceBuffer> buffer;
+        sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+        int64_t timestamp = 0;
+        std::vector<Rect> damages;
+        ret = bq->AcquireBuffer(buffer, releaseFence, timestamp, damages);
+        ASSERT_EQ(ret, GSERROR_OK);
+
+        ret = bq->ReleaseBuffer(buffer, releaseFence);
+        ASSERT_EQ(ret, GSERROR_OK);
+
+        releasedSeqs.push_back(buffer->GetSeqNum());
+    }
+
+    ASSERT_EQ(bq->freeList_.size(), 3u);
+
+    std::vector<uint32_t> cleanedSeqNums;
+    GSError ret = bq->CleanReleasedBuffers(cleanedSeqNums);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    uint32_t lastFlushedSeq = bq->lastFlusedSequence_;
+    size_t expectedCount = 0;
+    for (auto seq : releasedSeqs) {
+        if (seq != lastFlushedSeq) {
+            expectedCount++;
+        }
+    }
+
+    ASSERT_EQ(cleanedSeqNums.size(), expectedCount);
+
+    for (auto releasedSeq : releasedSeqs) {
+        if (releasedSeq == lastFlushedSeq) {
+            continue;
+        }
+        bool found = false;
+        for (auto cleanedSeq : cleanedSeqNums) {
+            if (cleanedSeq == releasedSeq) {
+                found = true;
+                break;
+            }
+        }
+        ASSERT_TRUE(found);
+    }
+}
+
+/*
+ * Function: CleanReleasedBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. register CleanCacheBufferInfoListener
+ *                  2. request, flush, acquire, release buffer
+ *                  3. call CleanReleasedBuffers
+ *                  4. check listener is called
+ */
+HWTEST_F(BufferQueueTest, CleanReleasedBuffers004, TestSize.Level0)
+{
+    sptr<CleanCacheBufferInfoListener> listener = new CleanCacheBufferInfoListener(true);
+    sptr<IBufferConsumerListener> listenerBase = listener;
+    bq->RegisterConsumerListener(listenerBase);
+
+    bq->CleanCache(false, nullptr);
+    IBufferProducer::RequestBufferReturnValue retval;
+    GSError ret = bq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
+    ret = bq->FlushBuffer(retval.sequence, bedata, acquireFence, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer;
+    sptr<SyncFence> releaseFence = SyncFence::INVALID_FENCE;
+    int64_t timestamp = 0;
+    std::vector<Rect> damages;
+    ret = bq->AcquireBuffer(buffer, releaseFence, timestamp, damages);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    ret = bq->ReleaseBuffer(buffer, releaseFence);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    std::vector<uint32_t> cleanedSeqNums;
+    ret = bq->CleanReleasedBuffers(cleanedSeqNums);
+    ASSERT_EQ(ret, GSERROR_OK);
+
+    sptr<IBufferConsumerListener> defaultListener = new BufferConsumerListener();
+    bq->RegisterConsumerListener(defaultListener);
+}
 } // namespace OHOS::Rosen

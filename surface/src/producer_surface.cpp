@@ -1690,4 +1690,34 @@ GSError ProducerSurface::SyncProducerCacheLocked()
     BLOGI("%{public}s", str.c_str());
     return GSERROR_OK;
 }
+
+GSError ProducerSurface::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    auto ret = producer_->CleanReleasedBuffers(cleanedSeqNums);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        auto spNativeWindow = wpNativeWindow_.promote();
+        for (const auto &seqNum : cleanedSeqNums) {
+            bufferProducerCache_.erase(seqNum);
+            if (spNativeWindow == nullptr) {
+                continue;
+            }
+            std::lock_guard<std::mutex> lockGuard(spNativeWindow->mutex_);
+            auto it = spNativeWindow->bufferCache_.find(seqNum);
+            if (it == spNativeWindow->bufferCache_.end()) {
+                continue;
+            }
+            NativeObjectUnreference(it->second);
+            spNativeWindow->bufferCache_.erase(it);
+        }
+    }
+    return ret;
+}
 } // namespace OHOS

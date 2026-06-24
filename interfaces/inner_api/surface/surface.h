@@ -697,6 +697,17 @@ public:
         (void)bufferSeq;
         return GSERROR_NOT_SUPPORT;
     }
+
+    /**
+     * @brief Clean the released surface buffer cache.
+     * @param cleanedSeqNums The cleaned buffers sequence.
+     * @return Returns the error code of the CleanReleasedBuffers.
+     */
+    virtual GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
+    {
+        (void)cleanedSeqNums;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

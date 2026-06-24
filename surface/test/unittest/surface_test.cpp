@@ -212,6 +212,11 @@ public:
         (void)info;
         return GSERROR_NOT_SUPPORT;
     }
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override
+    {
+        (void)cleanedSeqNums;
+        return GSERROR_NOT_SUPPORT;
+    }
 
 private:
     const std::string name_ = "";
@@ -356,5 +361,19 @@ HWTEST_F(SurfaceTest, SurfaceTestLayerCreated001, TestSize.Level0)
     EXPECT_EQ(surface->RegisterLayerStateChangedListener([](LayerStateChange state) {
         (void)state;
     }), GSERROR_NOT_SUPPORT);
+}
+
+/*
+* Function: CleanReleasedBuffers
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call CleanReleasedBuffers on base Surface
+*                  2. check ret
+*/
+HWTEST_F(SurfaceTest, SurfaceTestCleanReleasedBuffers001, TestSize.Level0)
+{
+    std::vector<uint32_t> cleanedSeqNums;
+    EXPECT_EQ(surface->CleanReleasedBuffers(cleanedSeqNums), GSERROR_NOT_SUPPORT);
 }
 } // namespace OHOS::Rosen

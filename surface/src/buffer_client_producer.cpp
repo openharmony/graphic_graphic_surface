@@ -1104,4 +1104,17 @@ GSError BufferClientProducer::SyncProducerCache(std::map<uint32_t, sptr<SurfaceB
     }
     return GSERROR_OK;
 }
+
+GSError BufferClientProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+
+    SEND_REQUEST(BUFFER_PRODUCER_CLEAN_RELEASED_BUFFERS, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret == GSERROR_OK && !reply.ReadUInt32Vector(&cleanedSeqNums)) {
+        BLOGE("CleanReleasedBuffers ReadUInt32Vector fail, uniqueId: %{public}" PRIu64, uniqueId_);
+        return GSERROR_BINDER;
+    }
+    return ret;
+}
 }; // namespace OHOS

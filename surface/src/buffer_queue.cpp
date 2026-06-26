@@ -2329,14 +2329,11 @@ static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t 
     switch (tunnelTypeMask) {
         case TunnelTypeMask::TUNNEL_TYPE_NONE:
             tunnelLayerId = 0;
-            property = TUNNEL_PROP_INVALID;
- 
- 
+            property = TUNNEL_PROP_INVALID; 
             return GSERROR_OK;
         case TunnelTypeMask::TUNNEL_TYPE_LPP:
             tunnelLayerId = uniqueId;
-            property = static_cast<TunnelLayerProperty>(
- 
+            property = static_cast<TunnelLayerProperty>( 
                 TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
             return GSERROR_OK;
         case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
@@ -2349,6 +2346,11 @@ static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t 
         case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
             tunnelLayerId = uniqueId;
             property = TUNNEL_PROP_BUFFER_ADDR;
+            return GSERROR_OK;
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO:
+            tunnelLayerId = uniqueId;
+            property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
             return GSERROR_OK;
         default:
             tunnelLayerId = 0;

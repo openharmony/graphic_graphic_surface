@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "buffer_queue.h" 
+#include "buffer_queue.h"
 #include <algorithm>
 #include <chrono>
 #include <fstream>

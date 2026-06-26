@@ -2339,9 +2339,7 @@ static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t 
         case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
             tunnelLayerId = uniqueId;
             property = TUNNEL_PROP_POSTION;
- 
             return GSERROR_OK;
- 
         case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
         case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
             tunnelLayerId = uniqueId;

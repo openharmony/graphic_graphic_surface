@@ -629,6 +629,174 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo007, TestSize.Level0)
 }
 
 /*
+* Function: SetTunnelLayerInfo_DedupSameInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetTunnelLayerInfo twice with same STYLUS type
+*                  2. verify second call returns OK without triggering duplicate callback
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo_DedupSameInfo, TestSize.Level0)
+{
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
+ 
+    GSError ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+ 
+    TunnelLayerState state;
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    uint64_t firstTunnelLayerId = state.tunnelLayerId;
+    uint32_t firstProperty = state.property;
+ 
+    ret = bqp_->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, GSERROR_OK);
+ 
+    ret = bq_->GetTunnelLayerInfo(state);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(state.tunnelLayerId, firstTunnelLayerId);
+    EXPECT_EQ(state.property, firstProperty);
+}
+ 
+/*
+* Function: SetTunnelLayerInfo_CallbackOnChangedInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. register listener, set STYLUS then VIDEO type
+*                  2. verify OnTunnelLayerInfoChanged is called with updated property
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo_CallbackOnChangedInfo, TestSize.Level0)
+{
+    class TrackingTunnelInfoListener : public IBufferConsumerListener {
+    public:
+        void OnBufferAvailable() override {}
+        void OnTunnelLayerInfoChanged(const TunnelLayerState& state) override {
+            callbackCount++;
+            lastTunnelLayerId = state.tunnelLayerId;
+            lastProperty = state.property;
+        }
+        int callbackCount = 0;
+        uint64_t lastTunnelLayerId = 0;
+        uint32_t lastProperty = TUNNEL_PROP_INVALID;
+    };
+ 
+    sptr<TrackingTunnelInfoListener> trackingListener = new TrackingTunnelInfoListener();
+    sptr<IBufferConsumerListener> listenerRef = trackingListener;
+    bq_->RegisterConsumerListener(listenerRef);
+ 
+    TunnelLayerInfo stylusInfo;
+    stylusInfo.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(stylusInfo), GSERROR_OK);
+    EXPECT_EQ(trackingListener->callbackCount, 1);
+    EXPECT_EQ(trackingListener->lastProperty, TUNNEL_PROP_BUFFER_ADDR);
+ 
+    TunnelLayerInfo videoInfo;
+    videoInfo.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_VIDEO;
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(videoInfo), GSERROR_OK);
+    EXPECT_EQ(trackingListener->callbackCount, 2);
+    EXPECT_EQ(trackingListener->lastProperty, TUNNEL_PROP_BUFFER_ADDR);
+}
+ 
+/*
+* Function: SetTunnelLayerInfo_NoCallbackOnUnchangedInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. register listener, set same tunnel type twice
+*                  2. verify OnTunnelLayerInfoChanged is NOT called on second identical call
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo_NoCallbackOnUnchangedInfo, TestSize.Level0)
+{
+    class TrackingTunnelInfoListener : public IBufferConsumerListener {
+    public:
+        void OnBufferAvailable() override {}
+        void OnTunnelLayerInfoChanged(const TunnelLayerState& state) override {
+            callbackCount++;
+            lastProperty = state.property;
+        }
+        int callbackCount = 0;
+        uint32_t lastProperty = TUNNEL_PROP_INVALID;
+    };
+ 
+    sptr<TrackingTunnelInfoListener> trackingListener = new TrackingTunnelInfoListener();
+    sptr<IBufferConsumerListener> listenerRef = trackingListener;
+    bq_->RegisterConsumerListener(listenerRef);
+ 
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_LPP;
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(info), GSERROR_OK);
+    EXPECT_EQ(trackingListener->callbackCount, 1);
+ 
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(info), GSERROR_OK);
+    EXPECT_EQ(trackingListener->callbackCount, 1);
+}
+ 
+/*
+* Function: SetTunnelLayerInfo_CallbackOnNoneType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. set STYLUS type, then set NONE type
+*                  2. verify callback is triggered with reset values
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo_CallbackOnNoneType, TestSize.Level0)
+{
+    class TrackingTunnelInfoListener : public IBufferConsumerListener {
+    public:
+        void OnBufferAvailable() override {}
+        void OnTunnelLayerInfoChanged(const TunnelLayerState& state) override {
+            callbackCount++;
+            lastTunnelLayerId = state.tunnelLayerId;
+            lastProperty = state.property;
+        }
+        int callbackCount = 0;
+        uint64_t lastTunnelLayerId = 0;
+        uint32_t lastProperty = TUNNEL_PROP_INVALID;
+    };
+ 
+    sptr<TrackingTunnelInfoListener> trackingListener = new TrackingTunnelInfoListener();
+    sptr<IBufferConsumerListener> listenerRef = trackingListener;
+    bq_->RegisterConsumerListener(listenerRef);
+ 
+    TunnelLayerInfo stylusInfo;
+    stylusInfo.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(stylusInfo), GSERROR_OK);
+    EXPECT_EQ(trackingListener->callbackCount, 1);
+    uint64_t firstLayerId = trackingListener->lastTunnelLayerId;
+    EXPECT_NE(firstLayerId, 0u);
+ 
+    TunnelLayerInfo noneInfo;
+    noneInfo.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_NONE;
+    EXPECT_EQ(bqp_->SetTunnelLayerInfo(noneInfo), GSERROR_OK);
+    EXPECT_EQ(trackingListener->callbackCount, 2);
+    EXPECT_EQ(trackingListener->lastTunnelLayerId, 0u);
+    EXPECT_EQ(trackingListener->lastProperty, TUNNEL_PROP_INVALID);
+}
+ 
+/*
+* Function: SetTunnelLayerInfo_NoListenerReturnsError
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create BufferQueue without registering listener
+*                  2. verify SetTunnelLayerInfo returns SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER
+*/
+HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo_NoListenerReturnsError, TestSize.Level0)
+{
+    auto bqNoListener = new BufferQueue("test_no_listener");
+    auto bqpNoListener = new BufferQueueProducer(bqNoListener);
+ 
+    TunnelLayerInfo info;
+    info.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_STYLUS;
+    GSError ret = bqpNoListener->SetTunnelLayerInfo(info);
+    EXPECT_EQ(ret, SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER);
+ 
+    bqpNoListener->SetStatus(false);
+}
+
+/*
  * Function: SetTunnelLayerInfoRemote002
  * Type: Function
  * Rank: Important(2)

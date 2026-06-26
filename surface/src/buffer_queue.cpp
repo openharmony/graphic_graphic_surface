@@ -2323,39 +2323,79 @@ sptr<SurfaceTunnelHandle> BufferQueue::GetTunnelHandle()
     return tunnelHandle_;
 }
 
-GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t uniqueId,
+    uint64_t& tunnelLayerId, TunnelLayerProperty& property)
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    tunnelLayerState_.tunnelLayerInfo = info;
-    switch (info.tunnelTypeMask) {
-        case TunnelTypeMask::TUNNEL_TYPE_NONE: {
-            tunnelLayerState_.tunnelLayerId = 0;
-            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+    switch (tunnelTypeMask) {
+        case TunnelTypeMask::TUNNEL_TYPE_NONE:
+            tunnelLayerId = 0;
+            property = TUNNEL_PROP_INVALID;
             return GSERROR_OK;
-        }
-        case TunnelTypeMask::TUNNEL_TYPE_LPP: {
-            tunnelLayerState_.tunnelLayerId = uniqueId_;
-            tunnelLayerState_.property = static_cast<TunnelLayerProperty>(
+        case TunnelTypeMask::TUNNEL_TYPE_LPP:
+            tunnelLayerId = uniqueId;
+            property = static_cast<TunnelLayerProperty>(
                 TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT);
             return GSERROR_OK;
-        }
-        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR: {
-            tunnelLayerState_.tunnelLayerId = uniqueId_;
-            tunnelLayerState_.property = TUNNEL_PROP_POSTION;
+        case TunnelTypeMask::TUNNEL_TYPE_HARD_CURSOR:
+            tunnelLayerId = uniqueId;
+            property = TUNNEL_PROP_POSTION;
             return GSERROR_OK;
-        }
         case TunnelTypeMask::TUNNEL_TYPE_STYLUS:
-        case TunnelTypeMask::TUNNEL_TYPE_VIDEO: {
-            tunnelLayerState_.tunnelLayerId = uniqueId_;
-            tunnelLayerState_.property = TUNNEL_PROP_BUFFER_ADDR;
+        case TunnelTypeMask::TUNNEL_TYPE_VIDEO:
+            tunnelLayerId = uniqueId;
+            property = TUNNEL_PROP_BUFFER_ADDR;
             return GSERROR_OK;
-        }
-        default: {
-            tunnelLayerState_.tunnelLayerId = 0;
-            tunnelLayerState_.property = TUNNEL_PROP_INVALID;
+        case TunnelTypeMask::TUNNEL_TYPE_ANCO:
+            tunnelLayerId = uniqueId;
+            property = static_cast<TunnelLayerProperty>(
+                TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_WITH_RELEASE_FENCE);
+            return GSERROR_OK;
+        default:
+            tunnelLayerId = 0;
+            property = TUNNEL_PROP_INVALID;
             return GSERROR_INVALID_ARGUMENTS;
-        }
     }
+}
+ 
+GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
+{
+    SURFACE_TRACE_NAME_FMT("SetTunnelLayerInfo uniqueId: %" PRIu64 ", tunnelTypeMask: %u",
+        uniqueId_, static_cast<uint32_t>(info.tunnelTypeMask));
+    TunnelLayerState oldState;
+    TunnelLayerState newState;
+    {
+        std::lock_guard<std::mutex> lockGuard(mutex_);
+        oldState = tunnelLayerState_;
+        tunnelLayerState_.tunnelLayerInfo = info;
+        GSError ret = ResolveTunnelLayerConfig(
+            info.tunnelTypeMask, uniqueId_, tunnelLayerState_.tunnelLayerId, tunnelLayerState_.property);
+        if (ret != GSERROR_OK) {
+            return ret;
+        }
+        newState = tunnelLayerState_;
+    }
+    if (oldState.tunnelLayerId == newState.tunnelLayerId &&
+        oldState.property == newState.property) {
+        BLOGW("same tunnel layer info, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        return GSERROR_OK;
+    }
+    sptr<IBufferConsumerListener> listener;
+    IBufferConsumerListenerClazz *listenerClazz;
+    {
+        std::lock_guard<std::mutex> lockGuard(listenerMutex_);
+        listener = listener_;
+        listenerClazz = listenerClazz_;
+    }
+    if (listener != nullptr) {
+        SURFACE_TRACE_NAME("OnTunnelLayerInfoChanged");
+        listener->OnTunnelLayerInfoChanged(newState);
+    } else if (listenerClazz != nullptr) {
+        SURFACE_TRACE_NAME("OnTunnelLayerInfoChanged");
+        listenerClazz->OnTunnelLayerInfoChanged(newState);
+    } else {
+        return SURFACE_ERROR_CONSUMER_UNREGISTER_LISTENER;
+    }
+    return GSERROR_OK;
 }
 
 GSError BufferQueue::GetTunnelLayerInfo(TunnelLayerState& info)

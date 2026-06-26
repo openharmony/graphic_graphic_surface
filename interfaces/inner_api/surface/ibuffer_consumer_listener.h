@@ -18,7 +18,7 @@
 
 #include <refbase.h>
 #include "surface_type.h"
-#include "surface_buffer.h" 
+#include "surface_buffer.h"
 
 namespace OHOS {
 struct CleanCacheBufferInfo {

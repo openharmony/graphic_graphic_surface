@@ -2353,9 +2353,7 @@ static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t 
         default:
             tunnelLayerId = 0;
             property = TUNNEL_PROP_INVALID;
- 
             return GSERROR_INVALID_ARGUMENTS;
- 
     }
 }
  

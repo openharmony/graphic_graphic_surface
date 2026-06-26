@@ -31,6 +31,7 @@ public:
     virtual ~IBufferConsumerListener() = default;
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
+    virtual void OnTunnelLayerInfoChanged(const TunnelLayerState& state) { (void)state; };
     virtual void OnGoBackground() {};
     virtual void OnCleanCache(uint32_t *bufSeqNum = nullptr)
     {
@@ -47,6 +48,7 @@ public:
     virtual ~IBufferConsumerListenerClazz() = default;
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
+    virtual void OnTunnelLayerInfoChanged(const TunnelLayerState& state) { (void)state; };
     virtual void OnGoBackground() {};
     virtual void OnCleanCache(uint32_t *bufSeqNum = nullptr)
     {

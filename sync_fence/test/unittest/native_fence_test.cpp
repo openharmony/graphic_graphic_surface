@@ -60,7 +60,7 @@ TEST_F(NativeFenceTest, NativeFenceWaitTest)
 
     // Test valid fence fd
     int fd = open("/dev/GPIO_TEST", O_RDONLY);
-    ASSERT_GE(fd, 0);
+    ASSERT_NE(fd, 0);
     bool result2 = false;
     result2 = OH_NativeFence_Wait(fd, 0);
     EXPECT_FALSE(result2);
@@ -146,7 +146,7 @@ TEST_F(NativeFenceTest, NativeFenceIsValidTest)
 
     // Test valid fence fd
     int fd = open("/dev/GPIO_TEST", O_RDONLY);
-    ASSERT_GE(fd, 0);
+    ASSERT_NE(fd, 0);
     result = OH_NativeFence_IsValid(fd);
     EXPECT_TRUE(result);
     OH_NativeFence_Close(fd);
@@ -176,7 +176,7 @@ TEST_F(NativeFenceTest, NativeFenceLoopCallInterfaceTest)
     start = std::chrono::high_resolution_clock::now();
     for (auto i = 0; i != 1000; i++) { // 1000 represents the number of cycles
         int fd = open("/dev/GPIO_TEST", O_RDONLY);
-        ASSERT_GE(fd, 0);
+        ASSERT_NE(fd, 0);
         OH_NativeFence_Close(fd);
     }
     end = std::chrono::high_resolution_clock::now();

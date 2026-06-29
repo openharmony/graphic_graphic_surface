@@ -275,6 +275,11 @@ public:
         (void)cleanedSeqNums;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError SetSingleBufferMode(SingleBufferMode mode)
+    {
+        (void)mode;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     DECLARE_INTERFACE_DESCRIPTOR(u"surf.IBufferProducer");
 
 protected:
@@ -346,6 +351,7 @@ protected:
         BUFFER_PRODUCER_SYNC_PRODUCER_CACHE,
         BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO,
         BUFFER_PRODUCER_CLEAN_RELEASED_BUFFERS,
+        BUFFER_PRODUCER_SET_SINGLE_BUFFER_MODE,
     };
 };
 } // namespace OHOS

@@ -289,6 +289,8 @@ public:
     GSError SetDropFrameLevel(int32_t level);
     void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
+    GSError SetSingleBufferMode(SingleBufferMode mode);
+    SingleBufferMode GetAndResetSingleBufferMode();
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);

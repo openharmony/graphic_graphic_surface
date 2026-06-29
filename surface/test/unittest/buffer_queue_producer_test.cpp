@@ -1776,4 +1776,28 @@ HWTEST_F(BufferQueueProducerTest, CleanReleasedBuffers001, Function | MediumTest
     ret = bqp_->CleanReleasedBuffers(cleanedSeqNums);
     EXPECT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/**
+ * Function: SetSingleBufferModeRemote002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(BufferQueueProducerTest, SetSingleBufferModeRemote002, TestSize.Level0)
+{
+    sptr<BufferQueue> bqTmp = nullptr;
+    sptr<BufferQueueProducer> bqpTmp = new BufferQueueProducer(bqTmp);
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_NONE));
+    bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
+    arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_TO_MULTI));
+    bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
+    arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_MAX_VALUE));
+    bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
+    arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE));
+    int32_t ret = bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
 }

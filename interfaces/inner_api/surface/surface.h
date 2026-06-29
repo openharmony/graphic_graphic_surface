@@ -708,6 +708,16 @@ public:
         (void)cleanedSeqNums;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError SetSingleBufferMode(SingleBufferMode mode)
+    {
+        (void)mode;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
+
+    virtual SingleBufferMode GetAndResetSingleBufferMode()
+    {
+        return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

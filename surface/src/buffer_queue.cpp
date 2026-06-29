@@ -3241,4 +3241,19 @@ void BufferQueue::CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock,
         it = freeList_.erase(it);
     }
 }
+
+GSError BufferQueue::SetSingleBufferMode(SingleBufferMode singleBufferMode)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    singleBufferMode_ = singleBufferMode;
+    return GSERROR_OK;
+}
+
+SingleBufferMode BufferQueue::GetAndResetSingleBufferMode()
+{
+    SingleBufferMode ret = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::swap(ret, singleBufferMode_);
+    return ret;
+}
 }; // namespace OHOS

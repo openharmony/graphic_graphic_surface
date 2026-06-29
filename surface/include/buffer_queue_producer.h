@@ -219,6 +219,7 @@ private:
     int32_t SetLppShareFdRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetAlphaTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SyncProducerCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetSingleBufferModeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
     void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);

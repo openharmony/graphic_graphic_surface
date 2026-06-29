@@ -182,6 +182,13 @@ void BufferQueueConsumer::Dump(std::string &result) const
     return bufferQueue_->Dump(result);
 }
 
+SingleBufferMode BufferQueueConsumer::GetAndResetSingleBufferMode()
+{
+    if (bufferQueue_ == nullptr) {
+        return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+    return bufferQueue_->GetAndResetSingleBufferMode();
+}
 void BufferQueueConsumer::DumpCurrentFrameLayer() const
 {
     if (bufferQueue_ == nullptr) {

@@ -108,6 +108,7 @@ public:
      * @return {@link GSERROR_OK} 0 - Success.
      */
     GSError SetDropFrameLevel(int32_t level);
+    SingleBufferMode GetAndResetSingleBufferMode();
 private:
     sptr<BufferQueue> bufferQueue_ = nullptr;
     std::string name_ = "not init";

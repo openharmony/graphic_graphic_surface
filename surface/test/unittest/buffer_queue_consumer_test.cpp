@@ -443,4 +443,31 @@ HWTEST_F(BufferQueueConsumerTest, SetDropFrameLevel002, TestSize.Level0)
     GSError ret = bqcNull->SetDropFrameLevel(1);
     ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }
+
+/**
+ * Function: GetAndResetSingleBufferMode
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call GetAndResetSingleBufferMode with valid bufferQueue_
+ *                  2. check return value
+ */
+HWTEST_F(BufferQueueConsumerTest, GetAndResetSingleBufferMode001, TestSize.Level0)
+{
+    if (bqc->bufferQueue_ == nullptr) {
+        bqc->bufferQueue_ = new BufferQueue("test");
+    }
+    bqc->bufferQueue_->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    SingleBufferMode mode = bqc->GetAndResetSingleBufferMode();
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+}
+
+HWTEST_F(BufferQueueConsumerTest, GetAndResetSingleBufferMode002, TestSize.Level0)
+{
+    sptr<BufferQueue> nullQueue = nullptr;
+    sptr<BufferQueueConsumer> bqcNull = new BufferQueueConsumer(nullQueue);
+    bqcNull->bufferQueue_ = nullptr;
+    SingleBufferMode mode = bqcNull->GetAndResetSingleBufferMode();
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
 }

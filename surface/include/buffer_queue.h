@@ -461,6 +461,7 @@ private:
     bool isOnReleaseBufferWithSequenceAndFence_ = false;
     int32_t dropFrameLevel_ = 0;  // Drop frame level: 0=no drop, >0=keep latest N frames
     std::vector<CleanCacheBufferInfo> bufferInfoMap_;
+    SingleBufferMode singleBufferMode_ = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
 };
 }; // namespace OHOS
 

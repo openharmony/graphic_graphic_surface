@@ -405,6 +405,11 @@ public:
         (void)info;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+
+    virtual SingleBufferMode GetAndResetSingleBufferMode()
+    {
+        return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
 protected:
     IConsumerSurface() = default;
 };

@@ -4999,7 +4999,7 @@ HWTEST_F(ProducerSurfaceTest, CleanReleasedBuffers002, TestSize.Level0)
     EXPECT_EQ(ret, GSERROR_OK);
 }
 
-/*
+/**
  * Function: SetSingleBufferMode002
  * Type: Function
  * Rank: Important(2)
@@ -5012,11 +5012,11 @@ HWTEST_F(ProducerSurfaceTest, SetSingleBufferMode002, TestSize.Level0)
     cSurfTmp->RegisterConsumerListener(listenerTmp);
     sptr<IBufferProducer> producer = cSurfTmp->GetProducer();
     sptr<ProducerSurface> pSurfaceTmp = new ProducerSurface(producer);
-    GSError ret = pSurfaceTmp->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    GSError ret = pSurfaceTmp->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_NE(ret, GSERROR_INVALID_ARGUMENTS);
 
     pSurfaceTmp->producer_ = nullptr;
-    ret = pSurfaceTmp->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    ret = pSurfaceTmp->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
 }
 }

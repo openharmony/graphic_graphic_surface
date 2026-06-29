@@ -2904,7 +2904,7 @@ HWTEST_F(ConsumerSurfaceTest, SetDropFrameLevel002, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
-/*
+/**
  * Function: GetAndResetSingleBufferMode001
  * Type: Function
  * Rank: Important(2)
@@ -2916,7 +2916,7 @@ HWTEST_F(ConsumerSurfaceTest, GetAndResetSingleBufferMode001, TestSize.Level0)
     ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
 }
 
-/*
+/**
  * Function: GetAndResetSingleBufferMode002
  * Type: Function
  * Rank: Important(2)

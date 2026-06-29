@@ -1796,7 +1796,7 @@ HWTEST_F(BufferQueueProducerTest, SetSingleBufferModeRemote002, TestSize.Level0)
     bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
     arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_MAX_VALUE));
     bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
-    arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE));
+    arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE));
     int32_t ret = bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
     EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
 }

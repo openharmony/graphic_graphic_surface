@@ -3315,9 +3315,9 @@ HWTEST_F(BufferQueueTest, CleanReleasedBuffers004, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, SetSingleBufferMode001, TestSize.Level0)
 {
-    GSError ret = bq->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    GSError ret = bq->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_EQ(ret, GSERROR_OK);
-    ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
 }
 
 /**
@@ -3328,9 +3328,9 @@ HWTEST_F(BufferQueueTest, SetSingleBufferMode001, TestSize.Level0)
  */
 HWTEST_F(BufferQueueTest, GetAndResetSingleBufferMode001, TestSize.Level0)
 {
-    bq->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    bq->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     SingleBufferMode mode = bq->GetAndResetSingleBufferMode();
-    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
 }
 } // namespace OHOS::Rosen

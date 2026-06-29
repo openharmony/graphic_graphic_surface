@@ -457,11 +457,18 @@ HWTEST_F(BufferQueueConsumerTest, GetAndResetSingleBufferMode001, TestSize.Level
     if (bqc->bufferQueue_ == nullptr) {
         bqc->bufferQueue_ = new BufferQueue("test");
     }
-    bqc->bufferQueue_->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    bqc->bufferQueue_->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     SingleBufferMode mode = bqc->GetAndResetSingleBufferMode();
-    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SIGNLE);
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
 }
 
+
+/**
+ * Function: GetAndResetSingleBufferMode002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
 HWTEST_F(BufferQueueConsumerTest, GetAndResetSingleBufferMode002, TestSize.Level0)
 {
     sptr<BufferQueue> nullQueue = nullptr;

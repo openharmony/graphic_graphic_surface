@@ -192,7 +192,7 @@ using TunnelTypeMask = enum TunnelTypeMask {
 // single buffer mode
 using SingleBufferMode = enum SingleBufferMode {
     SINGLE_BUFFER_MODE_NONE = 0,
-    SINGLE_BUFFER_MODE_TO_SIGNLE = 1,
+    SINGLE_BUFFER_MODE_TO_SINGLE = 1,
     SINGLE_BUFFER_MODE_TO_MULTI = 2,
     SINGLE_BUFFER_MODE_MAX_VALUE,
 };

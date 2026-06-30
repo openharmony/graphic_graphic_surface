@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <surface.h>
 #include <sys/mman.h>
 #include <vector>

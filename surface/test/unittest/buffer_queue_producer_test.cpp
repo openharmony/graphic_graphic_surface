@@ -693,10 +693,11 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfo_CallbackOnChangedInfo, Test
     EXPECT_EQ(trackingListener->lastProperty, TUNNEL_PROP_BUFFER_ADDR);
  
     TunnelLayerInfo videoInfo;
-    videoInfo.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_VIDEO;
+    videoInfo.tunnelTypeMask = TunnelTypeMask::TUNNEL_TYPE_LPP;
     EXPECT_EQ(bqp_->SetTunnelLayerInfo(videoInfo), GSERROR_OK);
     EXPECT_EQ(trackingListener->callbackCount, 2);
-    EXPECT_EQ(trackingListener->lastProperty, TUNNEL_PROP_BUFFER_ADDR);
+    EXPECT_EQ(trackingListener->lastProperty,
+        static_cast<uint32_t>(TUNNEL_PROP_BUFFER_ADDR | TUNNEL_PROP_DEVICE_COMMIT));
 }
  
 /*

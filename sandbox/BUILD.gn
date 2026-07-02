@@ -23,4 +23,5 @@ ohos_static_library("sandbox_utils") {
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"
+  branch_protector_ret = "pac_ret"
 }

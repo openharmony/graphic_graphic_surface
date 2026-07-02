@@ -70,5 +70,6 @@ ohos_static_library("buffer_handle_static") {
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"
+  branch_protector_ret = "pac_ret"
 }
 ## buffer_handle.so }}}

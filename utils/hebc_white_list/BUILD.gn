@@ -55,6 +55,7 @@ ohos_static_library("hebc_white_list") {
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"
+  branch_protector_ret = "pac_ret"
 }
 
 ## hebc_white_list.so }}}

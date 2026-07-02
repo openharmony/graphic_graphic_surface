@@ -20,4 +20,5 @@ ohos_source_set("rs_frame_report_ext_surface") {
 
   part_name = "graphic_surface"
   subsystem_name = "graphic"
+  branch_protector_ret = "pac_ret"
 }

@@ -42,7 +42,12 @@ public:
             return GSERROR_BINDER;
         }
         option.SetFlags(MessageOption::TF_ASYNC);
-        int32_t ret = Remote()->SendRequest(IProducerListener::ON_BUFFER_RELEASED, arguments, reply, option);
+        sptr<IRemoteObject> remote = Remote();
+        if (remote == nullptr) {
+            BLOGE("listener Remote is nullptr");
+            return GSERROR_SERVER_ERROR;
+        }
+        int32_t ret = remote->SendRequest(IProducerListener::ON_BUFFER_RELEASED, arguments, reply, option);
         if (ret != ERR_NONE) {
             return GSERROR_BINDER;
         }
@@ -64,7 +69,12 @@ public:
             fence->WriteToMessageParcel(arguments);
         }
         option.SetFlags(MessageOption::TF_ASYNC);
-        int32_t ret = Remote()->SendRequest(IProducerListener::ON_BUFFER_RELEASED_WITH_FENCE, arguments, reply, option);
+        sptr<IRemoteObject> remote = Remote();
+        if (remote == nullptr) {
+            BLOGE("listener Remote is nullptr");
+            return GSERROR_SERVER_ERROR;
+        }
+        int32_t ret = remote->SendRequest(IProducerListener::ON_BUFFER_RELEASED_WITH_FENCE, arguments, reply, option);
         if (ret != ERR_NONE) {
             BLOGE("Remote SendRequest fail, ret = %{public}d", ret);
             return GSERROR_BINDER;
@@ -113,7 +123,12 @@ public:
 
         WriteSurfaceProperty(arguments, property);
         option.SetFlags(MessageOption::TF_ASYNC);
-        int32_t ret = Remote()->SendRequest(IProducerListener::ON_PROPERTY_CHANGE, arguments, reply, option);
+        sptr<IRemoteObject> remote = Remote();
+        if (remote == nullptr) {
+            BLOGE("listener Remote is nullptr");
+            return GSERROR_SERVER_ERROR;
+        }
+        int32_t ret = remote->SendRequest(IProducerListener::ON_PROPERTY_CHANGE, arguments, reply, option);
         if (ret != ERR_NONE) {
             return GSERROR_BINDER;
         }
@@ -131,7 +146,12 @@ public:
         }
         arguments.WriteUint32(static_cast<uint32_t>(state));
         option.SetFlags(MessageOption::TF_ASYNC);
-        int32_t ret = Remote()->SendRequest(IProducerListener::ON_LAYER_STATE_CHANGED, arguments, reply, option);
+        sptr<IRemoteObject> remote = Remote();
+        if (remote == nullptr) {
+            BLOGE("listener Remote is nullptr");
+            return GSERROR_SERVER_ERROR;
+        }
+        int32_t ret = remote->SendRequest(IProducerListener::ON_LAYER_STATE_CHANGED, arguments, reply, option);
         if (ret != ERR_NONE) {
             return GSERROR_BINDER;
         }
@@ -200,7 +220,12 @@ private:
             BLOGE("ReadSurfaceBufferImpl failed, return %{public}d", ret);
             return OnBufferReleasedWithFence(buffer, fence);
         }
-        if (arguments.ReadBool()) {
+        bool hasFence = false;
+        if (!arguments.ReadBool(hasFence)) {
+            BLOGE("ReadBool failed");
+            return GSERROR_BINDER;
+        }
+        if (hasFence) {
             fence = SyncFence::ReadFromMessageParcel(arguments);
         }
         ret = OnBufferReleasedWithFence(buffer, fence);
@@ -209,8 +234,17 @@ private:
     GSError OnBufferReleasedWithSequenceFenceRemote(MessageParcel& arguments)
     {
         sptr<SyncFence> fence = SyncFence::InvalidFence();
-        uint32_t sequence = arguments.ReadUint32();
-        if (arguments.ReadBool()) {
+        uint32_t sequence = 0;
+        if (!arguments.ReadUint32(sequence)) {
+            BLOGE("ReadUint32 sequence failed");
+            return GSERROR_BINDER;
+        }
+        bool hasFence = false;
+        if (!arguments.ReadBool(hasFence)) {
+            BLOGE("ReadBool hasFence failed");
+            return GSERROR_BINDER;
+        }
+        if (hasFence) {
             fence = SyncFence::ReadFromMessageParcel(arguments);
         }
         GSError ret = OnBufferReleasedWithSequenceAndFence(sequence, fence);
@@ -228,7 +262,12 @@ private:
 
     GSError OnLayerStateChangedRemote(MessageParcel& arguments)
     {
-        return OnLayerStateChanged(static_cast<LayerStateChange>(arguments.ReadUint32()));
+        uint32_t stateVal = 0;
+        if (!arguments.ReadUint32(stateVal)) {
+            BLOGE("ReadUint32 state failed");
+            return GSERROR_BINDER;
+        }
+        return OnLayerStateChanged(static_cast<LayerStateChange>(stateVal));
     }
 };
 

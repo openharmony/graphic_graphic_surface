@@ -44,6 +44,7 @@ private:
     template<class T>
     GSError ExtraGet(const std::string &key, ExtraDataType type, T &value) const;
     GSError ExtraSet(const std::string &key, ExtraDataType type, const std::any& val);
+    GSError ReadExtraDataItem(MessageParcel &parcel, const std::string &key, ExtraDataType type);
 
     struct ExtraData {
         std::any val;

@@ -760,6 +760,8 @@ public:
      */
     GSError SetDropFrameLevel(int32_t level) override;
 
+    SingleBufferMode GetAndResetSingleBufferMode() override;
+
 private:
     std::map<std::string, std::string> userData_;
     sptr<BufferQueueProducer> producer_ = nullptr;

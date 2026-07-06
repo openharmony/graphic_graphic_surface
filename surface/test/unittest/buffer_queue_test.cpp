@@ -3306,4 +3306,31 @@ HWTEST_F(BufferQueueTest, CleanReleasedBuffers004, TestSize.Level0)
     sptr<IBufferConsumerListener> defaultListener = new BufferConsumerListener();
     bq->RegisterConsumerListener(defaultListener);
 }
+
+/**
+ * Function: SetSingleBufferMode001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(BufferQueueTest, SetSingleBufferMode001, TestSize.Level0)
+{
+    GSError ret = bq->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+}
+
+/**
+ * Function: GetAndResetSingleBufferMode001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(BufferQueueTest, GetAndResetSingleBufferMode001, TestSize.Level0)
+{
+    bq->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+    SingleBufferMode mode = bq->GetAndResetSingleBufferMode();
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+    ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
 } // namespace OHOS::Rosen

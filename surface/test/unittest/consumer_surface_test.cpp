@@ -2904,4 +2904,29 @@ HWTEST_F(ConsumerSurfaceTest, SetDropFrameLevel002, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
 
+/**
+ * Function: GetAndResetSingleBufferMode001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(ConsumerSurfaceTest, GetAndResetSingleBufferMode001, TestSize.Level0)
+{
+    SingleBufferMode mode = cs->GetAndResetSingleBufferMode();
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
+
+/**
+ * Function: GetAndResetSingleBufferMode002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(ConsumerSurfaceTest, GetAndResetSingleBufferMode002, TestSize.Level0)
+{
+    auto cSurface = new ConsumerSurface("test2");
+    cSurface->consumer_ = nullptr;
+    SingleBufferMode mode = cSurface->GetAndResetSingleBufferMode();
+    ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
 }

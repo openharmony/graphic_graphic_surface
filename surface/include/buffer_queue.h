@@ -289,6 +289,8 @@ public:
     GSError SetDropFrameLevel(int32_t level);
     void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
+    GSError SetSingleBufferMode(SingleBufferMode mode);
+    SingleBufferMode GetAndResetSingleBufferMode();
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -461,6 +463,7 @@ private:
     bool isOnReleaseBufferWithSequenceAndFence_ = false;
     int32_t dropFrameLevel_ = 0;  // Drop frame level: 0=no drop, >0=keep latest N frames
     std::vector<CleanCacheBufferInfo> bufferInfoMap_;
+    SingleBufferMode singleBufferMode_ = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
 };
 }; // namespace OHOS
 

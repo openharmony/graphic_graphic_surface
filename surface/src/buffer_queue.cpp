@@ -1396,6 +1396,7 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(it);
+        DeleteFreeListCacheLocked(sequence);
         deletingList_.push_back(sequence);
     }
 }
@@ -1421,8 +1422,9 @@ void BufferQueue::DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex
 
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     while (!freeList_.empty()) {
-        DeleteBufferInCacheNoWaitForAllocatingState(freeList_.front());
-        freeList_.pop_front();
+        uint32_t seq = freeList_.front();
+        DeleteBufferInCacheNoWaitForAllocatingState(seq);
+        DeleteFreeListCacheLocked(seq);
         count--;
         if (count <= 0) {
             return;
@@ -3196,11 +3198,11 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
 
 GSError BufferQueue::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
 {
-    if (freeList_.empty()) {
-        return GSERROR_OK;
-    }
     {
         std::unique_lock<std::mutex> lock(mutex_);
+        if (freeList_.empty()) {
+            return GSERROR_OK;
+        }
         CleanReleasedBuffersLocked(lock, cleanedSeqNums);
         waitReqCon_.notify_all();
     }

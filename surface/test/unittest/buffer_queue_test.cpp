@@ -2067,6 +2067,38 @@ HWTEST_F(BufferQueueTest, GetAlphaTypeTest, TestSize.Level0)
 }
 
 /*
+ * Function: DeleteBufferInCacheNoWaitForAllocatingState
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. request a buffer so its seq is in cache (REQUESTED, not in freeList_)
+ *                  2. inject the same seq into freeList_ to simulate the race where a concurrent
+ *                     CancelBuffer/ReleaseBuffer pushed it during DeleteBufferInCache's wait window
+ *                  3. call DeleteBufferInCacheNoWaitForAllocatingState and verify the seq is removed
+ *                     from BOTH bufferQueueCache_ and freeList_ (no stale seq left behind)
+ */
+HWTEST_F(BufferQueueTest, DeleteBufferInCacheNoWaitRace001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+
+    IBufferProducer::RequestBufferReturnValue retval;
+    ASSERT_EQ(bq->RequestBuffer(requestConfig, bedata, retval), GSERROR_OK);
+    ASSERT_NE(retval.buffer, nullptr);
+    uint32_t seq = retval.sequence;
+    ASSERT_NE(bq->bufferQueueCache_.find(seq), bq->bufferQueueCache_.end());
+    ASSERT_EQ(bq->freeList_.size(), 0u);
+
+    bq->freeList_.push_back(seq);
+    ASSERT_EQ(bq->freeList_.size(), 1u);
+
+    bq->DeleteBufferInCacheNoWaitForAllocatingState(seq);
+    ASSERT_EQ(bq->bufferQueueCache_.find(seq), bq->bufferQueueCache_.end());
+    ASSERT_EQ(bq->freeList_.size(), 0u);
+
+    bq->CleanCache(false, nullptr);
+}
+
+/*
  * Function: SetIsPriorityAlloc
  * Type: Function
  * Rank: Important(2)

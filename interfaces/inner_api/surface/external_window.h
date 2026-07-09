@@ -302,6 +302,25 @@ typedef enum {
 } OHScalingMode;
 
 /**
+ * @brief Indicates video dimension type.
+ * @since 26
+ */
+typedef enum {
+    /**
+     * the dimension of the video is normal 2D(2-dimension)
+     */
+    OH_VIDEO_DIM_TYPE_2D = 0,
+    /**
+     * the dimension of the video is 3D(3-dimension), format:side by side
+     */
+    OH_VIDEO_DIM_TYPE_3D_SBS,
+    /**
+     * the dimension of the video is 3D(3-dimension), format:top and bottom
+     */
+    OH_VIDEO_DIM_TYPE_3D_TAB,
+} OHVideoDimType;
+
+/**
  * @brief Indicates Scaling Mode.
  * @since 12
  */

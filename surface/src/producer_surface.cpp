@@ -1164,6 +1164,23 @@ GSError ProducerSurface::SetScalingMode(ScalingMode scalingMode)
     return producer_->SetScalingMode(scalingMode);
 }
 
+GSError ProducerSurface::SetVideoDimensionType(VideoDimType videoDimType)
+{
+    if (producer_ == nullptr || videoDimType <VideoDimType::VIDEO_DIM_TYPE_2D ||
+        videoDimType > VideoDimType::VIDEO_DIM_TYPE_3D_MVC) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetVideoDimensionType(videoDimType);
+}
+
+GSError ProducerSurface::GetVideoDimensionType(VideoDimType &videoDimType)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->GetVideoDimensionType(videoDimType);
+}
+
 void ProducerSurface::SetBufferHold(bool hold)
 {
     if (producer_ == nullptr) {

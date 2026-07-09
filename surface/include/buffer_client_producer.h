@@ -103,6 +103,8 @@ public:
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
+    GSError SetVideoDimensionType(VideoDimType videoDimType) override;
+    GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;

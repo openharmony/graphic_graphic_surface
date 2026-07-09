@@ -1309,6 +1309,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
         " %d id: %u", name_.c_str(), uniqueId_, config.width, config.height, config.usage, config.format, sequence);
 
     ScalingMode scalingMode = scalingMode_;
+    VideoDimType videoDimType = videoDimType_;
     int32_t connectedPid = connectedPid_;
     isAllocatingBuffer_ = true;
     lock.unlock();
@@ -1323,6 +1324,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
     }
 
     bufferImpl->SetSurfaceBufferScalingMode(scalingMode);
+    bufferImpl->SetSurfaceBufferVideoDimensionType(videoDimType);
     BufferElement ele = {
         .buffer = bufferImpl,
         .state = BUFFER_STATE_REQUESTED,
@@ -1519,6 +1521,7 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
         return SURFACE_ERROR_BUFFER_IS_INCACHE;
     }
     buffer->SetSurfaceBufferScalingMode(scalingMode_);
+    buffer->SetSurfaceBufferVideoDimensionType(videoDimType_);
     BufferElement ele;
     ele = {
         .buffer = buffer,
@@ -1621,6 +1624,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
     }
 
     buffer->SetSurfaceBufferScalingMode(scalingMode_);
+    buffer->SetSurfaceBufferVideoDimensionType(videoDimType_);
     BufferElement ele = {
         .buffer = buffer,
         .state = BUFFER_STATE_ATTACHED,
@@ -2201,6 +2205,23 @@ GSError BufferQueue::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
         return GSERROR_NO_ENTRY;
     }
     scalingMode = mapIter->second.buffer->GetSurfaceBufferScalingMode();
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::SetVideoDimensionType(VideoDimType videoDimType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
+        it->second.buffer->SetSurfaceBufferVideoDimensionType(videoDimType);
+    }
+    videoDimType_ = videoDimType;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetVideoDimensionType(VideoDimType &videoDimType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    videoDimType = videoDimType_;
     return GSERROR_OK;
 }
 

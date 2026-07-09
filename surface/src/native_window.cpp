@@ -994,6 +994,95 @@ int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     return OHOS::SURFACE_ERROR_OK;
 }
 
+static int32_t OH_NativeWindow_SetVideoDimensionType(OHNativeWindow *window, VideoDimType dimensionType)
+{
+    if (window == nullptr || window->surface == nullptr || !IsNativeObjectAvailable(window) ||
+        dimensionType < VideoDimType::VIDEO_DIM_TYPE_2D ||
+        dimensionType > VideoDimType::VIDEO_DIM_TYPE_3D_MVC) {
+        return OHOS::GSERROR_INVALID_ARGUMENTS;
+    }
+    return window->surface->SetVideoDimensionType(dimensionType);
+}
+
+static int32_t OH_NativeWindow_GetVideoDimensionType(OHNativeWindow *window, VideoDimType &dimensionType)
+{
+    if (window == nullptr || window->surface == nullptr || !IsNativeObjectAvailable(window)) {
+        return OHOS::GSERROR_INVALID_ARGUMENTS;
+    }
+    return window->surface->GetVideoDimensionType(dimensionType);
+}
+
+int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata)
+{
+    if(window ==nullptr || metadata ==nullptr || size <= 0 || size > META_DATA_MAX_SIZE ||
+        window->surface == nullptr || !IsNativeObjectAvailable(window)) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    GSError ret = GSERROR_OK;
+    if (metadataKey == OH_VIDEO_DIM_TYPE) {
+        VideoDimType videoDimType = static_cast<VideoDimType>(*metadata);
+        ret = static_cast<GSError>(OH_NativeWindow_SetVideoDimensionType(window, videoDimType));
+    } else {
+        BLOGE("the 3D metadataKey does not support it.");
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    }
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("Set3DMetadata failed!, ret: %{public}d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t* size, uint8_t **metadata)
+{
+    if(window ==nullptr || metadata ==nullptr || size == nullptr || window->surface == nullptr || 
+        !IsNativeObjectAvailable(window)) {
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    GSError ret = GSERROR_OK;
+    std::vector<uint8_t> mD;
+    if (metadataKey == OH_VIDEO_DIM_TYPE) {
+        VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
+        ret = static_cast<GSError>(OH_NativeWindow_GetVideoDimensionType(window,videoDimType));
+        mD.resize(sizeof(VideoDimType));
+        errno_t err = memcpy_s(mD.data(), mD.size(), reinterpret_cast<uint8_t*>(&videoDimType), sizeof(VideoDimType));
+        if (err != 0) {
+            BLOGE("memcpy_s failed! , ret: %{public}d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+    } else {
+        BLOGE("the 3D metadataKey does not support it.");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
+        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
+    } else if (ret != OHOS::SURFACE_ERROR_OK) {
+        BLOGE("Get 3D Metadata failed!, ret: %{public}d", ret);
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    *size = mD.size();
+    *metadata = new uint8_t[mD.size()];
+    if (!mD.empty()) {
+        errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
+        if (err != 0 ) {
+            delete[] *metadata;
+            *metadata = nullptr;
+            BLOGE("memcpy_s failed! , ret: %{public}d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+    } else {
+        delete[] *metadata;
+        *metadata = nullptr;
+        BLOGE("new metadata failed!");
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
 int32_t NativeWindowCleanCache(OHNativeWindow *window)
 {
     if (window == nullptr || !IsNativeObjectAvailable(window)) {

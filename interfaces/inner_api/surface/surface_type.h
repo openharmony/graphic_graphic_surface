@@ -318,6 +318,14 @@ using ScalingMode = enum {
     SCALING_MODE_SCALE_FIT,
 };
 
+using VideoDimType = enum {
+    VIDEO_DIM_TYPE_2D = 0,
+    VIDEO_DIM_TYPE_3D_SBS,
+    VIDEO_DIM_TYPE_3D_TAB,
+    VIDEO_DIM_TYPE_3D_HEVC,
+    VIDEO_DIM_TYPE_3D_MVC,
+};
+
 using HDRMetaDataType = enum {
     HDR_NOT_USED = 0,
     HDR_META_DATA,

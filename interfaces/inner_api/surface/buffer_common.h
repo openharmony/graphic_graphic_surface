@@ -277,6 +277,19 @@ typedef enum OH_NativeBuffer_MetadataKey {
 } OH_NativeBuffer_MetadataKey;
 
 /**
+ * @brief Indicates the descriptive 3D information of a native buffer,
+ * such as video dimension type, etc.
+ * 
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 26
+ * @version 1.0
+ */
+typedef enum OH_NativeBuffer_3D_MetadataKey {
+    /** value: OH_NativeBuffer_3D_Metadata video dimension Type*/
+    OH_VIDEO_DIM_TYPE,
+} OH_NativeBuffer_3D_MetadataKey;
+
+/**
  * @brief Indicates the format of a native buffer.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer

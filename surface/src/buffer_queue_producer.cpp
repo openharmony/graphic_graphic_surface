@@ -84,6 +84,8 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_BUFFER_HOLD, SetBufferHoldRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_BUFFER_NAME, SetBufferNameRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SCALING_MODEV2, SetScalingModeV2Remote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_VIDEO_DIMENSION_TYPE, SetVideoDimensionTypeRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_VIDEO_DIMENSION_TYPE, GetVideoDimensionTypeRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SOURCE_TYPE, SetSurfaceSourceTypeRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_GET_SOURCE_TYPE, GetSurfaceSourceTypeRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE, SetSurfaceAppFrameworkTypeRemote),
@@ -813,6 +815,34 @@ int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, Me
     ScalingMode scalingMode = static_cast<ScalingMode>(arguments.ReadInt32());
     GSError sRet = SetScalingMode(scalingMode);
     if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::SetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                    MessageOption &option)
+{
+    VideoDimType videoDimType = static_cast<VideoDimType>(arguments.ReadInt32());
+    GSError sRet = SetVideoDimensionType(videoDimType);
+    if (!reply.WriteInt32(sRet)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+int32_t BufferQueueProducer::GetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply,
+                                                    MessageOption &option)
+{
+    VideoDimType videoDimType = VIDEO_DIM_TYPE_2D;
+    GSError ret = GetVideoDimensionType(videoDimType);
+    if (ret != GSERROR_OK) {
+        if (!reply.WriteInt32(static_cast<int32_t>(ret))) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_REPLY;
+    }
+    if (!reply.WriteInt32(GSERROR_OK) || !reply.WriteInt32(static_cast<int32_t>(videoDimType))) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     return ERR_NONE;
@@ -1815,6 +1845,22 @@ GSError BufferQueueProducer::SetScalingMode(ScalingMode scalingMode)
         return GSERROR_INVALID_ARGUMENTS;
     }
     return bufferQueue_->SetScalingMode(scalingMode);
+}
+
+GSError BufferQueueProducer::SetVideoDimensionType(VideoDimType videoDimType)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->SetVideoDimensionType(videoDimType);
+}
+
+GSError BufferQueueProducer::GetVideoDimensionType(VideoDimType &videoDimType)
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->GetVideoDimensionType(videoDimType);
 }
 
 GSError BufferQueueProducer::SetBufferHold(bool hold)

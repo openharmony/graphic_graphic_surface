@@ -224,6 +224,8 @@ public:
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;
     GSError SetScalingMode(ScalingMode scalingMode);
+    GSError SetVideoDimensionType(VideoDimType videoDimType);
+    GSError GetVideoDimensionType(VideoDimType &videoDimType);
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType);
     OHSurfaceSource GetSurfaceSourceType() const;
@@ -386,6 +388,7 @@ private:
     uint64_t defaultUsage_ = 0;
     uint32_t bufferQueueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    VideoDimType videoDimType_ = VideoDimType::VIDEO_DIM_TYPE_2D;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     GraphicTransformType lastFlushedTransform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     std::string name_;

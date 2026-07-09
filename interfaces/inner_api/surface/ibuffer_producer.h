@@ -139,6 +139,8 @@ public:
     virtual GSError GetTransformHint(GraphicTransformType &transformHint) = 0;
     virtual GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) = 0;
     virtual GSError SetScalingMode(ScalingMode scalingMode) = 0;
+    virtual GSError SetVideoDimensionType(VideoDimType videoDimType) = 0;
+    virtual GSError GetVideoDimensionType(VideoDimType &videoDimType) = 0;
     virtual GSError SetSurfaceSourceType(OHSurfaceSource sourceType) = 0;
     virtual GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) = 0;
 
@@ -321,6 +323,8 @@ protected:
         BUFFER_PRODUCER_SET_APP_FRAMEWORK_TYPE,
         BUFFER_PRODUCER_GET_APP_FRAMEWORK_TYPE,
         BUFFER_PRODUCER_SET_SCALING_MODEV2,
+        BUFFER_PRODUCER_SET_VIDEO_DIMENSION_TYPE,
+        BUFFER_PRODUCER_GET_VIDEO_DIMENSION_TYPE,
         BUFFER_PRODUCER_SET_HDRWHITEPOINTBRIGHTNESS,
         BUFFER_PRODUCER_SET_SDRWHITEPOINTBRIGHTNESS,
         BUFFER_PRODUCER_REQUEST_BUFFERS,

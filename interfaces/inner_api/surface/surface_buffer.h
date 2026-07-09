@@ -208,6 +208,14 @@ public:
     {
         return SCALING_MODE_SCALE_TO_WINDOW;
     }
+    virtual void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType)
+    {
+        (void) videoDimType;
+    }
+    virtual VideoDimType GetSurfaceBufferVideoDimensionType() const
+    {
+        return VideoDimType::VIDEO_DIM_TYPE_2D;
+    }
     virtual void SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag)
     {
         (void)bufferDeletedFlag;

@@ -116,6 +116,8 @@ public:
     GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) override;
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
+    GSError SetVideoDimensionType(VideoDimType videoDimType) override;
+    GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;
@@ -200,6 +202,8 @@ private:
     int32_t GetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     int32_t SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t GetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetHdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

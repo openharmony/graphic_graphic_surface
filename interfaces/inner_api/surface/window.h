@@ -83,6 +83,10 @@ int32_t OH_NativeWindow_SetMetadataValue(OHNativeWindow *window, OH_NativeBuffer
     int32_t size, uint8_t *metadata);
 int32_t OH_NativeWindow_GetMetadataValue(OHNativeWindow *window, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t *size, uint8_t **metadata);
+int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata);
+int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t *size, uint8_t **metadata);
 int32_t NativeWindowCleanCache(OHNativeWindow *window);
 /**
  * @brief Request native window buffer with lock.

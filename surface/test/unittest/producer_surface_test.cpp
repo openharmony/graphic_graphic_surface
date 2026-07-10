@@ -1080,6 +1080,61 @@ HWTEST_F(ProducerSurfaceTest, scalingMode004, TestSize.Level0)
 }
 
 /*
+* Function: SetVideoDimensionType and GetVideoDimensionType
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with normal parameters and check ret
+*                  2. call GetVideoDimensionType and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, videoDimensionType001, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_MVC;
+    GSError ret = pSurface->SetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    VideoDimType getVideoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
+    ret = pSurface->GetVideoDimensionType(getVideoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+}
+
+/*
+* Function: SetVideoDimensionType and GetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with abnormal parameters and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, videoDimensionType002, TestSize.Level0)
+{
+    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_3D_MVC + 1);
+    GSError ret = pSurface->SetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+
+    videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_2D - 1);
+    ret = pSurface->SetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+* Function: SetVideoDimensionType and GetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with producer_ is nullptr and check ret
+*                  2. call GetVideoDimensionType with producer_ is nullptr and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, videoDimensionType003, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    GSError ret = surface_->SetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+    ret = surface_->GetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: SetMetaData and GetMetaData
 * Type: Function
 * Rank: Important(2)
@@ -2801,6 +2856,9 @@ HWTEST_F(ProducerSurfaceTest, ProducerSurfaceParameterNull, TestSize.Level0)
     ScalingMode scalingMode = ScalingMode::SCALING_MODE_FREEZE;
     ASSERT_EQ(pSurfaceTmp->SetScalingMode(0, scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(pSurfaceTmp->SetScalingMode(scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    ASSERT_EQ(pSurfaceTmp->SetVideoDimensionType(videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(pSurfaceTmp->GetVideoDimensionType(videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
     pSurfaceTmp->SetBufferHold(false);
     ASSERT_EQ(pSurfaceTmp->SetBufferReallocFlag(true), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> metaData;

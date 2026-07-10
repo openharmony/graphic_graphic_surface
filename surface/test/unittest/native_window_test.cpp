@@ -1267,6 +1267,88 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetColorSpace002, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeWindow_Set3DMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_Set3DMetadataValue with abnormal parameters and check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_Set3DMetadataValue001, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_MVC;
+    uint8_t *metadata = reinterpret_cast<uint8_t *>(&videoDimType);
+    int32_t size = sizeof(VideoDimType);
+    ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nullptr, OH_VIDEO_DIM_TYPE, size, metadata),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, 0, metadata),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, nullptr),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: OH_NativeWindow_Set3DMetadataValue
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_Set3DMetadataValue with normal parameters and check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_Set3DMetadataValue002, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_MVC;
+    uint8_t *metadata = reinterpret_cast<uint8_t *>(&videoDimType);
+    int32_t size = sizeof(VideoDimType);
+    auto ret = OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, metadata);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+}
+
+/*
+* Function: OH_NativeWindow_Get3DMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_Get3DMetadataValue with abnormal parameters and check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_Get3DMetadataValue001, TestSize.Level0)
+{
+    int32_t size = 0;
+    uint8_t *metadata = nullptr;
+    ASSERT_EQ(OH_NativeWindow_Get3DMetadataValue(nullptr, OH_VIDEO_DIM_TYPE, &size, &metadata),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_Get3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, nullptr, &metadata),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_Get3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, &size, nullptr),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
+
+/*
+* Function: OH_NativeWindow_Get3DMetadataValue
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_Set3DMetadataValue with normal parameters
+*                  2. call OH_NativeWindow_Get3DMetadataValue and check ret
+ */
+HWTEST_F(NativeWindowTest, OH_NativeWindow_Get3DMetadataValue002, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    uint8_t *metadata = reinterpret_cast<uint8_t *>(&videoDimType);
+    int32_t size = sizeof(VideoDimType);
+    auto ret = OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, metadata);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+
+    int32_t getSize = 0;
+    uint8_t *getMetadata = nullptr;
+    ret = OH_NativeWindow_Get3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, &getSize, &getMetadata);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(getSize, static_cast<int32_t>(sizeof(VideoDimType)));
+    VideoDimType getVideoDimType = *reinterpret_cast<VideoDimType *>(getMetadata);
+    ASSERT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    delete[] getMetadata;
+    getMetadata = nullptr;
+}
+
+/*
 * Function: OH_NativeWindow_SetMetadataValue
 * Type: Function
 * Rank: Important(2)

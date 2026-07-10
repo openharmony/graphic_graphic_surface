@@ -412,6 +412,28 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, TestSize.Level0)
     ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
 }
 
+/*
+* Function: SetSurfaceBufferVideoDimensionType&GetSurfaceBufferVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call GetSurfaceBufferVideoDimensionType and check default is VIDEO_DIM_TYPE_2D
+*                  3. call SetSurfaceBufferVideoDimensionType and GetSurfaceBufferVideoDimensionType and check ret
+*                  4. repeatly call SetSurfaceBufferVideoDimensionType and GetSurfaceBufferVideoDimensionType and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, SurfaceBufferVideoDimensionType001, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_HEVC);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_HEVC);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+}
+
 /**
  * Function: SetBufferDeletedFlag & GetBufferDeletedFlag & ClearBufferDeletedFlag & IsBufferDeleted
  * Type: Function
@@ -774,6 +796,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
     sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_180);
     sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
     sbi->SetSurfaceBufferWidth(11);
     sbi->SetSurfaceBufferHeight(22);
     sbi->SetCropMetadata({3, 4, 5, 6});
@@ -787,6 +810,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
     ASSERT_EQ(sbiIn1->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     ASSERT_EQ(sbiIn1->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_180);
     ASSERT_EQ(sbiIn1->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    ASSERT_EQ(sbiIn1->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
     Rect out{};
     ASSERT_TRUE(sbiIn1->GetCropMetadata(out));
     ASSERT_EQ(out.x, 3);
@@ -832,6 +856,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelNoFence001, TestSize.Level0)
     sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE);
     sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     sbi->SetSurfaceBufferWidth(33);
     sbi->SetSurfaceBufferHeight(44);
     sbi->SetCropMetadata({7, 8, 9, 10});
@@ -843,6 +868,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelNoFence001, TestSize.Level0)
     ASSERT_EQ(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     ASSERT_EQ(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_NONE);
     ASSERT_EQ(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     Rect out{};
     ASSERT_TRUE(sbiIn->GetCropMetadata(out));
     ASSERT_EQ(out.x, 7);

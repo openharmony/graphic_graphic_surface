@@ -244,6 +244,7 @@ public:
     static inline OnDeleteBufferFunc onDeleteBufferFunc = nullptr;
     static inline uint32_t sequence = 0;
     static inline ScalingMode scalingMode;
+    static inline VideoDimType videoDimType;
     static inline HDRMetaDataType hdrMetaDataType;
     static inline std::vector<GraphicHDRMetaData> graphicHDRMetaDatas = {};
     static inline GraphicHDRMetadataKey key;
@@ -296,6 +297,8 @@ HWTEST_F(SurfaceTest, SurfaceTest001, TestSize.Level0)
     EXPECT_EQ(surface->Connect(), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->Disconnect(), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetScalingMode(sequence, scalingMode), GSERROR_NOT_SUPPORT);
+    EXPECT_EQ(surface->SetVideoDimensionType(videoDimType), GSERROR_NOT_SUPPORT);
+    EXPECT_EQ(surface->GetVideoDimensionType(videoDimType), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->QueryMetaDataType(sequence, hdrMetaDataType), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetMetaData(sequence, graphicHDRMetaDatas), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetMetaDataSet(sequence, key, metaDatas), GSERROR_NOT_SUPPORT);

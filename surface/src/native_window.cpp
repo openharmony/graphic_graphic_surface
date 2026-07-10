@@ -1015,7 +1015,7 @@ static int32_t OH_NativeWindow_GetVideoDimensionType(OHNativeWindow *window, Vid
 int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
     int32_t size, uint8_t *metadata)
 {
-    if(window ==nullptr || metadata ==nullptr || size <= 0 || size > META_DATA_MAX_SIZE ||
+    if (window == nullptr || metadata == nullptr || size <= 0 || size > META_DATA_MAX_SIZE ||
         window->surface == nullptr || !IsNativeObjectAvailable(window)) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
@@ -1039,7 +1039,7 @@ int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
 int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
     int32_t* size, uint8_t **metadata)
 {
-    if(window ==nullptr || metadata ==nullptr || size == nullptr || window->surface == nullptr || 
+    if (window == nullptr || metadata == nullptr || size == nullptr || window->surface == nullptr ||
         !IsNativeObjectAvailable(window)) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
@@ -1047,7 +1047,7 @@ int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
     std::vector<uint8_t> mD;
     if (metadataKey == OH_VIDEO_DIM_TYPE) {
         VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
-        ret = static_cast<GSError>(OH_NativeWindow_GetVideoDimensionType(window,videoDimType));
+        ret = static_cast<GSError>(OH_NativeWindow_GetVideoDimensionType(window, videoDimType));
         mD.resize(sizeof(VideoDimType));
         errno_t err = memcpy_s(mD.data(), mD.size(), reinterpret_cast<uint8_t*>(&videoDimType), sizeof(VideoDimType));
         if (err != 0) {
@@ -1068,7 +1068,7 @@ int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
     *metadata = new uint8_t[mD.size()];
     if (!mD.empty()) {
         errno_t err = memcpy_s(*metadata, mD.size(), &mD[0], mD.size());
-        if (err != 0 ) {
+        if (err != 0) {
             delete[] *metadata;
             *metadata = nullptr;
             BLOGE("memcpy_s failed! , ret: %{public}d", err);

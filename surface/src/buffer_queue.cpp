@@ -1341,14 +1341,13 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
     }
 
     ret = bufferImpl->Map();
-    if (ret == GSERROR_OK) {
-        bufferQueueCache_[sequence] = ele;
-        buffer = bufferImpl;
-    } else {
+    if (ret != GSERROR_OK) {
         BLOGE("Map failed, seq:%{public}u, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
             sequence, ret, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
+    bufferQueueCache_[sequence] = ele;
+    buffer = bufferImpl;
 
     BufferHandle* bufferHandle = bufferImpl->GetBufferHandle();
     if (connectedPid != 0 && bufferHandle != nullptr) {
@@ -1643,13 +1642,11 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
             DeleteBuffersLocked(usedSize - queueSize + 1, lock);
             bufferQueueCache_[sequence] = ele;
             return GSERROR_OK;
-        } else {
-            BLOGN_FAILURE_RET(GSERROR_OUT_OF_RANGE);
         }
-    } else {
-        bufferQueueCache_[sequence] = ele;
-        return GSERROR_OK;
+        BLOGN_FAILURE_RET(GSERROR_OUT_OF_RANGE);
     }
+    bufferQueueCache_[sequence] = ele;
+    return GSERROR_OK;
 }
 
 GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)

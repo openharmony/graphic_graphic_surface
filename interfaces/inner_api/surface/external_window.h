@@ -302,25 +302,6 @@ typedef enum {
 } OHScalingMode;
 
 /**
- * @brief Indicates video dimension type.
- * @since 26
- */
-typedef enum {
-    /**
-     * the dimension of the video is normal 2D(2-dimension)
-     */
-    OH_VIDEO_DIM_TYPE_2D = 0,
-    /**
-     * the dimension of the video is 3D(3-dimension), format:side by side
-     */
-    OH_VIDEO_DIM_TYPE_3D_SBS,
-    /**
-     * the dimension of the video is 3D(3-dimension), format:top and bottom
-     */
-    OH_VIDEO_DIM_TYPE_3D_TAB,
-} OHVideoDimType;
-
-/**
  * @brief Indicates Scaling Mode.
  * @since 12
  */
@@ -854,6 +835,44 @@ int32_t OH_NativeWindow_LockBuffer(OHNativeWindow* window, Region region, OHNati
  * @version 1.0
  */
 int32_t OH_NativeWindow_UnlockAndFlushBuffer(OHNativeWindow* window);
+
+/**
+ * @brief Set the 3D metadata of the native window.\n
+ * This interface is a non-thread-safe type interface.\n
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
+ * @param metadataKey Indicates the 3D metadata type of native window, see <b>OH_NativeBuffer_3D_MetadataKey</b>.
+ * @param size Indicates the size of a uint8_t vector.
+ * @param metadata Indicates the pointer to a uint8_t vector.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - window or metadata is NULL.
+ *     {@link NATIVE_ERROR_BUFFER_STATE_INVALID} 41207000 - Incorrect metadata state.
+ *     {@link NATIVE_ERROR_UNSUPPORTED} 50102000 - Unsupported metadata key.
+ * @since 26.0.0
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata);
+
+/**
+ * @brief Get the 3D metadata of the native window.\n
+ * This interface is a non-thread-safe type interface.\n
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeWindow
+ * @param window Indicates the pointer to a <b>OHNativeWindow</b> instance.
+ * @param metadataKey Indicates the 3D metadata type of native window, see <b>OH_NativeBuffer_3D_MetadataKey</b>.
+ * @param size Indicates the size of a uint8_t vector.
+ * @param metadata Indicates the pointer to a uint8_t vector.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - window, metadata, or size is NULL.
+ *     {@link NATIVE_ERROR_BUFFER_STATE_INVALID} 41207000 - Incorrect metadata state.
+ *     {@link NATIVE_ERROR_UNSUPPORTED} 50102000 - Unsupported metadata key.
+ * @since 26.0.0
+ * @version 1.0
+ */
+int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+   int32_t *size, uint8_t **metadata);
 #ifdef __cplusplus
 }
 #endif

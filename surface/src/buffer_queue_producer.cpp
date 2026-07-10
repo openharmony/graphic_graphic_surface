@@ -821,7 +821,7 @@ int32_t BufferQueueProducer::SetScalingModeV2Remote(MessageParcel &arguments, Me
 }
 
 int32_t BufferQueueProducer::SetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply,
-                                                    MessageOption &option)
+    MessageOption &option)
 {
     VideoDimType videoDimType = static_cast<VideoDimType>(arguments.ReadInt32());
     GSError sRet = SetVideoDimensionType(videoDimType);
@@ -832,7 +832,7 @@ int32_t BufferQueueProducer::SetVideoDimensionTypeRemote(MessageParcel &argument
 }
 
 int32_t BufferQueueProducer::GetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply,
-                                                    MessageOption &option)
+    MessageOption &option)
 {
     VideoDimType videoDimType = VIDEO_DIM_TYPE_2D;
     GSError ret = GetVideoDimensionType(videoDimType);

@@ -277,19 +277,6 @@ typedef enum OH_NativeBuffer_MetadataKey {
 } OH_NativeBuffer_MetadataKey;
 
 /**
- * @brief Indicates the descriptive 3D information of a native buffer,
- * such as video dimension type, etc.
- * 
- * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
- * @since 26
- * @version 1.0
- */
-typedef enum OH_NativeBuffer_3D_MetadataKey {
-    /** value: OH_NativeBuffer_3D_Metadata video dimension Type*/
-    OH_VIDEO_DIM_TYPE,
-} OH_NativeBuffer_3D_MetadataKey;
-
-/**
  * @brief Indicates the format of a native buffer.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
@@ -465,6 +452,33 @@ typedef enum OH_NativeBuffer_TransformType {
     NATIVEBUFFER_FLIP_V_ROT270,           /**< Flip vertically and rotate 270 degrees */
 } OH_NativeBuffer_TransformType;
 
+/**
+ * @brief Indicates video dimension type.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 26.0.0
+ * @version 1.0
+*/
+typedef enum OH_NativeBuffer_VideoDimensionType {
+    /** 2-dimension video */
+    OH_VIDEO_DIM_TYPE_2D = 0,
+    /** 3-dimension video, format: side by side */
+    OH_VIDEO_DIM_TYPE_3D_SBS,
+    /** 3-dimension video, format: top and bottom */
+    OH_VIDEO_DIM_TYPE_3D_TAB,
+} OH_NativeBuffer_VideoDimensionType;
+
+/**
+ * @brief Indicates the descriptive 3D information of a native buffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @since 26.0.0
+ * @version 1.0
+*/
+typedef enum OH_NativeBuffer_3D_MetadataKey {
+    /** value: the video dimension type of the native buffer */
+    OH_VIDEO_DIM_TYPE,
+} OH_NativeBuffer_3D_MetadataKey;
 #ifdef __cplusplus
 }
 #endif

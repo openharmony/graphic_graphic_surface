@@ -420,7 +420,7 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, TestSize.Level0)
 * CaseDescription: 1. new SurfaceBufferImpl
 *                  2. call GetSurfaceBufferVideoDimensionType and check default is VIDEO_DIM_TYPE_2D
 *                  3. call SetSurfaceBufferVideoDimensionType and GetSurfaceBufferVideoDimensionType and check ret
-*                  4. repeatly call SetSurfaceBufferVideoDimensionType and GetSurfaceBufferVideoDimensionType and check ret
+*                  4. repeatly call Set/GetSurfaceBufferVideoDimensionType and check ret
  */
 HWTEST_F(SurfaceBufferImplTest, SurfaceBufferVideoDimensionType001, TestSize.Level0)
 {

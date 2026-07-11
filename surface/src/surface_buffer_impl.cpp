@@ -1075,13 +1075,13 @@ GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parc
             return GSERROR_API_FAILED;
         }
     } else {
-        if (!parcel.WriteBool(true)) {	 
-            BLOGE("%{public}s: write handle flag failed, seq: %{public}u", __func__, sequenceNumber_); 
-            return GSERROR_API_FAILED; 
-        } 
-        if (WriteBufferHandle(parcel, *handle_) == false) { 
-            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, sequenceNumber_);	 
-            return GSERROR_API_FAILED;	 
+        if (!parcel.WriteBool(true)) {
+            BLOGE("%{public}s: write handle flag failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
+        }
+        if (WriteBufferHandle(parcel, *handle_) == false) {
+            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
         }
     }
 

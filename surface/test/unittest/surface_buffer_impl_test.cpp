@@ -430,8 +430,8 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferVideoDimensionType001, TestSize.Lev
     ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_SBS);
     ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_SBS);
-    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
-    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_2D);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
 }
 
 /**

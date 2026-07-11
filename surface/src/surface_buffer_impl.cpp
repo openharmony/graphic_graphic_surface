@@ -1075,9 +1075,13 @@ GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parc
             return GSERROR_API_FAILED;
         }
     } else {
-        if (!parcel.WriteBool(true) || WriteBufferHandle(parcel, *handle_) == false) {
-            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, sequenceNumber_);
-            return GSERROR_API_FAILED;
+        if (!parcel.WriteBool(true)) {	 
+            BLOGE("%{public}s: write handle flag failed, seq: %{public}u", __func__, sequenceNumber_); 
+            return GSERROR_API_FAILED; 
+        } 
+        if (WriteBufferHandle(parcel, *handle_) == false) { 
+            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, sequenceNumber_);	 
+            return GSERROR_API_FAILED;	 
         }
     }
 
@@ -1152,7 +1156,7 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
     uint32_t videoDimType = 0;
     if (!parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadUint32(scalingMode)
         || !parcel.ReadUint32(videoDimType)) {
-        BLOGE("%{public}s: read color/transform info failed", __func__);
+        BLOGE("%{public}s: read color/transform/videoDimType info failed", __func__);
         return GSERROR_API_FAILED;
     }
     surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);

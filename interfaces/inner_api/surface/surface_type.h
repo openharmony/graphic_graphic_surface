@@ -322,8 +322,6 @@ using VideoDimType = enum {
     VIDEO_DIM_TYPE_2D = 0,
     VIDEO_DIM_TYPE_3D_SBS,
     VIDEO_DIM_TYPE_3D_TAB,
-    VIDEO_DIM_TYPE_3D_HEVC,
-    VIDEO_DIM_TYPE_3D_MVC,
 };
 
 using HDRMetaDataType = enum {

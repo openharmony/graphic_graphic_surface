@@ -998,7 +998,7 @@ static int32_t OH_NativeWindow_SetVideoDimensionType(OHNativeWindow *window, Vid
 {
     if (window == nullptr || window->surface == nullptr || !IsNativeObjectAvailable(window) ||
         dimensionType < VideoDimType::VIDEO_DIM_TYPE_2D ||
-        dimensionType > VideoDimType::VIDEO_DIM_TYPE_3D_MVC) {
+        dimensionType > VideoDimType::VIDEO_DIM_TYPE_3D_TAB) {
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
     return window->surface->SetVideoDimensionType(dimensionType);

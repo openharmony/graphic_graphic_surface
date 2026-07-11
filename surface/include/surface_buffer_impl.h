@@ -118,6 +118,7 @@ public:
     GSError ReadBufferProperty(MessageParcel &parcel) override;
     GSError WriteBufferProperty(MessageParcel &parcel) override;
     GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
+    bool CheckBufferHandleFields() const override;
 
 private:
     void FreeBufferHandleLocked();
@@ -126,6 +127,7 @@ private:
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
     void NotifyBufferDestructorCallBack() const;
+    void RecordOriginalBufferHandleFields();
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;
@@ -157,6 +159,11 @@ private:
 
     mutable std::mutex bufferDtorCbMutex_;
     std::function<void(uint64_t)> bufferDtorCb_ = nullptr;
+
+    bool hasOriginalFields_ = false;
+    int32_t originalWidth_ = 0;
+    int32_t originalHeight_ = 0;
+    int32_t originalSize_ = 0;
 };
 } // namespace OHOS
 

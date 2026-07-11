@@ -450,6 +450,14 @@ int32_t BufferQueueProducer::AttachBufferToQueueRemote(MessageParcel &arguments,
     if (ret != ERR_NONE) {
         return ret;
     }
+    if (buffer != nullptr && !buffer->CheckBufferHandleFields()) {
+        BLOGE("AttachBufferToQueue rejected: BufferHandle fields tampered, seq=%{public}u",
+            buffer->GetSeqNum());
+        if (!reply.WriteInt32(GSERROR_INVALID_OPERATING)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_DATA;
+    }
     GSError sRet = AttachBufferToQueue(buffer);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -484,6 +492,13 @@ int32_t BufferQueueProducer::AttachBufferRemote(MessageParcel &arguments, Messag
     GSError ret = ReadSurfaceBufferImpl(arguments, sequence, buffer);
     if (ret != GSERROR_OK || buffer == nullptr) {
         if (!reply.WriteInt32(ret)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_DATA;
+    }
+    if (!buffer->CheckBufferHandleFields()) {
+        BLOGE("AttachBuffer rejected: BufferHandle fields tampered, seq=%{public}u", sequence);
+        if (!reply.WriteInt32(GSERROR_INVALID_OPERATING)) {
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         return ERR_INVALID_DATA;
@@ -1149,27 +1164,42 @@ int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &argumen
     return ERR_NONE;
 }
 
+void BufferQueueProducer::ReportQueueBufferTimeIfNeeded(int64_t startTimeNs)
+{
+    uint64_t uniqueId = GetUniqueId();
+    int64_t endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
+    Rosen::FrameReport::GetInstance().Report(name_);
+}
+
 int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
     sptr<SurfaceBuffer> buffer = nullptr;
-    int64_t startTimeNs = 0;
-    int64_t endTimeNs = 0;
-    bool isActiveGame = false;
     int32_t connectedPid = 0;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         connectedPid = connectedPid_;
     }
-    isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
+    bool isActiveGame = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(connectedPid);
+    int64_t startTimeNs = 0;
     if (isActiveGame) {
         startTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::steady_clock::now().time_since_epoch()).count();
+            std::chrono::steady_clock::now().time_since_epoch()).count();
     }
 
     auto ret = AttachBufferToQueueReadBuffer(arguments, reply, option, buffer);
     if (ret != ERR_NONE) {
         return ret;
+    }
+    if (buffer != nullptr && !buffer->CheckBufferHandleFields()) {
+        BLOGE("AttachAndFlushBuffer rejected: BufferHandle fields tampered, seq=%{public}u",
+            buffer->GetSeqNum());
+        if (!reply.WriteInt32(GSERROR_INVALID_OPERATING)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_INVALID_DATA;
     }
     BufferFlushConfigWithDamages config;
     sptr<BufferExtraData> bedataimpl = new BufferExtraDataImpl;
@@ -1188,11 +1218,7 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     }
 
     if (isActiveGame) {
-        uint64_t uniqueId = GetUniqueId();
-        endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::steady_clock::now().time_since_epoch()).count();
-        Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
-        Rosen::FrameReport::GetInstance().Report(name_);
+        ReportQueueBufferTimeIfNeeded(startTimeNs);
     }
     return ERR_NONE;
 }

@@ -872,7 +872,7 @@ int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
  * @version 1.0
  */
 int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
-   int32_t *size, uint8_t **metadata);
+    int32_t *size, uint8_t **metadata);
 #ifdef __cplusplus
 }
 #endif

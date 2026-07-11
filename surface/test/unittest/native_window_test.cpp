@@ -1275,7 +1275,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_GetColorSpace002, TestSize.Level0)
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_Set3DMetadataValue001, TestSize.Level0)
 {
-    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_MVC;
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
     uint8_t *metadata = reinterpret_cast<uint8_t *>(&videoDimType);
     int32_t size = sizeof(VideoDimType);
     ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nullptr, OH_VIDEO_DIM_TYPE, size, metadata),
@@ -1295,7 +1295,7 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_Set3DMetadataValue001, TestSize.Level
  */
 HWTEST_F(NativeWindowTest, OH_NativeWindow_Set3DMetadataValue002, TestSize.Level0)
 {
-    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_MVC;
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
     uint8_t *metadata = reinterpret_cast<uint8_t *>(&videoDimType);
     int32_t size = sizeof(VideoDimType);
     auto ret = OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, metadata);

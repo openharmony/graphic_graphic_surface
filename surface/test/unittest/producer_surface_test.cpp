@@ -1089,14 +1089,14 @@ HWTEST_F(ProducerSurfaceTest, scalingMode004, TestSize.Level0)
  */
 HWTEST_F(ProducerSurfaceTest, videoDimensionType001, TestSize.Level0)
 {
-    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_MVC;
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
     GSError ret = pSurface->SetVideoDimensionType(videoDimType);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     VideoDimType getVideoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
     ret = pSurface->GetVideoDimensionType(getVideoDimType);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
-    ASSERT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+    ASSERT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
 }
 
 /*
@@ -1108,7 +1108,7 @@ HWTEST_F(ProducerSurfaceTest, videoDimensionType001, TestSize.Level0)
  */
 HWTEST_F(ProducerSurfaceTest, videoDimensionType002, TestSize.Level0)
 {
-    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_3D_MVC + 1);
+    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_3D_TAB + 1);
     GSError ret = pSurface->SetVideoDimensionType(videoDimType);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 

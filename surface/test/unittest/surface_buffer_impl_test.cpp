@@ -428,10 +428,10 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferVideoDimensionType001, TestSize.Lev
     ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
     buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
-    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_HEVC);
-    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_HEVC);
-    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
-    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_SBS);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_SBS);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
 }
 
 /**
@@ -796,7 +796,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
     sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_180);
     sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_NO_SCALE_CROP);
-    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     sbi->SetSurfaceBufferWidth(11);
     sbi->SetSurfaceBufferHeight(22);
     sbi->SetCropMetadata({3, 4, 5, 6});
@@ -810,7 +810,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
     ASSERT_EQ(sbiIn1->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     ASSERT_EQ(sbiIn1->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_180);
     ASSERT_EQ(sbiIn1->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
-    ASSERT_EQ(sbiIn1->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_MVC);
+    ASSERT_EQ(sbiIn1->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     Rect out{};
     ASSERT_TRUE(sbiIn1->GetCropMetadata(out));
     ASSERT_EQ(out.x, 3);

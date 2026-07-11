@@ -1226,7 +1226,7 @@ void BufferQueue::RequestBuffersForListenerLocked(
         if (mapIter == bufferQueueCache_.end()) {
             continue;
         }
-        
+
         BufferRequestConfig config = mapIter->second.buffer->GetBufferRequestConfig();
         config.timeout = 0;
         bool isExist = false;
@@ -1341,10 +1341,14 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
     }
 
     ret = bufferImpl->Map();
-    if (ret == GSERROR_OK) {	 
-        bufferQueueCache_[sequence] = ele; 
-        buffer = bufferImpl; 
+    if (ret == GSERROR_OK) {
+        bufferQueueCache_[sequence] = ele;
+        buffer = bufferImpl;
     } else {
+        BLOGE("Map failed, seq:%{public}u, ret:%{public}d, uniqueId: %{public}" PRIu64 ".",
+            sequence, ret, uniqueId_);
+        return SURFACE_ERROR_UNKOWN;
+    }
 
     BufferHandle* bufferHandle = bufferImpl->GetBufferHandle();
     if (connectedPid != 0 && bufferHandle != nullptr) {
@@ -1633,19 +1637,19 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
     AttachBufferUpdateBufferInfo(buffer, true);
     int32_t usedSize = static_cast<int32_t>(GetUsedSize());
     int32_t queueSize = static_cast<int32_t>(bufferQueueSize_);
-    if (usedSize >= queueSize) {	 
-        int32_t freeSize = static_cast<int32_t>(dirtyList_.size() + freeList_.size());	 
-        if (freeSize >= usedSize - queueSize + 1) {	 
-            DeleteBuffersLocked(usedSize - queueSize + 1, lock);	 
-            bufferQueueCache_[sequence] = ele;	 
-            return GSERROR_OK;	 
-        } else { 
-            BLOGN_FAILURE_RET(GSERROR_OUT_OF_RANGE); 
-        }	 
-    } else {	 
-        bufferQueueCache_[sequence] = ele; 
-        return GSERROR_OK; 
-    }	 
+    if (usedSize >= queueSize) {
+        int32_t freeSize = static_cast<int32_t>(dirtyList_.size() + freeList_.size());
+        if (freeSize >= usedSize - queueSize + 1) {
+            DeleteBuffersLocked(usedSize - queueSize + 1, lock);
+            bufferQueueCache_[sequence] = ele;
+            return GSERROR_OK;
+        } else {
+            BLOGN_FAILURE_RET(GSERROR_OUT_OF_RANGE);
+        }
+    } else {
+        bufferQueueCache_[sequence] = ele;
+        return GSERROR_OK;
+    }
 }
 
 GSError BufferQueue::DetachBuffer(sptr<SurfaceBuffer> &buffer)
@@ -2375,7 +2379,7 @@ static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t 
             return GSERROR_INVALID_ARGUMENTS;
     }
 }
- 
+
 GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
 {
     SURFACE_TRACE_NAME_FMT("SetTunnelLayerInfo uniqueId: %" PRIu64 ", tunnelTypeMask: %u",
@@ -3002,7 +3006,7 @@ GSError BufferQueue::AcquireLppBuffer(
     lastLppWriteOffset_ = slotInfo.writeOffset;
     lastLppWriteTimestamp_ = slotInfo.slot[lastLppWriteOffset_].timestamp;
     uint32_t seqId = bufferSlot.seqId;
- 
+
     auto mapIter = bufferQueueCache_.find(seqId);
     if (mapIter == bufferQueueCache_.end()) {
         lppSlotInfo_->slot[readOffset].isRsUsing = 0;

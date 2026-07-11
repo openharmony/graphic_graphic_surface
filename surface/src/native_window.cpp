@@ -1138,7 +1138,7 @@ int32_t NativeWindowSetGameUpscaleProcessor(OHNativeWindow *window, void (*proce
     if (window == nullptr || !IsNativeObjectAvailable(window)) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    
+
     BLOGE_CHECK_AND_RETURN_RET(window->surface != nullptr, SURFACE_ERROR_ERROR, "window surface is null.");
     GameUpscaleProcessor gameUpscaleProcessor = static_cast<GameUpscaleProcessor>(processor);
     return window->surface->SetGameUpscaleProcessor(gameUpscaleProcessor);

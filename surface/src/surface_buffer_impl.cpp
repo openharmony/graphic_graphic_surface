@@ -611,7 +611,7 @@ GSError SurfaceBufferImpl::WriteBufferRequestConfig(MessageParcel& parcel)
         !parcel.WriteUint64(bufferRequestConfig_.usage) || !parcel.WriteInt32(bufferRequestConfig_.timeout) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.colorGamut)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(bufferRequestConfig_.transform)) ||
-        !parcel.WriteInt32(scalingMode_)) || !parcel.WriteInt32(videoDimType_) {
+        !parcel.WriteInt32(scalingMode_) || !parcel.WriteInt32(videoDimType_) {
         BLOGE("parcel write fail, seq: %{public}u.", sequenceNumber_);
         return SURFACE_ERROR_UNKOWN;
     }

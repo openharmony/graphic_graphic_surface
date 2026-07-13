@@ -74,7 +74,10 @@ GSError DumpToFileAsync(pid_t pid, std::string name, sptr<SurfaceBuffer> &buffer
 
 static inline GSError ReadSurfaceProperty(MessageParcel &parcel, SurfaceProperty& property)
 {
-    uint32_t val = parcel.ReadUint32();
+    uint32_t val = 0;
+    if (!parcel.ReadUint32(val)) {
+        return GSERROR_BINDER;
+    }
     if (val > GraphicTransformType::GRAPHIC_ROTATE_BUTT) {
         return GSERROR_BINDER;
     }

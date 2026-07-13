@@ -437,7 +437,7 @@ GSError ProducerSurface::FlushBuffers(const std::vector<sptr<SurfaceBuffer>>& bu
 GSError ProducerSurface::GetLastFlushedBuffer(sptr<SurfaceBuffer>& buffer,
     sptr<SyncFence>& fence, float matrix[16], bool isUseNewMatrix)
 {
-    if (producer_ == nullptr) {
+    if (producer_ == nullptr || matrix == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->GetLastFlushedBuffer(buffer, fence, matrix, isUseNewMatrix);

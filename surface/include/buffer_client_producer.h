@@ -142,6 +142,8 @@ private:
         sptr<SyncFence>& fence, float matrix[16], uint32_t matrixSize, bool isUseNewMatrix, uint32_t command);
     GSError RequestBufferCommon(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
         RequestBufferReturnValue &retval, uint32_t command);
+    GSError ReadRequestBuffersReply(MessageParcel &reply, const BufferRequestConfig &config,
+        std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues, uint32_t num);
 
     static inline BrokerDelegator<BufferClientProducer> delegator_;
     static inline const std::string DEFAULT_NAME = "not init";

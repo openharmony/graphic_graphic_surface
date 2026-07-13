@@ -70,6 +70,9 @@ public:
     GSError GoBackground();
     void ConsumerRequestCpuAccess(bool on)
     {
+        if (bufferQueue_ == nullptr) {
+            return;
+        }
         bufferQueue_->ConsumerRequestCpuAccess(on);
     }
 

@@ -442,13 +442,15 @@ GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<Buffe
 
 GSError BufferQueue::SetProducerCacheCleanFlag(bool flag)
 {
+    std::unique_lock<std::mutex> lock(mutex_);
     bool isOnReleaseBufferWithSequenceAndFence = isOnReleaseBufferWithSequenceAndFence_ &&
                                                  listenerSeqAndFenceCallingPid_ != 0 &&
                                                  connectedPid_ == listenerSeqAndFenceCallingPid_;
     if (flag && isOnReleaseBufferWithSequenceAndFence) {
+        lock.unlock();
         CleanCache(true, nullptr);
+        lock.lock();
     }
-    std::unique_lock<std::mutex> lock(mutex_);
     return SetProducerCacheCleanFlagLocked(flag, lock);
 }
 

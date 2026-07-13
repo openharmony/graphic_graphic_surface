@@ -202,8 +202,6 @@ private:
     int32_t GetSurfaceAppFrameworkTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     int32_t SetScalingModeV2Remote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t SetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
-    int32_t GetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetHdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSdrWhitePointBrightnessRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t AcquireLastFlushedBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
@@ -224,6 +222,8 @@ private:
     int32_t SetAlphaTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SyncProducerCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSingleBufferModeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t GetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
     void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);

@@ -835,7 +835,6 @@ int32_t OH_NativeWindow_LockBuffer(OHNativeWindow* window, Region region, OHNati
  * @version 1.0
  */
 int32_t OH_NativeWindow_UnlockAndFlushBuffer(OHNativeWindow* window);
-
 #ifdef __cplusplus
 }
 #endif

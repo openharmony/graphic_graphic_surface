@@ -224,8 +224,6 @@ public:
     GSError SetTransformHint(GraphicTransformType transformHint);
     GraphicTransformType GetTransformHint() const;
     GSError SetScalingMode(ScalingMode scalingMode);
-    GSError SetVideoDimensionType(VideoDimType videoDimType);
-    GSError GetVideoDimensionType(VideoDimType &videoDimType);
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType);
     OHSurfaceSource GetSurfaceSourceType() const;
@@ -293,6 +291,8 @@ public:
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
     GSError SetSingleBufferMode(SingleBufferMode mode);
     SingleBufferMode GetAndResetSingleBufferMode();
+    GSError SetVideoDimensionType(VideoDimType videoDimType);
+    GSError GetVideoDimensionType(VideoDimType &videoDimType);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);

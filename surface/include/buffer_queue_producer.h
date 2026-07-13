@@ -116,8 +116,6 @@ public:
     GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) override;
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
-    GSError SetVideoDimensionType(VideoDimType videoDimType) override;
-    GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
 
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;
@@ -148,6 +146,8 @@ public:
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
     GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums) override;
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
+    GSError SetVideoDimensionType(VideoDimType videoDimType) override;
+    GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);

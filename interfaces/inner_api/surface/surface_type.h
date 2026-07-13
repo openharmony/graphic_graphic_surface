@@ -318,12 +318,6 @@ using ScalingMode = enum {
     SCALING_MODE_SCALE_FIT,
 };
 
-using VideoDimType = enum {
-    VIDEO_DIM_TYPE_2D = 0,
-    VIDEO_DIM_TYPE_3D_SBS,
-    VIDEO_DIM_TYPE_3D_TAB,
-};
-
 using HDRMetaDataType = enum {
     HDR_NOT_USED = 0,
     HDR_META_DATA,
@@ -623,6 +617,12 @@ using GraphicAlphaType = enum {
     GRAPHIC_ALPHATYPE_OPAQUE,
     GRAPHIC_ALPHATYPE_PREMUL,
     GRAPHIC_ALPHATYPE_UNPREMUL,
+};
+
+using VideoDimType = enum {
+    VIDEO_DIM_TYPE_2D = 0,
+    VIDEO_DIM_TYPE_3D_SBS,
+    VIDEO_DIM_TYPE_3D_TAB,
 };
 } // namespace OHOS
 

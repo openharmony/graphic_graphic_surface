@@ -95,8 +95,6 @@ public:
     GSError GetPlanesInfo(void **planesInfo) override;
     void SetSurfaceBufferScalingMode(const ScalingMode &scalingMode) override;
     ScalingMode GetSurfaceBufferScalingMode() const override;
-    void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType) override;
-    VideoDimType GetSurfaceBufferVideoDimensionType() const override;
     void SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag) override;
     BufferDeletedFlag GetBufferDeletedFlag() const override;
     void ClearBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag) override;
@@ -120,6 +118,8 @@ public:
     GSError ReadBufferProperty(MessageParcel &parcel) override;
     GSError WriteBufferProperty(MessageParcel &parcel) override;
     GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
+    void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType) override;
+    VideoDimType GetSurfaceBufferVideoDimensionType() const override;
 
 private:
     void FreeBufferHandleLocked();

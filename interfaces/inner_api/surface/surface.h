@@ -225,16 +225,6 @@ public:
         (void)scalingMode;
         return GSERROR_NOT_SUPPORT;
     }
-    virtual GSError SetVideoDimensionType(VideoDimType videoDimType)
-    {
-        (void)videoDimType;
-        return GSERROR_NOT_SUPPORT;
-    }
-    virtual GSError GetVideoDimensionType(VideoDimType &videoDimType)
-    {
-        (void)videoDimType;
-        return GSERROR_NOT_SUPPORT;
-    }
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData) = 0;
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                    const std::vector<uint8_t> &metaData) = 0;
@@ -727,6 +717,16 @@ public:
     virtual SingleBufferMode GetAndResetSingleBufferMode()
     {
         return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+    virtual GSError SetVideoDimensionType(VideoDimType videoDimType)
+    {
+        (void)videoDimType;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetVideoDimensionType(VideoDimType &videoDimType)
+    {
+        (void)videoDimType;
+        return GSERROR_NOT_SUPPORT;
     }
 protected:
     Surface() = default;

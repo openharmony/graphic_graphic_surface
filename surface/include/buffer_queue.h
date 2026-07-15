@@ -293,6 +293,7 @@ public:
     SingleBufferMode GetAndResetSingleBufferMode();
     GSError SetVideoDimensionType(VideoDimType videoDimType);
     GSError GetVideoDimensionType(VideoDimType &videoDimType);
+    GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);

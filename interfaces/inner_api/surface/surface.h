@@ -728,6 +728,12 @@ public:
         (void)videoDimType;
         return GSERROR_NOT_SUPPORT;
     }
+    virtual GSError GetVideoDimensionType(uint32_t sequence, VideoDimType& videoDimType)
+    {
+        (void)sequence;
+        (void)videoDimType;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

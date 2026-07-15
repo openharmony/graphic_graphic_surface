@@ -2225,6 +2225,17 @@ GSError BufferQueue::GetVideoDimensionType(VideoDimType &videoDimType)
     return GSERROR_OK;
 }
 
+GSError BufferQueue::GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
+        return GSERROR_NO_ENTRY;
+    }
+    videoDimType = mapIter->second.buffer->GetSurfaceBufferVideoDimensionType();
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);

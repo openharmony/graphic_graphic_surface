@@ -1031,9 +1031,7 @@ int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
         BLOGE("the 3D metadataKey does not support it.");
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     }
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
-        return OHOS::SURFACE_ERROR_NOT_SUPPORT;
-    } else if (ret != OHOS::SURFACE_ERROR_OK) {
+    if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("Set3DMetadata failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }

@@ -174,7 +174,7 @@ public:
         (void)scalingMode;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
-    virtual GSError GetVideoDimensionType(uint32_t sequence, VideoDimType& videoDimType)
+    virtual GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType)
     {
         (void)sequence;
         (void)videoDimType;

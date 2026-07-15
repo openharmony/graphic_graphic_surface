@@ -471,7 +471,7 @@ GSError ConsumerSurface::GetScalingMode(uint32_t sequence, ScalingMode& scalingM
     return consumer_->GetScalingMode(sequence, scalingMode);
 }
 
-GSError ConsumerSurface::GetVideoDimensionType(uint32_t sequence, VideoDimType& videoDimType)
+GSError ConsumerSurface::GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType)
 {
     if (consumer_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

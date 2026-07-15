@@ -213,7 +213,7 @@ GSError BufferQueueConsumer::GetScalingMode(uint32_t sequence, ScalingMode &scal
     return bufferQueue_->GetScalingMode(sequence, scalingMode);
 }
 
-GSError BufferQueueConsumer::GetVideoDimensionType(uint32_t sequence, VideoDimType& videoDimType)
+GSError BufferQueueConsumer::GetVideoDimensionType(uint32_t sequence, VideoDimType& videoDimType) const
 {
     if (bufferQueue_ == nullptr) {
         return GSERROR_INVALID_ARGUMENTS;

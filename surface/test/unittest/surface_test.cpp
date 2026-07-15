@@ -299,6 +299,7 @@ HWTEST_F(SurfaceTest, SurfaceTest001, TestSize.Level0)
     EXPECT_EQ(surface->GetScalingMode(sequence, scalingMode), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->SetVideoDimensionType(videoDimType), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetVideoDimensionType(videoDimType), GSERROR_NOT_SUPPORT);
+    EXPECT_EQ(surface->GetVideoDimensionType(sequence, videoDimType), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->QueryMetaDataType(sequence, hdrMetaDataType), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetMetaData(sequence, graphicHDRMetaDatas), GSERROR_NOT_SUPPORT);
     EXPECT_EQ(surface->GetMetaDataSet(sequence, key, metaDatas), GSERROR_NOT_SUPPORT);

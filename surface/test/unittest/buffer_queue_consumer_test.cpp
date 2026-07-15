@@ -238,6 +238,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     bool isForUniRedraw = false;
     std::string result;
     ScalingMode scalingMode;
+    VideoDimType videoDimType;
     HDRMetaDataType type;
     std::vector<GraphicHDRMetaData> metaData;
     GraphicHDRMetadataKey key;
@@ -271,6 +272,7 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     consumer->DumpCurrentFrameLayer();
     ASSERT_EQ(consumer->GetTransform(), GraphicTransformType::GRAPHIC_ROTATE_BUTT);
     ASSERT_EQ(consumer->GetScalingMode(0, scalingMode), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(consumer->GetVideoDimensionType(0, videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->QueryMetaDataType(0, type), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->GetMetaData(0, metaData), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->GetMetaDataSet(0, key, metaData1), OHOS::GSERROR_INVALID_ARGUMENTS);

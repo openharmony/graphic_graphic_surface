@@ -1284,6 +1284,10 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_Set3DMetadataValue001, TestSize.Level
               OHOS::SURFACE_ERROR_INVALID_PARAM);
     ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, nullptr),
               OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size + 1, metadata),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
+    ASSERT_EQ(OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size - 1, metadata),
+              OHOS::SURFACE_ERROR_INVALID_PARAM);
 }
 
 /*

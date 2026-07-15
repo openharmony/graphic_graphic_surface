@@ -1021,6 +1021,10 @@ int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
     }
     GSError ret = GSERROR_OK;
     if (metadataKey == OH_VIDEO_DIM_TYPE) {
+        if (size != static_cast<int32_t>(sizeof(VideoDimType))) {
+            BLOGE("Set3DMetadata failed, size mismatch.");
+            return OHOS::SURFACE_ERROR_INVALID_PARAM;
+        }
         VideoDimType videoDimType = static_cast<VideoDimType>(*metadata);
         ret = static_cast<GSError>(OH_NativeWindow_SetVideoDimensionType(window, videoDimType));
     } else {

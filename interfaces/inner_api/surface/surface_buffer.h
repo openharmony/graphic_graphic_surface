@@ -294,6 +294,10 @@ public:
         (void)bufferInfo;
         return GSERROR_OK;
     }
+    virtual bool CheckBufferHandleFields() const
+    {
+        return false;
+    }
 
 protected:
     SurfaceBuffer() {}

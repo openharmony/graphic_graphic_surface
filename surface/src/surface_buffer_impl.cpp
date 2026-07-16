@@ -642,10 +642,18 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     if (!parcel.ReadInt32(bufferRequestConfig_.width) || !parcel.ReadInt32(bufferRequestConfig_.height) ||
         !parcel.ReadInt32(bufferRequestConfig_.strideAlignment) || !parcel.ReadInt32(bufferRequestConfig_.format) ||
         !parcel.ReadUint64(bufferRequestConfig_.usage) || !parcel.ReadInt32(bufferRequestConfig_.timeout) ||
-        !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadInt32(scalingMode) ||
-        !parcel.ReadInt32(videoDimType)) {
+        !parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadInt32(scalingMode)) {
         BLOGE("parcel read fail, seq: %{public}u.", sequenceNumber_);
         return GSERROR_API_FAILED;
+    }
+    if (!parcel.ReadInt32(videoDimType)) {
+        BLOGE("parcel read videoDimType fail, seq: %{public}u.", sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+    if (videoDimType < static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D) ||
+        videoDimType > static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_3D_TAB)) {
+        BLOGE("invalid videoDimType, seq: %{public}u.", sequenceNumber_);
+        return GSERROR_INVALID_ARGUMENTS;
     }
     surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);
     transform_ = static_cast<GraphicTransformType>(transform);

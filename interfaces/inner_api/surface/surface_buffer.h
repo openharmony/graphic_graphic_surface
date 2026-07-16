@@ -294,7 +294,10 @@ public:
         (void)bufferInfo;
         return GSERROR_OK;
     }
-<<<<<<< 0709
+    virtual bool CheckBufferHandleFields() const
+    {
+        return false;
+    }
     virtual void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType)
     {
         (void) videoDimType;
@@ -302,11 +305,6 @@ public:
     virtual VideoDimType GetSurfaceBufferVideoDimensionType() const
     {
         return VideoDimType::VIDEO_DIM_TYPE_2D;
-=======
-    virtual bool CheckBufferHandleFields() const
-    {
-        return false;
->>>>>>> master
     }
 
 protected:

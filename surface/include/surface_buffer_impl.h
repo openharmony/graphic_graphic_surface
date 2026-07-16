@@ -118,12 +118,9 @@ public:
     GSError ReadBufferProperty(MessageParcel &parcel) override;
     GSError WriteBufferProperty(MessageParcel &parcel) override;
     GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
-<<<<<<< 0709
+    bool CheckBufferHandleFields() const override;
     void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType) override;
     VideoDimType GetSurfaceBufferVideoDimensionType() const override;
-=======
-    bool CheckBufferHandleFields() const override;
->>>>>>> master
 
 private:
     void FreeBufferHandleLocked();

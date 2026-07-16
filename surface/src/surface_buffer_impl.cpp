@@ -653,7 +653,7 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     if (videoDimType < static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D) ||
         videoDimType > static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_3D_TAB)) {
         BLOGE("invalid videoDimType, seq: %{public}u.", sequenceNumber_);
-        return GSERROR_INVALID_ARGUMENTS;
+        videoDimType = static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D);
     }
     surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);
     transform_ = static_cast<GraphicTransformType>(transform);

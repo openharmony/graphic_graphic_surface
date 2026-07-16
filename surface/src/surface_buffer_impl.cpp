@@ -648,7 +648,7 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     }
     if (!parcel.ReadInt32(videoDimType)) {
         BLOGE("parcel read videoDimType fail, seq: %{public}u.", sequenceNumber_);
-        return GSERROR_API_FAILED;
+        videoDimType = static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D);
     }
     if (videoDimType < static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D) ||
         videoDimType > static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_3D_TAB)) {

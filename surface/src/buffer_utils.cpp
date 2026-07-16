@@ -67,11 +67,21 @@ bool ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
         return false;
     }
 
-    config.colorGamut = static_cast<GraphicColorGamut>(parcel.ReadInt32());
+    int32_t colorGamutVal = 0;
+    if (!parcel.ReadInt32(colorGamutVal)) {
+        BLOGE("parcel read colorGamut fail.");
+        return false;
+    }
+    config.colorGamut = static_cast<GraphicColorGamut>(colorGamutVal);
     if (config.colorGamut < GRAPHIC_COLOR_GAMUT_INVALID || config.colorGamut > GRAPHIC_COLOR_GAMUT_DISPLAY_BT2020) {
         config.colorGamut = GRAPHIC_COLOR_GAMUT_INVALID;
     }
-    config.transform = static_cast<GraphicTransformType>(parcel.ReadInt32());
+    int32_t transformVal = 0;
+    if (!parcel.ReadInt32(transformVal)) {
+        BLOGE("parcel read transform fail.");
+        return false;
+    }
+    config.transform = static_cast<GraphicTransformType>(transformVal);
     if (config.transform < GRAPHIC_ROTATE_NONE || config.transform > GRAPHIC_ROTATE_BUTT) {
         config.transform = GRAPHIC_ROTATE_BUTT;
     }
@@ -80,7 +90,11 @@ bool ReadRequestConfig(MessageParcel &parcel, BufferRequestConfig &config)
 
 GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &config)
 {
-    uint32_t size = parcel.ReadUint32();
+    uint32_t size = 0;
+    if (!parcel.ReadUint32(size)) {
+        BLOGE("ReadFlushConfig read size failed");
+        return GSERROR_BINDER;
+    }
     if (size == 0) {
         BLOGE("ReadFlushConfig size is 0");
         return GSERROR_BINDER;
@@ -92,16 +106,18 @@ GSError ReadFlushConfig(MessageParcel &parcel, BufferFlushConfigWithDamages &con
     config.damages.clear();
     config.damages.reserve(size);
     for (uint32_t i = 0; i < size; i++) {
-        Rect rect = {
-            .x = parcel.ReadInt32(),
-            .y = parcel.ReadInt32(),
-            .w = parcel.ReadInt32(),
-            .h = parcel.ReadInt32(),
-        };
+        Rect rect;
+        if (!parcel.ReadInt32(rect.x) || !parcel.ReadInt32(rect.y) ||
+            !parcel.ReadInt32(rect.w) || !parcel.ReadInt32(rect.h)) {
+            BLOGE("ReadFlushConfig read rect failed");
+            return GSERROR_BINDER;
+        }
         config.damages.emplace_back(rect);
     }
-    config.timestamp = parcel.ReadInt64();
-    config.desiredPresentTimestamp = parcel.ReadInt64();
+    if (!parcel.ReadInt64(config.timestamp) || !parcel.ReadInt64(config.desiredPresentTimestamp)) {
+        BLOGE("ReadFlushConfig read timestamp failed");
+        return GSERROR_BINDER;
+    }
     return GSERROR_OK;
 }
 
@@ -135,8 +151,16 @@ GSError ReadSurfaceBufferImpl(MessageParcel &parcel, uint32_t &sequence, sptr<Su
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
 {
     GSError ret = GSERROR_OK;
-    sequence = parcel.ReadUint32();
-    if (parcel.ReadBool()) {
+    if (!parcel.ReadUint32(sequence)) {
+        BLOGE("ReadSurfaceBufferImpl read sequence failed");
+        return GSERROR_BINDER;
+    }
+    bool hasBuffer = false;
+    if (!parcel.ReadBool(hasBuffer)) {
+        BLOGE("ReadSurfaceBufferImpl read hasBuffer failed");
+        return GSERROR_BINDER;
+    }
+    if (hasBuffer) {
         buffer = new SurfaceBufferImpl(sequence);
         ret = buffer->ReadFromMessageParcel(parcel, readSafeFdFunc);
     }
@@ -160,7 +184,11 @@ GSError WriteSurfaceBufferImpl(MessageParcel &parcel,
 
 void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInfo> &infos)
 {
-    uint32_t size = parcel.ReadUint32();
+    uint32_t size = 0;
+    if (!parcel.ReadUint32(size)) {
+        BLOGE("ReadVerifyAllocInfo read size failed");
+        return;
+    }
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadVerifyAllocInfo size more than limit, size: %{public}u", size);
         return;
@@ -168,10 +196,13 @@ void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInf
     infos.clear();
     BufferVerifyAllocInfo info;
     for (uint32_t index = 0; index < size; index++) {
-        info.width = parcel.ReadUint32();
-        info.height = parcel.ReadUint32();
-        info.usage = parcel.ReadUint64();
-        info.format = static_cast<GraphicPixelFormat>(parcel.ReadInt32());
+        int32_t formatVal = 0;
+        if (!parcel.ReadUint32(info.width) || !parcel.ReadUint32(info.height) ||
+            !parcel.ReadUint64(info.usage) || !parcel.ReadInt32(formatVal)) {
+            BLOGE("ReadVerifyAllocInfo read info failed");
+            return;
+        }
+        info.format = static_cast<GraphicPixelFormat>(formatVal);
         infos.emplace_back(info);
     }
 }
@@ -208,7 +239,11 @@ GSError ReadHDRMetaData(MessageParcel &parcel, std::vector<GraphicHDRMetaData> &
     metaData.clear();
     GraphicHDRMetaData data;
     for (uint32_t index = 0; index < size; index++) {
-        data.key = static_cast<GraphicHDRMetadataKey>(parcel.ReadUint32());
+        uint32_t keyVal = 0;
+        if (!parcel.ReadUint32(keyVal)) {
+            return GSERROR_BINDER;
+        }
+        data.key = static_cast<GraphicHDRMetadataKey>(keyVal);
         if (!parcel.ReadFloat(data.value)) {
             return GSERROR_BINDER;
         }
@@ -237,14 +272,22 @@ GSError WriteHDRMetaData(MessageParcel &parcel, const std::vector<GraphicHDRMeta
 
 GSError ReadHDRMetaDataSet(MessageParcel &parcel, std::vector<uint8_t> &metaData)
 {
-    uint32_t size = parcel.ReadUint32();
+    uint32_t size = 0;
+    if (!parcel.ReadUint32(size)) {
+        BLOGE("ReadHDRMetaDataSet read size failed");
+        return GSERROR_BINDER;
+    }
     if (size > SURFACE_PARCEL_SIZE_LIMIT) {
         BLOGE("ReadHDRMetaDataSet size more than limit, size: %{public}u", size);
         return GSERROR_BINDER;
     }
     metaData.clear();
     for (uint32_t index = 0; index < size; index++) {
-        uint8_t data = parcel.ReadUint8();
+        uint8_t data = 0;
+        if (!parcel.ReadUint8(data)) {
+            BLOGE("ReadHDRMetaDataSet read data failed");
+            return GSERROR_BINDER;
+        }
         metaData.emplace_back(data);
     }
     return GSERROR_OK;
@@ -466,8 +509,16 @@ GSError ReadSurfaceBufferImplWithAllProperties(MessageParcel &parcel, uint32_t &
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
 {
     GSError ret = GSERROR_OK;
-    sequence = parcel.ReadUint32();
-    if (parcel.ReadBool()) {
+    if (!parcel.ReadUint32(sequence)) {
+        BLOGE("ReadSurfaceBufferImplWithAllProperties read sequence failed");
+        return GSERROR_BINDER;
+    }
+    bool hasBuffer = false;
+    if (!parcel.ReadBool(hasBuffer)) {
+        BLOGE("ReadSurfaceBufferImplWithAllProperties read hasBuffer failed");
+        return GSERROR_BINDER;
+    }
+    if (hasBuffer) {
         buffer = new SurfaceBufferImpl(sequence);
         ret = buffer->ReadAllPropertiesFromMessageParcel(parcel, readSafeFdFunc);
     }

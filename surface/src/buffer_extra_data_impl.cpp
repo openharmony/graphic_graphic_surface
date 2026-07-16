@@ -22,6 +22,46 @@ namespace {
 constexpr int32_t BUFFER_EXTRA_DATA_MAGIC = 0x4567;
 } // namespace
 
+GSError BufferExtraDataImpl::ReadExtraDataItem(MessageParcel &parcel, const std::string &key, ExtraDataType type)
+{
+    switch (type) {
+        case ExtraDataType::i32: {
+            int32_t val = 0;
+            if (!parcel.ReadInt32(val)) {
+                BLOGE("ReadFromParcel read i32 failed");
+                return GSERROR_INTERNAL;
+            }
+            return ExtraSet(key, type, val);
+        }
+        case ExtraDataType::i64: {
+            int64_t val = 0;
+            if (!parcel.ReadInt64(val)) {
+                BLOGE("ReadFromParcel read i64 failed");
+                return GSERROR_INTERNAL;
+            }
+            return ExtraSet(key, type, val);
+        }
+        case ExtraDataType::f64: {
+            double val = 0.0;
+            if (!parcel.ReadDouble(val)) {
+                BLOGE("ReadFromParcel read f64 failed");
+                return GSERROR_INTERNAL;
+            }
+            return ExtraSet(key, type, val);
+        }
+        case ExtraDataType::string: {
+            std::string val;
+            if (!parcel.ReadString(val)) {
+                BLOGE("ReadFromParcel read string failed");
+                return GSERROR_INTERNAL;
+            }
+            return ExtraSet(key, type, val);
+        }
+        default:
+            return GSERROR_OK;
+    }
+}
+
 GSError BufferExtraDataImpl::ReadFromParcel(MessageParcel &parcel)
 {
     int32_t magic = 0;
@@ -30,36 +70,21 @@ GSError BufferExtraDataImpl::ReadFromParcel(MessageParcel &parcel)
         return GSERROR_INTERNAL;
     }
 
-    int32_t size = parcel.ReadInt32();
-    if (size > SURFACE_MAX_USER_DATA_COUNT) {
-        BLOGE("ReadFromParcel size: %{public}d", size);
+    int32_t size = 0;
+    if (!parcel.ReadInt32(size) || size > SURFACE_MAX_USER_DATA_COUNT) {
+        BLOGE("ReadFromParcel size invalid: %{public}d", size);
         return GSERROR_INTERNAL;
     }
 
     GSError ret = GSERROR_OK;
     for (int32_t i = 0; i < size; i++) {
-        auto key = parcel.ReadString();
-        auto type = static_cast<ExtraDataType>(parcel.ReadInt32());
-        switch (type) {
-            case ExtraDataType::i32: {
-                ret = ExtraSet(key, type, parcel.ReadInt32());
-                break;
-            }
-            case ExtraDataType::i64: {
-                ret = ExtraSet(key, type, parcel.ReadInt64());
-                break;
-            }
-            case ExtraDataType::f64: {
-                ret = ExtraSet(key, type, parcel.ReadDouble());
-                break;
-            }
-            case ExtraDataType::string: {
-                ret = ExtraSet(key, type, parcel.ReadString());
-                break;
-            }
-            default: break;
+        std::string key;
+        int32_t typeVal = 0;
+        if (!parcel.ReadString(key) || !parcel.ReadInt32(typeVal)) {
+            BLOGE("ReadFromParcel read key/type failed");
+            return GSERROR_INTERNAL;
         }
-
+        ret = ReadExtraDataItem(parcel, key, static_cast<ExtraDataType>(typeVal));
         if (ret != GSERROR_OK) {
             BLOGE("ExtraSet failed, ret %{public}d", ret);
             break;

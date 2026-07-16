@@ -509,4 +509,281 @@ HWTEST_F(BufferQueueProducerRemoteTest, SyncProducerCache002, TestSize.Level0)
     ret = bp->SyncProducerCache(buffers);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/*
+* Function: AttachAndFlushBufferRemote with BufferHandle fields tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with width field
+*                 2. call AttachAndFlushBufferRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteTamperedWidth, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalWidth = handle->width;
+    handle->width = originalWidth + 100;
+
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->width = originalWidth;
+}
+
+/*
+* Function: AttachAndFlushBufferRemote with BufferHandle size tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with size field
+*                 2. call AttachAndFlushBufferRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteTamperedSize, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalSize = handle->size;
+    handle->size = originalSize + 10000;
+
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->size = originalSize;
+}
+
+/*
+* Function: AttachAndFlushBufferRemote with BufferHandle not tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer without tampering
+*                 2. call AttachAndFlushBufferRemote
+*                 3. verify it succeeds
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteNotTampered, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_NONE);
+    GSError sRet = static_cast<GSError>(reply.ReadInt32());
+    EXPECT_EQ(sRet, GSERROR_OK);
+}
+
+/*
+* Function: AttachBufferToQueueRemote with BufferHandle width tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with width field
+*                 2. call AttachBufferToQueueRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferToQueueRemoteTamperedWidth, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_RGBA_8888, 256, 256);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalWidth = handle->width;
+    handle->width = originalWidth + 1000;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    int32_t remoteRet = bqp->AttachBufferToQueueRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->width = originalWidth;
+}
+
+/*
+* Function: AttachBufferToQueueRemote with BufferHandle size tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with size field
+*                 2. call AttachBufferToQueueRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferToQueueRemoteTamperedSize, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_RGBA_8888, 256, 256);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalSize = handle->size;
+    handle->size = originalSize + 10000;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    int32_t remoteRet = bqp->AttachBufferToQueueRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->size = originalSize;
+}
+
+/*
+* Function: AttachBufferRemote with BufferHandle width tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with width field
+*                 2. call AttachBufferRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferRemoteTamperedWidth, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_RGBA_8888, 256, 256);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalWidth = handle->width;
+    handle->width = originalWidth + 1000;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    int32_t timeOut = 0;
+    EXPECT_TRUE(arguments.WriteInt32(timeOut));
+
+    int32_t remoteRet = bqp->AttachBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->width = originalWidth;
+}
+
+/*
+* Function: AttachBufferRemote with BufferHandle size tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with size field
+*                 2. call AttachBufferRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferRemoteTamperedSize, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_RGBA_8888, 256, 256);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalSize = handle->size;
+    handle->size = originalSize + 10000;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    int32_t timeOut = 0;
+    EXPECT_TRUE(arguments.WriteInt32(timeOut));
+
+    int32_t remoteRet = bqp->AttachBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->size = originalSize;
+}
 }

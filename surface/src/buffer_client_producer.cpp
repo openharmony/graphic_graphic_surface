@@ -85,7 +85,11 @@ GSError BufferClientProducer::SendRequest(uint32_t command, MessageParcel &arg,
 
 GSError BufferClientProducer::CheckRetval(MessageParcel &reply)
 {
-    int32_t ret = reply.ReadInt32();
+    int32_t ret = 0;
+    if (!reply.ReadInt32(ret)) {
+        BLOGE("CheckRetval read int32 failed");
+        return GSERROR_BINDER;
+    }
     if (ret != GSERROR_OK) {
         BLOGD("Remote ret: %{public}d, uniqueId: %{public}" PRIu64 ".", ret, uniqueId_);
         return static_cast<GSError>(ret);
@@ -107,7 +111,9 @@ GSError BufferClientProducer::RequestBufferCommon(const BufferRequestConfig &con
     SEND_REQUEST(command, arguments, reply, option);
     ret = CheckRetval(reply);
     if (ret != GSERROR_OK) {
-        reply.ReadBool(retval.isConnected);
+        if (!reply.ReadBool(retval.isConnected)) {
+            BLOGE("RequestBufferCommon read isConnected failed");
+        }
         return ret;
     }
 
@@ -117,7 +123,10 @@ GSError BufferClientProducer::RequestBufferCommon(const BufferRequestConfig &con
     }
     if (retval.buffer != nullptr) {
         BufferRequestConfig updateConfig = config;
-        updateConfig.usage = reply.ReadUint64();  // consumer may change input usgae by defaultUsage
+        if (!reply.ReadUint64(updateConfig.usage)) {
+            BLOGE("RequestBufferCommon read usage failed");
+            return GSERROR_BINDER;
+        }
         retval.buffer->SetBufferRequestConfig(updateConfig);
     }
 
@@ -139,6 +148,41 @@ GSError BufferClientProducer::RequestBuffer(const BufferRequestConfig &config, s
     return RequestBufferCommon(config, bedata, retval, BUFFER_PRODUCER_REQUEST_BUFFER);
 }
 
+GSError BufferClientProducer::ReadRequestBuffersReply(MessageParcel &reply,
+    const BufferRequestConfig &config, std::vector<sptr<BufferExtraData>> &bedata,
+    std::vector<RequestBufferReturnValue> &retvalues, uint32_t num)
+{
+    retvalues.resize(num);
+    if (bedata.size() < num) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    GSError ret = GSERROR_OK;
+    for (size_t i = 0; i < num; ++i) {
+        auto &retval = retvalues[i];
+        ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
+        if (ret != GSERROR_OK) {
+            return SURFACE_ERROR_UNKOWN;
+        }
+        if (retval.buffer != nullptr) {
+            BufferRequestConfig updateConfig = config;
+            if (!reply.ReadUint64(updateConfig.usage)) {
+                BLOGE("RequestBuffers read usage failed");
+                return GSERROR_BINDER;
+            }
+            retval.buffer->SetBufferRequestConfig(updateConfig);
+        }
+        ret = bedata[i]->ReadFromParcel(reply);
+        if (ret != GSERROR_OK) {
+            return SURFACE_ERROR_UNKOWN;
+        }
+        retval.fence = SyncFence::ReadFromMessageParcel(reply);
+        if (!reply.ReadUInt32Vector(&retval.deletingBuffers)) {
+            return GSERROR_BINDER;
+        }
+    }
+    return ret;
+}
+
 GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     std::vector<sptr<BufferExtraData>> &bedata, std::vector<RequestBufferReturnValue> &retvalues)
 {
@@ -156,39 +200,22 @@ GSError BufferClientProducer::RequestBuffers(const BufferRequestConfig &config,
     SEND_REQUEST(BUFFER_PRODUCER_REQUEST_BUFFERS, arguments, reply, option);
     ret = CheckRetval(reply);
     if (ret != GSERROR_OK && ret != GSERROR_NO_BUFFER) {
-        reply.ReadBool(retvalues[0].isConnected);
+        if (!reply.ReadBool(retvalues[0].isConnected)) {
+            BLOGE("RequestBuffers read isConnected failed");
+        }
         return ret;
     }
 
-    num = reply.ReadUint32();
+    num = 0;
+    if (!reply.ReadUint32(num)) {
+        BLOGE("RequestBuffers read num failed");
+        return GSERROR_BINDER;
+    }
     if (num > SURFACE_MAX_QUEUE_SIZE || num == 0) {
         BLOGE("num is invalid, %{public}u, uniqueId: %{public}" PRIu64 ".", num, uniqueId_);
         return SURFACE_ERROR_UNKOWN;
     }
-
-    ret = GSERROR_OK;
-    retvalues.resize(num);
-    for (size_t i = 0; i < num; ++i) {
-        auto &retval = retvalues[i];
-        ret = ReadSurfaceBufferImpl(reply, retval.sequence, retval.buffer);
-        if (ret != GSERROR_OK) {
-            return SURFACE_ERROR_UNKOWN;
-        }
-        if (retval.buffer != nullptr) {
-            BufferRequestConfig updateConfig = config;
-            updateConfig.usage = reply.ReadUint64();  // consumer may change input usgae by defaultUsage
-            retval.buffer->SetBufferRequestConfig(updateConfig);
-        }
-        ret = bedata[i]->ReadFromParcel(reply);
-        if (ret != GSERROR_OK) {
-            return SURFACE_ERROR_UNKOWN;
-        }
-        retval.fence = SyncFence::ReadFromMessageParcel(reply);
-        if (!reply.ReadUInt32Vector(&retval.deletingBuffers)) {
-            return GSERROR_BINDER;
-        }
-    }
-    return ret;
+    return ReadRequestBuffersReply(reply, config, bedata, retvalues, num);
 }
 
 GSError BufferClientProducer::GetLastFlushedBufferCommon(sptr<SurfaceBuffer>& buffer,
@@ -479,7 +506,11 @@ uint32_t BufferClientProducer::GetQueueSize()
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_QUEUE_SIZE, arguments, reply, option);
 
-    return reply.ReadUint32();
+    uint32_t queueSize = 0;
+    if (!reply.ReadUint32(queueSize)) {
+        BLOGE("GetQueueSize read queueSize failed");
+    }
+    return queueSize;
 }
 
 GSError BufferClientProducer::SetQueueSize(uint32_t queueSize)
@@ -531,9 +562,13 @@ uint64_t BufferClientProducer::GetUniqueId()
     }
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     SEND_REQUEST(BUFFER_PRODUCER_GET_UNIQUE_ID, arguments, reply, option);
+    uint64_t uniqueId = 0;
+    if (!reply.ReadUint64(uniqueId)) {
+        BLOGE("GetUniqueId read uniqueId failed");
+    }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        uniqueId_ = reply.ReadUint64();
+        uniqueId_ = uniqueId;
         return uniqueId_;
     }
 }
@@ -560,7 +595,10 @@ GSError BufferClientProducer::GetNameAndUniqueId(std::string& name, uint64_t& un
         return GSERROR_BINDER;
     }
 
-    uniqueId = reply.ReadUint64();
+    if (!reply.ReadUint64(uniqueId)) {
+        BLOGE("GetNameAndUniqueId read uniqueId failed");
+        return GSERROR_BINDER;
+    }
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         name_ = name;
@@ -575,7 +613,11 @@ int32_t BufferClientProducer::GetDefaultWidth()
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_WIDTH, arguments, reply, option);
 
-    return reply.ReadInt32();
+    int32_t width = 0;
+    if (!reply.ReadInt32(width)) {
+        BLOGE("GetDefaultWidth read width failed");
+    }
+    return width;
 }
 
 int32_t BufferClientProducer::GetDefaultHeight()
@@ -584,7 +626,11 @@ int32_t BufferClientProducer::GetDefaultHeight()
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_HEIGHT, arguments, reply, option);
 
-    return reply.ReadInt32();
+    int32_t height = 0;
+    if (!reply.ReadInt32(height)) {
+        BLOGE("GetDefaultHeight read height failed");
+    }
+    return height;
 }
 
 GSError BufferClientProducer::SetDefaultUsage(uint64_t usage)
@@ -606,7 +652,11 @@ uint64_t BufferClientProducer::GetDefaultUsage()
 
     SEND_REQUEST(BUFFER_PRODUCER_GET_DEFAULT_USAGE, arguments, reply, option);
 
-    return reply.ReadUint64();
+    uint64_t usage = 0;
+    if (!reply.ReadUint64(usage)) {
+        BLOGE("GetDefaultUsage read usage failed");
+    }
+    return usage;
 }
 
 GSError BufferClientProducer::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
@@ -619,7 +669,10 @@ GSError BufferClientProducer::CleanCache(bool cleanAll, uint32_t *bufSeqNum)
     SEND_REQUEST(BUFFER_PRODUCER_CLEAN_CACHE, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret == GSERROR_OK && bufSeqNum != nullptr) {
-        *bufSeqNum = reply.ReadUint32();
+        if (!reply.ReadUint32(*bufSeqNum)) {
+            BLOGE("CleanCache read bufSeqNum failed");
+            return GSERROR_BINDER;
+        }
     }
     return ret;
 }
@@ -676,7 +729,10 @@ GSError BufferClientProducer::Disconnect(uint32_t *bufSeqNum)
     SEND_REQUEST(BUFFER_PRODUCER_DISCONNECT, arguments, reply, option);
     GSError ret = CheckRetval(reply);
     if (ret == GSERROR_OK && bufSeqNum != nullptr) {
-        *bufSeqNum = reply.ReadUint32();
+        if (!reply.ReadUint32(*bufSeqNum)) {
+            BLOGE("Disconnect read bufSeqNum failed");
+            return GSERROR_BINDER;
+        }
     }
     return ret;
 }
@@ -840,8 +896,11 @@ GSError BufferClientProducer::GetPresentTimestamp(uint32_t sequence, GraphicPres
     if (ret != GSERROR_OK) {
         return ret;
     }
-    time = reply.ReadInt64();
-    return static_cast<GSError>(ret);
+    if (!reply.ReadInt64(time)) {
+        BLOGE("GetPresentTimestamp read time failed");
+        return GSERROR_BINDER;
+    }
+    return GSERROR_OK;
 }
 
 sptr<NativeSurface> BufferClientProducer::GetNativeSurface()
@@ -858,7 +917,12 @@ GSError BufferClientProducer::GetTransform(GraphicTransformType &transform)
     if (ret != GSERROR_OK) {
         return ret;
     }
-    transform = static_cast<GraphicTransformType>(reply.ReadUint32());
+    uint32_t transformVal = 0;
+    if (!reply.ReadUint32(transformVal)) {
+        BLOGE("GetTransform read transform failed");
+        return GSERROR_BINDER;
+    }
+    transform = static_cast<GraphicTransformType>(transformVal);
     return GSERROR_OK;
 }
 
@@ -901,7 +965,12 @@ GSError BufferClientProducer::GetSurfaceSourceType(OHSurfaceSource &sourceType)
     if (ret != GSERROR_OK) {
         return ret;
     }
-    sourceType = static_cast<OHSurfaceSource>(reply.ReadUint32());
+    uint32_t sourceTypeVal = 0;
+    if (!reply.ReadUint32(sourceTypeVal)) {
+        BLOGE("GetSurfaceSourceType read sourceType failed");
+        return GSERROR_BINDER;
+    }
+    sourceType = static_cast<OHSurfaceSource>(sourceTypeVal);
     return GSERROR_OK;
 }
 
@@ -923,7 +992,10 @@ GSError BufferClientProducer::GetSurfaceAppFrameworkType(std::string &appFramewo
     if (ret != GSERROR_OK) {
         return ret;
     }
-    appFrameworkType = static_cast<std::string>(reply.ReadString());
+    if (!reply.ReadString(appFrameworkType)) {
+        BLOGE("GetSurfaceAppFrameworkType read appFrameworkType failed");
+        return GSERROR_BINDER;
+    }
     return GSERROR_OK;
 }
 
@@ -1034,7 +1106,10 @@ GSError BufferClientProducer::GetCycleBuffersNumber(uint32_t& cycleBuffersNumber
     if (ret != GSERROR_OK) {
         return ret;
     }
-    cycleBuffersNumber = reply.ReadUint32();
+    if (!reply.ReadUint32(cycleBuffersNumber)) {
+        BLOGE("GetCycleBuffersNumber read cycleBuffersNumber failed");
+        return GSERROR_BINDER;
+    }
     return GSERROR_OK;
 }
 
@@ -1110,7 +1185,11 @@ GSError BufferClientProducer::SyncProducerCache(std::map<uint32_t, sptr<SurfaceB
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
     SEND_REQUEST(BUFFER_PRODUCER_SYNC_PRODUCER_CACHE, arguments, reply, option);
-    uint32_t size = reply.ReadUint32();
+    uint32_t size = 0;
+    if (!reply.ReadUint32(size)) {
+        BLOGE("SyncProducerCache read size failed");
+        return GSERROR_BINDER;
+    }
     if (size > SURFACE_MAX_QUEUE_SIZE) {
         BLOGE("SyncProducerCache size too large");
         return SURFACE_ERROR_UNKOWN;

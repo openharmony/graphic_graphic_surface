@@ -15,6 +15,7 @@
 
 #include "surface_buffer_impl.h"
 
+#include <cinttypes>
 #include <dlfcn.h>
 #include <mutex>
 
@@ -265,6 +266,7 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig& config, const sptr<S
         surfaceBufferWidth_ = config.width;
         surfaceBufferHeight_ = config.height;
         bufferRequestConfig_ = config;
+        RecordOriginalBufferHandleFields();
         return GSERROR_OK;
     }
     BLOGW("Alloc Failed with %{public}d, seq: %{public}u", dRet, sequenceNumber_);
@@ -629,6 +631,14 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel& parcel)
         return GSERROR_API_FAILED;
     }
 
+    if (!parcel.WriteBool(hasOriginalFields_) ||
+        !parcel.WriteInt32(originalWidth_) ||
+        !parcel.WriteInt32(originalHeight_) ||
+        !parcel.WriteInt32(originalSize_)) {
+        BLOGE("WriteToMessageParcel: write original fields failed, seq: %{public}u", sequenceNumber_);
+        return GSERROR_API_FAILED;
+    }
+
     return GSERROR_OK;
 }
 
@@ -720,6 +730,15 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
 {
     auto handle = ReadBufferHandle(parcel, readSafeFdFunc);
     SetBufferHandle(handle);
+    if (handle != nullptr) {
+        if (!parcel.ReadBool(hasOriginalFields_) ||
+            !parcel.ReadInt32(originalWidth_) ||
+            !parcel.ReadInt32(originalHeight_) ||
+            !parcel.ReadInt32(originalSize_)) {
+            BLOGW("ReadFromMessageParcel: read original fields failed, seq: %{public}u", sequenceNumber_);
+            hasOriginalFields_ = false;
+        }
+    }
     return handle ? GSERROR_OK : GSERROR_API_FAILED;
 }
 
@@ -1203,5 +1222,46 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
 
     BLOGD("%{public}s success, seq: %{public}u", __func__, sequenceNumber_);
     return GSERROR_OK;
+}
+
+void SurfaceBufferImpl::RecordOriginalBufferHandleFields()
+{
+    if (handle_ == nullptr) {
+        BLOGW("RecordOriginalBufferHandleFields: handle is nullptr, seq: %{public}u", sequenceNumber_);
+        return;
+    }
+    originalWidth_ = handle_->width;
+    originalHeight_ = handle_->height;
+    originalSize_ = handle_->size;
+    hasOriginalFields_ = true;
+    BLOGD("Recorded original fields: w=%{public}d, h=%{public}d, "
+          "size=%{public}d, seq=%{public}u",
+          originalWidth_, originalHeight_, originalSize_, sequenceNumber_);
+}
+
+bool SurfaceBufferImpl::CheckBufferHandleFields() const
+{
+    if (handle_ == nullptr) {
+        BLOGE("CheckBufferHandleFields: handle is nullptr, seq: %{public}u", sequenceNumber_);
+        return false;
+    }
+    
+    if (!hasOriginalFields_) {
+        BLOGD("CheckBufferHandleFields: no backup fields, skip verification, seq=%{public}u", sequenceNumber_);
+        return true;
+    }
+    
+    bool valid = (handle_->width == originalWidth_ &&
+                  handle_->height == originalHeight_ &&
+                  handle_->size == originalSize_);
+    if (!valid) {
+        BLOGE("BufferHandle fields tampered! Original: w=%{public}d, h=%{public}d, "
+              "size=%{public}d; Current: w=%{public}d, h=%{public}d, "
+              "size=%{public}d, seq=%{public}u",
+              originalWidth_, originalHeight_, originalSize_,
+              handle_->width, handle_->height, handle_->size,
+              sequenceNumber_);
+    }
+    return valid;
 }
 } // namespace OHOS

@@ -146,6 +146,7 @@ ohos_static_library("surface_static") {
     "init:libbegetutil",
     "ipc:ipc_capi",
     "ipc:ipc_single",
+    "bounds_checking_function:libsec_shared",
   ]
 
   if (graphic_surface_feature_tv_metadata_enable) {

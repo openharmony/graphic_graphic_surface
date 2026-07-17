@@ -66,6 +66,7 @@ ohos_static_library("buffer_handle_static") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
+    "bounds_checking_function:libsec_shared",
   ]
 
   subsystem_name = "graphic"

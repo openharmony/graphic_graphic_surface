@@ -15,7 +15,7 @@
 
 #include "frame_report.h"
 
-#include <cinttypes.h>
+#include <cinttypes>
 #include <dlfcn.h>
 #include <cstdio>
 #include <securec.h>

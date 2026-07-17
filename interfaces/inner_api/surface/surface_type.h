@@ -618,6 +618,12 @@ using GraphicAlphaType = enum {
     GRAPHIC_ALPHATYPE_PREMUL,
     GRAPHIC_ALPHATYPE_UNPREMUL,
 };
+
+using VideoDimType = enum {
+    VIDEO_DIM_TYPE_2D = 0,
+    VIDEO_DIM_TYPE_3D_SBS,
+    VIDEO_DIM_TYPE_3D_TAB,
+};
 } // namespace OHOS
 
 #endif // INTERFACES_INNERKITS_SURFACE_SURFACE_TYPE_H

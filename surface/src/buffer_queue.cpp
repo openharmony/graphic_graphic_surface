@@ -1228,7 +1228,7 @@ void BufferQueue::RequestBuffersForListenerLocked(
         if (mapIter == bufferQueueCache_.end()) {
             continue;
         }
-        
+
         BufferRequestConfig config = mapIter->second.buffer->GetBufferRequestConfig();
         config.timeout = 0;
         bool isExist = false;
@@ -1311,6 +1311,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
         " %d id: %u", name_.c_str(), uniqueId_, config.width, config.height, config.usage, config.format, sequence);
 
     ScalingMode scalingMode = scalingMode_;
+    VideoDimType videoDimType = videoDimType_;
     int32_t connectedPid = connectedPid_;
     isAllocatingBuffer_ = true;
     lock.unlock();
@@ -1325,6 +1326,7 @@ GSError BufferQueue::AllocBuffer(sptr<SurfaceBuffer> &buffer, const sptr<Surface
     }
 
     bufferImpl->SetSurfaceBufferScalingMode(scalingMode);
+    bufferImpl->SetSurfaceBufferVideoDimensionType(videoDimType);
     BufferElement ele = {
         .buffer = bufferImpl,
         .state = BUFFER_STATE_REQUESTED,
@@ -1521,6 +1523,7 @@ GSError BufferQueue::AttachBufferToQueueLocked(sptr<SurfaceBuffer> buffer, Invok
         return SURFACE_ERROR_BUFFER_IS_INCACHE;
     }
     buffer->SetSurfaceBufferScalingMode(scalingMode_);
+    buffer->SetSurfaceBufferVideoDimensionType(videoDimType_);
     BufferElement ele;
     ele = {
         .buffer = buffer,
@@ -1623,6 +1626,7 @@ GSError BufferQueue::AttachBuffer(sptr<SurfaceBuffer> &buffer, int32_t timeOut)
     }
 
     buffer->SetSurfaceBufferScalingMode(scalingMode_);
+    buffer->SetSurfaceBufferVideoDimensionType(videoDimType_);
     BufferElement ele = {
         .buffer = buffer,
         .state = BUFFER_STATE_ATTACHED,
@@ -2206,6 +2210,34 @@ GSError BufferQueue::GetScalingMode(uint32_t sequence, ScalingMode &scalingMode)
     return GSERROR_OK;
 }
 
+GSError BufferQueue::SetVideoDimensionType(VideoDimType videoDimType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    for (auto it = bufferQueueCache_.begin(); it != bufferQueueCache_.end(); it++) {
+        it->second.buffer->SetSurfaceBufferVideoDimensionType(videoDimType);
+    }
+    videoDimType_ = videoDimType;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetVideoDimensionType(VideoDimType &videoDimType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    videoDimType = videoDimType_;
+    return GSERROR_OK;
+}
+
+GSError BufferQueue::GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    auto mapIter = bufferQueueCache_.find(sequence);
+    if (mapIter == bufferQueueCache_.end()) {
+        return GSERROR_NO_ENTRY;
+    }
+    videoDimType = mapIter->second.buffer->GetSurfaceBufferVideoDimensionType();
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -2360,7 +2392,7 @@ static GSError ResolveTunnelLayerConfig(TunnelTypeMask tunnelTypeMask, uint64_t 
             return GSERROR_INVALID_ARGUMENTS;
     }
 }
- 
+
 GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
 {
     SURFACE_TRACE_NAME_FMT("SetTunnelLayerInfo uniqueId: %" PRIu64 ", tunnelTypeMask: %u",
@@ -2987,7 +3019,7 @@ GSError BufferQueue::AcquireLppBuffer(
     lastLppWriteOffset_ = slotInfo.writeOffset;
     lastLppWriteTimestamp_ = slotInfo.slot[lastLppWriteOffset_].timestamp;
     uint32_t seqId = bufferSlot.seqId;
- 
+
     auto mapIter = bufferQueueCache_.find(seqId);
     if (mapIter == bufferQueueCache_.end()) {
         lppSlotInfo_->slot[readOffset].isRsUsing = 0;

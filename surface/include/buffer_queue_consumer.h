@@ -55,6 +55,7 @@ public:
     void DumpCurrentFrameLayer() const;
     GraphicTransformType GetTransform() const;
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) const;
+    GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType) const;
     GSError QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const;
     GSError GetMetaData(uint32_t sequence, std::vector<GraphicHDRMetaData> &metaData) const;
     GSError GetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey &key, std::vector<uint8_t> &metaData) const;

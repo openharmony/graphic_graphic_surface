@@ -890,6 +890,22 @@ public:
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
     
     GSError SetSingleBufferMode(SingleBufferMode mode) override;
+    /**
+     * @brief Set the video dimension type for the surface buffer.
+     *
+     * @param videoDimType [in] The dimension type of the surface buffer.
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
+    GSError SetVideoDimensionType(VideoDimType videoDimType) override;
+    /**
+     * @brief Get the video dimension type of the surface buffer.
+     *
+     * @param videoDimType [out] The dimension type of the surface buffer.
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
+     */
+    GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
 private:
     ProducerSurface(sptr<IBufferProducer>& producer);
     GSError PropertyChangeCallback(const SurfaceProperty& property);

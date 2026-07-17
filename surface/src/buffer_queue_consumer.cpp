@@ -213,6 +213,14 @@ GSError BufferQueueConsumer::GetScalingMode(uint32_t sequence, ScalingMode &scal
     return bufferQueue_->GetScalingMode(sequence, scalingMode);
 }
 
+GSError BufferQueueConsumer::GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType) const
+{
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return bufferQueue_->GetVideoDimensionType(sequence, videoDimType);
+}
+
 GSError BufferQueueConsumer::QueryMetaDataType(uint32_t sequence, HDRMetaDataType &type) const
 {
     if (bufferQueue_ == nullptr) {

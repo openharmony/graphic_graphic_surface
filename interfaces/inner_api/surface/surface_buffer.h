@@ -298,6 +298,14 @@ public:
     {
         return false;
     }
+    virtual void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType)
+    {
+        (void) videoDimType;
+    }
+    virtual VideoDimType GetSurfaceBufferVideoDimensionType() const
+    {
+        return VideoDimType::VIDEO_DIM_TYPE_2D;
+    }
 
 protected:
     SurfaceBuffer() {}

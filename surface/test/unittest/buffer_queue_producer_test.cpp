@@ -1125,6 +1125,9 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->Disconnect(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetScalingMode(0, ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetScalingMode(ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    EXPECT_EQ(bqpTmp->SetVideoDimensionType(videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->GetVideoDimensionType(videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> meta;
     EXPECT_EQ(bqpTmp->SetMetaData(0, meta), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<uint8_t> metaData;

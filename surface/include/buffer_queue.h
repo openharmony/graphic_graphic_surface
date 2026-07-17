@@ -291,6 +291,9 @@ public:
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
     GSError SetSingleBufferMode(SingleBufferMode mode);
     SingleBufferMode GetAndResetSingleBufferMode();
+    GSError SetVideoDimensionType(VideoDimType videoDimType);
+    GSError GetVideoDimensionType(VideoDimType &videoDimType);
+    GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType);
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -386,6 +389,7 @@ private:
     uint64_t defaultUsage_ = 0;
     uint32_t bufferQueueSize_ = SURFACE_DEFAULT_QUEUE_SIZE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    VideoDimType videoDimType_ = VideoDimType::VIDEO_DIM_TYPE_2D;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     GraphicTransformType lastFlushedTransform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     std::string name_;

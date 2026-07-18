@@ -3004,10 +3004,17 @@ GSError BufferQueue::AcquireLppBuffer(
     }
     int32_t readOffset = -1;
     readOffset = (lppSlotInfo_->writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
+    if (readOffset < 0 || readOffset >= LPP_SLOT_SIZE) {
+        BLOGW("AcquireLppBuffer name: slotInfo Parameter validation failed");
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     const auto slotInfo = *lppSlotInfo_;
     int32_t maxWriteOffset = (slotInfo.writeOffset + LPP_SLOT_SIZE - 1) % LPP_SLOT_SIZE;
-    bool noBufferUpdate = slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset &&
-                          slotInfo.slot[lastLppWriteOffset_].timestamp == lastLppWriteTimestamp_;
+    bool noBufferUpdate = false;
+    if (lastLppWriteOffset_ >= 0 && lastLppWriteOffset_ < LPP_SLOT_SIZE) {
+        noBufferUpdate = slotInfo.writeOffset == lastLppWriteOffset_ && slotInfo.readOffset == maxWriteOffset &&
+                         slotInfo.slot[lastLppWriteOffset_].timestamp == lastLppWriteTimestamp_;
+    }
     if (noBufferUpdate) {
         SURFACE_TRACE_NAME("AcquireLppBuffer no buffer update");
         return GSERROR_NO_BUFFER;
@@ -3094,6 +3101,11 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
             BLOGW("SetLppShareFd source is not Lpp");
             return GSERROR_TYPE_ERROR;
         }
+        if (fd < 0) {
+            BLOGW("SetLppShareFd invalid fd");
+            return GSERROR_INVALID_ARGUMENTS;
+        }
+        lppFenceMap_.clear();
         if (lppSlotInfo_ != nullptr) {
             munmap(static_cast<void *>(lppSlotInfo_), LPP_SHARED_MEM_SIZE);
             lppSlotInfo_ = nullptr;
@@ -3109,6 +3121,7 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
     } else {
         FlushLppBuffer();
         std::lock_guard<std::mutex> lockGuard(mutex_);
+        lppFenceMap_.clear();
         if (lppSlotInfo_ != nullptr) {
             munmap(static_cast<void *>(lppSlotInfo_), LPP_SHARED_MEM_SIZE);
             lppSlotInfo_ = nullptr;
@@ -3116,7 +3129,6 @@ GSError BufferQueue::SetLppShareFd(int fd, bool state)
         }
     }
     std::lock_guard<std::mutex> lockGuard(mutex_);
-    lppFenceMap_.clear();
     CheckLppFenceLocked();
     return GSERROR_OK;
 }

@@ -17,6 +17,7 @@
 #define SURFACE_APS_SDR_UTILS
 
 #include <algorithm>
+#include <mutex>
 #include "buffer_log.h"
 #include "isurface_aps_plugin.h"
 
@@ -85,56 +86,84 @@ public:
 
     static void GetSdrRatio(const std::string &pkgName, float &sdrRatio)
     {
-        if (std::fabs(sdrRatio - DEFAULT_SDR_RATIO) < FLOAT_ZERO_TOLERANCE) {
+        std::lock_guard<std::mutex> lock(GetSdrRatioMutex());
+        if (std::fabs(SDR_RATIO - DEFAULT_SDR_RATIO) < FLOAT_ZERO_TOLERANCE) {
             auto &apsPlugin = OHOS::ISurfaceApsPlugin::LoadPlugin();
             if (apsPlugin != nullptr) {
                 BLOGD("ProducerSurface::GetSdrRatio apsPlugin is not nullptr");
-                sdrRatio = apsPlugin->GetApsSdrRatio(pkgName);
+                SDR_RATIO = apsPlugin->GetApsSdrRatio(pkgName);
             }
         }
     }
 
 private:
+    struct OriginSizeStorage {
+        int32_t internalShortSide = 0;
+        int32_t internalLongSide = 0;
+        int32_t externalShortSide = 0;
+        int32_t externalLongSide = 0;
+    };
+
+    static std::mutex& GetOriginMutex()
+    {
+        static std::mutex originMutex;
+        return originMutex;
+    }
+
+    static std::mutex& GetSdrRatioMutex()
+    {
+        static std::mutex sdrRatioMutex;
+        return sdrRatioMutex;
+    }
+
+    static OriginSizeStorage& GetOriginStorage()
+    {
+        static OriginSizeStorage storage;
+        return storage;
+    }
+
     static void ApplySdrScale(int32_t& width, int32_t& height, float sdrRatio)
     {
         width = static_cast<int32_t>(width * sdrRatio);
         height = static_cast<int32_t>(height * sdrRatio);
     }
 
-    static int32_t& GetOriginInternalShortSide()
+    static int32_t GetOriginInternalShortSide()
     {
-        static int32_t internalShortSide = 0;
-        return internalShortSide;
+        std::lock_guard<std::mutex> lock(GetOriginMutex());
+        return GetOriginStorage().internalShortSide;
     }
 
-    static int32_t& GetOriginInternalLongSide()
+    static int32_t GetOriginInternalLongSide()
     {
-        static int32_t internalLongSide = 0;
-        return internalLongSide;
+        std::lock_guard<std::mutex> lock(GetOriginMutex());
+        return GetOriginStorage().internalLongSide;
     }
 
-    static int32_t& GetOriginExternalShortSide()
+    static int32_t GetOriginExternalShortSide()
     {
-        static int32_t externalShortSide = 0;
-        return externalShortSide;
+        std::lock_guard<std::mutex> lock(GetOriginMutex());
+        return GetOriginStorage().externalShortSide;
     }
 
-    static int32_t& GetOriginExternalLongSide()
+    static int32_t GetOriginExternalLongSide()
     {
-        static int32_t externalLongSide = 0;
-        return externalLongSide;
+        std::lock_guard<std::mutex> lock(GetOriginMutex());
+        return GetOriginStorage().externalLongSide;
     }
 
     static void UpdateOriginInternalSize(int32_t shortSide, int32_t longSide)
     {
-        GetOriginInternalShortSide() = shortSide;
-        GetOriginInternalLongSide() = longSide;
+        std::lock_guard<std::mutex> lock(GetOriginMutex());
+        GetOriginStorage().internalShortSide = shortSide;
+        GetOriginStorage().internalLongSide = longSide;
     }
 
     static void UpdateOriginExternalSize(int32_t shortSide, int32_t longSide)
     {
-        GetOriginExternalShortSide() = shortSide;
-        GetOriginExternalLongSide() = longSide;
+        std::lock_guard<std::mutex> lock(GetOriginMutex());
+        GetOriginStorage().externalShortSide = shortSide;
+        GetOriginStorage().externalLongSide = longSide;
     }
 };
 }  // namespace OHOS

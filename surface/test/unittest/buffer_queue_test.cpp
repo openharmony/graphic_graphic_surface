@@ -1889,6 +1889,109 @@ HWTEST_F(BufferQueueTest, AcquireLppBuffer001, TestSize.Level0)
     delete tmpBq->lppSlotInfo_;
     tmpBq->lppSlotInfo_ = nullptr;
 }
+
+/**
+ * @tc.name: AcquireLppBuffer_LastWriteOffsetNegative
+ * @tc.desc: Test when lastLppWriteOffset_ < 0
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueTest, AcquireLppBuffer_LastWriteOffsetNegative, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    int64_t timestamp = 0;
+    std::vector<Rect> damage;
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+
+    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
+    tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0, .writeOffset = 1,
+        .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
+        .frameRate = 30, .isStopShbDraw = false};
+    BufferElement ele = {
+        .buffer = SurfaceBuffer::Create(), .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
+        .config = {}, .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[100] = ele;
+    BufferSlot* slot = new BufferSlot();
+    tmpBq->lppFenceMap_[100] = slot;
+    tmpBq->lastLppWriteOffset_ = -1;
+
+    GSError ret = tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    delete slot;
+    delete tmpBq->lppSlotInfo_;
+    tmpBq->lppSlotInfo_ = nullptr;
+}
+
+/**
+ * @tc.name: AcquireLppBuffer_LastWriteOffsetExceed
+ * @tc.desc: Test when lastLppWriteOffset_ >= LPP_SLOT_SIZE
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueTest, AcquireLppBuffer_LastWriteOffsetExceed, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    int64_t timestamp = 0;
+    std::vector<Rect> damage;
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+
+    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
+    tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0, .writeOffset = 1,
+        .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
+        .frameRate = 30, .isStopShbDraw = false};
+    BufferElement ele = {
+        .buffer = SurfaceBuffer::Create(), .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
+        .config = {}, .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[100] = ele;
+    BufferSlot* slot = new BufferSlot();
+    tmpBq->lppFenceMap_[100] = slot;
+    tmpBq->lastLppWriteOffset_ = 8 + 10;
+
+    GSError ret = tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    delete slot;
+    delete tmpBq->lppSlotInfo_;
+    tmpBq->lppSlotInfo_ = nullptr;
+}
+
+/**
+ * @tc.name: AcquireLppBuffer_LastWriteOffsetValid
+ * @tc.desc: Test when lastLppWriteOffset_ in valid range
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueTest, AcquireLppBuffer_LastWriteOffsetValid, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = nullptr;
+    sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
+    int64_t timestamp = 0;
+    std::vector<Rect> damage;
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+
+    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
+    tmpBq->lppSlotInfo_ = new LppSlotInfo{.readOffset = 0, .writeOffset = 1,
+        .slot = {{.seqId = 100, .timestamp = 1000, .crop = {1, 2, 3, 4}}},
+        .frameRate = 30, .isStopShbDraw = false};
+    BufferElement ele = {
+        .buffer = SurfaceBuffer::Create(), .state = BUFFER_STATE_ACQUIRED, .isDeleting = false,
+        .config = {}, .fence = SyncFence::InvalidFence()};
+    tmpBq->bufferQueueCache_[100] = ele;
+    BufferSlot* slot = new BufferSlot();
+    tmpBq->lppFenceMap_[100] = slot;
+    tmpBq->lastLppWriteOffset_ = 0;
+
+    GSError ret = tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+
+    delete slot;
+    delete tmpBq->lppSlotInfo_;
+    tmpBq->lppSlotInfo_ = nullptr;
+}
+
 /*
  * Function: SetLppShareFd
  * Type: Function
@@ -1945,7 +2048,27 @@ HWTEST_F(BufferQueueTest, SetLppShareFd002, TestSize.Level0)
     ASSERT_EQ(tmpBq->SetLppShareFd(-1, state), OHOS::GSERROR_INVALID_ARGUMENTS);
     close(fd);
 }
-/*
+
+/**
+ * @tc.name: SetLppShareFd_FdNegative
+ * @tc.desc: Test SetLppShareFd when fd < 0
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueTest, SetLppShareFd_FdNegative, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("test");
+
+    tmpBq->sourceType_ = OHSurfaceSource::OH_SURFACE_SOURCE_LOWPOWERVIDEO;
+    tmpBq->lppSlotInfo_ = nullptr;
+
+    int fd = -1;
+    bool state = true;
+    GSError ret = tmpBq->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/**
  * Function: FlushLppBuffer
  * Type: Function
  * Rank: Important(2)

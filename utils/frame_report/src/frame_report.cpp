@@ -15,6 +15,7 @@
 
 #include "frame_report.h"
 
+#include <cinttypes>
 #include <dlfcn.h>
 #include <cstdio>
 #include <securec.h>
@@ -65,10 +66,10 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
     LOGI("FrameReport::SetGameScene pid = %{public}d state = %{public}d ", pid, state);
     switch (state) {
         case FR_GAME_BACKGROUND: {
-            if (IsActiveGameWithPid(pid)) {
+            if (activelyPid_.compare_exchange_strong(pid, FR_DEFAULT_PID)) {
                 LOGI("FrameReport::SetGameScene Game Background Current Pid = %{public}d "
                      "state = 0", pid);
-                DeletePidInfo();
+                activelyUniqueId_.store(FR_DEFAULT_UNIQUEID);
             }
             break;
         }
@@ -77,7 +78,6 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
             break;
         }
         case FR_GAME_SCHED: {
-            DeletePidInfo();
             activelyPid_.store(pid);
             break;
         }
@@ -192,10 +192,8 @@ void FrameReport::LoadLibrary()
         if (notifyFrameInfoFunc_ == nullptr) {
             if (dlclose(gameSoHandle_) != 0) {
                 LOGE("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close failed!");
-            } else {
-                gameSoHandle_ = nullptr;
-                LOGI("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close success!");
             }
+            gameSoHandle_ = nullptr;
             return;
         }
         LOGI("FrameReport::LoadLibrary dlsym GAS_NotifyFrameInfo success!");
@@ -210,16 +208,19 @@ void FrameReport::CloseLibrary()
     if (gameSoHandle_ != nullptr) {
         if (dlclose(gameSoHandle_) != 0) {
             LOGE("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close failed!");
-        } else {
-            gameSoHandle_ = nullptr;
-            isGameSoLoaded_ = false;
-            LOGI("FrameReport::CloseLibrary libgame_acc_sched_client.z.so close success!");
         }
+        gameSoHandle_ = nullptr;
+        isGameSoLoaded_ = false;
     }
 }
 
 void* FrameReport::LoadSymbol(const std::string& symName)
 {
+    if (gameSoHandle_ == nullptr || !isGameSoLoaded_) {
+        LOGE("FrameReport::LoadSymbol library not loaded!");
+        return nullptr;
+    }
+    
     dlerror();
     void *funcSym = dlsym(gameSoHandle_, symName.c_str());
     if (funcSym == nullptr) {
@@ -243,8 +244,9 @@ void FrameReport::Report(const std::string& layerName)
     char msg[REPORT_BUFFER_SIZE] = { 0 };
     int32_t ret = sprintf_s(msg, sizeof(msg),
                             "{\"dequeueBufferTime\":\"%d\",\"queueBufferTime\":\"%d\",\"pendingBufferNum\":\"%d\","
-                            "\"swapBufferTime\":\"%d\", \"flushSysTime\":\"%lld#%u\", \"acquireSysTime\":\"%lld#%u\","
-                            "\"presentSysTime\":\"%lld#%u\", \"skipHint\":\"%d\"}",
+                            "\"swapBufferTime\":\"%d\", \"flushSysTime\":\"%" PRId64 "#%u\","
+                            " \"acquireSysTime\":\"%" PRId64 "#%u\","
+                            " \"presentSysTime\":\"%" PRId64 "#%u\", \"skipHint\":\"%d\"}",
                             static_cast<int32_t>(dequeueBufferTime_.load() / THOUSAND_COUNT),
                             static_cast<int32_t>(queueBufferTime_.load() / THOUSAND_COUNT),
                             pendingBufferNum_.load(),

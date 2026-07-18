@@ -186,14 +186,12 @@ GSError ProducerSurface::RequestBufferLocked(sptr<SurfaceBuffer>& buffer,
 GSError ProducerSurface::RequestBuffer(sptr<SurfaceBuffer>& buffer,
                                        sptr<SyncFence>& fence, BufferRequestConfig& config)
 {
-    std::lock_guard<std::mutex> lockGuard(mutex_);
+    BufferRequestConfig requestConfig = config;
     if (gameUpscaleProcessor_ != nullptr) {
-        BufferRequestConfig upscaled = config;
-        gameUpscaleProcessor_(&upscaled.width, &upscaled.height);
-        return RequestBufferLocked(buffer, fence, upscaled);
-    } else {
-        return RequestBufferLocked(buffer, fence, config);
+        gameUpscaleProcessor_(&requestConfig.width, &requestConfig.height);
     }
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    return RequestBufferLocked(buffer, fence, requestConfig);
 }
 
 GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)

@@ -216,7 +216,7 @@ void FrameReport::CloseLibrary()
 
 void* FrameReport::LoadSymbol(const std::string& symName)
 {
-    if (gameSoHandle_ == nullptr || !isGameSoLoaded_) {
+    if (gameSoHandle_ == nullptr) {
         LOGE("FrameReport::LoadSymbol library not loaded!");
         return nullptr;
     }

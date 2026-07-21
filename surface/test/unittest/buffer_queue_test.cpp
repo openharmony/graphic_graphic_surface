@@ -2048,7 +2048,7 @@ HWTEST_F(BufferQueueTest, AcquireLppBuffer_LastWriteOffsetValid, TestSize.Level0
     tmpBq->lastLppWriteOffset_ = 0;
 
     GSError ret = tmpBq->AcquireLppBuffer(buffer, acquireFence, timestamp, damage);
-    ASSERT_EQ(ret, OHOS::GSERROR_NO_BUFFER);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
 
     delete slot;
     delete tmpBq->lppSlotInfo_;

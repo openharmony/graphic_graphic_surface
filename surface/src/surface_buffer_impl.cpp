@@ -49,7 +49,7 @@ public:
     {
         std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
         g_displayBuffer = nullptr;
-        BLOGD("IDisplayBuffer died and g_displayBuffer is nullptr");
+        BLOGW("IDisplayBuffer died and g_displayBuffer is nullptr");
     };
 };
 

@@ -25,6 +25,7 @@
 #include "buffer_queue.h"
 #undef PRIVATE
 #include "consumer_surface.h"
+#include "delegator_adapter.h"
 #include "producer_surface_delegator.h"
 #include "remote_object_mock.h"
 #include "sync_fence.h"
@@ -118,6 +119,15 @@ public:
     uint32_t cleanCacheForBufferInfoMapCount = 0;
     std::vector<CleanCacheBufferInfo> bufferInfos;
 };
+
+// Mock functions for DelegatorAdapter::funcMap_ override
+uintptr_t MockConsumerCreate() { return 0x11; }
+bool MockSetConsumerClient(uintptr_t, sptr<IRemoteObject>) { return true; }
+void MockSetConsumerSurface(uintptr_t, sptr<Surface>) {}
+GSError MockDequeueBuffer(uintptr_t, const BufferRequestConfig&, sptr<BufferExtraData>&,
+    struct IBufferProducer::RequestBufferReturnValue&) { return GSERROR_BINDER; }
+GSError MockQueueBuffer(uintptr_t, sptr<SurfaceBuffer>&, int32_t) { return GSERROR_BINDER; }
+void MockConsumerDestroy(uintptr_t) {}
 }
 
 class LayerStateChangedProducerListenerTest : public ProducerListenerStub {
@@ -264,6 +274,59 @@ HWTEST_F(BufferQueueTest, QueueSize002, TestSize.Level0)
     ret = bq->SetQueueSize(0);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(bq->GetQueueSize(), 2u);
+}
+
+/*
+* Function: delegatorMutex_ lock_guard coverage
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Override funcMap_ to prevent real libdelegator.z.so
+                   2. RegisterSurfaceDelegator
+                   3. RequestBuffer with delegator non-null
+                   4. FlushBuffer with delegator non-null
+                   5. UnregisterSurfaceDelegator
+*/
+HWTEST_F(BufferQueueTest, DelegatorMutexCoverage001, TestSize.Level0)
+{
+    sptr<BufferQueue> localBq = new BufferQueue("test_delegator");
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    localBq->RegisterConsumerListener(listener);
+    localBq->SetQueueSize(2);
+
+    // Replace all consumer funcMap_ entries with mock functions
+    auto& da = DelegatorAdapter::GetInstance();
+    auto saved = da.funcMap_;
+    da.funcMap_[FunctionFlags::CONSUMER_CREATE_FUNC] = reinterpret_cast<void*>(MockConsumerCreate);
+    da.funcMap_[FunctionFlags::SET_CONSUMER_CLIENT_FUNC] = reinterpret_cast<void*>(MockSetConsumerClient);
+    da.funcMap_[FunctionFlags::SET_CONSUMER_SURFACE_FUNC] = reinterpret_cast<void*>(MockSetConsumerSurface);
+    da.funcMap_[FunctionFlags::CONSUMER_DEQUEUE_BUFFER_FUNC] = reinterpret_cast<void*>(MockDequeueBuffer);
+    da.funcMap_[FunctionFlags::CONSUMER_QUEUE_BUFFER_FUNC] = reinterpret_cast<void*>(MockQueueBuffer);
+    da.funcMap_[FunctionFlags::CONSUMER_DESTROY_FUNC] = reinterpret_cast<void*>(MockConsumerDestroy);
+
+    auto ret = localBq->RegisterSurfaceDelegator(new IRemoteObjectMocker(), csurface1);
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_NE(localBq->sptrCSurfaceDelegator_, nullptr);
+
+    IBufferProducer::RequestBufferReturnValue retval;
+    ret = localBq->RequestBuffer(requestConfig, bedata, retval);
+    ASSERT_EQ(ret, GSERROR_BINDER);
+
+    uint32_t seq = 100;
+    localBq->bufferQueueCache_[seq].buffer = new SurfaceBufferImpl(seq);
+    localBq->bufferQueueCache_[seq].state = BUFFER_STATE_REQUESTED;
+    localBq->bufferQueueCache_[seq].config = { .usage = 0 };
+
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    ret = localBq->FlushBuffer(seq, bedata, fence, flushConfig);
+    ASSERT_TRUE(ret == GSERROR_OK || ret == GSERROR_BINDER);
+
+    ret = localBq->UnregisterSurfaceDelegator();
+    ASSERT_EQ(ret, GSERROR_OK);
+    ASSERT_EQ(localBq->sptrCSurfaceDelegator_, nullptr);
+
+    da.funcMap_ = saved;
+    da.handle_ = nullptr;
 }
 
 /*

@@ -634,7 +634,8 @@ GSError SurfaceBufferImpl::WriteToMessageParcel(MessageParcel& parcel)
     if (!parcel.WriteBool(hasOriginalFields_) ||
         !parcel.WriteInt32(originalWidth_) ||
         !parcel.WriteInt32(originalHeight_) ||
-        !parcel.WriteInt32(originalSize_)) {
+        !parcel.WriteInt32(originalSize_) ||
+        !parcel.WriteInt32(originalStride_)) {
         BLOGE("WriteToMessageParcel: write original fields failed, seq: %{public}u", sequenceNumber_);
         return GSERROR_API_FAILED;
     }
@@ -734,7 +735,8 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
         if (!parcel.ReadBool(hasOriginalFields_) ||
             !parcel.ReadInt32(originalWidth_) ||
             !parcel.ReadInt32(originalHeight_) ||
-            !parcel.ReadInt32(originalSize_)) {
+            !parcel.ReadInt32(originalSize_) ||
+            !parcel.ReadInt32(originalStride_)) {
             BLOGW("ReadFromMessageParcel: read original fields failed, seq: %{public}u", sequenceNumber_);
             hasOriginalFields_ = false;
         }
@@ -1233,10 +1235,12 @@ void SurfaceBufferImpl::RecordOriginalBufferHandleFields()
     originalWidth_ = handle_->width;
     originalHeight_ = handle_->height;
     originalSize_ = handle_->size;
+    originalStride_ = handle_->stride;
     hasOriginalFields_ = true;
     BLOGD("Recorded original fields: w=%{public}d, h=%{public}d, "
-          "size=%{public}d, seq=%{public}u",
-          originalWidth_, originalHeight_, originalSize_, sequenceNumber_);
+          "size=%{public}d, stride=%{public}d, seq=%{public}u",
+          originalWidth_, originalHeight_, originalSize_,
+          originalStride_, sequenceNumber_);
 }
 
 bool SurfaceBufferImpl::CheckBufferHandleFields() const
@@ -1253,13 +1257,14 @@ bool SurfaceBufferImpl::CheckBufferHandleFields() const
     
     bool valid = (handle_->width == originalWidth_ &&
                   handle_->height == originalHeight_ &&
-                  handle_->size == originalSize_);
+                  handle_->size == originalSize_ &&
+                  handle_->stride == originalStride_);
     if (!valid) {
         BLOGE("BufferHandle fields tampered! Original: w=%{public}d, h=%{public}d, "
-              "size=%{public}d; Current: w=%{public}d, h=%{public}d, "
-              "size=%{public}d, seq=%{public}u",
-              originalWidth_, originalHeight_, originalSize_,
-              handle_->width, handle_->height, handle_->size,
+              "size=%{public}d, stride=%{public}d; Current: w=%{public}d, h=%{public}d, "
+              "size=%{public}d, stride=%{public}d, seq=%{public}u",
+              originalWidth_, originalHeight_, originalSize_, originalStride_,
+              handle_->width, handle_->height, handle_->size, handle_->stride,
               sequenceNumber_);
     }
     return valid;

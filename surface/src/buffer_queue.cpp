@@ -2918,20 +2918,22 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
         config.format >= GraphicPixelFormat::GRAPHIC_PIXEL_FMT_BUTT || allocBufferCount == 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
+    BufferRequestConfig updateConfig = config;
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
-        SURFACE_TRACE_NAME_FMT("PreAllocBuffers bufferQueueSize %u cacheSize %u allocBufferCount %u",
-            bufferQueueSize_, bufferQueueCache_.size(), allocBufferCount);
+        SURFACE_TRACE_NAME_FMT("PreAllocBuffers bufferQueueSize %u cacheSize %u allocBufferCount %u usage%" PRIu64 "",
+            bufferQueueSize_, bufferQueueCache_.size(), allocBufferCount, config.usage);
         if (allocBufferCount > bufferQueueSize_ - detachReserveSlotNum_ - bufferQueueCache_.size()) {
             allocBufferCount = bufferQueueSize_ - detachReserveSlotNum_ - bufferQueueCache_.size();
         }
+        updateConfig.usage |= defaultUsage_;
     }
     if (allocBufferCount == 0) {
         return SURFACE_ERROR_BUFFER_QUEUE_FULL;
     }
 
     std::map<uint32_t, sptr<SurfaceBuffer>> surfaceBufferCache;
-    AllocBuffers(config, allocBufferCount, surfaceBufferCache);
+    AllocBuffers(updateConfig, allocBufferCount, surfaceBufferCache);
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         for (auto iter = surfaceBufferCache.begin(); iter != surfaceBufferCache.end(); ++iter) {
@@ -2945,7 +2947,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
                 .buffer = iter->second,
                 .state = BUFFER_STATE_RELEASED,
                 .isDeleting = false,
-                .config = config,
+                .config = updateConfig,
                 .fence = SyncFence::InvalidFence(),
                 .isPreAllocBuffer = true,
             };

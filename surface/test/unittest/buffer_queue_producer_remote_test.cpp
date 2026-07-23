@@ -603,6 +603,52 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteTamperedSize, 
 }
 
 /*
+* Function: AttachAndFlushBufferRemote with BufferHandle stride tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with stride field
+*                 2. call AttachAndFlushBufferRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachAndFlushBufferRemoteTamperedStride, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_YCBCR_420_SP, 500, 500);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalStride = handle->stride;
+    handle->stride = originalStride + 100;
+
+    sptr<SyncFence> fence = SyncFence::INVALID_FENCE;
+    bool needMap = false;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    sptr<BufferExtraData> bedataLocal = new BufferExtraDataImpl;
+    ret = bedataLocal->WriteToParcel(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(fence->WriteToMessageParcel(arguments));
+    ret = WriteFlushConfig(arguments, flushConfig);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_TRUE(arguments.WriteBool(needMap));
+
+    int32_t remoteRet = bqp->AttachAndFlushBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->stride = originalStride;
+}
+
+/*
 * Function: AttachAndFlushBufferRemote with BufferHandle not tampered
 * Type: Security
 * Rank: Important(2)
@@ -716,6 +762,42 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferToQueueRemoteTamperedSize, T
 }
 
 /*
+* Function: AttachBufferToQueueRemote with BufferHandle stride tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with stride field
+*                 2. call AttachBufferToQueueRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferToQueueRemoteTamperedStride, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_RGBA_8888, 256, 256);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalStride = handle->stride;
+    handle->stride = originalStride + 1000;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    ret = buffer->WriteBufferRequestConfig(arguments);
+    EXPECT_EQ(ret, GSERROR_OK);
+
+    int32_t remoteRet = bqp->AttachBufferToQueueRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->stride = originalStride;
+}
+
+/*
 * Function: AttachBufferRemote with BufferHandle width tampered
 * Type: Security
 * Rank: Important(2)
@@ -785,5 +867,41 @@ HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferRemoteTamperedSize, TestSize
     EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
 
     handle->size = originalSize;
+}
+
+/*
+* Function: AttachBufferRemote with BufferHandle stride tampered
+* Type: Security
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create buffer and tamper with stride field
+*                 2. call AttachBufferRemote
+*                 3. verify it returns GSERROR_INVALID_OPERATING
+*/
+HWTEST_F(BufferQueueProducerRemoteTest, AttachBufferRemoteTamperedStride, TestSize.Level0)
+{
+    GSError ret;
+    bp->SetQueueSize(8);
+
+    auto buffer = CreateSurfaceBuffer(GRAPHIC_PIXEL_FMT_RGBA_8888, 256, 256);
+    ASSERT_NE(buffer, nullptr);
+
+    BufferHandle* handle = buffer->GetBufferHandle();
+    ASSERT_NE(handle, nullptr);
+    int32_t originalStride = handle->stride;
+    handle->stride = originalStride + 1000;
+
+    MessageParcel arguments;
+    MessageParcel reply;
+    MessageOption option;
+    ret = WriteSurfaceBufferImpl(arguments, buffer->GetSeqNum(), buffer);
+    EXPECT_EQ(ret, GSERROR_OK);
+    int32_t timeOut = 0;
+    EXPECT_TRUE(arguments.WriteInt32(timeOut));
+
+    int32_t remoteRet = bqp->AttachBufferRemote(arguments, reply, option);
+    EXPECT_EQ(remoteRet, ERR_INVALID_DATA);
+
+    handle->stride = originalStride;
 }
 }

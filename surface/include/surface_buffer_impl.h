@@ -167,6 +167,7 @@ private:
     int32_t originalWidth_ = 0;
     int32_t originalHeight_ = 0;
     int32_t originalSize_ = 0;
+    int32_t originalStride_ = 0;
 };
 } // namespace OHOS
 

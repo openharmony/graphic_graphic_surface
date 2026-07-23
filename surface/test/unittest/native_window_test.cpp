@@ -1353,6 +1353,28 @@ HWTEST_F(NativeWindowTest, OH_NativeWindow_Get3DMetadataValue002, TestSize.Level
 }
 
 /*
+* Function: SetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with VIDEO_DIM_TYPE_BUTT (invalid) and check ret
+*                  2. call SetVideoDimensionType with VIDEO_DIM_TYPE_2D - 1 (invalid) and check ret
+ */
+HWTEST_F(NativeWindowTest, SetVideoDimensionTypeInvalid001, TestSize.Level0)
+{
+    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_BUTT);
+    uint8_t *metadata = reinterpret_cast<uint8_t *>(&videoDimType);
+    int32_t size = sizeof(VideoDimType);
+    auto ret = OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, metadata);
+    ASSERT_NE(ret, OHOS::SURFACE_ERROR_OK);
+
+    videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_2D - 1);
+    metadata = reinterpret_cast<uint8_t *>(&videoDimType);
+    ret = OH_NativeWindow_Set3DMetadataValue(nativeWindow, OH_VIDEO_DIM_TYPE, size, metadata);
+    ASSERT_NE(ret, OHOS::SURFACE_ERROR_OK);
+}
+
+/*
 * Function: OH_NativeWindow_SetMetadataValue
 * Type: Function
 * Rank: Important(2)

@@ -865,7 +865,7 @@ int32_t BufferQueueProducer::SetVideoDimensionTypeRemote(MessageParcel &argument
     MessageOption &option)
 {
     VideoDimType videoDimType = static_cast<VideoDimType>(arguments.ReadInt32());
-    if (videoDimType < VideoDimType::VIDEO_DIM_TYPE_2D || videoDimType > VideoDimType::VIDEO_DIM_TYPE_3D_TAB) {
+    if (videoDimType < VideoDimType::VIDEO_DIM_TYPE_2D || videoDimType >= VideoDimType::VIDEO_DIM_TYPE_BUTT) {
         if (!reply.WriteInt32(static_cast<int32_t>(GSERROR_INVALID_ARGUMENTS))) {
             return IPC_STUB_WRITE_PARCEL_ERR;
         }

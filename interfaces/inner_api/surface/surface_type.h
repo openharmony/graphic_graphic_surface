@@ -623,6 +623,7 @@ using VideoDimType = enum {
     VIDEO_DIM_TYPE_2D = 0,
     VIDEO_DIM_TYPE_3D_SBS,
     VIDEO_DIM_TYPE_3D_TAB,
+    VIDEO_DIM_TYPE_BUTT,
 };
 } // namespace OHOS
 

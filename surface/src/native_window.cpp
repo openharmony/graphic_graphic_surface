@@ -40,45 +40,45 @@
 
 using namespace OHOS;
 using namespace HDI::Display::Graphic::Common::V1_0;
-using CM_ColorSpaceType_V2_1 = HDI::Display::Graphic::Common::V2_1::CM_ColorSpaceType;
+using CM_ColorSpaceType_V2_4 = HDI::Display::Graphic::Common::V2_4::CM_ColorSpaceType;
 using CM_HDR_Metadata_Type_V1_0 = HDI::Display::Graphic::Common::V1_0::CM_HDR_Metadata_Type;
 using CM_ColorSpaceType_V1_0 = HDI::Display::Graphic::Common::V1_0::CM_ColorSpaceType;
 
-static std::unordered_map<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_1> NATIVE_COLORSPACE_TO_HDI_MAP = {
-    {OH_COLORSPACE_NONE, CM_ColorSpaceType_V2_1::CM_COLORSPACE_NONE},
-    {OH_COLORSPACE_BT601_EBU_FULL, CM_ColorSpaceType_V2_1::CM_BT601_EBU_FULL},
-    {OH_COLORSPACE_BT601_SMPTE_C_FULL, CM_ColorSpaceType_V2_1::CM_BT601_SMPTE_C_FULL},
-    {OH_COLORSPACE_BT709_FULL, CM_ColorSpaceType_V2_1::CM_BT709_FULL},
-    {OH_COLORSPACE_BT2020_HLG_FULL, CM_ColorSpaceType_V2_1::CM_BT2020_HLG_FULL},
-    {OH_COLORSPACE_BT2020_PQ_FULL, CM_ColorSpaceType_V2_1::CM_BT2020_PQ_FULL},
-    {OH_COLORSPACE_BT601_EBU_LIMIT, CM_ColorSpaceType_V2_1::CM_BT601_EBU_LIMIT},
-    {OH_COLORSPACE_BT601_SMPTE_C_LIMIT, CM_ColorSpaceType_V2_1::CM_BT601_SMPTE_C_LIMIT},
-    {OH_COLORSPACE_BT709_LIMIT, CM_ColorSpaceType_V2_1::CM_BT709_LIMIT},
-    {OH_COLORSPACE_BT2020_HLG_LIMIT, CM_ColorSpaceType_V2_1::CM_BT2020_HLG_LIMIT},
-    {OH_COLORSPACE_BT2020_PQ_LIMIT, CM_ColorSpaceType_V2_1::CM_BT2020_PQ_LIMIT},
-    {OH_COLORSPACE_SRGB_FULL, CM_ColorSpaceType_V2_1::CM_SRGB_FULL},
-    {OH_COLORSPACE_P3_FULL, CM_ColorSpaceType_V2_1::CM_P3_FULL},
-    {OH_COLORSPACE_P3_HLG_FULL, CM_ColorSpaceType_V2_1::CM_P3_HLG_FULL},
-    {OH_COLORSPACE_P3_PQ_FULL, CM_ColorSpaceType_V2_1::CM_P3_PQ_FULL},
-    {OH_COLORSPACE_ADOBERGB_FULL, CM_ColorSpaceType_V2_1::CM_ADOBERGB_FULL},
-    {OH_COLORSPACE_SRGB_LIMIT, CM_ColorSpaceType_V2_1::CM_SRGB_LIMIT},
-    {OH_COLORSPACE_P3_LIMIT, CM_ColorSpaceType_V2_1::CM_P3_LIMIT},
-    {OH_COLORSPACE_P3_HLG_LIMIT, CM_ColorSpaceType_V2_1::CM_P3_HLG_LIMIT},
-    {OH_COLORSPACE_P3_PQ_LIMIT, CM_ColorSpaceType_V2_1::CM_P3_PQ_LIMIT},
-    {OH_COLORSPACE_ADOBERGB_LIMIT, CM_ColorSpaceType_V2_1::CM_ADOBERGB_LIMIT},
-    {OH_COLORSPACE_LINEAR_SRGB, CM_ColorSpaceType_V2_1::CM_LINEAR_SRGB},
-    {OH_COLORSPACE_LINEAR_BT709, CM_ColorSpaceType_V2_1::CM_LINEAR_BT709},
-    {OH_COLORSPACE_LINEAR_P3, CM_ColorSpaceType_V2_1::CM_LINEAR_P3},
-    {OH_COLORSPACE_LINEAR_BT2020, CM_ColorSpaceType_V2_1::CM_LINEAR_BT2020},
-    {OH_COLORSPACE_DISPLAY_SRGB, CM_ColorSpaceType_V2_1::CM_DISPLAY_SRGB},
-    {OH_COLORSPACE_DISPLAY_P3_SRGB, CM_ColorSpaceType_V2_1::CM_DISPLAY_P3_SRGB},
-    {OH_COLORSPACE_DISPLAY_P3_HLG, CM_ColorSpaceType_V2_1::CM_DISPLAY_P3_HLG},
-    {OH_COLORSPACE_DISPLAY_P3_PQ, CM_ColorSpaceType_V2_1::CM_DISPLAY_P3_PQ},
-    {OH_COLORSPACE_DISPLAY_BT2020_SRGB, CM_ColorSpaceType_V2_1::CM_DISPLAY_BT2020_SRGB},
-    {OH_COLORSPACE_DISPLAY_BT2020_HLG, CM_ColorSpaceType_V2_1::CM_DISPLAY_BT2020_HLG},
-    {OH_COLORSPACE_DISPLAY_BT2020_PQ, CM_ColorSpaceType_V2_1::CM_DISPLAY_BT2020_PQ},
-    {OH_COLORSPACE_BT2020_LOG_FULL, CM_ColorSpaceType_V2_1::CM_BT2020_LOG_FULL},
-    {OH_COLORSPACE_BT2020_LOG_LIMIT, CM_ColorSpaceType_V2_1::CM_BT2020_LOG_LIMIT},
+static std::unordered_map<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_4> NATIVE_COLORSPACE_TO_HDI_MAP = {
+    {OH_COLORSPACE_NONE, CM_ColorSpaceType_V2_4::CM_COLORSPACE_NONE},
+    {OH_COLORSPACE_BT601_EBU_FULL, CM_ColorSpaceType_V2_4::CM_BT601_EBU_FULL},
+    {OH_COLORSPACE_BT601_SMPTE_C_FULL, CM_ColorSpaceType_V2_4::CM_BT601_SMPTE_C_FULL},
+    {OH_COLORSPACE_BT709_FULL, CM_ColorSpaceType_V2_4::CM_BT709_FULL},
+    {OH_COLORSPACE_BT2020_HLG_FULL, CM_ColorSpaceType_V2_4::CM_BT2020_HLG_FULL},
+    {OH_COLORSPACE_BT2020_PQ_FULL, CM_ColorSpaceType_V2_4::CM_BT2020_PQ_FULL},
+    {OH_COLORSPACE_BT601_EBU_LIMIT, CM_ColorSpaceType_V2_4::CM_BT601_EBU_LIMIT},
+    {OH_COLORSPACE_BT601_SMPTE_C_LIMIT, CM_ColorSpaceType_V2_4::CM_BT601_SMPTE_C_LIMIT},
+    {OH_COLORSPACE_BT709_LIMIT, CM_ColorSpaceType_V2_4::CM_BT709_LIMIT},
+    {OH_COLORSPACE_BT2020_HLG_LIMIT, CM_ColorSpaceType_V2_4::CM_BT2020_HLG_LIMIT},
+    {OH_COLORSPACE_BT2020_PQ_LIMIT, CM_ColorSpaceType_V2_4::CM_BT2020_PQ_LIMIT},
+    {OH_COLORSPACE_SRGB_FULL, CM_ColorSpaceType_V2_4::CM_SRGB_FULL},
+    {OH_COLORSPACE_P3_FULL, CM_ColorSpaceType_V2_4::CM_P3_FULL},
+    {OH_COLORSPACE_P3_HLG_FULL, CM_ColorSpaceType_V2_4::CM_P3_HLG_FULL},
+    {OH_COLORSPACE_P3_PQ_FULL, CM_ColorSpaceType_V2_4::CM_P3_PQ_FULL},
+    {OH_COLORSPACE_ADOBERGB_FULL, CM_ColorSpaceType_V2_4::CM_ADOBERGB_FULL},
+    {OH_COLORSPACE_SRGB_LIMIT, CM_ColorSpaceType_V2_4::CM_SRGB_LIMIT},
+    {OH_COLORSPACE_P3_LIMIT, CM_ColorSpaceType_V2_4::CM_P3_LIMIT},
+    {OH_COLORSPACE_P3_HLG_LIMIT, CM_ColorSpaceType_V2_4::CM_P3_HLG_LIMIT},
+    {OH_COLORSPACE_P3_PQ_LIMIT, CM_ColorSpaceType_V2_4::CM_P3_PQ_LIMIT},
+    {OH_COLORSPACE_ADOBERGB_LIMIT, CM_ColorSpaceType_V2_4::CM_ADOBERGB_LIMIT},
+    {OH_COLORSPACE_LINEAR_SRGB, CM_ColorSpaceType_V2_4::CM_LINEAR_SRGB},
+    {OH_COLORSPACE_LINEAR_BT709, CM_ColorSpaceType_V2_4::CM_LINEAR_BT709},
+    {OH_COLORSPACE_LINEAR_P3, CM_ColorSpaceType_V2_4::CM_LINEAR_P3},
+    {OH_COLORSPACE_LINEAR_BT2020, CM_ColorSpaceType_V2_4::CM_LINEAR_BT2020},
+    {OH_COLORSPACE_DISPLAY_SRGB, CM_ColorSpaceType_V2_4::CM_DISPLAY_SRGB},
+    {OH_COLORSPACE_DISPLAY_P3_SRGB, CM_ColorSpaceType_V2_4::CM_DISPLAY_P3_SRGB},
+    {OH_COLORSPACE_DISPLAY_P3_HLG, CM_ColorSpaceType_V2_4::CM_DISPLAY_P3_HLG},
+    {OH_COLORSPACE_DISPLAY_P3_PQ, CM_ColorSpaceType_V2_4::CM_DISPLAY_P3_PQ},
+    {OH_COLORSPACE_DISPLAY_BT2020_SRGB, CM_ColorSpaceType_V2_4::CM_DISPLAY_BT2020_SRGB},
+    {OH_COLORSPACE_DISPLAY_BT2020_HLG, CM_ColorSpaceType_V2_4::CM_DISPLAY_BT2020_HLG},
+    {OH_COLORSPACE_DISPLAY_BT2020_PQ, CM_ColorSpaceType_V2_4::CM_DISPLAY_BT2020_PQ},
+    {OH_COLORSPACE_BT2020_LOG_FULL, CM_ColorSpaceType_V2_4::CM_BT2020_LOG_FULL},
+    {OH_COLORSPACE_BT2020_LOG_LIMIT, CM_ColorSpaceType_V2_4::CM_BT2020_LOG_LIMIT},
 };
 
 static std::unordered_map<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type_V1_0> NATIVE_METADATATYPE_TO_HDI_MAP = {
@@ -876,8 +876,8 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
         }
         colorSpaceType = static_cast<CM_ColorSpaceType_V1_0>(atoi(value.c_str()));
         auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
-                [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_1>& element) {
-                    return element.second == static_cast<CM_ColorSpaceType_V2_1>(colorSpaceType);
+                [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_4>& element) {
+                    return element.second == static_cast<CM_ColorSpaceType_V2_4>(colorSpaceType);
                 });
         if (it != NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
             *colorSpace = it->first;
@@ -1161,8 +1161,8 @@ int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH
 
     CM_ColorSpaceType_V1_0 colorSpaceEnumType = static_cast<CM_ColorSpaceType_V1_0>(colorSpaceType);
     auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
-            [colorSpaceEnumType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_1>& element) {
-                return element.second == static_cast<CM_ColorSpaceType_V2_1>(colorSpaceEnumType);
+            [colorSpaceEnumType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_4>& element) {
+                return element.second == static_cast<CM_ColorSpaceType_V2_4>(colorSpaceEnumType);
             });
     if (it != NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
         *colorSpace = it->first;

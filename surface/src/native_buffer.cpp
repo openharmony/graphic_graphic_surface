@@ -313,8 +313,8 @@ int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
- 	        [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_1>& element) {
- 	            return element.second == static_cast<CM_ColorSpaceType_V2_1>(colorSpaceType);
+ 	        [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_4>& element) {
+ 	            return element.second == static_cast<CM_ColorSpaceType_V2_4>(colorSpaceType);
  	        });
     if (it != NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
         *colorSpace = it->first;

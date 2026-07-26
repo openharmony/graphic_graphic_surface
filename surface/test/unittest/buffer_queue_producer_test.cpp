@@ -977,6 +977,44 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, TestSize.
 }
 
 /*
+* Function: SetVideoDimensionType and GetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with VIDEO_DIM_TYPE_3D_TAB and check ret
+*                  2. call GetVideoDimensionType and check ret
+*/
+HWTEST_F(BufferQueueProducerTest, VideoDimensionType001, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    GSError ret = bqp_->SetVideoDimensionType(videoDimType);
+    EXPECT_EQ(ret, GSERROR_OK);
+    VideoDimType getVideoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
+    ret = bqp_->GetVideoDimensionType(getVideoDimType);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+}
+
+/*
+* Function: SetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with VIDEO_DIM_TYPE_BUTT (invalid) and check ret
+*                  2. call SetVideoDimensionType with VIDEO_DIM_TYPE_2D - 1 (invalid) and check ret
+*/
+HWTEST_F(BufferQueueProducerTest, VideoDimensionType002, TestSize.Level0)
+{
+    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_BUTT);
+    GSError ret = bqp_->SetVideoDimensionType(videoDimType);
+    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+
+    videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_2D - 1);
+    ret = bqp_->SetVideoDimensionType(videoDimType);
+    EXPECT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: SetWhitePointBrightness
 * Type: Function
 * Rank: Important(2)

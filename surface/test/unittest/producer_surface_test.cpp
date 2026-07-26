@@ -1102,13 +1102,33 @@ HWTEST_F(ProducerSurfaceTest, videoDimensionType001, TestSize.Level0)
 /*
 * Function: SetVideoDimensionType and GetVideoDimensionType
 * Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with VIDEO_DIM_TYPE_3D_TAB and check ret
+*                  2. call GetVideoDimensionType and check ret
+ */
+HWTEST_F(ProducerSurfaceTest, videoDimensionType004, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    GSError ret = pSurface->SetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    VideoDimType getVideoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
+    ret = pSurface->GetVideoDimensionType(getVideoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+}
+
+/*
+* Function: SetVideoDimensionType and GetVideoDimensionType
+* Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: 1. call SetVideoDimensionType with abnormal parameters and check ret
  */
 HWTEST_F(ProducerSurfaceTest, videoDimensionType002, TestSize.Level0)
 {
-    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_3D_TAB + 1);
+    VideoDimType videoDimType = static_cast<VideoDimType>(VideoDimType::VIDEO_DIM_TYPE_BUTT);
     GSError ret = pSurface->SetVideoDimensionType(videoDimType);
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 

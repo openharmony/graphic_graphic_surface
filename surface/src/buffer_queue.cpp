@@ -2412,7 +2412,7 @@ GSError BufferQueue::SetTunnelLayerInfo(const TunnelLayerInfo& info)
     }
     if (oldState.tunnelLayerId == newState.tunnelLayerId &&
         oldState.property == newState.property) {
-        BLOGW("same tunnel layer info, uniqueId: %{public}" PRIu64 ".", uniqueId_);
+        BLOGD("same tunnel layer info, uniqueId: %{public}" PRIu64 ".", uniqueId_);
         return GSERROR_OK;
     }
     sptr<IBufferConsumerListener> listener;

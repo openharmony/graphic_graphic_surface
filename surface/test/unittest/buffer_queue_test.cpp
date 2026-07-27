@@ -1645,6 +1645,43 @@ HWTEST_F(BufferQueueTest, PreAllocBuffers005, TestSize.Level0)
 }
 
 /*
+ * Function: PreAllocBuffers
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: set defaultUsage and call PreAllocBuffers
+ *                  2. operation: call PreAllocBuffers with config that not contains defaultUsage
+ *                  3. result: allocated buffer usage should contain defaultUsage
+ */
+HWTEST_F(BufferQueueTest, PreAllocBuffers006, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testTmp");
+    EXPECT_EQ(bqTmp->SetQueueSize(3), GSERROR_OK);
+
+    uint64_t defaultUsage = BUFFER_USAGE_CPU_READ;
+    EXPECT_EQ(bqTmp->SetDefaultUsage(defaultUsage), GSERROR_OK);
+
+    BufferRequestConfig requestConfigTmp = {
+        .width = 0x100,
+        .height = 0x100,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+    };
+    uint32_t allocBufferCount = 3;
+    GSError ret = bqTmp->PreAllocBuffers(requestConfigTmp, allocBufferCount);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ((bqTmp->bufferQueueCache_).size(), 3);
+
+    uint64_t expectedUsage = requestConfigTmp.usage | defaultUsage;
+    for (const auto &[id, ele] : bqTmp->bufferQueueCache_) {
+        ASSERT_NE(ele.buffer, nullptr);
+        ASSERT_EQ(ele.buffer->GetUsage(), expectedUsage);
+    }
+
+    bqTmp = nullptr;
+}
+
+/*
  * Function: MarkBufferReclaimableByIdLocked
  * Type: Function
  * Rank: Important(2)

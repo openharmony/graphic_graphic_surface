@@ -94,6 +94,7 @@ ohos_shared_library("surface") {
 
   part_name = "graphic_surface"
   subsystem_name = "graphic"
+  branch_protector_ret = "pac_ret"
 }
 
 ohos_static_library("surface_static") {

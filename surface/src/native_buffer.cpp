@@ -248,7 +248,7 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
     GSError ret = MetadataHelper::SetColorSpaceType(
- 	        sbuffer, static_cast<CM_ColorSpaceType_V1_0>(NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]));
+        sbuffer, static_cast<CM_ColorSpaceType_V1_0>(NATIVE_COLORSPACE_TO_HDI_MAP[colorSpace]));
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {

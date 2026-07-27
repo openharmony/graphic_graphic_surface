@@ -867,7 +867,7 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
     if (window == nullptr || colorSpace == nullptr || !IsNativeObjectAvailable(window)) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
-    CM_ColorSpaceType colorSpaceType = CM_COLORSPACE_NONE;
+    CM_ColorSpaceType_V1_0 colorSpaceType = CM_COLORSPACE_NONE;
     if (window->surface != nullptr) {
         std::string value = window->surface->GetUserData("ATTRKEY_COLORSPACE_INFO");
         if (value.empty()) {

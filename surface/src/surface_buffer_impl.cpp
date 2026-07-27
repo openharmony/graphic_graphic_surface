@@ -355,7 +355,7 @@ GSError SurfaceBufferImpl::GetImageLayout(void* layout)
     if (dRet == GRAPHIC_DISPLAY_SUCCESS) {
         return GSERROR_OK;
     }
-    BLOGW("GetImageLayout Failed with %{public}d, seq: %{public}u", dRet, sequenceNumber_);
+    BLOGD("GetImageLayout Failed with %{public}d, seq: %{public}u", dRet, sequenceNumber_);
     return GSERROR_HDI_ERROR;
 }
 
@@ -550,7 +550,7 @@ GSError SurfaceBufferImpl::GetPlanesInfo(void** planesInfo)
     OHOS::HDI::Display::Buffer::V1_2::ImageLayout layout;
     GSError ret = GetImageLayout(&layout);
     if (ret != GSERROR_OK) {
-        BLOGW("GetImageLayout failed, ret:%d, seq: %{public}u", ret, sequenceNumber_);
+        BLOGD("GetImageLayout failed, ret:%{public}d, seq: %{public}u", ret, sequenceNumber_);
         return ret;
     }
 

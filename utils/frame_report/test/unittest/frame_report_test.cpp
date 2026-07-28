@@ -461,7 +461,7 @@ HWTEST_F(FrameReportTest, SetGameScene002, Function | MediumTest | Level2)
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_ERROR_PID, FRT_GAME_SCHED);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
 
-    // zero pid shoule be rejected
+    // zero pid should be rejected
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID_NOT, FRT_GAME_SCHED);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
 

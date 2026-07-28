@@ -78,7 +78,10 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
             break;
         }
         case FR_GAME_SCHED: {
-            activelyPid_.store(pid);
+            if (pid > FR_DEFAULT_PID) {
+                activelyPid_.store(pid);
+                LOGI("FrameReport::SetGameScene Pid = %{public}d", pid);
+            }
             break;
         }
         default: {

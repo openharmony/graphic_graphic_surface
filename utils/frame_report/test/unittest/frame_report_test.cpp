@@ -445,4 +445,30 @@ HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId003, Function | MediumTest |
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().lastReleaseSysTime_.load() > firstReleaseTime);
 }
 
+/*
+* Function: SetGameScene
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGameScene with invalid pid (<0) and FR_GAME_SCHED
+*                  2. check activelyPid_ is not changed
+*/
+HWTEST_F(FrameReportTest, SetGameScene002, Function | MediumTest | Level2)
+{
+    Rosen::FrameReport::GetInstance().DeletePidInfo();
+
+    // negative pid should be rejected
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_ERROR_PID, FRT_GAME_SCHED);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
+
+    // zero pid shoule be rejected
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID_NOT, FRT_GAME_SCHED);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
+
+    // valid pid should be accepted
+    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FRT_GAME_PID);
+
+    Rosen::FrameReport::GetInstance().DeletePidInfo();
+}
 } // namespace OHOS::Rosen

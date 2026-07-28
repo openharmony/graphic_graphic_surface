@@ -49,7 +49,7 @@ private:
     std::atomic<uint32_t> fencesSignaled_;
     int32_t gpuSubhealthEventNum_ = 0;
     int32_t gpuSubhealthEventDay_ = 0;
-    std::queue<int64_t> *frameStartTimes_ = new std::queue<int64_t>;
+    std::queue<int64_t> frameStartTimes_;
     void Loop(const sptr<SyncFence>& fence, bool traceTag);
     int32_t WaitFence(const sptr<SyncFence>& fence);
     bool CheckGpuSubhealthEventLimit();
@@ -74,8 +74,8 @@ public:
 private:
     static std::shared_ptr<SyncFenceTracker> CreateSyncFenceTracker(const std::string& name, uint32_t screenId)
     {
-        auto tracker = std::make_shared<SyncFenceTracker>(name);
         std::unique_lock<std::shared_mutex> lock(mutex_);
+        auto tracker = std::make_shared<SyncFenceTracker>(name);
         // double-check: prevent race condition where another thread created it first
         auto it = trackers_.find(screenId);
         if (it != trackers_.end()) {

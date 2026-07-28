@@ -84,8 +84,7 @@ bool DoSetGameScene(const uint8_t* data, size_t size)
     uint32_t acquireSequence = GetData<uint32_t>();
     Rosen::FrameReport::GetInstance().SetAcquireBufferSeqWithUniqueId(uniqueId, acquireSequence);
 
-    int32_t fenceFd = GetData<int32_t>();
-    sptr<SyncFence> fence = new SyncFence(fenceFd);
+    sptr<SyncFence> fence = new SyncFence(-1);
     uint32_t presentSequence = GetData<uint32_t>();
     Rosen::FrameReport::GetInstance().SetPresentTimeWithUniqueId(uniqueId, fence, presentSequence);
 

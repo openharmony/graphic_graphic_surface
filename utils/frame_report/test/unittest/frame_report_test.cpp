@@ -446,6 +446,25 @@ HWTEST_F(FrameReportTest, SetPresentTimeWithUniqueId003, Function | MediumTest |
 }
 
 /*
+* Function: LoadSymbol
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: gameSoHandle_ == nullptr
+* CaseDescription: 1. ensure gameSoHandle_ is nullptr
+*                  2. call LoadSymbol, should return nullptr
+*/
+HWTEST_F(FrameReportTest, LoadSymbolSoHandleNull001, Function | MediumTest | Level2)
+{
+    if (Rosen::FrameReport::GetInstance().gameSoHandle_ != nullptr) {
+        Rosen::FrameReport::GetInstance().CloseLibrary();
+    }
+    ASSERT_TRUE(Rosen::FrameReport::GetInstance().gameSoHandle_ == nullptr);
+
+    void* result = Rosen::FrameReport::GetInstance().LoadSymbol("GAS_NotifyFrameInfo");
+    EXPECT_TRUE(result == nullptr);
+}
+
+/*
 * Function: SetGameScene
 * Type: Function
 * Rank: Important(2)
@@ -461,7 +480,7 @@ HWTEST_F(FrameReportTest, SetGameScene002, Function | MediumTest | Level2)
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_ERROR_PID, FRT_GAME_SCHED);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
 
-    // zero pid should be rejected
+    // zero pid shoule be rejected
     Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID_NOT, FRT_GAME_SCHED);
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FR_DEFAULT_PID);
 
@@ -471,4 +490,5 @@ HWTEST_F(FrameReportTest, SetGameScene002, Function | MediumTest | Level2)
 
     Rosen::FrameReport::GetInstance().DeletePidInfo();
 }
+
 } // namespace OHOS::Rosen

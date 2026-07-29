@@ -136,12 +136,12 @@ HWTEST_F(SyncFenceTrackerTest, GetFrameRate001, Function | MediumTest | Level2)
     EXPECT_EQ(frameRate, 0);
 
     for (int64_t i = 0; i < 2; i++) {
-        tracker->frameStartTimes_->push(1);
+        tracker->frameStartTimes_.push(1);
     }
     frameRate = tracker->GetFrameRate();
     EXPECT_EQ(frameRate, 0);
 
-    tracker->frameStartTimes_->push(2);
+    tracker->frameStartTimes_.push(2);
     frameRate = tracker->GetFrameRate();
     EXPECT_EQ(frameRate, 2000);
 

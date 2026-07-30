@@ -1720,4 +1720,12 @@ GSError ProducerSurface::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqN
     }
     return ret;
 }
+
+GSError ProducerSurface::SetSingleBufferMode(SingleBufferMode mode)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetSingleBufferMode(mode);
+}
 } // namespace OHOS

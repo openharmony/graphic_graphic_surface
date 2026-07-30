@@ -113,6 +113,7 @@ const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, Messag
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SYNC_PRODUCER_CACHE, SyncProducerCacheRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_TUNNEL_LAYER_INFO, SetTunnelLayerInfoRemote),
     BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_CLEAN_RELEASED_BUFFERS, CleanReleasedBuffersRemote),
+    BUFFER_PRODUCER_API_FUNC_PAIR(BUFFER_PRODUCER_SET_SINGLE_BUFFER_MODE, SetSingleBufferModeRemote),
 };
 
 BufferQueueProducer::BufferQueueProducer(sptr<BufferQueue> bufferQueue)
@@ -2123,5 +2124,24 @@ GSError BufferQueueProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleaned
     }
 
     return bufferQueue_->CleanReleasedBuffers(cleanedSeqNums);
+}
+
+int32_t BufferQueueProducer::SetSingleBufferModeRemote(MessageParcel &arguments,
+    MessageParcel &reply, MessageOption &option)
+{
+    SingleBufferMode bufferMode = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    int32_t mode = arguments.ReadInt32();
+    if (mode > SingleBufferMode::SINGLE_BUFFER_MODE_NONE &&
+        mode < SingleBufferMode::SINGLE_BUFFER_MODE_MAX_VALUE) {
+        bufferMode = static_cast<SingleBufferMode>(mode);
+    }
+    if (bufferQueue_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    GSError sRet = bufferQueue_->SetSingleBufferMode(bufferMode);
+    if (!reply.WriteInt32(sRet)) {
+        return SURFACE_ERROR_BINDER_ERROR;
+    }
+    return SURFACE_ERROR_OK;
 }
 }; // namespace OHOS

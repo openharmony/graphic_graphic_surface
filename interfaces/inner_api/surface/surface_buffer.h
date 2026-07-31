@@ -294,10 +294,6 @@ public:
         (void)bufferInfo;
         return GSERROR_OK;
     }
-    virtual bool CheckBufferHandleFields() const
-    {
-        return false;
-    }
     virtual void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType)
     {
         (void) videoDimType;

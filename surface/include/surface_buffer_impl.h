@@ -118,7 +118,6 @@ public:
     GSError ReadBufferProperty(MessageParcel &parcel) override;
     GSError WriteBufferProperty(MessageParcel &parcel) override;
     GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
-    bool CheckBufferHandleFields() const override;
     void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType) override;
     VideoDimType GetSurfaceBufferVideoDimensionType() const override;
 

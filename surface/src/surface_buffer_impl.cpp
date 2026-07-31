@@ -648,7 +648,7 @@ GSError SurfaceBufferImpl::ReadBufferRequestConfig(MessageParcel& parcel)
     }
     if (!parcel.ReadInt32(videoDimType) ||
         videoDimType < static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D) ||
-        videoDimType > static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_3D_TAB)) {
+        videoDimType >= static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_BUTT)) {
         videoDimType = static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D);
     }
     surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);
@@ -1091,8 +1091,7 @@ GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parc
 
     if (!parcel.WriteUint32(static_cast<uint32_t>(surfaceBufferColorGamut_)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(transform_)) ||
-        !parcel.WriteUint32(static_cast<uint32_t>(scalingMode_)) ||
-        !parcel.WriteUint32(static_cast<uint32_t>(videoDimType_))) {
+        !parcel.WriteUint32(static_cast<uint32_t>(scalingMode_))) {
         BLOGE("%{public}s: write color/transform info failed, seq: %{public}u", __func__, sequenceNumber_);
         return GSERROR_API_FAILED;
     }
@@ -1122,6 +1121,11 @@ GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parc
             BLOGE("%{public}s: write sync fence failed, seq: %{public}u", __func__, sequenceNumber_);
             return GSERROR_API_FAILED;
         }
+    }
+
+    if (!parcel.WriteUint32(static_cast<uint32_t>(videoDimType_))) {
+        BLOGE("%{public}s: write videoDimType_ info failed, seq: %{public}u", __func__, sequenceNumber_);
+        return GSERROR_API_FAILED;
     }
 
     BLOGD("%{public}s success, seq: %{public}u", __func__, sequenceNumber_);
@@ -1157,16 +1161,13 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
     uint32_t colorGamut = 0;
     uint32_t transform = 0;
     uint32_t scalingMode = 0;
-    uint32_t videoDimType = 0;
-    if (!parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadUint32(scalingMode)
-        || !parcel.ReadUint32(videoDimType)) {
-        BLOGE("%{public}s: read color/transform/videoDimType info failed", __func__);
+    if (!parcel.ReadUint32(colorGamut) || !parcel.ReadUint32(transform) || !parcel.ReadUint32(scalingMode)) {
+        BLOGE("%{public}s: read color/transform/scalingMode info failed", __func__);
         return GSERROR_API_FAILED;
     }
     surfaceBufferColorGamut_ = static_cast<GraphicColorGamut>(colorGamut);
     transform_ = static_cast<GraphicTransformType>(transform);
     scalingMode_ = static_cast<ScalingMode>(scalingMode);
-    videoDimType_ = static_cast<VideoDimType>(videoDimType);
 
     if (!parcel.ReadInt32(surfaceBufferWidth_) || !parcel.ReadInt32(surfaceBufferHeight_)) {
         BLOGE("%{public}s: read size info failed", __func__);
@@ -1200,6 +1201,14 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
     } else {
         syncFence_ = nullptr;
     }
+
+    uint32_t videoDimType = 0;
+    if (!parcel.ReadUint32(videoDimType) ||
+        videoDimType < static_cast<uint32_t>(VideoDimType::VIDEO_DIM_TYPE_2D) ||
+        videoDimType >= static_cast<uint32_t>(VideoDimType::VIDEO_DIM_TYPE_BUTT)) {
+        videoDimType = static_cast<uint32_t>(VideoDimType::VIDEO_DIM_TYPE_2D);
+    }
+    videoDimType_ = static_cast<VideoDimType>(videoDimType);
 
     BLOGD("%{public}s success, seq: %{public}u", __func__, sequenceNumber_);
     return GSERROR_OK;

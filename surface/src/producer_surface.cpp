@@ -1167,7 +1167,7 @@ GSError ProducerSurface::SetScalingMode(ScalingMode scalingMode)
 GSError ProducerSurface::SetVideoDimensionType(VideoDimType videoDimType)
 {
     if (producer_ == nullptr || videoDimType < VideoDimType::VIDEO_DIM_TYPE_2D ||
-        videoDimType > VideoDimType::VIDEO_DIM_TYPE_3D_TAB) {
+        videoDimType >= VideoDimType::VIDEO_DIM_TYPE_BUTT) {
         return GSERROR_INVALID_ARGUMENTS;
     }
     return producer_->SetVideoDimensionType(videoDimType);

@@ -998,7 +998,7 @@ static int32_t OH_NativeWindow_SetVideoDimensionType(OHNativeWindow *window, Vid
 {
     if (window == nullptr || window->surface == nullptr || !IsNativeObjectAvailable(window) ||
         dimensionType < VideoDimType::VIDEO_DIM_TYPE_2D ||
-        dimensionType > VideoDimType::VIDEO_DIM_TYPE_3D_TAB) {
+        dimensionType >= VideoDimType::VIDEO_DIM_TYPE_BUTT) {
         return OHOS::GSERROR_INVALID_ARGUMENTS;
     }
     return window->surface->SetVideoDimensionType(dimensionType);
@@ -1058,11 +1058,9 @@ int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
         }
     } else {
         BLOGE("the 3D metadataKey does not support it.");
-        return OHOS::SURFACE_ERROR_UNKOWN;
-    }
-    if (GSErrorStr(ret) == "<500 api call failed>with low error <Not supported>") {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
-    } else if (ret != OHOS::SURFACE_ERROR_OK) {
+    }
+    if (ret != OHOS::SURFACE_ERROR_OK) {
         BLOGE("Get 3D Metadata failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }

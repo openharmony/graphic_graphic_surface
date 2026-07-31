@@ -717,6 +717,28 @@ GSError BufferClientProducer::SetScalingMode(ScalingMode scalingMode)
     return CheckRetval(reply);
 }
 
+GSError BufferClientProducer::SetVideoDimensionType(VideoDimType videoDimType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteInt32(static_cast<int32_t>(videoDimType))) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_VIDEO_DIMENSION_TYPE, arguments, reply, option);
+    return CheckRetval(reply);
+}
+
+GSError BufferClientProducer::GetVideoDimensionType(VideoDimType &videoDimType)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    SEND_REQUEST(BUFFER_PRODUCER_GET_VIDEO_DIMENSION_TYPE, arguments, reply, option);
+    GSError ret = CheckRetval(reply);
+    if (ret != GSERROR_OK) {
+        return ret;
+    }
+    videoDimType = static_cast<VideoDimType>(reply.ReadInt32());
+    return GSERROR_OK;
+}
+
 GSError BufferClientProducer::SetBufferHold(bool hold)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);

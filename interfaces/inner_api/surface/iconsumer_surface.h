@@ -174,6 +174,12 @@ public:
         (void)scalingMode;
         return SURFACE_ERROR_NOT_SUPPORT;
     }
+    virtual GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType)
+    {
+        (void)sequence;
+        (void)videoDimType;
+        return SURFACE_ERROR_NOT_SUPPORT;
+    }
     virtual GSError SetMetaData(uint32_t sequence, const std::vector<GraphicHDRMetaData> &metaData)
     {
         (void)sequence;

@@ -412,6 +412,28 @@ HWTEST_F(SurfaceBufferImplTest, SurfaceBufferScalingMode001, TestSize.Level0)
     ASSERT_EQ(buffer->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
 }
 
+/*
+* Function: SetSurfaceBufferVideoDimensionType&GetSurfaceBufferVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. new SurfaceBufferImpl
+*                  2. call GetSurfaceBufferVideoDimensionType and check default is VIDEO_DIM_TYPE_2D
+*                  3. call SetSurfaceBufferVideoDimensionType and GetSurfaceBufferVideoDimensionType and check ret
+*                  4. repeatly call Set/GetSurfaceBufferVideoDimensionType and check ret
+ */
+HWTEST_F(SurfaceBufferImplTest, SurfaceBufferVideoDimensionType001, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_SBS);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_SBS);
+    buffer->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_2D);
+    ASSERT_EQ(buffer->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
+}
+
 /**
  * Function: SetBufferDeletedFlag & GetBufferDeletedFlag & ClearBufferDeletedFlag & IsBufferDeleted
  * Type: Function
@@ -774,6 +796,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
     sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_180);
     sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     sbi->SetSurfaceBufferWidth(11);
     sbi->SetSurfaceBufferHeight(22);
     sbi->SetCropMetadata({3, 4, 5, 6});
@@ -787,6 +810,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcel001, TestSize.Level0)
     ASSERT_EQ(sbiIn1->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     ASSERT_EQ(sbiIn1->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_180);
     ASSERT_EQ(sbiIn1->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_NO_SCALE_CROP);
+    ASSERT_EQ(sbiIn1->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     Rect out{};
     ASSERT_TRUE(sbiIn1->GetCropMetadata(out));
     ASSERT_EQ(out.x, 3);
@@ -832,6 +856,7 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelNoFence001, TestSize.Level0)
     sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE);
     sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     sbi->SetSurfaceBufferWidth(33);
     sbi->SetSurfaceBufferHeight(44);
     sbi->SetCropMetadata({7, 8, 9, 10});
@@ -843,12 +868,38 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelNoFence001, TestSize.Level0)
     ASSERT_EQ(sbiIn->GetSurfaceBufferColorGamut(), GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
     ASSERT_EQ(sbiIn->GetSurfaceBufferTransform(), GraphicTransformType::GRAPHIC_ROTATE_NONE);
     ASSERT_EQ(sbiIn->GetSurfaceBufferScalingMode(), ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
     Rect out{};
     ASSERT_TRUE(sbiIn->GetCropMetadata(out));
     ASSERT_EQ(out.x, 7);
     ASSERT_EQ(out.y, 8);
     ASSERT_EQ(out.w, 9);
     ASSERT_EQ(out.h, 10);
+}
+
+/*
+ * Function: ReadAllPropertiesFromMessageParcel - invalid videoDimType should be reset to 2D
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: 1. write properties with VIDEO_DIM_TYPE_BUTT
+ *                  2. read properties and verify videoDimType is reset to VIDEO_DIM_TYPE_2D
+ */
+HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadVideoDimType001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    sbi->SetSurfaceBufferColorGamut(GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB);
+    sbi->SetSurfaceBufferTransform(GraphicTransformType::GRAPHIC_ROTATE_NONE);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_BUTT);
+    sbi->SetSurfaceBufferWidth(33);
+    sbi->SetSurfaceBufferHeight(44);
+    sbi->SetCropMetadata({7, 8, 9, 10});
+
+    MessageParcel parcel;
+    ASSERT_EQ(sbi->WriteAllPropertiesToMessageParcel(parcel), GSERROR_OK);
+    sptr<SurfaceBufferImpl> sbiIn = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
 }
 
 /*
@@ -1179,6 +1230,8 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadSyncFenceIncomp
     // Write incomplete fence data (just a valid int32, missing fd)
     ASSERT_TRUE(parcel.WriteInt32(0)); // fence flag (valid)
     // Missing file descriptor - ReadFileDescriptor will return -1
+    // Write videoDimType (now at the end of parcel, after syncFence)
+    ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(VideoDimType::VIDEO_DIM_TYPE_2D)));
     sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
     // The read should succeed because SyncFence::ReadFromMessageParcel returns INVALID_FENCE (not nullptr)
     ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
@@ -1247,6 +1300,8 @@ HWTEST_F(SurfaceBufferImplTest, AllPropertiesParcelBadParcel_ReadSyncFenceNegati
     ASSERT_TRUE(parcel.WriteBool(true)); // hasSyncFence = true
     // Write fence data with negative value (indicates invalid fence)
     ASSERT_TRUE(parcel.WriteInt32(-1)); // negative fence value
+    // Write videoDimType (now at the end of parcel, after syncFence)
+    ASSERT_TRUE(parcel.WriteUint32(static_cast<uint32_t>(VideoDimType::VIDEO_DIM_TYPE_2D)));
     sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
     // The read should succeed because SyncFence::ReadFromMessageParcel returns INVALID_FENCE when fence < 0
     ASSERT_EQ(sbi->ReadAllPropertiesFromMessageParcel(parcel), GSERROR_OK);
@@ -1292,6 +1347,37 @@ HWTEST_F(SurfaceBufferImplTest, WriteAllPropertiesWithReclaimedFlag, TestSize.Le
     ASSERT_EQ(out.y, 0);
     ASSERT_EQ(out.w, 1920);
     ASSERT_EQ(out.h, 1080);
+    ASSERT_EQ(sbiIn->IsReclaimed(), true);
+}
+
+/*
+ * Function: ReadBufferRequestConfig - invalid videoDimType should be reset to 2D
+ * Type: Function
+ * Rank: Important(2)
+ * CaseDescription: 1. write request config with VIDEO_DIM_TYPE_BUTT
+ *                  2. read request config and verify videoDimType is reset to VIDEO_DIM_TYPE_2D
+ */
+HWTEST_F(SurfaceBufferImplTest, ReadBufferRequestConfigBadVideoDimType001, TestSize.Level0)
+{
+    sptr<SurfaceBufferImpl> sbi = new SurfaceBufferImpl();
+    BufferRequestConfig config = {};
+    config.width = 100;
+    config.height = 200;
+    config.strideAlignment = 8;
+    config.format = GRAPHIC_PIXEL_FMT_RGBA_8888;
+    config.usage = 0;
+    config.timeout = 0;
+    config.colorGamut = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
+    config.transform = GraphicTransformType::GRAPHIC_ROTATE_NONE;
+    sbi->SetBufferRequestConfig(config);
+    sbi->SetSurfaceBufferScalingMode(ScalingMode::SCALING_MODE_SCALE_TO_WINDOW);
+    sbi->SetSurfaceBufferVideoDimensionType(VideoDimType::VIDEO_DIM_TYPE_BUTT);
+
+    MessageParcel parcel;
+    ASSERT_EQ(sbi->WriteBufferRequestConfig(parcel), GSERROR_OK);
+    sptr<SurfaceBufferImpl> sbiIn = new SurfaceBufferImpl();
+    ASSERT_EQ(sbiIn->ReadBufferRequestConfig(parcel), GSERROR_OK);
+    ASSERT_EQ(sbiIn->GetSurfaceBufferVideoDimensionType(), VideoDimType::VIDEO_DIM_TYPE_2D);
 }
 
 /*

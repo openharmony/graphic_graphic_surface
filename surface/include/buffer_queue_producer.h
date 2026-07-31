@@ -146,6 +146,8 @@ public:
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
     GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums) override;
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
+    GSError SetVideoDimensionType(VideoDimType videoDimType) override;
+    GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -220,6 +222,8 @@ private:
     int32_t SetAlphaTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SyncProducerCacheRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t SetSingleBufferModeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t SetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t GetVideoDimensionTypeRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 
     void SetConnectedPidLocked(int32_t connectedPid);
     void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);

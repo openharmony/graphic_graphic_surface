@@ -118,6 +118,8 @@ public:
     GSError ReadBufferProperty(MessageParcel &parcel) override;
     GSError WriteBufferProperty(MessageParcel &parcel) override;
     GSError ReadFromBufferInfo(const RSBufferInfo &bufferInfo) override;
+    void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType) override;
+    VideoDimType GetSurfaceBufferVideoDimensionType() const override;
 
 private:
     void FreeBufferHandleLocked();
@@ -135,6 +137,7 @@ private:
     GraphicColorGamut surfaceBufferColorGamut_ = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    VideoDimType videoDimType_ = VideoDimType::VIDEO_DIM_TYPE_2D;
     int32_t surfaceBufferWidth_ = 0;
     int32_t surfaceBufferHeight_ = 0;
     mutable std::mutex mutex_;

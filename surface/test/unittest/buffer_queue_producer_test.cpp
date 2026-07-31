@@ -977,6 +977,51 @@ HWTEST_F(BufferQueueProducerTest, GetSurfaceAppFrameworkTypeRemote001, TestSize.
 }
 
 /*
+* Function: SetVideoDimensionType and GetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionType with VIDEO_DIM_TYPE_3D_TAB and check ret
+*                  2. call GetVideoDimensionType and check ret
+*/
+HWTEST_F(BufferQueueProducerTest, VideoDimensionType001, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    GSError ret = bqp_->SetVideoDimensionType(videoDimType);
+    EXPECT_EQ(ret, GSERROR_OK);
+    VideoDimType getVideoDimType = VideoDimType::VIDEO_DIM_TYPE_2D;
+    ret = bqp_->GetVideoDimensionType(getVideoDimType);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(getVideoDimType, VideoDimType::VIDEO_DIM_TYPE_3D_TAB);
+}
+
+/*
+* Function: SetVideoDimensionTypeRemote
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetVideoDimensionTypeRemote with VIDEO_DIM_TYPE_BUTT (invalid) and check ret
+*                  2. call SetVideoDimensionTypeRemote with VIDEO_DIM_TYPE_2D - 1 (invalid) and check ret
+*/
+HWTEST_F(BufferQueueProducerTest, VideoDimensionType002, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_BUTT));
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->SetVideoDimensionTypeRemote(arguments, reply, option);
+    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(reply.ReadInt32(), GSERROR_INVALID_ARGUMENTS);
+
+    MessageParcel arguments2;
+    arguments2.WriteInt32(static_cast<int32_t>(VideoDimType::VIDEO_DIM_TYPE_2D) - 1);
+    MessageParcel reply2;
+    ret = bqp_->SetVideoDimensionTypeRemote(arguments2, reply2, option);
+    EXPECT_EQ(ret, ERR_NONE);
+    EXPECT_EQ(reply2.ReadInt32(), GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: SetWhitePointBrightness
 * Type: Function
 * Rank: Important(2)
@@ -1125,6 +1170,9 @@ HWTEST_F(BufferQueueProducerTest, NullTest, TestSize.Level0)
     EXPECT_EQ(bqpTmp->Disconnect(nullptr), OHOS::SURFACE_ERROR_UNKOWN);
     EXPECT_EQ(bqpTmp->SetScalingMode(0, ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
     EXPECT_EQ(bqpTmp->SetScalingMode(ScalingMode::SCALING_MODE_FREEZE), OHOS::GSERROR_INVALID_ARGUMENTS);
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    EXPECT_EQ(bqpTmp->SetVideoDimensionType(videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
+    EXPECT_EQ(bqpTmp->GetVideoDimensionType(videoDimType), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<GraphicHDRMetaData> meta;
     EXPECT_EQ(bqpTmp->SetMetaData(0, meta), OHOS::GSERROR_INVALID_ARGUMENTS);
     std::vector<uint8_t> metaData;

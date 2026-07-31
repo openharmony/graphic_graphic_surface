@@ -718,6 +718,22 @@ public:
     {
         return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
     }
+    virtual GSError SetVideoDimensionType(VideoDimType videoDimType)
+    {
+        (void)videoDimType;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetVideoDimensionType(VideoDimType &videoDimType)
+    {
+        (void)videoDimType;
+        return GSERROR_NOT_SUPPORT;
+    }
+    virtual GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType)
+    {
+        (void)sequence;
+        (void)videoDimType;
+        return GSERROR_NOT_SUPPORT;
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

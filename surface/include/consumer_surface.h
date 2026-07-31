@@ -341,6 +341,15 @@ public:
      */
     GSError GetScalingMode(uint32_t sequence, ScalingMode &scalingMode) override;
     /**
+     * @brief Get the video dimension type of the surface buffer.
+     * 
+     * @param sequence [in] The number of surface buffer.
+     * @param videoDimType [out] Video dimension type.
+     * @return {@link GSERROR_OK} 0 - Success.
+     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
+    GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType) override;
+    /**
      * @brief Set the Meta Data for the surface buffer.
      * 
      * @param sequence [in] The number of surface buffer.

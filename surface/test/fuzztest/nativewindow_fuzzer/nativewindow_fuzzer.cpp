@@ -405,6 +405,23 @@ void NativeWindowFuzzTestColorSpaceAndMetadata(OHNativeWindow *nativeWindow, Fuz
     OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, nullptr, &getMetadata);
     OH_NativeWindow_GetMetadataValue(nativeWindow, metaKey, &getSize, nullptr);
 
+    OH_NativeBuffer_3D_MetadataKey meta3DKey = OH_VIDEO_DIM_TYPE;
+    OH_NativeWindow_Set3DMetadataValue(nativeWindow, meta3DKey, testSize, testMetadata);
+    OH_NativeWindow_Set3DMetadataValue(nullptr, meta3DKey, testSize, testMetadata);
+    OH_NativeWindow_Set3DMetadataValue(nativeWindow, meta3DKey, testSize, nullptr);
+    OH_NativeWindow_Set3DMetadataValue(nativeWindow, meta3DKey, -1, testMetadata);
+    OH_NativeWindow_Set3DMetadataValue(nativeWindow, meta3DKey, EXTRA_LARGE_METADATA_SIZE, testMetadata);
+
+    int32_t get3DSize = 0;
+    uint8_t* get3DMetadata = nullptr;
+    OH_NativeWindow_Get3DMetadataValue(nativeWindow, meta3DKey, &get3DSize, &get3DMetadata);
+    if (get3DMetadata != nullptr) {
+        delete[] get3DMetadata;
+    }
+    OH_NativeWindow_Get3DMetadataValue(nullptr, meta3DKey, &get3DSize, &get3DMetadata);
+    OH_NativeWindow_Get3DMetadataValue(nativeWindow, meta3DKey, nullptr, &get3DMetadata);
+    OH_NativeWindow_Get3DMetadataValue(nativeWindow, meta3DKey, &get3DSize, nullptr);
+
     if (testMetadata != nullptr) {
         delete[] testMetadata;
     }

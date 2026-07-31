@@ -1315,6 +1315,48 @@ HWTEST_F(ConsumerSurfaceTest, scalingMode004, TestSize.Level0)
 }
 
 /*
+* Function: GetVideoDimensionType
+* Type: Function
+* Rank: Important(1)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetVideoDimensionType with normal parameters and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, getVideoDimensionType001, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    sptr<SurfaceBuffer> buffer;
+    int releaseFence = -1;
+    GSError ret = ps->RequestBuffer(buffer, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer, nullptr);
+
+    uint32_t sequence = buffer->GetSeqNum();
+    ret = ps->SetVideoDimensionType(videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    VideoDimType videoDimTypeGet = VideoDimType::VIDEO_DIM_TYPE_2D;
+    ret = cs->GetVideoDimensionType(sequence, videoDimTypeGet);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+
+    ret = ps->CancelBuffer(buffer);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+}
+
+/*
+* Function: GetVideoDimensionType
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call GetVideoDimensionType with nullptr consumer_ and check ret
+ */
+HWTEST_F(ConsumerSurfaceTest, getVideoDimensionType002, TestSize.Level0)
+{
+    VideoDimType videoDimType = VideoDimType::VIDEO_DIM_TYPE_3D_TAB;
+    GSError ret = surface_->GetVideoDimensionType(firstSeqnum, videoDimType);
+    ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
 * Function: QueryMetaDataType
 * Type: Function
 * Rank: Important(1)

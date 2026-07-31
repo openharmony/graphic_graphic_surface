@@ -979,4 +979,16 @@ HWTEST_F(BufferClientProducerRemoteTest, SyncProducerCache002, TestSize.Level0)
     ret = bp->SyncProducerCache(buffers);
     ASSERT_EQ(ret, OHOS::GSERROR_OK);
 }
+
+/**
+ * Function: SetSingleBufferMode001
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(BufferClientProducerRemoteTest, SetSingleBufferMode001, TestSize.Level0)
+{
+    GSError ret = bp->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+    ASSERT_NE(ret, GSERROR_BINDER);
+}
 }

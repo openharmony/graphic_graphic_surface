@@ -888,6 +888,8 @@ public:
      * @return Returns the error code of the CleanReleasedBuffers.
      */
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
+    
+    GSError SetSingleBufferMode(SingleBufferMode mode) override;
 private:
     ProducerSurface(sptr<IBufferProducer>& producer);
     GSError PropertyChangeCallback(const SurfaceProperty& property);

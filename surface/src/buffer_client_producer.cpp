@@ -1117,4 +1117,14 @@ GSError BufferClientProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleane
     }
     return ret;
 }
+
+GSError BufferClientProducer::SetSingleBufferMode(SingleBufferMode mode)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteInt32(static_cast<int32_t>(mode))) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_SINGLE_BUFFER_MODE, arguments, reply, option);
+    return CheckRetval(reply);
+}
 }; // namespace OHOS

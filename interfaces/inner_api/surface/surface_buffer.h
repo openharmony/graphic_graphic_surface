@@ -294,6 +294,18 @@ public:
         (void)bufferInfo;
         return GSERROR_OK;
     }
+    virtual bool CheckBufferHandleFields() const
+    {
+        return false;
+    }
+    virtual void SetSurfaceBufferVideoDimensionType(const VideoDimType &videoDimType)
+    {
+        (void) videoDimType;
+    }
+    virtual VideoDimType GetSurfaceBufferVideoDimensionType() const
+    {
+        return VideoDimType::VIDEO_DIM_TYPE_2D;
+    }
 
 protected:
     SurfaceBuffer() {}

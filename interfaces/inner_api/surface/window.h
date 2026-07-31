@@ -114,6 +114,10 @@ int32_t NativeWindowPreAllocBuffers(OHNativeWindow *window, uint32_t allocBuffer
 * @return Returns the error code of setting the processor for the window.
 */
 int32_t NativeWindowSetGameUpscaleProcessor(OHNativeWindow *window, void (*processor)(int32_t *, int32_t *));
+int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t size, uint8_t *metadata);
+int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
+    int32_t *size, uint8_t **metadata);
 #ifdef __cplusplus
 }
 #endif

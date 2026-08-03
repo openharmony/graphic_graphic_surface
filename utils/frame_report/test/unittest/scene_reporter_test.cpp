@@ -26,7 +26,11 @@ public:
     TestSceneReporter(const std::string& soName, const std::string& symName)
         : SceneReporter(soName, symName) {}
     void Activate(int32_t pid) override { activePid_ = pid; }
-    void Deactivate() override { activePid_ = -1; CloseLibrary(); }
+    void Deactivate() override
+    {
+        activePid_ = -1;
+        CloseLibrary();
+    }
     bool IsActive() const override { return activePid_ > 0; }
     bool IsActiveWithPid(int32_t pid) const override { return pid == activePid_; }
     void Report(const std::string& layerName, uint64_t uniqueId, const std::string& bufferMsg) override {}

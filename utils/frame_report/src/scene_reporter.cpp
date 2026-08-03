@@ -48,7 +48,7 @@ void* SceneReporter::LoadSymbol(const std::string& symName, void* handle)
     dlerror();
     void *funcSym = dlsym(handle, symName.c_str());
     if (funcSym == nullptr) {
-        LOGE("LoadSymbol Get %{public}s symbol failed: %(public)s", symName.c_str(), dlerror());
+        LOGE("LoadSymbol Get %{public}s symbol failed: %{public}s", symName.c_str(), dlerror());
         return nullptr;
     }
     return funcSym;

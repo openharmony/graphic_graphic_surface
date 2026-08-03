@@ -508,14 +508,14 @@ HWTEST_F(FrameReportTest, SetGameScene002, Function | MediumTest | Level2)
 */
 HWTEST_F(FrameReportTest, SetGameSceneHwsched001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
-    ASSERT_TRUE(fr.hwschedReporter_-ISActive());
+    ASSERT_TRUE(fr.hwschedReporter_->IsActive());
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
-    ASSERT_TRUE(!fr.hwschedReporter_-ISActive());
+    ASSERT_TRUE(!fr.hwschedReporter_->IsActive());
 }
 
 /*
@@ -528,9 +528,9 @@ HWTEST_F(FrameReportTest, SetGameSceneHwsched001, Function | MediumTest | Level2
 */
 HWTEST_F(FrameReportTest, HasGameSceneHwsched001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
-    fr.setGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
     ASSERT_TRUE(!fr.HasGameScene());
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
@@ -550,7 +550,7 @@ HWTEST_F(FrameReportTest, HasGameSceneHwsched001, Function | MediumTest | Level2
 */
 HWTEST_F(FrameReportTest, IsActiveGameWithPidHwsched001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
@@ -570,14 +570,14 @@ HWTEST_F(FrameReportTest, IsActiveGameWithPidHwsched001, Function | MediumTest |
 */
 HWTEST_F(FrameReportTest, SceneTypeGame001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
 
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
     ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_GAME);
 
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
-    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(!(fr.sceneType_.load() & FRT_SCENE_GAME));
 }
 
 /*
@@ -590,14 +590,14 @@ HWTEST_F(FrameReportTest, SceneTypeGame001, Function | MediumTest | Level2)
 */
 HWTEST_F(FrameReportTest, SceneTypeHwsched001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
     ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_HWSCHED);
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
-    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_HWSCHED);
+    ASSERT_TRUE(!(fr.sceneType_.load() & FRT_SCENE_HWSCHED));
 }
 
 /*
@@ -610,7 +610,7 @@ HWTEST_F(FrameReportTest, SceneTypeHwsched001, Function | MediumTest | Level2)
 */
 HWTEST_F(FrameReportTest, SceneTypeBoth001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
@@ -621,7 +621,7 @@ HWTEST_F(FrameReportTest, SceneTypeBoth001, Function | MediumTest | Level2)
     ASSERT_TRUE(fr.HasGameScene());
 
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
-    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(!(fr.sceneType_.load() & FRT_SCENE_GAME));
     ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_HWSCHED);
     ASSERT_TRUE(fr.HasGameScene());
 
@@ -640,7 +640,7 @@ HWTEST_F(FrameReportTest, SceneTypeBoth001, Function | MediumTest | Level2)
 */
 HWTEST_F(FrameReportTest, SceneTypeStalePid001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
@@ -650,7 +650,7 @@ HWTEST_F(FrameReportTest, SceneTypeStalePid001, Function | MediumTest | Level2)
 
     fr.SetGameScene(FRT_GAME_PID + 1, FRT_GAME_BACKGROUND);
     ASSERT_TRUE(fr.activelyPid_.load() == FRT_GAME_PID);
-    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(!(fr.sceneType_.load() & FRT_SCENE_GAME));
     ASSERT_TRUE(!fr.HasGameScene());
 
     // cleanup
@@ -667,7 +667,7 @@ HWTEST_F(FrameReportTest, SceneTypeStalePid001, Function | MediumTest | Level2)
 */
 HWTEST_F(FrameReportTest, HwschedMultiPid001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
@@ -692,7 +692,7 @@ HWTEST_F(FrameReportTest, HwschedMultiPid001, Function | MediumTest | Level2)
 */
 HWTEST_F(FrameReportTest, ReportHwsched001, Function | MediumTest | Level2)
 {
-    Rauto& fr = Rosen::FrameReport::GetInstance();
+    auto& fr = Rosen::FrameReport::GetInstance();
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 

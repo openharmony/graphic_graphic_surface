@@ -21,7 +21,7 @@ group("unittest") {
   deps = [
     ":frame_report_test",
     ":hwsched_reporter_test",
-    "scene_reporter_test",
+    ":scene_reporter_test",
   ]
 }
 

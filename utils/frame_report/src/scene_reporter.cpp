@@ -29,7 +29,6 @@ namespace Rosen {
 #define LOG_TAG "SceneReporter"
 
 #define LOGE(format, ...) HILOG_ERROR(LOG_CORE, format, ##__VA_ARGS__)
-#define LOGW(format, ...) HILOG_WARN(LOG_CORE, format, ##__VA_ARGS__)
 #define LOGI(format, ...) HILOG_INFO(LOG_CORE, format, ##__VA_ARGS__)
 
 SceneReporter::SceneReporter(const std::string& soName, const std::string& symName)
@@ -67,7 +66,7 @@ void SceneReporter::LoadLibrary()
             libraryInfo_.soName.c_str(), dlerror());
         return;
     }
-    LOGI("LoadLibrary %{public}s dlopen success!", libraryInfo__.soName.c_str());
+    LOGI("LoadLibrary %{public}s dlopen success!", libraryInfo_.soName.c_str());
     void* funcSym = LoadSymbol(libraryInfo_.symName, soHandle);
     if (funcSym == nullptr) {
         if (dlclose(soHandle) != 0) {

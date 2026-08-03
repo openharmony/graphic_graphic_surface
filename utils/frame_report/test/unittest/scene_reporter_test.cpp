@@ -116,7 +116,7 @@ HWTEST_F(SceneReporterTest, CloseLibraryWithoutLoad001, Function | MediumTest | 
 HWTEST_F(SceneReporterTest, LoadLibraryIdempotent001, Function | MediumTest | Level2)
 {
     TestSceneReporter reporter(FRT_TEST_SO_NAME, FRT_TEST_SYM_NAME);
-    reporter.LoadLibrary()
+    reporter.LoadLibrary();
     reporter.LoadLibrary();
     ASSERT_TRUE(!reporter.libraryInfo_.isLoaded);
 }
@@ -131,7 +131,7 @@ HWTEST_F(SceneReporterTest, LoadLibraryIdempotent001, Function | MediumTest | Le
 HWTEST_F(SceneReporterTest, Destructor001, Function | MediumTest | Level2)
 {
     TestSceneReporter reporter(FRT_TEST_SO_NAME, FRT_TEST_SYM_NAME);
-    reporter.LoadLibrary()
+    reporter.LoadLibrary();
 }
 
 /*
@@ -144,7 +144,7 @@ HWTEST_F(SceneReporterTest, Destructor001, Function | MediumTest | Level2)
 HWTEST_F(SceneReporterTest, SceneType001, Function | MediumTest | Level2)
 {
     TestSceneReporter reporter(FRT_TEST_SO_NAME, FRT_TEST_SYM_NAME);
-    reporter.LoadLibrary()
+    reporter.LoadLibrary();
     reporter.LoadLibrary();
     ASSERT_TRUE(reporter.GetSceneType() == FRT_SCENE_NONE);
 

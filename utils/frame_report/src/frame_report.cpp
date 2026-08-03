@@ -304,7 +304,6 @@ void FrameReport::Report(const std::string& layerName)
             sceneType_ &= ~FR_SCENE_HWSCHED;
         }
     }
-    
 }
 
 void FrameReport::NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp,

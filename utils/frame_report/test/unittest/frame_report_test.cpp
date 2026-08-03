@@ -14,6 +14,7 @@
  */
 #include <gtest/gtest.h>
 #include "frame_report.h"
+#include "hwsched_reporter.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -29,6 +30,12 @@ namespace {
     static const int32_t FRT_GAME_BACKGROUND = 0;
     static const int32_t FRT_GAME_FOREGROUND = 1;
     static const int32_t FRT_GAME_SCHED = 2;
+    static const int32_t FRT_HWSCHED_PID = 2048;
+    static const int32_t FRT_HWSCHED_PID_2 = 2049;
+    static const int32_t FRT_SCENE_GAME = 1;
+    static const int32_t FRT_SCENE_HWSCHED = 2;
+    static const int32_t FRT_SCENE_BACKGROUND = 3;
+    static const int32_t FRT_SCENE_FOREGROUND = 4;
     static const int64_t FRT_GAME_BUFFER_TIME = 2048;
     static std::string FRT_SURFACE_NAME_EMPTY = "";
     static std::string FRT_SURFACE_NAME = "SurfaceTEST";
@@ -489,6 +496,217 @@ HWTEST_F(FrameReportTest, SetGameScene002, Function | MediumTest | Level2)
     ASSERT_TRUE(Rosen::FrameReport::GetInstance().activelyPid_.load() == FRT_GAME_PID);
 
     Rosen::FrameReport::GetInstance().DeletePidInfo();
+}
+
+/*
+* Function: SetGameScene for hwsched
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetGameScene with FRT_SCENE_FOREGROUND / FRT_SCENE_BACKGROUND
+*                  2. check hwschedReporter state
+*/
+HWTEST_F(FrameReportTest, SetGameSceneHwsched001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
+    ASSERT_TRUE(fr.hwschedReporter_-ISActive());
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    ASSERT_TRUE(!fr.hwschedReporter_-ISActive());
+}
+
+/*
+* Function: SetGameScene for hwsched
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. HasGameScene returns true when hwsched scene is active
+*                  2. HasGameScene returns false after hwsched deactivated
+*/
+HWTEST_F(FrameReportTest, HasGameSceneHwsched001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    fr.setGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    ASSERT_TRUE(!fr.HasGameScene());
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
+    ASSERT_TRUE(fr.HasGameScene());
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    ASSERT_TRUE(!fr.HasGameScene());
+}
+
+/*
+* Function: isActiveGameWithPid for hwsched
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. IsActiveGameWithPid return true for hwsched PID
+*                  2. IsActiveGameWithPid return false after hwsched deactivated
+*/
+HWTEST_F(FrameReportTest, IsActiveGameWithPidHwsched001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
+    ASSERT_TRUE(fr.IsActiveGameWithPid(FRT_HWSCHED_PID));
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    ASSERT_TRUE(!fr.IsActiveGameWithPid(FRT_HWSCHED_PID));
+}
+
+/*
+* Function: SceneType game
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. sceneType_ FRT_SCENE_GAME bit set on FRT_GAME_SCHED
+*                  2. sceneType_ FRT_SCENE_GAME bit cleared on FRT_GAME_BACKGROUND
+*/
+HWTEST_F(FrameReportTest, SceneTypeGame001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_GAME);
+
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_GAME);
+}
+
+/*
+* Function: SceneType hwsched
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. sceneType_ FRT_SCENE_HWSCHED bit set on FRT_SCENE_FOREGROUND
+*                  2. sceneType_ FRT_SCENE_HWSCHED bit cleared on FRT_SCENE_BACKGROUND
+*/
+HWTEST_F(FrameReportTest, SceneTypeHwsched001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_HWSCHED);
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_HWSCHED);
+}
+
+/*
+* Function: SceneType both scenes
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Both scenes can be active simultaneously
+*                  2. Deactivating one does not affect the other
+*/
+HWTEST_F(FrameReportTest, SceneTypeBoth001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    fr.SetGameScene(FRT_HWSCHED_PID, FR_SCENE_FOREGROUND);
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_HWSCHED);
+    ASSERT_TRUE(fr.HasGameScene());
+
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_HWSCHED);
+    ASSERT_TRUE(fr.HasGameScene());
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    ASSERT_TRUE(!fr.HasGameScene());
+}
+
+/*
+* Function: SceneType stale PID defense
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. FRT_GAME_BACKGROUND with wrong pid: CAS fails, PID not cleared
+                   2.sceneType_ unconditionally cleared
+                   3.HasGameScene returns false despite stale PID
+*/
+HWTEST_F(FrameReportTest, SceneTypeStalePid001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    ASSERT_TRUE(fr.activelyPid_.load() == FRT_GAME_PID);
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_GAME);
+
+    fr.SetGameScene(FRT_GAME_PID + 1, FRT_GAME_BACKGROUND);
+    ASSERT_TRUE(fr.activelyPid_.load() == FRT_GAME_PID);
+    ASSERT_TRUE(!fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(!fr.HasGameScene());
+
+    // cleanup
+    fr.DeletePidInfo();
+}
+
+/*
+* Function: HwschedReporter multi-PID
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. Multiple PIDS can be activated for hwsched
+*                  2. IsActiveWithPid returns true for each activated PID
+*/
+HWTEST_F(FrameReportTest, HwschedMultiPid001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
+    fr.hwschedReporter_->Activate(FRT_HWSCHED_PID_2);
+
+    ASSERT_TRUE(fr.IsActiveGameWithPid(FRT_HWSCHED_PID));
+    ASSERT_TRUE(fr.IsActiveGameWithPid(FRT_HWSCHED_PID_2));
+
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+    ASSERT_TRUE(!fr.IsActiveGameWithPid(FRT_HWSCHED_PID));
+    ASSERT_TRUE(!fr.IsActiveGameWithPid(FRT_HWSCHED_PID_2));
+}
+
+/*
+* Function: Report with hwsched scene
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1.Report does not crash when hwsched scene is active
+                   2.Report does not crash when both scenes are active
+*/
+HWTEST_F(FrameReportTest, ReportHwsched001, Function | MediumTest | Level2)
+{
+    Rauto& fr = Rosen::FrameReport::GetInstance();
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
+
+
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_FOREGROUND);
+    fr.SetQueueBufferTime(FRT_GAME_UNIQUEID, "LayerName", 1000);
+    fr.Report("LayerName");
+
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
+    fr.Report("LayerName");
+
+    // cleanup
+    fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
+    fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 }
 
 } // namespace OHOS::Rosen

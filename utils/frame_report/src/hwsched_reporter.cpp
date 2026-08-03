@@ -78,7 +78,7 @@ bool HwschedReporter::IsActive() const
     return !pidSet_.empty();
 }
 
-void HwschedReporter::Report(const std::string& layerName, uint64_t uniqueId, const std::String& bufferMsg)
+void HwschedReporter::Report(const std::string& layerName, uint64_t uniqueId, const std::string& bufferMsg)
 {
     if (bufferMsg.empty()) {
         return;
@@ -90,7 +90,7 @@ void HwschedReporter::ReportFrameInfo(int32_t pid, const std::string& layerName,
     const std::string& bufferMsg, uint64_t uniqueId)
 {
     std::shared_lock lock(mutex_);
-    if (libraryInfo_notifyFunc == nullptr) {
+    if (libraryInfo_.notifyFunc == nullptr) {
         return;
     }
 

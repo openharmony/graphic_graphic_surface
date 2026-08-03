@@ -57,7 +57,7 @@ void* SceneReporter::LoadSymbol(const std::string& symName, void* handle)
 void SceneReporter::LoadLibrary()
 {
     std::unique_lock lock(mutex_);
-    if (libraryInfo_.isLoaded()) {
+    if (libraryInfo_.isLoaded) {
         return;
     }
     dlerror();
@@ -67,19 +67,19 @@ void SceneReporter::LoadLibrary()
             libraryInfo_.soName.c_str(), dlerror());
         return;
     }
-    LOGI("LoadLibrary %{public}s dlopen success!", libraryInfo__soName.c_str());
+    LOGI("LoadLibrary %{public}s dlopen success!", libraryInfo__.soName.c_str());
     void* funcSym = LoadSymbol(libraryInfo_.symName, soHandle);
     if (funcSym == nullptr) {
         if (dlclose(soHandle) != 0) {
-            LOGE("LoadLibrary %{public}s dlclose failed", libraryInfo_soName.c_str());
+            LOGE("LoadLibrary %{public}s dlclose failed", libraryInfo_.soName.c_str());
         } else {
-            LOGI("LoadLibrary %{public}s dlclose success!", libraryInfo_soName.c_str());
+            LOGI("LoadLibrary %{public}s dlclose success!", libraryInfo_.soName.c_str());
         }
         return;
     }
 
     libraryInfo_.isLoaded = true;
-    libraryInfo_._soHandle = soHandle;
+    libraryInfo_.soHandle = soHandle;
     libraryInfo_.notifyFunc = funcSym;
     LOGI("LoadLibrary dlsym success!");
 }
@@ -87,7 +87,7 @@ void SceneReporter::LoadLibrary()
 void SceneReporter::CloseLibrary()
 {
     std::unique_lock lock(mutex_);
-    libraryInfo_notifyFunc = nullptr;
+    libraryInfo_.notifyFunc = nullptr;
     if (libraryInfo_.soHandle != nullptr) {
         if (dlclose(libraryInfo_.soHandle) != 0) {
             LOGE("CloseLibrary %{public}s close failed!", libraryInfo_.soName.c_str());

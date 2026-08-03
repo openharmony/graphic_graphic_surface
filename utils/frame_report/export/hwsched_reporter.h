@@ -36,7 +36,7 @@ public:
     void Deactivate() override;
     bool IsActive() const override;
     bool IsActiveWithPid(int32_t pid) const override;
-    void Report(const std::string& layerName, uint64_t uniqueId, const std::String& bufferMsg) override;
+    void Report(const std::string& layerName, uint64_t uniqueId, const std::string& bufferMsg) override;
 
 private:
     void ReportFrameInfo(int32_t pid, const std::string& layerName, const std::string& bufferMsg, uint64_t uniqueId);

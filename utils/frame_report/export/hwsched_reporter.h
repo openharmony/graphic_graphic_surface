@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
- #ifndef UTILS_INCLUDE_HWSCHED_REPORTER_H
+#ifndef UTILS_INCLUDE_HWSCHED_REPORTER_H
 #define UTILS_INCLUDE_HWSCHED_REPORTER_H
 
 #include "scene_reporter.h"
@@ -27,8 +27,7 @@ namespace Rosen {
 
 using ReportFrameInfoFunc = int(*)(int32_t, const std::string&, const std::string&, uint64_t);
 
-class HwschedReporter : public SceneReporter
-{
+class HwschedReporter : public SceneReporter {
 public:
     HwschedReporter();
     ~HwschedReporter() override = default;
@@ -37,10 +36,10 @@ public:
     void Deactivate() override;
     bool IsActive() const override;
     bool IsActiveWithPid(int32_t pid) const override;
-    void Report(const std::string &layerName, uint64_t uniqueId, const std::String &bufferMsg) override;
+    void Report(const std::string& layerName, uint64_t uniqueId, const std::String& bufferMsg) override;
 
 private:
-    void ReportFrameInfo(int32_t pid, const std::string &layerName, const std::string &bufferMsg, uint64_t uniqueId);
+    void ReportFrameInfo(int32_t pid, const std::string& layerName, const std::string& bufferMsg, uint64_t uniqueId);
 
     std::set<int32_t> pidSet_;
     mutable std::atomic<int32_t> activePid_ = -1;

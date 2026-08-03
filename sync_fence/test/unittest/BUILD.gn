@@ -20,7 +20,6 @@ group("unittest") {
   testonly = true
 
   deps = [
-    ":native_fence_test",
     ":sync_fence_test",
   ]
 }

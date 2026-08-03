@@ -31,7 +31,6 @@ public:
     virtual ~IBufferConsumerListener() = default;
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
-    virtual void OnTunnelLayerInfoChanged(const TunnelLayerState& state) { (void)state; };
     virtual void OnGoBackground() {};
     virtual void OnCleanCache(uint32_t *bufSeqNum = nullptr)
     {
@@ -39,8 +38,9 @@ public:
     }
     virtual void OnTransformChange() {};
     virtual void OnDropBuffer() {};
-    virtual void OnCleanCacheForBufferInfoMap(std::vector<CleanCacheBufferInfo>& infos) { (void)infos; };
+    virtual void OnTunnelLayerInfoChanged(const TunnelLayerState& state) { (void)state; };
     virtual bool IsNeedBufferInfo() { return false; };
+    virtual void OnCleanCacheForBufferInfoMap(std::vector<CleanCacheBufferInfo>& infos) { (void)infos; };
 };
 
 class IBufferConsumerListenerClazz {
@@ -48,7 +48,6 @@ public:
     virtual ~IBufferConsumerListenerClazz() = default;
     virtual void OnBufferAvailable() = 0;
     virtual void OnTunnelHandleChange() {};
-    virtual void OnTunnelLayerInfoChanged(const TunnelLayerState& state) { (void)state; };
     virtual void OnGoBackground() {};
     virtual void OnCleanCache(uint32_t *bufSeqNum = nullptr)
     {
@@ -56,6 +55,7 @@ public:
     }
     virtual void OnTransformChange() {};
     virtual void OnDropBuffer() {};
+    virtual void OnTunnelLayerInfoChanged(const TunnelLayerState& state) { (void)state; };
 };
 } // namespace OHOS
 

@@ -50,7 +50,7 @@ void HwschedReporter::Deactivate()
 {
     std::unique_lock lock(pidMutex_);
     pidSet_.clear();
-    activePid_.store();
+    activePid_.store(-1);
     CloseLibrary();
 }
 

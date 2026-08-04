@@ -253,10 +253,10 @@ public:
         struct IBufferProducer::RequestBufferReturnValue& retval);
     GSError AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<BufferExtraData>& bedata,
         const sptr<SyncFence>& fence, BufferFlushConfigWithDamages& config, bool needMap);
+    GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp);
     GSError GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp);
     GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose);
-    GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config);
     GSError GetCycleBuffersNumber(uint32_t& cycleBuffersNumber);
     GSError SetCycleBuffersNumber(uint32_t cycleBuffersNumber);
     GSError GetFrameGravity(int32_t &frameGravity);
@@ -287,10 +287,11 @@ public:
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Invalid argument.
      */
     GSError SetDropFrameLevel(int32_t level);
-    void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
-    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
     GSError SetSingleBufferMode(SingleBufferMode mode);
     SingleBufferMode GetAndResetSingleBufferMode();
+
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums);
+    void CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums);
     GSError SetVideoDimensionType(VideoDimType videoDimType);
     GSError GetVideoDimensionType(VideoDimType &videoDimType);
     GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType);
@@ -382,8 +383,8 @@ private:
     bool CheckLppFenceLocked();
     GSError ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
         std::unique_lock<std::mutex> &lock);
-    void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
     void CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock, std::vector<uint32_t> &cleanedSeqNums);
+    void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;
@@ -467,8 +468,8 @@ private:
     bool isPriorityAlloc_ = false;
     bool isOnReleaseBufferWithSequenceAndFence_ = false;
     int32_t dropFrameLevel_ = 0;  // Drop frame level: 0=no drop, >0=keep latest N frames
-    std::vector<CleanCacheBufferInfo> bufferInfoMap_;
     SingleBufferMode singleBufferMode_ = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    std::vector<CleanCacheBufferInfo> bufferInfoMap_;
 };
 }; // namespace OHOS
 

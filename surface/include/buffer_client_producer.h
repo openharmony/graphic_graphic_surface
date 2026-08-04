@@ -103,7 +103,6 @@ public:
     GSError GetTransformHint(GraphicTransformType &transformHint) override;
     GSError SetTransformHint(GraphicTransformType transformHint, uint64_t fromId) override;
     GSError SetScalingMode(ScalingMode scalingMode) override;
-
     GSError SetSurfaceSourceType(OHSurfaceSource sourceType) override;
     GSError GetSurfaceSourceType(OHSurfaceSource &sourceType) override;
 
@@ -132,10 +131,11 @@ public:
     GSError SetLppShareFd(int fd, bool state) override;
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
-    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
     GSError SetSingleBufferMode(SingleBufferMode mode) override;
+    GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
     GSError SetVideoDimensionType(VideoDimType videoDimType) override;
     GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
+
 private:
     GSError MessageVariables(MessageParcel &arg);
     GSError SendRequest(uint32_t command, MessageParcel &arg, MessageParcel &reply, MessageOption &opt);

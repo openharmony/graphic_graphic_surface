@@ -144,10 +144,11 @@ public:
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
     GSError GetAvailableBufferCount(uint32_t &count) override;
     GSError SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& buffers) override;
-    GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums) override;
     GSError CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums) override;
+    GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums) override;
     GSError SetVideoDimensionType(VideoDimType videoDimType) override;
     GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
+
 private:
     GSError CheckConnectLocked();
     GSError SetTunnelHandle(const sptr<SurfaceTunnelHandle> &handle);
@@ -232,7 +233,9 @@ private:
     void ReportQueueBufferTimeIfNeeded(int64_t startTimeNs);
     bool CheckIsAlive();
     int32_t PreAllocBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+
     int32_t CleanReleasedBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+
     static const std::map<uint32_t, std::function<int32_t(BufferQueueProducer *that, MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option)>> memberFuncMap_;
 

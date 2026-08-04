@@ -838,7 +838,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     int32_t supportFastCompose = 0;
     mapIter->second.buffer->GetExtraData()->ExtraGet(
         BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
-        mapIter->second.buffer->SetSurfaceBufferTransform(transform_);
+    mapIter->second.buffer->SetSurfaceBufferTransform(transform_);
 
     uint64_t usage = static_cast<uint32_t>(mapIter->second.config.usage);
     if (usage & BUFFER_USAGE_CPU_WRITE) {
@@ -941,7 +941,6 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         mapIter->second.state = BUFFER_STATE_ACQUIRED;
         mapIter->second.lastAcquireTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
-
         fence = mapIter->second.fence;
         timestamp = mapIter->second.timestamp;
         damages = mapIter->second.damages;
@@ -961,7 +960,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
 GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue,
                                    int64_t expectPresentTimestamp, bool isUsingAutoTimestamp)
 {
-    SURFACE_TRACE_NAME_FMT("AcquireBuffer with PresentTimestamp name: %s queueId: %" PRIu64 " queueSize: %u"
+    SURFACE_TRACE_NAME_FMT("AcquireBuffer with PresentTimestamp name: %s queueId: %" PRIu64 " queueSize: %u,"
         "expectPresentTimestamp: %" PRId64, name_.c_str(), uniqueId_, bufferQueueSize_, expectPresentTimestamp);
     if (expectPresentTimestamp <= 0) {
         return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
@@ -1364,6 +1363,7 @@ void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
 {
     auto buffer = bufferQueueCache_[sequence].buffer;
     if (buffer == nullptr) {
+        BLOGE("Buffer is nullptr.");
         return;
     }
     buffer->SetBufferDeletedFlag(BufferDeletedFlag::DELETED_FROM_CACHE);
@@ -2777,6 +2777,17 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
     return ret;
 }
 
+GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    auto iter = bufferQueueCache_.find(buffer->GetSeqNum());
+    if (iter == bufferQueueCache_.end()) {
+        return GSERROR_BUFFER_NOT_INCACHE;
+    }
+    config = iter->second.config;
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -2804,17 +2815,6 @@ GSError BufferQueue::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     bufferSupportFastCompose = bufferSupportFastCompose_;
-    return GSERROR_OK;
-}
-
-GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    auto iter = bufferQueueCache_.find(buffer->GetSeqNum());
-    if (iter == bufferQueueCache_.end()) {
-        return GSERROR_BUFFER_NOT_INCACHE;
-    }
-    config = iter->second.config;
     return GSERROR_OK;
 }
 
@@ -2914,7 +2914,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         for (auto iter = surfaceBufferCache.begin(); iter != surfaceBufferCache.end(); ++iter) {
-            if (bufferQueueCache_.size() >= bufferQueueSize_- detachReserveSlotNum_) {
+            if (bufferQueueCache_.size() >= bufferQueueSize_ - detachReserveSlotNum_) {
                 BLOGW("CacheSize: %{public}zu, QueueSize: %{public}u, allocBufferCount: %{public}zu,"
                    " queId: %{public}" PRIu64, bufferQueueCache_.size(), bufferQueueSize_,
                    surfaceBufferCache.size(), uniqueId_);
@@ -3225,6 +3225,21 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
     return GSERROR_OK;
 }
 
+GSError BufferQueue::SetSingleBufferMode(SingleBufferMode singleBufferMode)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    singleBufferMode_ = singleBufferMode;
+    return GSERROR_OK;
+}
+
+SingleBufferMode BufferQueue::GetAndResetSingleBufferMode()
+{
+    SingleBufferMode ret = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::swap(ret, singleBufferMode_);
+    return ret;
+}
+
 GSError BufferQueue::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
 {
     if (freeList_.empty()) {
@@ -3271,20 +3286,5 @@ void BufferQueue::CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock,
         bufferQueueCache_.erase(sequence);
         it = freeList_.erase(it);
     }
-}
-
-GSError BufferQueue::SetSingleBufferMode(SingleBufferMode singleBufferMode)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    singleBufferMode_ = singleBufferMode;
-    return GSERROR_OK;
-}
-
-SingleBufferMode BufferQueue::GetAndResetSingleBufferMode()
-{
-    SingleBufferMode ret = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    std::swap(ret, singleBufferMode_);
-    return ret;
 }
 }; // namespace OHOS

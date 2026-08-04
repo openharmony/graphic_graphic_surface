@@ -114,7 +114,6 @@ SyncFenceTracker::SyncFenceTracker(const std::string threadName)
 {
     runner_ = OHOS::AppExecFwk::EventRunner::Create(threadName_);
     handler_ = std::make_shared<OHOS::AppExecFwk::EventHandler>(runner_);
-
 #ifdef FENCE_SCHED_ENABLE
     if (handler_) {
         handler_->PostTask([]() {

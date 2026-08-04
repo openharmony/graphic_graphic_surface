@@ -34,7 +34,6 @@ public:
     SurfaceBufferImpl(uint32_t seqNum);
     virtual ~SurfaceBufferImpl();
 
-    GSError Alloc(const BufferRequestConfig& config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) override;
     GSError Map() override;
     GSError Unmap() override;
     GSError FlushCache() override;
@@ -105,12 +104,13 @@ public:
     bool IsReclaimed() override;
     void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) override;
     sptr<SyncFence> GetSyncFence() const override;
-    uint64_t GetBufferId() override;
+    GSError Alloc(const BufferRequestConfig& config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) override;
+    uint64_t GetBufferId() const override;
     uint64_t GetFlushedTimestamp() const override;
     void SetFlushTimestamp(uint64_t timestamp) override;
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
-    void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack) override;
-    void UnRegisterBufferDestructorCallBack() override;
+    void RegisterBufferDestructorCallback(std::function<void(uint64_t)> callBack) override;
+    void UnRegisterBufferDestructorCallback() override;
     GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel) override;
     GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
         std::function<int(MessageParcel &parcel,
@@ -127,7 +127,7 @@ private:
     GSError GetImageLayout(void *layout);
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
-    void NotifyBufferDestructorCallBack() const;
+    void NotifyBufferDestructorCallback() const;
 
     BufferHandle *handle_ = nullptr;
     uint32_t sequenceNumber_ = UINT32_MAX;

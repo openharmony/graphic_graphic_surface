@@ -461,7 +461,6 @@ private:
     uint32_t detachReserveSlotNum_ = 0;
     int64_t lastConsumeTime_ = 0;
     uint32_t maxQueueSize_ = 0;
-    bool isFirstSetDropModeOpen_ = false;
     GraphicAlphaType alphaType_ = GraphicAlphaType::GRAPHIC_ALPHATYPE_PREMUL;
     bool isPriorityAlloc_ = false;
     bool isOnReleaseBufferWithSequenceAndFence_ = false;

@@ -854,7 +854,8 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     int32_t supportFastCompose = 0;
     mapIter->second.buffer->GetExtraData()->ExtraGet(
         BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
-        mapIter->second.buffer->SetSurfaceBufferTransform(transform_);
+    bufferSupportFastCompose_ = (bool)supportFastCompose;
+    mapIter->second.buffer->SetSurfaceBufferTransform(transform_);
 
     uint64_t usage = static_cast<uint32_t>(mapIter->second.config.usage);
     if (usage & BUFFER_USAGE_CPU_WRITE) {
@@ -876,7 +877,6 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
     lastFlusedSequence_ = sequence;
     lastFlusedFence_ = fence;
     lastFlushedTransform_ = transform_;
-    bufferSupportFastCompose_ = (bool)supportFastCompose;
     mapIter->second.requestedFromListenerClientPid = 0;
 
     SetDesiredPresentTimestampAndUiTimestamp(sequence, config.desiredPresentTimestamp, config.timestamp);

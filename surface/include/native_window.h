@@ -25,7 +25,7 @@
 #include <atomic>
 #include <mutex>
 
-struct SURFACE_HIDDEN NativeWindowMagic : public OHOS::RefBase {
+struct NativeWindowMagic : public OHOS::RefBase {
     NativeWindowMagic(NativeObjectMagic m) : magic(m) {}
     virtual ~NativeWindowMagic() {}
     NativeObjectMagic magic;

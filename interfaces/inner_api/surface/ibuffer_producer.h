@@ -119,7 +119,6 @@ public:
     virtual GSError SetMetaDataSet(uint32_t sequence, GraphicHDRMetadataKey key,
                                    const std::vector<uint8_t> &metaData) = 0;
     virtual GSError SetTunnelHandle(const GraphicExtDataHandle *handle) = 0;
-    virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info) = 0;
     virtual GSError GetPresentTimestamp(uint32_t sequence, GraphicPresentTimestampType type, int64_t &time) = 0;
 
     virtual sptr<NativeSurface> GetNativeSurface() = 0;
@@ -264,6 +263,11 @@ public:
     {
         (void)buffers;
         return SURFACE_ERROR_NOT_SUPPORT;
+    }
+    virtual GSError SetTunnelLayerInfo(const TunnelLayerInfo& info)
+    {
+        (void)info;
+        return GSERROR_NOT_SUPPORT;
     }
     virtual GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums)
     {

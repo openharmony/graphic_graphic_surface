@@ -123,6 +123,12 @@ uint32_t BufferQueue::GetUsedSize()
     return static_cast<uint32_t>(bufferQueueCache_.size());
 }
 
+sptr<ConsumerSurfaceDelegator> BufferQueue::GetDelegator()
+{
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
+    return sptrCSurfaceDelegator_;
+}
+
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -433,11 +439,7 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
-    sptr<ConsumerSurfaceDelegator> delegator;
-    {
-        std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
-        delegator = sptrCSurfaceDelegator_;
-    }
+    sptr<ConsumerSurfaceDelegator> delegator = GetDelegator();
     if (delegator != nullptr) {
         return DelegatorDequeueBuffer(delegator, config, bedata, retval);
     }
@@ -664,11 +666,7 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
 
 GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence)
 {
-    sptr<ConsumerSurfaceDelegator> consumerDelegator;
-    {
-        std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
-        consumerDelegator = sptrCSurfaceDelegator_;
-    }
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = GetDelegator();
     if (consumerDelegator == nullptr) {
         BLOGE("Consumer surface delegator has been expired");
         return GSERROR_INVALID_ARGUMENTS;
@@ -755,11 +753,7 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     }
     CallConsumerListener();
 
-    sptr<ConsumerSurfaceDelegator> delegator;
-    {
-        std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
-        delegator = sptrCSurfaceDelegator_;
-    }
+    sptr<ConsumerSurfaceDelegator> delegator = GetDelegator();
     if (delegator != nullptr) {
         sret = DelegatorQueueBuffer(sequence, fence);
     }

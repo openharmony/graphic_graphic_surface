@@ -742,22 +742,22 @@ HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle003, TestSize.Level0)
 }
 
 /*
- * Function: RegisterBufferDestructorCallBack001
+ * Function: RegisterBufferDestructorCallback001
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
  * CaseDescription: 1. new SurfaceBufferImpl
- *                  2. RegisterBufferDestructorCallBack to SurfaceBuffer
+ *                  2. RegisterBufferDestructorCallback to SurfaceBuffer
  *                  3. CallBack will be exe when SurfaceBuffer is destructor
- *                  4. UnRegisterBufferDestructorCallBack to SurfaceBuffer
+ *                  4. UnRegisterBufferDestructorCallback to SurfaceBuffer
  */
-HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallBack001, TestSize.Level0)
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback001, TestSize.Level0)
 {
     uint64_t bufferId = 0;
     gBufferId = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
-        bufferTmp->RegisterBufferDestructorCallBack(nullptr);
+        bufferTmp->RegisterBufferDestructorCallback(nullptr);
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, UINT64_MAX);
@@ -766,8 +766,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallBack001, TestSize.Le
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
-        bufferTmp->RegisterBufferDestructorCallBack(&SurfaceBufferImplTest::BufferDestructorCallBack);
-        bufferTmp->RegisterBufferDestructorCallBack(nullptr); // invalid
+        bufferTmp->RegisterBufferDestructorCallback(&SurfaceBufferImplTest::BufferDestructorCallback);
+        bufferTmp->RegisterBufferDestructorCallback(nullptr); // invalid
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, bufferId);
@@ -776,8 +776,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallBack001, TestSize.Le
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
-        bufferTmp->RegisterBufferDestructorCallBack(&SurfaceBufferImplTest::BufferDestructorCallBack);
-        bufferTmp->UnRegisterBufferDestructorCallBack();
+        bufferTmp->RegisterBufferDestructorCallback(&SurfaceBufferImplTest::BufferDestructorCallback);
+        bufferTmp->UnRegisterBufferDestructorCallback();
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, UINT64_MAX);

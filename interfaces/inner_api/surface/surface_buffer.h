@@ -238,7 +238,7 @@ public:
      * - GSERROR_HDI_ERROR for lower-level allocation or registration failures.
      */
     virtual GSError Alloc(const BufferRequestConfig &config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) = 0;
-    virtual uint64_t GetBufferId()
+    virtual uint64_t GetBufferId() const
     {
         return 0;
     }

@@ -205,7 +205,7 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 SurfaceBufferImpl::~SurfaceBufferImpl()
 {
     BLOGD("~SurfaceBufferImpl dtor, seq: %{public}u", sequenceNumber_);
-    NotifyBufferDestructorCallBack();
+    NotifyBufferDestructorCallback();
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
         if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid() &&
@@ -1006,7 +1006,7 @@ sptr<SyncFence> SurfaceBufferImpl::GetSyncFence() const
     return syncFence_;
 }
 
-uint64_t SurfaceBufferImpl::GetBufferId()
+uint64_t SurfaceBufferImpl::GetBufferId() const
 {
     return bufferId_;
 }
@@ -1053,7 +1053,7 @@ void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
     bufferDtorCb_ = nullptr;
 }
 
-void SurfaceBufferImpl::NotifyBufferDestructorCallBack() const
+void SurfaceBufferImpl::NotifyBufferDestructorCallback() const
 {
     std::function<void(uint64_t)> bufferDtorCb = nullptr;
     {

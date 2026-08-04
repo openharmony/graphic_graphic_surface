@@ -742,7 +742,7 @@ HWTEST_F(SurfaceBufferImplTest, CloneBufferHandle003, TestSize.Level0)
 }
 
 /*
- * Function: RegisterBufferDestructorCallvack001
+ * Function: RegisterBufferDestructorCallback001
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A

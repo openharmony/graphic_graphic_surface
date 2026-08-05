@@ -43,10 +43,10 @@ public:
     static inline sptr<SurfaceBuffer> buffer = nullptr;
     static inline int32_t val32 = 0;
     static inline int64_t val64 = 0;
-    static void BufferDestructorCallBack(uint64_t bufferId);
+    static void BufferDestructorCallback(uint64_t bufferId);
 };
 
-void SurfaceBufferImplTest::BufferDestructorCallBack(uint64_t bufferId)
+void SurfaceBufferImplTest::BufferDestructorCallback(uint64_t bufferId)
 {
     gBufferId = bufferId;
 }

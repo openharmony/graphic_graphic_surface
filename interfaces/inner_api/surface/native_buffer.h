@@ -64,18 +64,18 @@ typedef struct OHIPCParcel OHIPCParcel;
  * @version 1.0
  */
 typedef enum OH_NativeBuffer_Usage {
-    NATIVEBUFFER_USAGE_CPU_READ = (1ULL << 0),        ///< CPU read buffer
-    NATIVEBUFFER_USAGE_CPU_WRITE = (1ULL << 1),       ///< CPU write memory
-    NATIVEBUFFER_USAGE_MEM_DMA = (1ULL << 3),         ///< Direct memory access (DMA) buffer
+    NATIVEBUFFER_USAGE_CPU_READ = (1ULL << 0),        ///< CPU read buffer */
+    NATIVEBUFFER_USAGE_CPU_WRITE = (1ULL << 1),       ///< CPU write memory */
+    NATIVEBUFFER_USAGE_MEM_DMA = (1ULL << 3),         ///< Direct memory access (DMA) buffer */
     /**
      * MMZ with cache
      * @since 20
      */
     NATIVEBUFFER_USAGE_MEM_MMZ_CACHE = (1ULL << 5),
-    NATIVEBUFFER_USAGE_HW_RENDER = (1ULL << 8),       ///< For GPU write case
-    NATIVEBUFFER_USAGE_HW_TEXTURE = (1ULL << 9),      ///< For GPU read case
-    NATIVEBUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), ///< Often be mapped for direct CPU reads
-    NATIVEBUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  ///< 512 bytes alignment
+    NATIVEBUFFER_USAGE_HW_RENDER = (1ULL << 8),       ///< For GPU write case */
+    NATIVEBUFFER_USAGE_HW_TEXTURE = (1ULL << 9),      ///< For GPU read case */
+    NATIVEBUFFER_USAGE_CPU_READ_OFTEN = (1ULL << 16), ///< Often be mapped for direct CPU reads */
+    NATIVEBUFFER_USAGE_ALIGNMENT_512 = (1ULL << 18),  ///< 512 bytes alignment */
 } OH_NativeBuffer_Usage;
 
 /**
@@ -343,7 +343,8 @@ int32_t OH_NativeBuffer_MapWaitFence(OH_NativeBuffer *buffer, int32_t fenceFd, v
  * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
  * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
- * {@link SURFACE_ERROR_ERROR} 50002000 - deserialize failed.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer or parcel is NULL.
+ * {@link SURFACE_ERROR_BINDER_ERROR} 50401000 -ipc send failed.
  * @since 23
  * @version 1.0
  */
@@ -357,8 +358,9 @@ int32_t OH_NativeBuffer_WriteToParcel(OH_NativeBuffer* buffer, OHIPCParcel* parc
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
  * @param parcel Indicates the serialized <b>OHIPCParcel</b> object.
- * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> pointer.
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
  * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ * {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - parcel or buffer is NULL.
  * {@link SURFACE_ERROR_ERROR} 50002000 - deserialize failed.
  * @since 23
  * @version 1.0

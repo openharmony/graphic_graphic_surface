@@ -105,7 +105,6 @@ int32_t NativeWindowLockBuffer(OHNativeWindow *window, Region region, OHNativeWi
  */
 int32_t NativeWindowUnlockAndFlushBuffer(OHNativeWindow *window);
 int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH_NativeBuffer_ColorSpace* colorSpace);
-int32_t NativeWindowPreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt);
 /**
 * @brief Set the game upscaling processing function for the specified window.
 *        Setting processor to nullptr will disable upscaling processing.
@@ -114,6 +113,8 @@ int32_t NativeWindowPreAllocBuffers(OHNativeWindow *window, uint32_t allocBuffer
 * @return Returns the error code of setting the processor for the window.
 */
 int32_t NativeWindowSetGameUpscaleProcessor(OHNativeWindow *window, void (*processor)(int32_t *, int32_t *));
+
+int32_t NativeWindowPreAllocBuffers(OHNativeWindow *window, uint32_t allocBufferCnt);
 int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,
     int32_t size, uint8_t *metadata);
 int32_t OH_NativeWindow_Get3DMetadataValue(OHNativeWindow *window, OH_NativeBuffer_3D_MetadataKey metadataKey,

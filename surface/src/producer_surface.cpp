@@ -171,7 +171,6 @@ GSError ProducerSurface::RequestBufferLocked(sptr<SurfaceBuffer>& buffer,
     AddCacheLocked(bedataimpl, retval, config);
     buffer = retval.buffer;
     fence = retval.fence;
-
     if (SetMetadataValue(buffer) != GSERROR_OK) {
         BLOGD("SetMetadataValue fail, uniqueId: %{public}" PRIu64 ".", queueId_);
     }
@@ -1387,6 +1386,14 @@ GSError ProducerSurface::SetGlobalAlpha(int32_t alpha)
     return producer_->SetGlobalAlpha(alpha);
 }
 
+GSError ProducerSurface::SetSingleBufferMode(SingleBufferMode mode)
+{
+    if (producer_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    return producer_->SetSingleBufferMode(mode);
+}
+
 GSError ProducerSurface::SetRequestBufferNoblockMode(bool noblock)
 {
     if (producer_ == nullptr) {
@@ -1654,7 +1661,6 @@ GSError ProducerSurface::SetLppShareFd(int fd, bool state)
     if (producer_ == nullptr || fd < 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-
     int lppFd = dup(fd);
     if (lppFd == -1) {
         return GSERROR_NO_MEM;
@@ -1734,13 +1740,5 @@ GSError ProducerSurface::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqN
         }
     }
     return ret;
-}
-
-GSError ProducerSurface::SetSingleBufferMode(SingleBufferMode mode)
-{
-    if (producer_ == nullptr) {
-        return GSERROR_INVALID_ARGUMENTS;
-    }
-    return producer_->SetSingleBufferMode(mode);
 }
 } // namespace OHOS

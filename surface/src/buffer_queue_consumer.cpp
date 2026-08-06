@@ -182,13 +182,6 @@ void BufferQueueConsumer::Dump(std::string &result) const
     return bufferQueue_->Dump(result);
 }
 
-SingleBufferMode BufferQueueConsumer::GetAndResetSingleBufferMode()
-{
-    if (bufferQueue_ == nullptr) {
-        return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
-    }
-    return bufferQueue_->GetAndResetSingleBufferMode();
-}
 void BufferQueueConsumer::DumpCurrentFrameLayer() const
 {
     if (bufferQueue_ == nullptr) {
@@ -349,6 +342,15 @@ GSError BufferQueueConsumer::GetGlobalAlpha(int32_t &alpha)
     }
     return bufferQueue_->GetGlobalAlpha(alpha);
 }
+
+SingleBufferMode BufferQueueConsumer::GetAndResetSingleBufferMode()
+{
+    if (bufferQueue_ == nullptr) {
+        return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+    return bufferQueue_->GetAndResetSingleBufferMode();
+}
+
 uint32_t BufferQueueConsumer::GetAvailableBufferCount() const
 {
     if (bufferQueue_ == nullptr) {

@@ -1160,7 +1160,7 @@ int32_t ConvertColorSpaceTypeToNativeBufferColorSpace(int32_t colorSpaceType, OH
     CM_ColorSpaceType_V1_0 colorSpaceEnumType = static_cast<CM_ColorSpaceType_V1_0>(colorSpaceType);
     auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
         [colorSpaceEnumType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_4>& element) {
-            return element.second == static_cast<CM_ColorSpaceType_V2_4>colorSpaceEnumType;
+            return element.second == static_cast<CM_ColorSpaceType_V2_4>(colorSpaceEnumType);
         });
     if (it != NATIVE_COLORSPACE_TO_HDI_MAP.end()) {
         *colorSpace = it->first;

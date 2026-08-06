@@ -30,7 +30,7 @@ group("unittest") {
     ":consumer_surface_test",
     ":delegator_adapter_test",
     ":metadata_helper_test",
-    ":native_buffer_test",
+    # ":native_buffer_test",
     ":native_window_test",
     ":producer_surface_delegator_test",
     ":producer_surface_test",

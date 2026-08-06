@@ -831,7 +831,7 @@ GSError ConsumerSurface::SetDropFrameLevel(int32_t level)
     return consumer_->SetDropFrameLevel(level);
 }
 
-SingleBufferMode ConsumerSurface::GetAndResetSingleBufferMode()
+SingleBufferMode ConsumerSurface::GetAndResetSingleBufferMode(void)
 {
     if (consumer_ == nullptr) {
         return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;

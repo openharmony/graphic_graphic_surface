@@ -384,6 +384,7 @@ private:
     GSError ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
         std::unique_lock<std::mutex> &lock);
     void CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock, std::vector<uint32_t> &cleanedSeqNums);
+    sptr<ConsumerSurfaceDelegator> GetDelegator();
     void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
@@ -426,6 +427,7 @@ private:
     sptr<SyncFence> lastFlusedFence_;
     sptr<SyncFence> preBufferReleasedFence_;
     sptr<ConsumerSurfaceDelegator> sptrCSurfaceDelegator_;
+    std::mutex delegatorMutex_;
     bool isCpuAccessable_ = false;
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     bool isBufferHold_ = false;

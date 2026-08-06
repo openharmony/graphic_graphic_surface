@@ -123,6 +123,12 @@ uint32_t BufferQueue::GetUsedSize()
     return static_cast<uint32_t>(bufferQueueCache_.size());
 }
 
+sptr<ConsumerSurfaceDelegator> BufferQueue::GetDelegator()
+{
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
+    return sptrCSurfaceDelegator_;
+}
+
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -433,8 +439,9 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
-    if (sptrCSurfaceDelegator_ != nullptr) {
-        return DelegatorDequeueBuffer(sptrCSurfaceDelegator_, config, bedata, retval);
+    sptr<ConsumerSurfaceDelegator> delegator = GetDelegator();
+    if (delegator != nullptr) {
+        return DelegatorDequeueBuffer(delegator, config, bedata, retval);
     }
     std::unique_lock<std::mutex> lock(mutex_);
     return RequestBufferLocked(config, bedata, retval, lock);
@@ -657,7 +664,7 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
 
 GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence)
 {
-    auto consumerDelegator = sptrCSurfaceDelegator_;
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = GetDelegator();
     if (consumerDelegator == nullptr) {
         BLOGE("Consumer surface delegator has been expired");
         return GSERROR_INVALID_ARGUMENTS;
@@ -744,7 +751,8 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     }
     CallConsumerListener();
 
-    if (sptrCSurfaceDelegator_ != nullptr) {
+    sptr<ConsumerSurfaceDelegator> delegator = GetDelegator();
+    if (delegator != nullptr) {
         sret = DelegatorQueueBuffer(sequence, fence);
     }
     return sret;
@@ -1691,12 +1699,14 @@ GSError BufferQueue::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<S
     }
 
     surfaceDelegator->SetSurface(cSurface);
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
     sptrCSurfaceDelegator_ = surfaceDelegator;
     return GSERROR_OK;
 }
 
 GSError BufferQueue::UnregisterSurfaceDelegator()
 {
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
     sptrCSurfaceDelegator_ = nullptr;
     return GSERROR_OK;
 }

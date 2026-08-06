@@ -385,6 +385,7 @@ private:
         std::unique_lock<std::mutex> &lock);
     void CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock, std::vector<uint32_t> &cleanedSeqNums);
     void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
+    sptr<ConsumerSurfaceDelegator> GetDelegator();
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;

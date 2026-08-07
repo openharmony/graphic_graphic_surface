@@ -378,6 +378,32 @@ HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace003, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_GetColorSpace
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_GetColorSpace
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferGetColorSpace004, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    OH_NativeBuffer_ColorSpace colorSpace = OH_COLORSPACE_NONE;
+    int32_t ret = OH_NativeBuffer_SetColorSpace(buffer, OH_COLORSPACE_BT2020_LOG_FULL);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+    ret = OH_NativeBuffer_GetColorSpace(buffer, &colorSpace);
+    if (ret != GSERROR_NOT_SUPPORT) { // some device not support set colorspace
+        ASSERT_EQ(colorSpace, OH_COLORSPACE_BT2020_LOG_FULL);
+        ASSERT_EQ(ret, GSERROR_OK);
+    }
+}
+
+/*
 * Function: OH_NativeBuffer_SetMetadataValue
 * Type: Function
 * Rank: Important(2)

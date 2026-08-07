@@ -305,6 +305,14 @@ public:
     {
         return VideoDimType::VIDEO_DIM_TYPE_2D;
     }
+    virtual void SetSingleBufferMode(SingleBufferMode mode)
+    {
+        (void)mode;
+    }
+    virtual SingleBufferMode GetAndResetSingleBufferMode()
+    {
+        return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
 
 protected:
     SurfaceBuffer() {}

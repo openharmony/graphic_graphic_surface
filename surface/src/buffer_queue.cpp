@@ -829,6 +829,14 @@ GSError BufferQueue::ReleaseLastFlushedBuffer(uint32_t sequence)
     return GSERROR_OK;
 }
 
+static void SetSingleBufferModeToBuffer(SingleBufferMode &mode, sptr<SurfaceBuffer> &buffer)
+{
+    if (mode != SingleBufferMode::SINGLE_BUFFER_MODE_NONE) {
+        buffer->SetSingleBufferMode(mode);
+        mode = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+}
+
 GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData> bedata,
     sptr<SyncFence> fence, const BufferFlushConfigWithDamages &config, std::unique_lock<std::mutex> &lock)
 {
@@ -850,6 +858,7 @@ GSError BufferQueue::DoFlushBufferLocked(uint32_t sequence, sptr<BufferExtraData
         BUFFER_SUPPORT_FASTCOMPOSE, supportFastCompose);
     bufferSupportFastCompose_ = (bool)supportFastCompose;
     mapIter->second.buffer->SetSurfaceBufferTransform(transform_);
+    SetSingleBufferModeToBuffer(singleBufferMode_, mapIter->second.buffer);
 
     uint64_t usage = static_cast<uint32_t>(mapIter->second.config.usage);
     if (usage & BUFFER_USAGE_CPU_WRITE) {
@@ -1295,6 +1304,7 @@ GSError BufferQueue::ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr
         mapIter->second.fence = fence;
     }
     mapIter->second.buffer->SetAndMergeSyncFence(nullptr);
+    mapIter->second.buffer->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
 
     int64_t now = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();

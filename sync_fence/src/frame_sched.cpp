@@ -161,7 +161,7 @@ void FrameSched::SetFrameParam(int requestId, int load, int schedFrameNum, int v
     if (setFrameParamFunc_ != nullptr) {
         setFrameParamFunc_(requestId, load, schedFrameNum, value);
     } else {
-        LOGE("load MonitorEnd function failed.");
+        LOGE("load SetFrameParam function failed.");
     }
 }
 } // namespace Rosen

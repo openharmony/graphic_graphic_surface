@@ -867,6 +867,11 @@ public:
      */
     GSError SetBufferTypeLeak(const std::string &bufferTypeLeak) override;
     /**
+     * @brief Get a buffer type leak.
+     * @return Returns the bufferTypeLeak string.
+     */
+    std::string GetBufferTypeLeak() const override;
+    /**
      * @brief Get the Available Buffer Count from the surface.
      * @param count [out] The Available Buffer Count of the surface.
      * @return {@link GSERROR_OK} 0 - Success.

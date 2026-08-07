@@ -4335,6 +4335,21 @@ HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeak, TestSize.Level0)
 }
 
 /*
+ * Function: GetBufferTypeLeak
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: GetBufferTypeLeak
+ */
+HWTEST_F(ProducerSurfaceTest, GetBufferTypeLeak, TestSize.Level0)
+{
+    std::string bufferTypeLeak = "bufferTypeLeak";
+    GSError ret = surface_->SetBufferTypeLeak(bufferTypeLeak);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_TRUE(surface_->GetBufferTypeLeak() == bufferTypeLeak);
+}
+
+/*
 * Function: SetBufferTypeLeakAndRequesBuffer
 * Type: Function
 * Rank: Important(2)

@@ -734,6 +734,14 @@ public:
         (void)videoDimType;
         return GSERROR_NOT_SUPPORT;
     }
+    /**
+     * @brief Get a buffer type leak.
+     * @return Returns the bufferTypeLeak string.
+     */
+    virtual std::string GetBufferTypeLeak() const
+    {
+        return "";
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

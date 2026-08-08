@@ -94,6 +94,8 @@ public:
     GSError GetPlanesInfo(void **planesInfo) override;
     void SetSurfaceBufferScalingMode(const ScalingMode &scalingMode) override;
     ScalingMode GetSurfaceBufferScalingMode() const override;
+    void SetSingleBufferMode(SingleBufferMode mode) override;
+    SingleBufferMode GetAndResetSingleBufferMode() override;
     void SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag) override;
     BufferDeletedFlag GetBufferDeletedFlag() const override;
     void ClearBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag) override;
@@ -139,6 +141,7 @@ private:
     GraphicColorGamut surfaceBufferColorGamut_ = GraphicColorGamut::GRAPHIC_COLOR_GAMUT_SRGB;
     GraphicTransformType transform_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     ScalingMode scalingMode_ = ScalingMode::SCALING_MODE_SCALE_TO_WINDOW;
+    SingleBufferMode singleBufferMode_ = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
     VideoDimType videoDimType_ = VideoDimType::VIDEO_DIM_TYPE_2D;
     int32_t surfaceBufferWidth_ = 0;
     int32_t surfaceBufferHeight_ = 0;

@@ -3588,4 +3588,23 @@ HWTEST_F(BufferQueueTest, GetAndResetSingleBufferMode001, TestSize.Level0)
     ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
 }
+
+/*
+ * Function: DoFlushBufferLocked
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(BufferQueueTest, DoFlushBufferLocked001, TestSize.Level0)
+{
+    sptr<BufferQueue> bufferqueue = new BufferQueue("testBufferNameInvalid");
+    uint32_t seq = 100;
+    bufferqueue->bufferQueueCache_[seq].buffer = new SurfaceBufferImpl(seq);
+    bufferqueue->bufferQueueCache_[seq].state = BUFFER_STATE_REQUESTED;
+    bufferqueue->bufferQueueCache_[seq].config = { .usage = 0 };
+    sptr<SyncFence> syncFence = SyncFence::INVALID_FENCE;
+    bufferqueue->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+    auto ret = bufferqueue->DoFlushBuffer(seq, bedata, syncFence, flushConfig);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
 } // namespace OHOS::Rosen

@@ -1529,4 +1529,18 @@ HWTEST_F(SurfaceBufferImplTest, ReadFromBufferInfo001, TestSize.Level0)
     ASSERT_EQ(actualConfig.colorGamut, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
     ASSERT_EQ(actualConfig.transform, GraphicTransformType::GRAPHIC_ROTATE_180);
 }
+
+/*
+ * Function: SetSingleBufferModeTest
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ */
+HWTEST_F(SurfaceBufferImplTest, SetSingleBufferModeTest001, TestSize.Level0)
+{
+    buffer = new SurfaceBufferImpl();
+    buffer->GetAndResetSingleBufferMode();
+    buffer->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+    ASSERT_EQ(buffer->GetAndResetSingleBufferMode(), SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
+}
 }

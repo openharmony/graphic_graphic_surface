@@ -929,6 +929,20 @@ VideoDimType SurfaceBufferImpl::GetSurfaceBufferVideoDimensionType() const
     return videoDimType_;
 }
 
+void SurfaceBufferImpl::SetSingleBufferMode(SingleBufferMode mode)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    singleBufferMode_ = mode;
+}
+
+SingleBufferMode SurfaceBufferImpl::GetAndResetSingleBufferMode()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    SingleBufferMode ret = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    std::swap(ret, singleBufferMode_);
+    return ret;
+}
+
 void SurfaceBufferImpl::SetBufferDeletedFlag(BufferDeletedFlag bufferDeletedFlag)
 {
     bufferDeletedFlag_.fetch_or(static_cast<uint32_t>(bufferDeletedFlag), std::memory_order_relaxed);

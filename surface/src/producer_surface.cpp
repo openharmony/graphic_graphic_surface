@@ -1680,6 +1680,7 @@ GSError ProducerSurface::SetAlphaType(GraphicAlphaType alphaType)
 
 GSError ProducerSurface::SetBufferTypeLeak(const std::string &bufferTypeLeak)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex_);
     bufferTypeLeak_ = bufferTypeLeak;
     return GSERROR_OK;
 }

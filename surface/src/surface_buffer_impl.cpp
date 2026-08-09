@@ -717,6 +717,7 @@ GSError SurfaceBufferImpl::ReadBufferProperty(MessageParcel& parcel)
 
 GSError SurfaceBufferImpl::ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     bufferRequestConfig_ = bufferInfo.bufferRequestConfig;
     surfaceBufferWidth_ = bufferInfo.surfaceBufferWidth;
     surfaceBufferHeight_ = bufferInfo.surfaceBufferHeight;
@@ -732,6 +733,7 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
     auto handle = ReadBufferHandle(parcel, readSafeFdFunc);
     SetBufferHandle(handle);
     if (handle != nullptr) {
+        std::lock_guard<std::mutex> lock(mutex_);
         if (!parcel.ReadBool(hasOriginalFields_) ||
             !parcel.ReadInt32(originalWidth_) ||
             !parcel.ReadInt32(originalHeight_) ||
@@ -752,6 +754,7 @@ OH_NativeBuffer* SurfaceBufferImpl::SurfaceBufferToNativeBuffer()
 
 uint32_t SurfaceBufferImpl::GetSeqNum() const
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     return sequenceNumber_;
 }
 
@@ -969,22 +972,17 @@ GSError SurfaceBufferImpl::TryReclaim()
         BLOGE("init memmgr members failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     if (isReclaimed_.load()) {
         return GSERROR_INVALID_OPERATING;
     }
-
-    int32_t fd = -1;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_ARGUMENTS;
-        }
-        fd = handle_->fd;
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
     }
+    int32_t fd = handle_->fd;
     if (fd < 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-
     int32_t ret = reclaimFunc_(ownPid_, fd);
     isReclaimed_ = (ret == 0 ? true : false);
     return (ret == 0 ? GSERROR_OK : GSERROR_API_FAILED);
@@ -996,22 +994,17 @@ GSError SurfaceBufferImpl::TryResumeIfNeeded()
         BLOGE("init memmgr members failed");
         return GSERROR_INVALID_ARGUMENTS;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!isReclaimed_.load()) {
         return GSERROR_INVALID_OPERATING;
     }
-
-    int32_t fd = -1;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (handle_ == nullptr) {
-            return GSERROR_INVALID_ARGUMENTS;
-        }
-        fd = handle_->fd;
+    if (handle_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
     }
+    int32_t fd = handle_->fd;
     if (fd < 0) {
         return GSERROR_INVALID_ARGUMENTS;
     }
-
     int32_t ret = resumeFunc_(ownPid_, fd);
     isReclaimed_ = (ret == 0 ? false : true);
     return (ret == 0 ? GSERROR_OK : GSERROR_API_FAILED);
@@ -1019,6 +1012,7 @@ GSError SurfaceBufferImpl::TryResumeIfNeeded()
 
 bool SurfaceBufferImpl::IsReclaimed()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     return isReclaimed_.load();
 }
 
@@ -1103,6 +1097,7 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallback() const
 
 GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parcel)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (!parcel.WriteUint32(sequenceNumber_) || !parcel.WriteUint64(bufferId_)) {
         BLOGE("%{public}s: write basic info failed, seq: %{public}u", __func__, sequenceNumber_);
         return GSERROR_API_FAILED;
@@ -1170,9 +1165,12 @@ GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parc
 GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
 {
-    if (!parcel.ReadUint32(sequenceNumber_) || !parcel.ReadUint64(bufferId_)) {
-        BLOGE("%{public}s: read basic info failed", __func__);
-        return GSERROR_API_FAILED;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (!parcel.ReadUint32(sequenceNumber_) || !parcel.ReadUint64(bufferId_)) {
+            BLOGE("%{public}s: read basic info failed", __func__);
+            return GSERROR_API_FAILED;
+        }
     }
 
     bool hasHandle = false;
@@ -1189,10 +1187,11 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
         }
         SetBufferHandle(handle);
     } else {
+        std::lock_guard<std::mutex> lock(mutex_);
         FreeBufferHandleLocked();
         handle_ = nullptr;
     }
-
+    std::lock_guard<std::mutex> lock(mutex_);
     uint32_t colorGamut = 0;
     uint32_t transform = 0;
     uint32_t scalingMode = 0;

@@ -376,7 +376,9 @@ int32_t BufferQueueProducer::FlushBuffersRemote(MessageParcel &arguments, Messag
     std::vector<BufferFlushConfigWithDamages> configs;
     std::vector<sptr<BufferExtraData>> bedataimpls;
     std::vector<sptr<SyncFence>> fences;
-    arguments.ReadUInt32Vector(&sequences);
+    if (!arguments.ReadUInt32Vector(&sequences)) {
+        return GSERROR_BINDER;
+    }
     if (sequences.size() == 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
         return ERR_NONE;
     }
@@ -1445,10 +1447,13 @@ GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, s
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    if (isDisconnectStrictly_) {
-        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
-            uniqueId_);
-        return GSERROR_CONSUMER_DISCONNECTED;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (isDisconnectStrictly_) {
+            BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+                uniqueId_);
+            return GSERROR_CONSUMER_DISCONNECTED;
+        }
     }
     return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
@@ -1557,10 +1562,13 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    if (isDisconnectStrictly_) {
-        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
-            uniqueId_);
-        return GSERROR_CONSUMER_DISCONNECTED;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (isDisconnectStrictly_) {
+            BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+                uniqueId_);
+            return GSERROR_CONSUMER_DISCONNECTED;
+        }
     }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
 }
@@ -1573,10 +1581,13 @@ GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
-    if (isDisconnectStrictly_) {
-        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
-            uniqueId_);
-        return GSERROR_CONSUMER_DISCONNECTED;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (isDisconnectStrictly_) {
+            BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+                uniqueId_);
+            return GSERROR_CONSUMER_DISCONNECTED;
+        }
     }
     GSError ret;
     for (size_t i = 0; i < sequences.size(); ++i) {

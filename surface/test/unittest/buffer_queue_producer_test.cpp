@@ -1592,6 +1592,24 @@ HWTEST_F(BufferQueueProducerTest, RequestBuffersRemoteParseErr001, TestSize.Leve
 }
 
 /*
+ * Function: FlushBuffersRemoteParseErr
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. call FlushBuffersRemote with parcel whose ReadUInt32Vector fails
+ * 4. check ret
+ */
+HWTEST_F(BufferQueueProducerTest, FlushBuffersRemoteParseErr, TestSize.Level0)
+{
+    MessageParcel arguments;
+    arguments.WriteInt32(-1);
+    MessageParcel reply;
+    MessageOption option;
+    int32_t ret = bqp_->FlushBuffersRemote(arguments, reply, option);
+    EXPECT_EQ(ret, GSERROR_BINDER);
+}
+
+/*
  * Function: AttachBufferRemoteParseErr
  * Type: Function
  * Rank: Important(2)

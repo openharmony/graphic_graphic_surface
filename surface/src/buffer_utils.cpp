@@ -202,6 +202,11 @@ void ReadVerifyAllocInfo(MessageParcel &parcel, std::vector<BufferVerifyAllocInf
             BLOGE("ReadVerifyAllocInfo read info failed");
             return;
         }
+        if (formatVal < GraphicPixelFormat::GRAPHIC_PIXEL_FMT_CLUT8 ||
+            formatVal >= GraphicPixelFormat::GRAPHIC_PIXEL_FMT_BUTT) {
+            BLOGE("ReadVerifyAllocInfo invalid format: %{public}d", formatVal);
+            return;
+        }
         info.format = static_cast<GraphicPixelFormat>(formatVal);
         infos.emplace_back(info);
     }

@@ -839,4 +839,11 @@ SingleBufferMode ConsumerSurface::GetAndResetSingleBufferMode()
     return consumer_->GetAndResetSingleBufferMode();
 }
 
+GSError ConsumerSurface::SetPermissionRules(sptr<ISurfacePermission>& permission)
+{
+    if (producer_ == nullptr) {
+        return SURFACE_ERROR_UNKOWN;
+    }
+    return producer_->SetPermissionRules(permission);
+}
 } // namespace OHOS

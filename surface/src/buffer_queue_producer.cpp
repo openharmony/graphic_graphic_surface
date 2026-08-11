@@ -2225,6 +2225,14 @@ GSError BufferQueueProducer::SetLppShareFd(int fd, bool state)
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    std::unique_lock<std::mutex> lock(mutex_);
+    const sptr<ISurfacePermission> permission = permission_;
+    lock.unlock();
+
+    if (permission == nullptr || !permission->CheckLppCaller()) {
+        BLOGW("BufferQueueProducer::SetLppShareFd caller check failed");
+        return GSERROR_NO_PERMISSION;
+    }
     return bufferQueue_->SetLppShareFd(fd, state);
 }
 
@@ -2295,6 +2303,16 @@ int32_t BufferQueueProducer::SetSingleBufferModeRemote(MessageParcel &arguments,
         return SURFACE_ERROR_BINDER_ERROR;
     }
     return SURFACE_ERROR_OK;
+}
+
+GSError BufferQueueProducer::SetPermissionRules(sptr<ISurfacePermission>& permission)
+{
+    if (permission == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    permission_ = permission;
+    return GSERROR_OK;
 }
 
 GSError BufferQueueProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)

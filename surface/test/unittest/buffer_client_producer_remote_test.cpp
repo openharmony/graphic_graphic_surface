@@ -940,7 +940,7 @@ HWTEST_F(BufferClientProducerRemoteTest, SetLppShareFd002, TestSize.Level0)
     ASSERT_NE(ftruncate(fd, 0x1000), -1);
     bool state = false;
     GSError ret = bp->SetLppShareFd(fd, state);
-    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(ret, OHOS::GSERROR_NO_PERMISSION);
     close(fd);
 }
 

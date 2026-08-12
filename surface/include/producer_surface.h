@@ -284,12 +284,6 @@ public:
      */
     void SetBufferHold(bool hold) override;
     /**
-     * @brief Set the Buffer Realloc Flag.
-     *
-     * @param flag [in] Indicates the switch to bool instance.
-     */
-    GSError SetBufferReallocFlag(bool flag) override;
-    /**
      * @brief Set the User Data for the surface.
      *
      * @param key [in] Indicates the key of the user data.
@@ -860,6 +854,12 @@ public:
      *         {@link SURFACE_ERROR_UNKNOWN} 50002000 - Inner error.
      */
     GSError SetAlphaType(GraphicAlphaType alphaType) override;
+    /**
+     * @brief Set the Buffer Realloc Flag.
+     * 
+     * @param flag [in] Indicates the switch to bool instance.
+     */
+    GSError SetBufferReallocFlag(bool flag) override;
     /**
      * @brief Set a buffer type leak.
      * @param bufferTypeLeak Indicates the bufferTypeLeak to be set.

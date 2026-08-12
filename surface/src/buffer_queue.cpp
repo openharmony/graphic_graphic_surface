@@ -485,6 +485,7 @@ GSError BufferQueue::ReallocBufferLocked(const BufferRequestConfig &config,
     if (mapIter != bufferQueueCache_.end()) {
         isBufferNeedRealloc = mapIter->second.isBufferNeedRealloc;
         if (isBufferNeedRealloc && mapIter->second.fence != nullptr) {
+            SURFACE_TRACE_NAME_FMT("WaitFence");
             // fence wait time 3000ms
             int32_t ret = mapIter->second.fence->Wait(3000);
             if (ret < 0 && mapIter->second.fence->Get() != -1) {
@@ -1406,6 +1407,7 @@ void BufferQueue::DeleteBufferInCacheNoWaitForAllocatingState(uint32_t sequence)
         }
         OnBufferDeleteForRS(sequence);
         bufferQueueCache_.erase(it);
+        DeleteFreeListCacheLocked(sequence);
         deletingList_.push_back(sequence);
     }
 }
@@ -1431,8 +1433,9 @@ void BufferQueue::DeleteBuffersLocked(int32_t count, std::unique_lock<std::mutex
 
     isAllocatingBufferCon_.wait(lock, [this]() { return !isAllocatingBuffer_; });
     while (!freeList_.empty()) {
-        DeleteBufferInCacheNoWaitForAllocatingState(freeList_.front());
-        freeList_.pop_front();
+        uint32_t seq = freeList_.front();
+        DeleteBufferInCacheNoWaitForAllocatingState(seq);
+        DeleteFreeListCacheLocked(seq);
         count--;
         if (count <= 0) {
             return;
@@ -3252,11 +3255,11 @@ SingleBufferMode BufferQueue::GetAndResetSingleBufferMode()
 
 GSError BufferQueue::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
 {
-    if (freeList_.empty()) {
-        return GSERROR_OK;
-    }
     {
         std::unique_lock<std::mutex> lock(mutex_);
+        if (freeList_.empty()) {
+            return GSERROR_OK;
+        }
         CleanReleasedBuffersLocked(lock, cleanedSeqNums);
         waitReqCon_.notify_all();
     }

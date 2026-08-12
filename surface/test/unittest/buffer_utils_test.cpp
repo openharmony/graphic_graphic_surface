@@ -235,6 +235,37 @@ HWTEST_F(BufferUtilsTest, ReadHDRMetaDataParseErr, TestSize.Level0)
 }
 
 /*
+ * Function: ReadVerifyAllocInfoFormatOutOfRange
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. write a valid size but out-of-range format, call ReadVerifyAllocInfo
+ * 2. check infos stays empty
+ */
+HWTEST_F(BufferUtilsTest, ReadVerifyAllocInfoFormatOutOfRange, TestSize.Level0)
+{
+    MessageParcel parcel;
+    EXPECT_TRUE(parcel.WriteUint32(1)); // size
+    EXPECT_TRUE(parcel.WriteUint32(0x100)); // width
+    EXPECT_TRUE(parcel.WriteUint32(0x100)); // height
+    EXPECT_TRUE(parcel.WriteUint64(BUFFER_USAGE_CPU_READ)); // usage
+    EXPECT_TRUE(parcel.WriteInt32(-1)); // format < GRAPHIC_PIXEL_FMT_CLUT8
+    std::vector<BufferVerifyAllocInfo> infos;
+    ReadVerifyAllocInfo(parcel, infos);
+    EXPECT_TRUE(infos.empty());
+
+    MessageParcel parcel2;
+    EXPECT_TRUE(parcel2.WriteUint32(1));
+    EXPECT_TRUE(parcel2.WriteUint32(0x100));
+    EXPECT_TRUE(parcel2.WriteUint32(0x100));
+    EXPECT_TRUE(parcel2.WriteUint64(BUFFER_USAGE_CPU_READ));
+    EXPECT_TRUE(parcel2.WriteInt32(GRAPHIC_PIXEL_FMT_BUTT)); // format >= GRAPHIC_PIXEL_FMT_BUTT
+    std::vector<BufferVerifyAllocInfo> infos2;
+    ReadVerifyAllocInfo(parcel2, infos2);
+    EXPECT_TRUE(infos2.empty());
+}
+
+/*
 * Function: ReadSurfaceProperty
 * Type: Function
 * Rank: Important(2)

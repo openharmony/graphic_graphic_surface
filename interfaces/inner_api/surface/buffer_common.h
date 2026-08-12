@@ -299,24 +299,24 @@ typedef enum OH_NativeBuffer_Format {
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_CLUT4,
-    NATIVEBUFFER_PIXEL_FMT_RGB_565 = 3,               ///< RGB565 format
-    NATIVEBUFFER_PIXEL_FMT_RGBA_5658,                 ///< RGBA5658 format
-    NATIVEBUFFER_PIXEL_FMT_RGBX_4444,                 ///< RGBX4444 format
-    NATIVEBUFFER_PIXEL_FMT_RGBA_4444,                 ///< RGBA4444 format
-    NATIVEBUFFER_PIXEL_FMT_RGB_444,                   ///< RGB444 format
-    NATIVEBUFFER_PIXEL_FMT_RGBX_5551,                 ///< RGBX5551 format
-    NATIVEBUFFER_PIXEL_FMT_RGBA_5551,                 ///< RGBA5551 format
-    NATIVEBUFFER_PIXEL_FMT_RGB_555,                   ///< RGB555 format
-    NATIVEBUFFER_PIXEL_FMT_RGBX_8888,                 ///< RGBX8888 format
-    NATIVEBUFFER_PIXEL_FMT_RGBA_8888,                 ///< RGBA8888 format
-    NATIVEBUFFER_PIXEL_FMT_RGB_888,                   ///< RGB888 format
-    NATIVEBUFFER_PIXEL_FMT_BGR_565,                   ///< BGR565 format
-    NATIVEBUFFER_PIXEL_FMT_BGRX_4444,                 ///< BGRX4444 format
-    NATIVEBUFFER_PIXEL_FMT_BGRA_4444,                 ///< BGRA4444 format
-    NATIVEBUFFER_PIXEL_FMT_BGRX_5551,                 ///< BGRX5551 format
-    NATIVEBUFFER_PIXEL_FMT_BGRA_5551,                 ///< BGRA5551 format
-    NATIVEBUFFER_PIXEL_FMT_BGRX_8888,                 ///< BGRX8888 format
-    NATIVEBUFFER_PIXEL_FMT_BGRA_8888,                 ///< BGRA8888 format
+    NATIVEBUFFER_PIXEL_FMT_RGB_565 = 3,               /// < RGB565 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBA_5658,                 /// < RGBA5658 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBX_4444,                 /// < RGBX4444 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBA_4444,                 /// < RGBA4444 format */
+    NATIVEBUFFER_PIXEL_FMT_RGB_444,                   /// < RGB444 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBX_5551,                 /// < RGBX5551 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBA_5551,                 /// < RGBA5551 format */
+    NATIVEBUFFER_PIXEL_FMT_RGB_555,                   /// < RGB555 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBX_8888,                 /// < RGBX8888 format */
+    NATIVEBUFFER_PIXEL_FMT_RGBA_8888,                 /// < RGBA8888 format */
+    NATIVEBUFFER_PIXEL_FMT_RGB_888,                   /// < RGB888 format */
+    NATIVEBUFFER_PIXEL_FMT_BGR_565,                   /// < BGR565 format */
+    NATIVEBUFFER_PIXEL_FMT_BGRX_4444,                 /// < BGRX4444 format */
+    NATIVEBUFFER_PIXEL_FMT_BGRA_4444,                 /// < BGRA4444 format */
+    NATIVEBUFFER_PIXEL_FMT_BGRX_5551,                 /// < BGRX5551 format */
+    NATIVEBUFFER_PIXEL_FMT_BGRA_5551,                 /// < BGRA5551 format */
+    NATIVEBUFFER_PIXEL_FMT_BGRX_8888,                 /// < BGRX8888 format */
+    NATIVEBUFFER_PIXEL_FMT_BGRA_8888,                 /// < BGRA8888 format */
     /**
      * YUV422 interleaved format
      * @since 12

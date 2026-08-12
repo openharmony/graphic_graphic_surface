@@ -1127,6 +1127,15 @@ GSError BufferClientProducer::SyncProducerCache(std::map<uint32_t, sptr<SurfaceB
     return GSERROR_OK;
 }
 
+GSError BufferClientProducer::SetSingleBufferMode(SingleBufferMode mode)
+{
+    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
+    if (!arguments.WriteInt32(static_cast<int32_t>(mode))) {
+        return GSERROR_BINDER;
+    }
+    SEND_REQUEST(BUFFER_PRODUCER_SET_SINGLE_BUFFER_MODE, arguments, reply, option);
+    return CheckRetval(reply);
+}
 GSError BufferClientProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
 {
     DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
@@ -1138,15 +1147,5 @@ GSError BufferClientProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleane
         return GSERROR_BINDER;
     }
     return ret;
-}
-
-GSError BufferClientProducer::SetSingleBufferMode(SingleBufferMode mode)
-{
-    DEFINE_MESSAGE_VARIABLES(arguments, reply, option);
-    if (!arguments.WriteInt32(static_cast<int32_t>(mode))) {
-        return GSERROR_BINDER;
-    }
-    SEND_REQUEST(BUFFER_PRODUCER_SET_SINGLE_BUFFER_MODE, arguments, reply, option);
-    return CheckRetval(reply);
 }
 }; // namespace OHOS

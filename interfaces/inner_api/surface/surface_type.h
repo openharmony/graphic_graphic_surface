@@ -196,6 +196,7 @@ using SingleBufferMode = enum SingleBufferMode {
     SINGLE_BUFFER_MODE_TO_MULTI = 2,
     SINGLE_BUFFER_MODE_MAX_VALUE,
 };
+
 // inner interface params
 using TunnelLayerInfo = struct TunnelLayerInfo {
     TunnelTypeMask tunnelTypeMask = TUNNEL_TYPE_NONE; /**< Tunnel type mask */

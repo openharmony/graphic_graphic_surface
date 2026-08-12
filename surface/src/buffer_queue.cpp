@@ -123,6 +123,12 @@ uint32_t BufferQueue::GetUsedSize()
     return static_cast<uint32_t>(bufferQueueCache_.size());
 }
 
+sptr<ConsumerSurfaceDelegator> BufferQueue::GetDelegator()
+{
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
+    return sptrCSurfaceDelegator_;
+}
+
 GSError BufferQueue::GetProducerInitInfo(ProducerInitInfo &info)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -433,8 +439,9 @@ GSError BufferQueue::RequestBufferLocked(const BufferRequestConfig &config, sptr
 GSError BufferQueue::RequestBuffer(const BufferRequestConfig &config, sptr<BufferExtraData> &bedata,
     struct IBufferProducer::RequestBufferReturnValue &retval)
 {
-    if (sptrCSurfaceDelegator_ != nullptr) {
-        return DelegatorDequeueBuffer(sptrCSurfaceDelegator_, config, bedata, retval);
+    sptr<ConsumerSurfaceDelegator> delegator = GetDelegator();
+    if (delegator != nullptr) {
+        return DelegatorDequeueBuffer(delegator, config, bedata, retval);
     }
     std::unique_lock<std::mutex> lock(mutex_);
     return RequestBufferLocked(config, bedata, retval, lock);
@@ -658,7 +665,7 @@ GSError BufferQueue::CheckBufferQueueCache(uint32_t sequence)
 
 GSError BufferQueue::DelegatorQueueBuffer(uint32_t sequence, sptr<SyncFence> fence)
 {
-    auto consumerDelegator = sptrCSurfaceDelegator_;
+    sptr<ConsumerSurfaceDelegator> consumerDelegator = GetDelegator();
     if (consumerDelegator == nullptr) {
         BLOGE("Consumer surface delegator has been expired");
         return GSERROR_INVALID_ARGUMENTS;
@@ -745,7 +752,8 @@ GSError BufferQueue::FlushBuffer(uint32_t sequence, sptr<BufferExtraData> bedata
     }
     CallConsumerListener();
 
-    if (sptrCSurfaceDelegator_ != nullptr) {
+    sptr<ConsumerSurfaceDelegator> delegator = GetDelegator();
+    if (delegator != nullptr) {
         sret = DelegatorQueueBuffer(sequence, fence);
     }
     return sret;
@@ -942,7 +950,6 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
         mapIter->second.state = BUFFER_STATE_ACQUIRED;
         mapIter->second.lastAcquireTime = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
-
         fence = mapIter->second.fence;
         timestamp = mapIter->second.timestamp;
         damages = mapIter->second.damages;
@@ -962,7 +969,7 @@ GSError BufferQueue::AcquireBuffer(sptr<SurfaceBuffer> &buffer,
 GSError BufferQueue::AcquireBuffer(IConsumerSurface::AcquireBufferReturnValue &returnValue,
                                    int64_t expectPresentTimestamp, bool isUsingAutoTimestamp)
 {
-    SURFACE_TRACE_NAME_FMT("AcquireBuffer with PresentTimestamp name: %s queueId: %" PRIu64 " queueSize: %u"
+    SURFACE_TRACE_NAME_FMT("AcquireBuffer with PresentTimestamp name: %s queueId: %" PRIu64 " queueSize: %u,"
         "expectPresentTimestamp: %" PRId64, name_.c_str(), uniqueId_, bufferQueueSize_, expectPresentTimestamp);
     if (expectPresentTimestamp <= 0) {
         return AcquireBuffer(returnValue.buffer, returnValue.fence, returnValue.timestamp, returnValue.damages);
@@ -1069,7 +1076,7 @@ void BufferQueue::ReleaseDropBuffers(std::vector<BufferAndFence> &dropBuffers)
 
 void BufferQueue::DropBuffersByLevel(std::vector<BufferAndFence> &dropBuffers)
 {
-    if (dropFrameLevel_ <= 0 || dirtyList_.size() <= static_cast<size_t>(dropFrameLevel_)) {
+    if (dropFrameLevel_ <= 0 || dirtyList_.size() <= dropFrameLevel_) {
         return;
     }
 
@@ -1365,6 +1372,7 @@ void BufferQueue::OnBufferDeleteForRS(uint32_t sequence)
 {
     auto buffer = bufferQueueCache_[sequence].buffer;
     if (buffer == nullptr) {
+        BLOGE("Buffer is nullptr.");
         return;
     }
     buffer->SetBufferDeletedFlag(BufferDeletedFlag::DELETED_FROM_CACHE);
@@ -1694,12 +1702,14 @@ GSError BufferQueue::RegisterSurfaceDelegator(sptr<IRemoteObject> client, sptr<S
     }
 
     surfaceDelegator->SetSurface(cSurface);
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
     sptrCSurfaceDelegator_ = surfaceDelegator;
     return GSERROR_OK;
 }
 
 GSError BufferQueue::UnregisterSurfaceDelegator()
 {
+    std::lock_guard<std::mutex> lockGuard(delegatorMutex_);
     sptrCSurfaceDelegator_ = nullptr;
     return GSERROR_OK;
 }
@@ -2780,6 +2790,17 @@ GSError BufferQueue::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, sptr<Buff
     return ret;
 }
 
+GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    auto iter = bufferQueueCache_.find(buffer->GetSeqNum());
+    if (iter == bufferQueueCache_.end()) {
+        return GSERROR_BUFFER_NOT_INCACHE;
+    }
+    config = iter->second.config;
+    return GSERROR_OK;
+}
+
 GSError BufferQueue::GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
@@ -2807,17 +2828,6 @@ GSError BufferQueue::GetBufferSupportFastCompose(bool &bufferSupportFastCompose)
 {
     std::lock_guard<std::mutex> lockGuard(mutex_);
     bufferSupportFastCompose = bufferSupportFastCompose_;
-    return GSERROR_OK;
-}
-
-GSError BufferQueue::GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    auto iter = bufferQueueCache_.find(buffer->GetSeqNum());
-    if (iter == bufferQueueCache_.end()) {
-        return GSERROR_BUFFER_NOT_INCACHE;
-    }
-    config = iter->second.config;
     return GSERROR_OK;
 }
 
@@ -2917,7 +2927,7 @@ GSError BufferQueue::PreAllocBuffers(const BufferRequestConfig &config, uint32_t
     {
         std::lock_guard<std::mutex> lockGuard(mutex_);
         for (auto iter = surfaceBufferCache.begin(); iter != surfaceBufferCache.end(); ++iter) {
-            if (bufferQueueCache_.size() >= bufferQueueSize_- detachReserveSlotNum_) {
+            if (bufferQueueCache_.size() >= bufferQueueSize_ - detachReserveSlotNum_) {
                 BLOGW("CacheSize: %{public}zu, QueueSize: %{public}u, allocBufferCount: %{public}zu,"
                    " queId: %{public}" PRIu64, bufferQueueCache_.size(), bufferQueueSize_,
                    surfaceBufferCache.size(), uniqueId_);
@@ -3228,6 +3238,21 @@ GSError BufferQueue::SyncProducerCache(std::map<uint32_t, sptr<SurfaceBuffer>>& 
     return GSERROR_OK;
 }
 
+GSError BufferQueue::SetSingleBufferMode(SingleBufferMode singleBufferMode)
+{
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    singleBufferMode_ = singleBufferMode;
+    return GSERROR_OK;
+}
+
+SingleBufferMode BufferQueue::GetAndResetSingleBufferMode()
+{
+    SingleBufferMode ret = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    std::lock_guard<std::mutex> lockGuard(mutex_);
+    std::swap(ret, singleBufferMode_);
+    return ret;
+}
+
 GSError BufferQueue::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)
 {
     {
@@ -3274,20 +3299,5 @@ void BufferQueue::CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock,
         bufferQueueCache_.erase(sequence);
         it = freeList_.erase(it);
     }
-}
-
-GSError BufferQueue::SetSingleBufferMode(SingleBufferMode singleBufferMode)
-{
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    singleBufferMode_ = singleBufferMode;
-    return GSERROR_OK;
-}
-
-SingleBufferMode BufferQueue::GetAndResetSingleBufferMode()
-{
-    SingleBufferMode ret = SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
-    std::lock_guard<std::mutex> lockGuard(mutex_);
-    std::swap(ret, singleBufferMode_);
-    return ret;
 }
 }; // namespace OHOS

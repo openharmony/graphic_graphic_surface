@@ -108,22 +108,6 @@ public:
             std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc = nullptr) = 0;
     virtual void SetBufferHandle(BufferHandle *handle) = 0;
 
-    /**
-     * @brief Allocates a surface buffer based on the specified configuration.
-     *
-     * This method allocates a new buffer according to the parameters in the given BufferRequestConfig.
-     * If a previous buffer (`previousBuffer`) is provided, the implementation may attempt to reuse or reallocate
-     * from it to optimize memory usage or performance. If `previousBuffer` is null,
-     * a new buffer is allocated from scratch.
-     * @param config          Buffer configuration including size, format, usage, timeout, color gamut, etc.
-     * @param previousBuffer  Optional previous buffer to be reused or reallocated. If nullptr, no reuse is attempted.
-     * @return Returns:
-     * - GSERROR_OK on successful allocation or reallocation;
-     * - GSERROR_INVALID_ARGUMENTS if the input config is invalid;
-     * - GSERROR_INTERNAL if the internal display buffer is not initialized;
-     * - GSERROR_HDI_ERROR for lower-level allocation or registration failures.
-     */
-    virtual GSError Alloc(const BufferRequestConfig &config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) = 0;
     virtual GSError Map() = 0;
     virtual GSError Unmap() = 0;
     virtual GSError FlushCache() = 0;
@@ -238,7 +222,23 @@ public:
     }
     virtual void SetAndMergeSyncFence(const sptr<SyncFence>& syncFence) = 0;
     virtual sptr<SyncFence> GetSyncFence() const = 0;
-    virtual uint64_t GetBufferId()
+    /**
+     * @brief Allocates a surface buffer based on the specified configuration.
+     *
+     * This method allocates a new buffer according to the parameters in the given BufferRequestConfig.
+     * If a previous buffer (`previousBuffer`) is provided, the implementation may attempt to reuse or reallocate
+     * from it to optimize memory usage or performance. If `previousBuffer` is null,
+     * a new buffer is allocated from scratch.
+     * @param config          Buffer configuration including size, format, usage, timeout, color gamut, etc.
+     * @param previousBuffer  Optional previous buffer to be reused or reallocated. If nullptr, no reuse is attempted.
+     * @return Returns:
+     * - GSERROR_OK on successful allocation or reallocation;
+     * - GSERROR_INVALID_ARGUMENTS if the input config is invalid;
+     * - GSERROR_INTERNAL if the internal display buffer is not initialized;
+     * - GSERROR_HDI_ERROR for lower-level allocation or registration failures.
+     */
+    virtual GSError Alloc(const BufferRequestConfig &config, const sptr<SurfaceBuffer>& previousBuffer = nullptr) = 0;
+    virtual uint64_t GetBufferId() const
     {
         return 0;
     }
@@ -256,12 +256,12 @@ public:
         (void)handle;
         return nullptr;
     }
-    virtual void RegisterBufferDestructorCallBack(std::function<void(uint64_t)> callBack)
+    virtual void RegisterBufferDestructorCallback(std::function<void(uint64_t)> callBack)
     {
         (void)callBack;
         return;
     }
-    virtual void UnRegisterBufferDestructorCallBack()
+    virtual void UnRegisterBufferDestructorCallback()
     {
         return;
     }
@@ -270,7 +270,6 @@ public:
         (void)parcel;
         return GSERROR_OK;
     }
-
     virtual GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
         std::function<int(MessageParcel &parcel,
             std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr)

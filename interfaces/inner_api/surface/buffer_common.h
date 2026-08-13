@@ -427,7 +427,7 @@ typedef enum OH_NativeBuffer_Format {
      * @since 12
      */
     NATIVEBUFFER_PIXEL_FMT_VENDER_MASK = 0X7FFF0000,
-    NATIVEBUFFER_PIXEL_FMT_BUTT = 0X7FFFFFFF          ///< Invalid pixel format
+    NATIVEBUFFER_PIXEL_FMT_BUTT = 0X7FFFFFFF          /// < Invalid pixel format */
 } OH_NativeBuffer_Format;
 
 /**

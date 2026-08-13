@@ -295,6 +295,7 @@ public:
     GSError SetVideoDimensionType(VideoDimType videoDimType);
     GSError GetVideoDimensionType(VideoDimType &videoDimType);
     GSError GetVideoDimensionType(uint32_t sequence, VideoDimType &videoDimType);
+
 private:
     GSError AllocBuffer(sptr<SurfaceBuffer>& buffer, const sptr<SurfaceBuffer>& previousBuffer,
         const BufferRequestConfig& config, std::unique_lock<std::mutex>& lock);
@@ -384,8 +385,8 @@ private:
     GSError ReleaseBufferLocked(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence>& fence,
         std::unique_lock<std::mutex> &lock);
     void CleanReleasedBuffersLocked(std::unique_lock<std::mutex> &lock, std::vector<uint32_t> &cleanedSeqNums);
-    sptr<ConsumerSurfaceDelegator> GetDelegator();
     void OnCleanCacheForBufferInfoMapLocked(sptr<IBufferConsumerListener> listener);
+    sptr<ConsumerSurfaceDelegator> GetDelegator();
     int32_t defaultWidth_ = 0;
     int32_t defaultHeight_ = 0;
     uint64_t defaultUsage_ = 0;

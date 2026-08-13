@@ -108,7 +108,7 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
 
 bool FrameReport::HasGameScene()
 {
-    int32_t type = sceneType_.load();
+    uint32_t type = sceneType_.load();
     if (type == FR_SCENE_NONE) {
         return false;
     }
@@ -126,7 +126,7 @@ bool FrameReport::IsActiveGameWithPid(int32_t pid)
     if (pid <= FR_DEFAULT_PID) {
         return false;
     }
-    int32_t type = sceneType_.load();
+    uint32_t type = sceneType_.load();
     if ((type & FR_SCENE_GAME) && activelyPid_.load() == pid) {
         return true;
     }
@@ -294,7 +294,7 @@ void FrameReport::Report(const std::string& layerName)
         return;
     }
     bufferMsg = msg;
-    int32_t type = sceneType_.load();
+    uint32_t type = sceneType_.load();
     if ((type & FR_SCENE_GAME) && activelyPid_.load() != FR_DEFAULT_PID) {
         NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg, activelyUniqueId_.load());
     }

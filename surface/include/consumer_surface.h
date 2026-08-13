@@ -624,7 +624,7 @@ public:
      * @return uint32_t The Available Buffer Count of the surface.
      */
     uint32_t GetAvailableBufferCount() const override;
-        /**
+    /**
      * @brief Get the Buffer Cache Config from the surface buffer.
      *
      * @param buffer [in] Indicates the pointer to a SurfaceBuffer instance.

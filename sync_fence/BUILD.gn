@@ -44,6 +44,8 @@ ohos_shared_library("sync_fence") {
     boundary_sanitize = true
     integer_overflow = true
     ubsan = true
+    cfi = true
+    cfi_cross_dso = true
   }
 
   public_configs = [ ":sync_fence_public_config" ]
@@ -82,6 +84,14 @@ ohos_static_library("sync_fence_static") {
   configs = [ ":sync_fence_config" ]
 
   public_configs = [ ":sync_fence_public_config" ]
+
+  sanitize = {
+    boundary_sanitize = true
+    integer_overflow = true
+    ubsan = true
+    cfi = true
+    cfi_cross_dso = true
+  }
 
   external_deps = [
     "c_utils:utils",

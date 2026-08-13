@@ -20,6 +20,13 @@ config("sandbox_utils_config") {
 ohos_static_library("sandbox_utils") {
   sources = [ "sandbox_utils.cpp" ]
   public_configs = [ ":sandbox_utils_config" ]
+  sanitize = {
+    boundary_sanitize = true
+    integer_overflow = true
+    ubsan = true
+    cfi = true
+    cfi_cross_dso = true
+  }
 
   subsystem_name = "graphic"
   part_name = "graphic_surface"

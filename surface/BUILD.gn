@@ -51,6 +51,7 @@ ohos_static_library("surface_headers") {
   public_configs = [ ":surface_headers_config" ]
   part_name = "graphic_surface"
   subsystem_name = "graphic"
+  branch_protector_ret = "pac_ret"
 }
 
 ohos_shared_library("surface") {
@@ -60,6 +61,8 @@ ohos_shared_library("surface") {
     boundary_sanitize = true
     integer_overflow = true
     ubsan = true
+    cfi = true
+    cfi_cross_dso = true
   }
 
   public_configs = [ ":surface_public_config" ]
@@ -122,6 +125,14 @@ ohos_static_library("surface_static") {
   configs = [ ":surface_config" ]
 
   public_configs = [ ":surface_public_config" ]
+
+  sanitize = {
+    boundary_sanitize = true
+    integer_overflow = true
+    ubsan = true
+    cfi = true
+    cfi_cross_dso = true
+  }
 
   deps = [
     "$graphic_surface_root/buffer_handle:buffer_handle",

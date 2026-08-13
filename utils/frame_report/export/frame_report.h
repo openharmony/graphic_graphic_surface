@@ -76,7 +76,7 @@ private:
     std::atomic<int64_t> presentFenceSysTime_ = 0;
     std::atomic<uint32_t> presentFenceSequence_ = 0;
     std::atomic<int64_t> lastReleaseSysTime_ = 0;
-    std::atomic<int32_t> sceneType_ = FR_SCENE_NONE;
+    std::atomic<uint32_t> sceneType_ = FR_SCENE_NONE;
     std::unique_ptr<SceneReporter> hwschedReporter_;
 
     bool isGameSoLoaded_ = false;

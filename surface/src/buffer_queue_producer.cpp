@@ -2138,20 +2138,6 @@ int32_t BufferQueueProducer::SyncProducerCacheRemote(MessageParcel &arguments, M
     return ret;
 }
 
-int32_t BufferQueueProducer::CleanReleasedBuffersRemote(
-    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
-{
-    std::vector<uint32_t> sequences;
-    GSError result = CleanReleasedBuffers(sequences);
-    if (!reply.WriteInt32(result)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-    if (result == GSERROR_OK && !reply.WriteUInt32Vector(sequences)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-    return ERR_NONE;
-}
-
 int32_t BufferQueueProducer::SetSingleBufferModeRemote(MessageParcel &arguments,
     MessageParcel &reply, MessageOption &option)
 {
@@ -2169,6 +2155,20 @@ int32_t BufferQueueProducer::SetSingleBufferModeRemote(MessageParcel &arguments,
         return SURFACE_ERROR_BINDER_ERROR;
     }
     return SURFACE_ERROR_OK;
+}
+
+int32_t BufferQueueProducer::CleanReleasedBuffersRemote(
+    MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
+{
+    std::vector<uint32_t> sequences;
+    GSError result = CleanReleasedBuffers(sequences);
+    if (!reply.WriteInt32(result)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    if (result == GSERROR_OK && !reply.WriteUInt32Vector(sequences)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
 }
 
 GSError BufferQueueProducer::CleanReleasedBuffers(std::vector<uint32_t> &cleanedSeqNums)

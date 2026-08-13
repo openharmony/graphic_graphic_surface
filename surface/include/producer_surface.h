@@ -68,7 +68,7 @@ public:
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      *         {@link GSERROR_NO_CONSUMER} 41202000 - no consumer.
      *         {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
-     *         {@link} GSERROR_CONSUMER_IS_CONNECTED 41206000 - consumer is connected already.
+     *         {@link GSERROR_CONSUMER_IS_CONNECTED} 41206000 - consumer is connected already.
      *
      * @see FlushBuffer
      */
@@ -84,7 +84,7 @@ public:
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      *         {@link GSERROR_NO_CONSUMER} 41202000 - no consumer.
      *         {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
-     *         {@link} GSERROR_CONSUMER_IS_CONNECTED 41206000 - consumer is connected already.
+     *         {@link GSERROR_CONSUMER_IS_CONNECTED} 41206000 - consumer is connected already.
      *
      * @see FlushBuffers
      */
@@ -140,7 +140,7 @@ public:
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      *         {@link GSERROR_NO_CONSUMER} 41202000 - no consumer.
      *         {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
-     *         {@link} GSERROR_CONSUMER_IS_CONNECTED 41206000 - consumer is connected already.
+     *         {@link GSERROR_CONSUMER_IS_CONNECTED} 41206000 - consumer is connected already.
      *
      * @see FlushBuffer
      */
@@ -534,6 +534,14 @@ public:
      */
     GSError SetBufferName(const std::string &name) override;
     /**
+     * @brief Get the Producer Init Info from the surface.
+     *
+     * @param info [out] The producer init information.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
+    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
+    /**
      * @brief Set the Request Width And Height for the surface.
      *
      * @param width [in] The width of the surface.
@@ -660,14 +668,6 @@ public:
      */
     GSError SetSdrWhitePointBrightness(float brightness) override;
     /**
-     * @brief Get the Producer Init Info from the surface.
-     *
-     * @param info [out] The producer init information.
-     * @return {@link GSERROR_OK} 0 - Success.
-     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
-     */
-    GSError GetProducerInitInfo(ProducerInitInfo &info) override;
-    /**
      * @brief Acquire The last flushed buffer form the surface.
      *
      * @param buffer [out] Indicates the pointer to a SurfaceBuffer instance.
@@ -790,36 +790,36 @@ public:
      */
     GSError SetFixedRotation(int32_t fixedRotation) override;
     /**
-    * @brief The client establishes a connection to the server.
-    * In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
-    * buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
-    * suitable for stricter connection management scenarios.
-    * @return {@link GSERROR_OK} 0 - Success.
-    *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
-    */
+     * @brief The client establishes a connection to the server.
+     * In the strictly disconnected state, the producer must call the ConnectStrictly() interface before request
+     * buffer. Unlike Connect(), ConnectStrictly() does not distinguish between process IDs (PIDs) and is
+     * suitable for stricter connection management scenarios.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
     GSError ConnectStrictly() override;
     /**
-    * @brief Terminate the client-server connection.
-    * After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
-    * In this state, any attempt by the producer (client) to request buffer will fail and return the error code
-    * GSERROR_CONSUMER_DISCONNECTED.
-    * @return {@link GSERROR_OK} 0 - Success.
-    *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
-    */
+     * @brief Terminate the client-server connection.
+     * After calling DisconnectStrictly(), the consumer (server) enter the strictly disconnected state.
+     * In this state, any attempt by the producer (client) to request buffer will fail and return the error code
+     * GSERROR_CONSUMER_DISCONNECTED.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     */
     GSError DisconnectStrictly() override;
     /**
-    * @brief Advance buffer allocation.
-    * 1.The interface needs to be used before first use of requestBuffer; otherwise, the buffer is already
-    * allocated, causing the preAlloc interface to fail to optimize the buffer allocation time;
-    * 2.The specifications of the SurfaceBuffer preAlloc cannot exceed the size of the bufferQueueCache;
-    * 3.The interface is an asynchronous interface;
-    * @param config [in] The parameter type for requesting the buffer.
-    * @param allocBufferCount [in] The number of alloc buffer count.
-    * @return {@link GSERROR_OK} 0 - Success.
-    *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
-    *         {@link SURFACE_ERROR_BUFFER_QUEUE_FULL} 41209000 - Buffer queue is full.
-    *         {@link SURFACE_ERROR_OUT_OF_RANGE} 40603000 - out of range.
-    */
+     * @brief Advance buffer allocation.
+     * 1.The interface needs to be used before first use of requestBuffer; otherwise, the buffer is already
+     *     allocated, causing the preAlloc interface to fail to optimize the buffer allocation time;
+     * 2.The specifications of the SurfaceBuffer preAlloc cannot exceed the size of the bufferQueueCache;
+     * 3.The interface is an asynchronous interface;
+     * @param config [in] The parameter type for requesting the buffer.
+     * @param allocBufferCount [in] The number of alloc buffer count.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     *         {@link SURFACE_ERROR_BUFFER_QUEUE_FULL} 41209000 - Buffer queue is full.
+     *         {@link SURFACE_ERROR_OUT_OF_RANGE} 40603000 - out of range.
+     */
     GSError PreAllocBuffers(const BufferRequestConfig &config, uint32_t allocBufferCount) override;  
     /**
      * @brief Request a buffer with lock.
@@ -833,7 +833,7 @@ public:
     GSError ProducerSurfaceLockBuffer(BufferRequestConfig &config, Region region, sptr<SurfaceBuffer>& buffer) override;
     /**
      * @brief Unlock a buffer with lock.
-     * 
+     *
      * @return Returns the error code of the request of unlock.
      *         {@link GSERROR_INVALID_OPERATING} 41201000 - Operate invalid.
      */

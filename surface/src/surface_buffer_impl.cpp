@@ -37,7 +37,7 @@ static std::mutex g_displayBufferMutex;
 static std::mutex g_seqNumMutex;
 static constexpr uint32_t PID_BIT = 16;
 static constexpr uint32_t MAX_SEQUENCE_NUM = 0xFFFF;
-static constexpr uint64_t NEXTID_MASK_48BIT = 0XFFFFFFFFFFFF;
+static constexpr uint64_t NEXTID_MASK_48BIT = 0xFFFFFFFFFFFF;
 static uint64_t g_nextId = 0;
 static std::bitset<MAX_SEQUENCE_NUM> g_seqBitset(0);
 class DisplayBufferDiedRecipient : public OHOS::IRemoteObject::DeathRecipient {
@@ -48,7 +48,7 @@ public:
     {
         std::lock_guard<std::mutex> bufferLock(g_displayBufferMutex);
         g_displayBuffer = nullptr;
-        BLOGD("IDisplayBuffer died and g_displayBuffer is nullptr");
+        BLOGW("IDisplayBuffer died and g_displayBuffer is nullptr");
     };
 };
 

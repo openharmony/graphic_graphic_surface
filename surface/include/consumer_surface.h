@@ -63,7 +63,7 @@ public:
      * @return {@link GSERROR_OK} 0 - Success.
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      *         {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
-     * 
+     *
      * @see ReleaseBuffer
      */
     GSError AcquireBuffer(sptr<SurfaceBuffer>& buffer, int32_t &fence,
@@ -101,7 +101,7 @@ public:
      * @param fence [out] fence fd for asynchronous waiting mechanism.
      * @param timestamp [out] The timestamp of the produced data.
      * @param damage [out] The dirty buffer area set by the producer.
-     * @param isLppMode [in] Normal buffer or LPP buffer.
+     * @param isLppMode [in] Normal buffer or Lpp buffer.
      * @return {@link GSERROR_OK} 0 - Success.
      *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      *         {@link GSERROR_NO_BUFFER} 40601000 - no buffer.
@@ -461,7 +461,7 @@ public:
      * @param funcName [in] The callback function name.
      * @param func [in] The callback function.
      * @return {@link GSERROR_OK} 0 - Success.
-     * {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
+     *         {@link GSERROR_INVALID_ARGUMENTS} 40001000 - Param invalid.
      */
     GSError RegisterUserDataChangeListener(const std::string &funcName, OnUserDataChangeFunc func) override;
     /**
@@ -625,31 +625,6 @@ public:
      */
     uint32_t GetAvailableBufferCount() const override;
     /**
-     * @brief Get the Last Flushed Desired Present Time Stamp from the surface.
-     *
-     * @param lastFlushedDesiredPresentTimeStamp [out] The Last Flushed Desired Present Time Stamp
-     * @return {@link GSERROR_OK} 0 - Success.
-     *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
-     */
-    GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
-    /**
-     * @brief Get the Front Desired Present Time Stamp from the surface
-     *
-     * @param desiredPresentTimeStamp [out] The Front Desired Present Time Stamp.
-     * @param isAutoTimeStamp [out] Is auto time stamp.
-     * @return {@link GSERROR_OK} 0 - Success.
-     *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
-     */
-    GSError GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const override;
-    /**
-     * @brief Get the Buffer Support Fast Compose from the surface.
-     *
-     * @param bufferSupportFastCompose [out] The Buffer Support Fast Compose.
-     * @return {@link GSERROR_OK} 0 - Success.
-     *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
-     */
-    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) override;
-    /**
      * @brief Get the Buffer Cache Config from the surface buffer.
      *
      * @param buffer [in] Indicates the pointer to a SurfaceBuffer instance.
@@ -659,6 +634,22 @@ public:
      *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
      */
     GSError GetBufferCacheConfig(const sptr<SurfaceBuffer>& buffer, BufferRequestConfig& config) override;
+    /**
+     * @brief Get the Last Flushed Desired Present Time Stamp from the surface.
+     *
+     * @param lastFlushedDesiredPresentTimeStamp [out] The Last Flushed Desired Present Time Stamp
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
+     */
+    GSError GetLastFlushedDesiredPresentTimeStamp(int64_t &lastFlushedDesiredPresentTimeStamp) const override;
+    /**
+     * @brief Get the Buffer Support Fast Compose from the surface.
+     *
+     * @param bufferSupportFastCompose [out] The Buffer Support Fast Compose.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
+     */
+    GSError GetBufferSupportFastCompose(bool &bufferSupportFastCompose) override;
     /**
      * @brief Get the Cycle Buffers Number from the surface.
      *
@@ -729,6 +720,15 @@ public:
      *         {@link GSERROR_OUT_OF_RANGE} 40603000 - Inner error.
      */
     GSError SetLppDrawSource(bool isShbSource, bool isRsSource) override;
+    /**
+     * @brief Get the Front Desired Present Time Stamp from the surface
+     *
+     * @param desiredPresentTimeStamp [out] The Front Desired Present Time Stamp.
+     * @param isAutoTimeStamp [out] Is auto time stamp.
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link SURFACE_ERROR_UNKOWN} 50002000 - Internal error.
+     */
+    GSError GetFrontDesiredPresentTimeStamp(int64_t &desiredPresentTimeStamp, bool &isAutoTimeStamp) const override;
     /**
      * @brief Get the alpha type for the surface.
      *

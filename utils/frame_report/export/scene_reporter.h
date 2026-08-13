@@ -24,11 +24,11 @@
 namespace OHOS {
 namespace Rosen {
 
-constexpr int32_t FR_SCENE_NONE = 0;
-constexpr int32_t FR_SCENE_GAME = 1;
-constexpr int32_t FR_SCENE_HWSCHED = 2;
-constexpr int32_t FR_SCENE_BACKGROUND = 3;
-constexpr int32_t FR_SCENE_FOREGROUND = 4;
+constexpr uint32_t FR_SCENE_NONE = 0;
+constexpr uint32_t FR_SCENE_GAME = 1;
+constexpr uint32_t FR_SCENE_HWSCHED = 2;
+constexpr uint32_t FR_SCENE_BACKGROUND = 3;
+constexpr uint32_t FR_SCENE_FOREGROUND = 4;
 
 struct LibraryInfo {
     void* soHandle = nullptr;
@@ -52,10 +52,10 @@ public:
     virtual bool IsActiveWithPid(int32_t pid) const = 0;
     virtual void Report(const std::string &layerName, uint64_t uniqueId, const std::string &bufferMsg) = 0;
 
-    int32_t GetSceneType() const { return sceneType_.load(); }
+    uint32_t GetSceneType() const { return sceneType_.load(); }
 
 protected:
-    std::atomic<int32_t> sceneType_ = FR_SCENE_NONE;
+    std::atomic<uint32_t> sceneType_ = FR_SCENE_NONE;
     LibraryInfo libraryInfo_;
     mutable std::shared_mutex mutex_;
 

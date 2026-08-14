@@ -230,6 +230,7 @@ private:
     void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);
     int32_t AttachBufferToQueueReadBuffer(MessageParcel &arguments,
         MessageParcel &reply, MessageOption &option, sptr<SurfaceBuffer> &buffer);
+    void ReportQueueBufferTimeIfNeeded(int64_t startTimeNs);
     bool CheckIsAlive();
     int32_t PreAllocBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
 

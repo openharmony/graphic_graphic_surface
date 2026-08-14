@@ -24,6 +24,7 @@
 #include "surface_buffer.h"
 #include "surface_type.h"
 #include "surface_tunnel_handle.h"
+#include "isurface_permission.h"
 
 namespace OHOS {
 class IConsumerSurface : public Surface {
@@ -415,6 +416,21 @@ public:
     virtual SingleBufferMode GetAndResetSingleBufferMode()
     {
         return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+
+    /**
+     * @brief Set the Permission Rules for the buffer queue.
+     * The registered permission is used to verify restricted producer operations such as SetLppShareFd.
+     * Default implementation returns NOT_SUPPORT for backward compatibility.
+     * @param permission The permission object to register
+     * @return {@link GSERROR_OK} 0 - Success.
+     *         {@link GSERROR_INVALID_ARGUMENTS} - The permission parameter is null.
+     *         {@link SURFACE_ERROR_NOT_SUPPORT} - Not supported by implementation.
+     */
+    virtual GSError SetPermissionRules(sptr<ISurfacePermission>& permission)
+    {
+        (void)permission;
+        return SURFACE_ERROR_NOT_SUPPORT;
     }
 protected:
     IConsumerSurface() = default;

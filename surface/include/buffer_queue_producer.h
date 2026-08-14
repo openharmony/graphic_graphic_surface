@@ -25,6 +25,7 @@
 
 #include "surface_type.h"
 #include <ibuffer_producer.h>
+#include "isurface_permission.h"
 
 #include "buffer_queue.h"
 
@@ -148,6 +149,7 @@ public:
     GSError CleanProducerBySeqNum(const std::vector<uint32_t>& seqNums) override;
     GSError SetVideoDimensionType(VideoDimType videoDimType) override;
     GSError GetVideoDimensionType(VideoDimType &videoDimType) override;
+    GSError SetPermissionRules(sptr<ISurfacePermission>& permission);
 
 private:
     GSError CheckConnectLocked();
@@ -260,6 +262,7 @@ private:
     uint64_t uniqueId_ = 0;
     static const uint32_t MAGIC_INIT = 0x16273849;
     uint32_t magicNum_ = MAGIC_INIT;
+    sptr<ISurfacePermission> permission_ = nullptr;
 };
 }; // namespace OHOS
 

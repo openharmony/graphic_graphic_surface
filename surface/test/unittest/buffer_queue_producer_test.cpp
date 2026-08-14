@@ -27,6 +27,7 @@
 #include "sync_fence.h"
 #include "producer_surface_delegator.h"
 #include "surface_buffer_impl.h"
+#include "surface_permission_mock.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -1501,6 +1502,10 @@ HWTEST_F(BufferQueueProducerTest, SetLppShareFd002, TestSize.Level0)
     bool state = false;
     sptr<BufferQueue> bqtmp = new BufferQueue("test");
     sptr<BufferQueueProducer> bqptmp = new BufferQueueProducer(bqtmp);
+    sptr<MockSurfacePermission> mockPermission = new MockSurfacePermission();
+    mockPermission->SetCheckLppCallerReturn(true);
+    sptr<ISurfacePermission> permission = mockPermission;
+    bqptmp->SetPermissionRules(permission);
     int ret = bqptmp->SetLppShareFd(fd, state);
     ASSERT_EQ(ret, GSERROR_OK);
 }
@@ -1866,5 +1871,84 @@ HWTEST_F(BufferQueueProducerTest, SetSingleBufferModeRemote002, TestSize.Level0)
     arguments.WriteInt32(static_cast<int32_t>(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE));
     int32_t ret = bqpTmp->SetSingleBufferModeRemote(arguments, reply, option);
     EXPECT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
+
+/**
+ * @tc.name: SetPermissionRules_NullPermission
+ * @tc.desc: Test SetPermissionRules when permission is null
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueProducerTest, SetPermissionRules_NullPermission, TestSize.Level0)
+{
+    // permission == nullptr
+    sptr<ISurfacePermission> permission = nullptr;
+    GSError ret = bqp_->SetPermissionRules(permission);
+    ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
+}
+
+/**
+ * @tc.name: SetPermissionRules_ValidPermission
+ * @tc.desc: Test SetPermissionRules when permission is valid
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueProducerTest, SetPermissionRules_ValidPermission, TestSize.Level0)
+{
+    // permission != nullptr
+    sptr<ISurfacePermission> permission = new MockSurfacePermission();
+    GSError ret = bqp_->SetPermissionRules(permission);
+    ASSERT_EQ(ret, GSERROR_OK);
+}
+
+/**
+ * @tc.name: SetLppShareFd_NullPermission
+ * @tc.desc: Test SetLppShareFd when permission is null
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFd_NullPermission, TestSize.Level0)
+{
+    // permission == nullptr
+    int fd = -1;
+    bool state = true;
+    GSError ret = bqp_->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, GSERROR_NO_PERMISSION);
+}
+
+/**
+ * @tc.name: SetLppShareFd_CheckLppCallerFailed
+ * @tc.desc: Test SetLppShareFd when CheckLppCaller returns false
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFd_CheckLppCallerFailed, TestSize.Level0)
+{
+    // permission != nullptr && !permission->CheckLppCaller()
+    sptr<ISurfacePermission> permission = new MockSurfacePermission();
+    bqp_->SetPermissionRules(permission);
+    int fd = -1;
+    bool state = true;
+    GSError ret = bqp_->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, GSERROR_NO_PERMISSION);
+}
+
+/**
+ * @tc.name: SetLppShareFd_CheckLppCallerSuccess
+ * @tc.desc: Test SetLppShareFd when CheckLppCaller returns true
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BufferQueueProducerTest, SetLppShareFd_CheckLppCallerSuccess, TestSize.Level0)
+{
+    // permission != nullptr && permission->CheckLppCaller()
+    sptr<MockSurfacePermission> mockPermission = new MockSurfacePermission();
+    mockPermission->SetCheckLppCallerReturn(true);
+    sptr<ISurfacePermission> permission = mockPermission;
+    bqp_->SetPermissionRules(permission);
+    int fd = -1;
+    bool state = true;
+    GSError ret = bqp_->SetLppShareFd(fd, state);
+    ASSERT_EQ(ret, GSERROR_TYPE_ERROR);
 }
 }

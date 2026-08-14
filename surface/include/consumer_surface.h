@@ -27,6 +27,7 @@
 #include "buffer_queue.h"
 #include "buffer_queue_consumer.h"
 #include "buffer_queue_producer.h"
+#include "isurface_permission.h"
 
 namespace OHOS {
 class ConsumerSurface : public IConsumerSurface {
@@ -770,6 +771,8 @@ public:
     GSError SetDropFrameLevel(int32_t level) override;
 
     SingleBufferMode GetAndResetSingleBufferMode() override;
+
+    GSError SetPermissionRules(sptr<ISurfacePermission>& permission) override;
 
 private:
     std::map<std::string, std::string> userData_;

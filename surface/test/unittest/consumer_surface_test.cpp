@@ -24,6 +24,7 @@
 #include "buffer_queue.h"
 #include "v1_1/buffer_handle_meta_key_type.h"
 #include "remote_object_mock.h"
+#include "surface_permission_mock.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -2970,5 +2971,38 @@ HWTEST_F(ConsumerSurfaceTest, GetAndResetSingleBufferMode002, TestSize.Level0)
     cSurface->consumer_ = nullptr;
     SingleBufferMode mode = cSurface->GetAndResetSingleBufferMode();
     ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
+
+/**
+ * @tc.name: SetPermissionRules_NullProducer
+ * @tc.desc: Test SetPermissionRules when producer is null
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ConsumerSurfaceTest, SetPermissionRules_NullProducer, TestSize.Level0)
+{
+    // producer_ == nullptr
+    auto cSurface = new ConsumerSurface("test");
+    cSurface->producer_ = nullptr;
+    sptr<ISurfacePermission> permission = new MockSurfacePermission();
+    GSError ret = cSurface->SetPermissionRules(permission);
+    ASSERT_EQ(ret, SURFACE_ERROR_UNKOWN);
+}
+
+/**
+ * @tc.name: SetPermissionRules_ValidProducer
+ * @tc.desc: Test SetPermissionRules when producer is valid
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(ConsumerSurfaceTest, SetPermissionRules_ValidProducer, TestSize.Level0)
+{
+    // producer_ != nullptr
+    auto cSurface = new ConsumerSurface("test");
+    sptr<BufferQueueProducer> producer = new BufferQueueProducer(bq);
+    cSurface->producer_ = producer;
+    sptr<ISurfacePermission> permission = new MockSurfacePermission();
+    GSError ret = cSurface->SetPermissionRules(permission);
+    ASSERT_EQ(ret, GSERROR_OK);
 }
 }

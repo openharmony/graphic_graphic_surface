@@ -72,7 +72,7 @@ void SceneReporter::LoadLibrary()
         if (dlclose(soHandle) != 0) {
             LOGE("LoadLibrary %{public}s dlclose failed", libraryInfo_.soName.c_str());
         }
-        libraryInfo__.soHandle = nullptr;
+        libraryInfo_.soHandle = nullptr;
         return;
     }
 

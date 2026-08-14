@@ -71,9 +71,8 @@ void SceneReporter::LoadLibrary()
     if (funcSym == nullptr) {
         if (dlclose(soHandle) != 0) {
             LOGE("LoadLibrary %{public}s dlclose failed", libraryInfo_.soName.c_str());
-        } else {
-            LOGI("LoadLibrary %{public}s dlclose success!", libraryInfo_.soName.c_str());
         }
+        libraryInfo__.soHandle = nullptr;
         return;
     }
 
@@ -90,11 +89,9 @@ void SceneReporter::CloseLibrary()
     if (libraryInfo_.soHandle != nullptr) {
         if (dlclose(libraryInfo_.soHandle) != 0) {
             LOGE("CloseLibrary %{public}s close failed!", libraryInfo_.soName.c_str());
-        } else {
-            libraryInfo_.soHandle = nullptr;
-            libraryInfo_.isLoaded = false;
-            LOGI("CloseLibrary %{public}s close success!", libraryInfo_.soName.c_str());
         }
+        libraryInfo_.soHandle = nullptr;
+        libraryInfo_.isLoaded = false;
     }
 }
 

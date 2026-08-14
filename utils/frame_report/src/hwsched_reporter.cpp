@@ -42,6 +42,10 @@ HwschedReporter::HwschedReporter() : SceneReporter(HWSCHED_CLIENT_SO_PATH, HWSCH
 
 void HwschedReporter::Activate(int32_t pid)
 {
+    if (pid <= FR_DEFAULT_PID) {
+        LOGW("HwschedReporter::Activate invalid pid=%{public}d", pid);
+        return;
+    }
     std::unique_lock lock(pidMutex_);
     pidSet_.insert(pid);
 }
@@ -81,6 +85,11 @@ bool HwschedReporter::IsActive() const
 void HwschedReporter::Report(const std::string& layerName, uint64_t uniqueId, const std::string& bufferMsg)
 {
     if (bufferMsg.empty()) {
+        return;
+    }
+    int32_t pid = activePid_.load();
+    if (pid <= FR_DEFAULT_PID) {
+        LOGW("HwschedReporter::Report invalid pid=%{public}d", pid);
         return;
     }
     ReportFrameInfo(activePid_.load(), layerName, bufferMsg, uniqueId);

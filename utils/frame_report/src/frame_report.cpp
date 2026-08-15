@@ -14,6 +14,7 @@
  */
 
 #include "frame_report.h"
+#include "hwsched_reporter.h"
 
 #include <cinttypes>
 #include <dlfcn.h>
@@ -54,6 +55,7 @@ FrameReport& FrameReport::GetInstance()
 
 FrameReport::FrameReport()
 {
+    hwschedReporter_ = std::make_unique<HwschedReporter>();
 }
 
 FrameReport::~FrameReport()
@@ -66,6 +68,7 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
     LOGI("FrameReport::SetGameScene pid = %{public}d state = %{public}d ", pid, state);
     switch (state) {
         case FR_GAME_BACKGROUND: {
+            sceneType_ &= ~FR_SCENE_GAME;
             if (activelyPid_.compare_exchange_strong(pid, FR_DEFAULT_PID)) {
                 LOGI("FrameReport::SetGameScene Game Background Current Pid = %{public}d "
                      "state = 0", pid);
@@ -81,7 +84,19 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
             if (pid > FR_DEFAULT_PID) {
                 activelyPid_.store(pid);
                 LOGI("FrameReport::SetGameScene Pid = %{public}d", pid);
+                sceneType_ |= FR_SCENE_GAME;
             }
+            break;
+        }
+        case FR_SCENE_FOREGROUND: {
+            hwschedReporter_->LoadLibrary();
+            hwschedReporter_->Activate(pid);
+            sceneType_ |= FR_SCENE_HWSCHED;
+            break;
+        }
+        case FR_SCENE_BACKGROUND: {
+            hwschedReporter_->Deactivate();
+            sceneType_ &= ~FR_SCENE_HWSCHED;
             break;
         }
         default: {
@@ -93,7 +108,17 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
 
 bool FrameReport::HasGameScene()
 {
-    return activelyPid_.load() != FR_DEFAULT_PID;
+    uint32_t type = sceneType_.load();
+    if (type == FR_SCENE_NONE) {
+        return false;
+    }
+    if ((type & FR_SCENE_GAME) && activelyPid_.load() != FR_DEFAULT_PID) {
+        return true;
+    }
+    if ((type & FR_SCENE_HWSCHED) && hwschedReporter_->IsActive()) {
+        return true;
+    }
+    return false;
 }
 
 bool FrameReport::IsActiveGameWithPid(int32_t pid)
@@ -101,7 +126,14 @@ bool FrameReport::IsActiveGameWithPid(int32_t pid)
     if (pid <= FR_DEFAULT_PID) {
         return false;
     }
-    return pid == activelyPid_.load();
+    uint32_t type = sceneType_.load();
+    if ((type & FR_SCENE_GAME) && activelyPid_.load() == pid) {
+        return true;
+    }
+    if ((type & FR_SCENE_HWSCHED) && hwschedReporter_->IsActiveWithPid(pid)) {
+        return true;
+    }
+    return false;
 }
 
 bool FrameReport::IsActiveGameWithUniqueId(uint64_t uniqueId)
@@ -262,7 +294,16 @@ void FrameReport::Report(const std::string& layerName)
         return;
     }
     bufferMsg = msg;
-    NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg, activelyUniqueId_.load());
+    uint32_t type = sceneType_.load();
+    if ((type & FR_SCENE_GAME) && activelyPid_.load() != FR_DEFAULT_PID) {
+        NotifyFrameInfo(activelyPid_.load(), layerName, timeStamp, bufferMsg, activelyUniqueId_.load());
+    }
+    if ((type & FR_SCENE_HWSCHED) && hwschedReporter_->IsActive()) {
+        hwschedReporter_->Report(layerName, activelyUniqueId_.load(), bufferMsg);
+        if (!hwschedReporter_->IsActive()) {
+            sceneType_ &= ~FR_SCENE_HWSCHED;
+        }
+    }
 }
 
 void FrameReport::NotifyFrameInfo(int32_t pid, const std::string& layerName, int64_t timeStamp,

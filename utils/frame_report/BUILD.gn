@@ -33,7 +33,11 @@ config("frame_report_public_config") {
 }
 
 ohos_static_library("frame_report") {
-  sources = [ "src/frame_report.cpp" ]
+  sources = [ 
+    "src/hwsched_reporter.cpp",
+    "src/frame_report.cpp",
+    "src/scene_reporter.cpp",
+  ]
   configs = [ ":frame_report_config" ]
 
   public_configs = [ ":frame_report_public_config" ]

@@ -18,7 +18,11 @@ module_output_path = "graphic_surface/graphic_surface/surface"
 
 group("unittest") {
   testonly = true
-  deps = [ ":frame_report_test" ]
+  deps = [
+    ":frame_report_test",
+    ":hwsched_reporter_test",
+    ":scene_reporter_test",
+  ]
 }
 
 ohos_unittest("frame_report_test") {
@@ -35,6 +39,36 @@ ohos_unittest("frame_report_test") {
   external_deps = [
     "hilog:libhilog",
     "ipc:ipc_core",
+  ]
+}
+
+ohos_unittest("hwsched_reporter_test") {
+  module_out_path = module_output_path
+  sources = [ "hwsched_reporter_test.cpp" ]
+  deps = [
+    ":frame_report_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  include_dirs = [
+    "$graphic_surface_root/interfaces/inner_api/utils",
+  ]
+  external_deps = [
+    "hilog:libhilog",
+  ]
+}
+
+ohos_unittest("scene_reporter_test") {
+  module_out_path = module_output_path
+  sources = [ "scene_reporter_test.cpp" ]
+  deps = [
+    ":frame_report_test_common",
+    "$graphic_surface_root/surface:surface_static",
+  ]
+  include_dirs = [
+    "$graphic_surface_root/interfaces/inner_api/utils",
+  ]
+  external_deps = [
+    "hilog:libhilog",
   ]
 }
 

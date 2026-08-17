@@ -94,6 +94,7 @@ ohos_unittest("buffer_client_producer_remote_test") {
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "cJSON:cjson_static",     
     "selinux_adapter:librestorecon",
     "samgr:samgr_proxy",
@@ -160,6 +161,7 @@ ohos_unittest("buffer_queue_producer_test") {
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "ipc:ipc_single",
     "hilog:libhilog",
@@ -179,6 +181,7 @@ ohos_unittest("buffer_queue_test") {
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "ipc:ipc_single",
     "hilog:libhilog",

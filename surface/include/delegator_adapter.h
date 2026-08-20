@@ -25,14 +25,14 @@
 
 namespace OHOS {
 
-using CreateFunc = void* (*)();
+using CreateFunc = uintptr_t (*)();
 using ConvertHandle = void*;
 using SetProducerClientFunc = bool (*)(uintptr_t, sptr<IRemoteObject>);
 using SetProducerSurfaceFunc = void (*)(uintptr_t, sptr<Surface>);
 using ReleaseBufferFunc = GSError (*)(uintptr_t, const sptr<SurfaceBuffer>&, const sptr<SyncFence>&);
 using DestroyFunc = void (*)(uintptr_t);
 
-using ConsumerDelegatorFunc = void* (*)();
+using ConsumerDelegatorFunc = uintptr_t (*)();
 using SetConsumerClientFunc = bool (*)(uintptr_t, sptr<IRemoteObject>);
 using SetConsumerSurfaceFunc = void (*)(uintptr_t, sptr<Surface>);
 using ConsumerDeQueueBuffer = GSError (*)(uintptr_t, const BufferRequestConfig&, sptr<BufferExtraData>&,

@@ -17,6 +17,13 @@ ohos_source_set("rs_frame_report_ext_surface") {
   include_dirs = [ "include" ]
   sources = [ "src/rs_frame_report_ext.cpp" ]
   external_deps = [ "hilog:libhilog" ]
+  sanitize = {
+    boundary_sanitize = true
+    integer_overflow = true
+    ubsan = true
+    cfi = true
+    cfi_cross_dso = true
+  }
 
   part_name = "graphic_surface"
   subsystem_name = "graphic"

@@ -40,6 +40,8 @@ ohos_static_library("hebc_white_list") {
     boundary_sanitize = true
     integer_overflow = true
     ubsan = true
+    cfi = true
+    cfi_cross_dso = true
   }
   sources = [ "hebc_white_list.cpp" ]
 

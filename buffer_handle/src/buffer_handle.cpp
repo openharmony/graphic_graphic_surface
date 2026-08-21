@@ -16,6 +16,7 @@
 #include "buffer_handle.h"
 #include "buffer_handle_utils.h"
 
+#include <cstdint>
 #include <cstdlib>
 #include <securec.h>
 
@@ -83,6 +84,36 @@ int32_t FreeBufferHandle(BufferHandle *handle)
 }
 
 namespace OHOS {
+namespace {
+// Mirrors GraphicPixelFormat in interfaces/inner_api/surface/surface_type.h.
+// Deserialized pixel formats are attacker-controlled, so validate before use.
+constexpr int32_t PIXEL_FORMAT_END_OF_VALID = 45;        // GRAPHIC_PIXEL_FMT_END_OF_VALID
+constexpr uint32_t PIXEL_FORMAT_VENDER_MASK = 0X7FFF0000; // GRAPHIC_PIXEL_FMT_VENDER_MASK
+constexpr int32_t PIXEL_FORMAT_BUTT = 0X7FFFFFFF;          // GRAPHIC_PIXEL_FMT_BUTT
+
+bool IsValidPixelFormat(int32_t format)
+{
+    if (format < 0 || format == PIXEL_FORMAT_BUTT) {
+        return false;
+    }
+    if (format < PIXEL_FORMAT_END_OF_VALID) {
+        return true;
+    }
+    return (static_cast<uint32_t>(format) & PIXEL_FORMAT_VENDER_MASK) == PIXEL_FORMAT_VENDER_MASK;
+}
+
+bool IsValidBufferHandleGeom(int32_t width, int32_t height, int32_t stride, int32_t size)
+{
+    if (width <= 0 || height <= 0 || stride <= 0 || size <= 0) {
+        return false;
+    }
+    // size is the total allocated bytes, so it must cover stride * height. Compute in 64-bit to
+    // avoid the forged stride/height overflowing the result.
+    int64_t minNeededSize = static_cast<int64_t>(stride) * height;
+    return static_cast<int64_t>(size) >= minNeededSize;
+}
+} // namespace
+
 bool WriteBufferHandle(MessageParcel &parcel, const BufferHandle &handle)
 {
     if (!parcel.WriteUint32(handle.reserveFds) || !parcel.WriteUint32(handle.reserveInts) ||
@@ -141,6 +172,17 @@ BufferHandle *ReadBufferHandle(MessageParcel &parcel,
         return nullptr;
     }
 
+    // width/height/stride/size/format come from the untrusted peer, forged values may trigger
+    // overflow or out-of-bounds access downstream, reject them before any fd is read.
+    if (!IsValidBufferHandleGeom(handle->width, handle->height, handle->stride, handle->size) ||
+        !IsValidPixelFormat(handle->format)) {
+        UTILS_LOGE("%{public}s invalid buffer handle fields: w=%{public}d h=%{public}d stride=%{public}d "
+            "size=%{public}d format=%{public}d", __func__, handle->width, handle->height,
+            handle->stride, handle->size, handle->format);
+        FreeBufferHandle(handle);
+        return nullptr;
+    }
+
     bool validFd = false;
     if (!parcel.ReadBool(validFd)) {
         UTILS_LOGE("%{public}s ReadBool validFd failed", __func__);
@@ -158,6 +200,16 @@ BufferHandle *ReadBufferHandle(MessageParcel &parcel,
         if (handle->fd == -1) {
             UTILS_LOGE("%{public}s ReadFileDescriptor fd failed, is use readSafeFdFunc:%d",
                 __func__, readSafeFdFunc != nullptr);
+            FreeBufferHandle(handle);
+            return nullptr;
+        }
+        // Claimed size must not exceed the real length of the fd, otherwise a forged size may
+        // drive downstream reads out of the actual buffer. lseek(SEEK_END) is used instead of
+        // fstat as it works for both dmabuf and memfd/ashmem without getattr permission.
+        off_t fdSize = lseek(handle->fd, 0, SEEK_END);
+        if (fdSize < 0 || static_cast<int64_t>(fdSize) < handle->size) {
+            UTILS_LOGE("%{public}s invalid size=%{public}d vs fd length=%{public}ld, fd=%{public}d",
+                __func__, handle->size, static_cast<long>(fdSize), handle->fd);
             FreeBufferHandle(handle);
             return nullptr;
         }

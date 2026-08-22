@@ -161,6 +161,16 @@ BufferHandle *ReadBufferHandle(MessageParcel &parcel,
             FreeBufferHandle(handle);
             return nullptr;
         }
+        // Claimed size must not exceed the real length of the fd, otherwise a forged size may
+        // drive downstream reads out of the actual buffer. lseek(SEEK_END) is used instead of
+        // fstat as it works for both dmabuf and memfd/ashmem without getattr permission.
+        off_t fdSize = lseek(handle->fd, 0, SEEK_END);
+        if (fdSize < 0 || static_cast<int64_t>(fdSize) < handle->size) {
+            UTILS_LOGE("%{public}s invalid size=%{public}d vs fd length=%{public}ld, fd=%{public}d",
+                __func__, handle->size, static_cast<long>(fdSize), handle->fd);
+            FreeBufferHandle(handle);
+            return nullptr;
+        }
     }
 
     for (uint32_t i = 0; i < handle->reserveFds; i++) {

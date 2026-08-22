@@ -627,4 +627,30 @@ HWTEST_F(SurfaceUtilsTest, NeedForceTunnelLayer003, TestSize.Level0)
     surfaceUtils->RemoveTunnelLayerConfig(tunnelInfo2);
 }
 
+/*
+* Function: ComputeTransformMatrix / ComputeTransformMatrixV2
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ComputeTransformMatrix with matrixSize > MATRIX_ARRAY_SIZE(16)
+*                  2. check matrix not changed (no out-of-bounds write)
+*                  3. call ComputeTransformMatrixV2 with the same invalid matrixSize
+*/
+HWTEST_F(SurfaceUtilsTest, ComputeTransformMatrixInvalidMatrixSize001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = new SurfaceBufferImpl();
+    buffer->SetSurfaceBufferWidth(1920);
+    buffer->SetSurfaceBufferHeight(1920);
+    float matrix[TRANSFORM_MATRIX_SIZE] = {0};
+    Rect crop = {};
+    crop.w = buffer->GetWidth();
+    crop.h = buffer->GetHeight();
+    GraphicTransformType transform = GraphicTransformType::GRAPHIC_FLIP_H;
+
+    utils->ComputeTransformMatrix(matrix, TRANSFORM_MATRIX_SIZE + 1, buffer, transform, crop);
+    ASSERT_TRUE(IsArrayEmpty(matrix));
+
+    utils->ComputeTransformMatrixV2(matrix, TRANSFORM_MATRIX_SIZE + 1, buffer, transform, crop);
+    ASSERT_TRUE(IsArrayEmpty(matrix));
+}
 }

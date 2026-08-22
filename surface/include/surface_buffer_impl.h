@@ -130,6 +130,10 @@ private:
     GSError GetImageLayout(void *layout);
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
+    static bool IsLocalSeqNum(uint32_t seqNum);
+    void AcquireSeqBit(uint32_t seqNum);
+    void ReleaseSeqBit(uint32_t seqNum);
+    void UpdateSeqNumBitset(uint32_t newSeqNum);
     void NotifyBufferDestructorCallback() const;
     void RecordOriginalBufferHandleFields();
 

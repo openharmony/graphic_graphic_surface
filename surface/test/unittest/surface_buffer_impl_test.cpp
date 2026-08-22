@@ -1328,8 +1328,8 @@ HWTEST_F(SurfaceBufferImplTest, WriteAllPropertiesWithReclaimedFlag, TestSize.Le
     sbi->SetSurfaceBufferHeight(1080);
     sbi->SetCropMetadata({0, 0, 1920, 1080});
 
-    // Manually set isReclaimed_ to true (access via friend or internal method)
-    sbi->SetBufferDeletedFlag(OHOS::BufferDeletedFlag::DELETED_FROM_CACHE);
+    // Manually set isReclaimed_ to true (accessible because test is built with -Dprivate=public)
+    sbi->isReclaimed_.store(true);
 
     MessageParcel parcel;
     ASSERT_EQ(sbi->WriteAllPropertiesToMessageParcel(parcel), GSERROR_OK);
@@ -1528,6 +1528,23 @@ HWTEST_F(SurfaceBufferImplTest, ReadFromBufferInfo001, TestSize.Level0)
     ASSERT_EQ(actualConfig.timeout, 77);
     ASSERT_EQ(actualConfig.colorGamut, GraphicColorGamut::GRAPHIC_COLOR_GAMUT_DISPLAY_P3);
     ASSERT_EQ(actualConfig.transform, GraphicTransformType::GRAPHIC_ROTATE_180);
+}
+
+/*
+* Function: SyncFence::ReadFromMessageParcel
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call ReadFromMessageParcel with empty parcel (ReadInt32 fails)
+*                  2. check ret is INVALID_FENCE
+*/
+HWTEST_F(SurfaceBufferImplTest, SyncFenceReadFromMessageParcelEmpty001, TestSize.Level0)
+{
+    MessageParcel parcel;
+    // empty parcel: ReadInt32 fails, should return INVALID_FENCE directly
+    sptr<SyncFence> fence = SyncFence::ReadFromMessageParcel(parcel, nullptr);
+    ASSERT_EQ(fence, SyncFence::INVALID_FENCE);
+    ASSERT_FALSE(fence->IsValid());
 }
 
 /*

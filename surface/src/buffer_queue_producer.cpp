@@ -225,51 +225,82 @@ int32_t BufferQueueProducer::RequestBufferRemote(MessageParcel &arguments, Messa
     return ERR_NONE;
 }
 
+int32_t BufferQueueProducer::WriteInvalidRequestBuffersReply(MessageParcel &reply)
+{
+    if (!reply.WriteInt32(SURFACE_ERROR_UNKOWN) || !reply.WriteBool(false)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    return ERR_NONE;
+}
+
+bool BufferQueueProducer::WriteOneRequestBufferReply(MessageParcel &reply,
+    const RequestBufferReturnValue &retval, const sptr<BufferExtraData> &bedata)
+{
+    if (WriteSurfaceBufferImpl(reply, retval.sequence, retval.buffer) != GSERROR_OK) {
+        return false;
+    }
+    if (retval.buffer != nullptr &&
+        !reply.WriteUint64(retval.buffer->GetBufferRequestConfig().usage)) {
+        return false;
+    }
+    if (bedata->WriteToParcel(reply) != GSERROR_OK) {
+        return false;
+    }
+    if (!retval.fence || !retval.fence->WriteToMessageParcel(reply)) {
+        return false;
+    }
+    return reply.WriteUInt32Vector(retval.deletingBuffers);
+}
+
+int32_t BufferQueueProducer::WriteRequestBuffersResultReply(MessageParcel &reply, GSError sRet,
+    const std::vector<RequestBufferReturnValue> &retvalues,
+    const std::vector<sptr<BufferExtraData>> &bedataimpls)
+{
+    if (sRet != GSERROR_OK && sRet != GSERROR_NO_BUFFER) {
+        if (!reply.WriteBool(retvalues[0].isConnected)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        return ERR_NONE;
+    }
+    uint32_t num = static_cast<uint32_t>(retvalues.size());
+    if (!reply.WriteUint32(num)) {
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    for (uint32_t i = 0; i < num; ++i) {
+        if (!WriteOneRequestBufferReply(reply, retvalues[i], bedataimpls[i])) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+    }
+    return ERR_NONE;
+}
+
 int32_t BufferQueueProducer::RequestBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
-    std::vector<RequestBufferReturnValue> retvalues;
-    std::vector<sptr<BufferExtraData>> bedataimpls;
-    BufferRequestConfig config = {};
     uint32_t num = 0;
     if (!arguments.ReadUint32(num)) {
         return GSERROR_BINDER;
     }
+    BufferRequestConfig config = {};
     if (!ReadRequestConfig(arguments, config)) {
         return GSERROR_BINDER;
     }
     if (num == 0 || num > SURFACE_MAX_QUEUE_SIZE) {
-        return ERR_NONE;
+        return WriteInvalidRequestBuffersReply(reply);
     }
+
+    std::vector<RequestBufferReturnValue> retvalues;
+    std::vector<sptr<BufferExtraData>> bedataimpls;
     retvalues.resize(num);
     bedataimpls.reserve(num);
-
     for (uint32_t i = 0; i < num; ++i) {
-        sptr<BufferExtraData> data = new BufferExtraDataImpl;
-        bedataimpls.emplace_back(data);
+        bedataimpls.emplace_back(new BufferExtraDataImpl);
     }
+
     GSError sRet = RequestBuffers(config, bedataimpls, retvalues);
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    if (sRet == GSERROR_OK || sRet == GSERROR_NO_BUFFER) {
-        num = static_cast<uint32_t>(retvalues.size());
-        if (!reply.WriteUint32(num)) {
-            return IPC_STUB_WRITE_PARCEL_ERR;
-        }
-        for (uint32_t i = 0; i < num; ++i) {
-            if (WriteSurfaceBufferImpl(reply, retvalues[i].sequence, retvalues[i].buffer) != GSERROR_OK ||
-                (retvalues[i].buffer != nullptr &&
-                    !reply.WriteUint64(retvalues[i].buffer->GetBufferRequestConfig().usage)) ||
-                bedataimpls[i]->WriteToParcel(reply) != GSERROR_OK ||
-                !retvalues[i].fence->WriteToMessageParcel(reply) ||
-                !reply.WriteUInt32Vector(retvalues[i].deletingBuffers)) {
-                return IPC_STUB_WRITE_PARCEL_ERR;
-            }
-        }
-    } else if (sRet != GSERROR_OK && !reply.WriteBool(retvalues[0].isConnected)) {
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
-    return ERR_NONE;
+    return WriteRequestBuffersResultReply(reply, sRet, retvalues, bedataimpls);
 }
 
 int32_t BufferQueueProducer::GetProducerInitInfoRemote(MessageParcel &arguments,
@@ -380,6 +411,9 @@ int32_t BufferQueueProducer::FlushBuffersRemote(MessageParcel &arguments, Messag
         return GSERROR_BINDER;
     }
     if (sequences.size() == 0 || sequences.size() > SURFACE_MAX_QUEUE_SIZE) {
+        if (!reply.WriteInt32(SURFACE_ERROR_UNKOWN)) {
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
         return ERR_NONE;
     }
     for (size_t i = 0; i < sequences.size(); ++i) {
@@ -553,6 +587,9 @@ int32_t BufferQueueProducer::SetQueueSizeRemote(MessageParcel &arguments, Messag
 
 int32_t BufferQueueProducer::GetNameRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option)
 {
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     std::string name;
     auto sRet = bufferQueue_->GetName(name);
     if (!reply.WriteInt32(sRet)) {
@@ -689,6 +726,9 @@ int32_t BufferQueueProducer::RegisterPropertyListenerRemote(MessageParcel &argum
         return ERR_INVALID_REPLY;
     }
     sptr<IProducerListener> listener = iface_cast<IProducerListener>(listenerObject);
+    if (listener == nullptr) {
+        return ERR_INVALID_REPLY;
+    }
     uint64_t producerId = MAXIMUM_INVALID_ID;
     if (!arguments.ReadUint64(producerId)) {
         return ERR_INVALID_REPLY;
@@ -1199,6 +1239,11 @@ int32_t BufferQueueProducer::AcquireLastFlushedBufferRemote(
         return GSERROR_BINDER;
     }
     GSError sRet = AcquireLastFlushedBuffer(buffer, fence, matrix, BUFFER_MATRIX_SIZE, isUseNewMatrix);
+    if (sRet == GSERROR_OK && (buffer == nullptr || fence == nullptr)) {
+        BLOGW("AcquireLastFlushedBuffer return ok but buffer/fence is null, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        sRet = SURFACE_ERROR_UNKOWN;
+    }
     if (!reply.WriteInt32(sRet)) {
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
@@ -1447,13 +1492,15 @@ GSError BufferQueueProducer::AttachAndFlushBuffer(sptr<SurfaceBuffer>& buffer, s
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    bool isDisconnectStrictly = false;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (isDisconnectStrictly_) {
-            BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
-                uniqueId_);
-            return GSERROR_CONSUMER_DISCONNECTED;
-        }
+        isDisconnectStrictly = isDisconnectStrictly_;
+    }
+    if (isDisconnectStrictly) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
     }
     return bufferQueue_->AttachAndFlushBuffer(buffer, bedata, fence, config, needMap);
 }
@@ -1562,13 +1609,15 @@ GSError BufferQueueProducer::FlushBuffer(uint32_t sequence, sptr<BufferExtraData
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    bool isDisconnectStrictly = false;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (isDisconnectStrictly_) {
-            BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
-                uniqueId_);
-            return GSERROR_CONSUMER_DISCONNECTED;
-        }
+        isDisconnectStrictly = isDisconnectStrictly_;
+    }
+    if (isDisconnectStrictly) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
     }
     return bufferQueue_->FlushBuffer(sequence, bedata, fence, config);
 }
@@ -1581,13 +1630,15 @@ GSError BufferQueueProducer::FlushBuffers(const std::vector<uint32_t> &sequences
     if (bufferQueue_ == nullptr) {
         return SURFACE_ERROR_UNKOWN;
     }
+    bool isDisconnectStrictly = false;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (isDisconnectStrictly_) {
-            BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
-                uniqueId_);
-            return GSERROR_CONSUMER_DISCONNECTED;
-        }
+        isDisconnectStrictly = isDisconnectStrictly_;
+    }
+    if (isDisconnectStrictly) {
+        BLOGW("connected failed because buffer queue is disconnect strictly, uniqueId: %{public}" PRIu64 ".",
+            uniqueId_);
+        return GSERROR_CONSUMER_DISCONNECTED;
     }
     GSError ret;
     for (size_t i = 0; i < sequences.size(); ++i) {
@@ -2059,6 +2110,9 @@ GSError BufferQueueProducer::SetTunnelHandle(const sptr<SurfaceTunnelHandle> &ha
 
 GSError BufferQueueProducer::SetTunnelHandle(const GraphicExtDataHandle *handle)
 {
+    if (bufferQueue_ == nullptr) {
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     sptr<SurfaceTunnelHandle> tunnelHandle = new SurfaceTunnelHandle();
     if (tunnelHandle->SetHandle(handle) != GSERROR_OK) {
         return GSERROR_INVALID_OPERATING;
@@ -2163,7 +2217,12 @@ void BufferQueueProducer::ProducerSurfaceDeathRecipient::OnRemoteDied(const wptr
         return;
     }
 
-    if (producer->token_ != remoteToken) {
+    sptr<IRemoteObject> currentToken = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(producer->mutex_);
+        currentToken = producer->token_;
+    }
+    if (currentToken != remoteToken) {
         BLOGW("token doesn't match, ignore it, uniqueId: %{public}" PRIu64 ".", producer->GetUniqueId());
         return;
     }
@@ -2175,7 +2234,7 @@ void BufferQueueProducer::SetConnectedPidLocked(int32_t connectedPid)
 {
     connectedPid_ = connectedPid;
     if (bufferQueue_) {
-        bufferQueue_->SetConnectedPidLocked(connectedPid_);
+        bufferQueue_->SetConnectedPid(connectedPid_);
     }
 }
 

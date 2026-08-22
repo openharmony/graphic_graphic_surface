@@ -157,6 +157,12 @@ private:
     int32_t GetProducerInitInfoRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t RequestBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
+    int32_t WriteInvalidRequestBuffersReply(MessageParcel &reply);
+    bool WriteOneRequestBufferReply(MessageParcel &reply, const RequestBufferReturnValue &retval,
+        const sptr<BufferExtraData> &bedata);
+    int32_t WriteRequestBuffersResultReply(MessageParcel &reply, GSError sRet,
+        const std::vector<RequestBufferReturnValue> &retvalues,
+        const std::vector<sptr<BufferExtraData>> &bedataimpls);
     int32_t CancelBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t FlushBufferRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);
     int32_t FlushBuffersRemote(MessageParcel &arguments, MessageParcel &reply, MessageOption &option);

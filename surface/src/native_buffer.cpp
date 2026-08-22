@@ -31,6 +31,7 @@
 #define DMA_BUF_SET_LEAK_TYPE _IOW(DMA_BUF_BASE, 5, const char *)
 namespace {
     constexpr int32_t ROI_METADATA_CAPACITY = 256;
+    constexpr int32_t META_DATA_MAX_SIZE = 3000;
 }
 
 using namespace OHOS;
@@ -327,7 +328,7 @@ int32_t OH_NativeBuffer_GetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
 int32_t OH_NativeBuffer_SetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffer_MetadataKey metadataKey,
     int32_t size, uint8_t *metadata)
 {
-    if (buffer == nullptr || metadata == nullptr || size <= 0) {
+    if (buffer == nullptr || metadata == nullptr || size <= 0 || size > META_DATA_MAX_SIZE) {
         return OHOS::SURFACE_ERROR_INVALID_PARAM;
     }
     sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
@@ -417,7 +418,7 @@ int32_t OH_NativeBuffer_GetMetadataValue(OH_NativeBuffer *buffer, OH_NativeBuffe
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
-        BLOGE("SetHDRSMetadata failed!, ret: %{public}d", ret);
+        BLOGE("GetHDRSMetadata failed!, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     *size = mD.size();

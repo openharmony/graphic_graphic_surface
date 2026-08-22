@@ -41,7 +41,26 @@ namespace OHOS {
 constexpr int32_t FORCE_GLOBAL_ALPHA_MIN = -1;
 constexpr int32_t FORCE_GLOBAL_ALPHA_MAX = 255;
 constexpr int32_t DAMAGES_MAX_SIZE = 1000;
+constexpr int32_t DMA_BUF_LEAK_TYPE_MAX_LEN = 127;
 const std::string XCOMPONENT_BUFFER_NAME = "xcomponent";
+
+static bool IsBufferTypeLeakValid(const std::string &bufferTypeLeak)
+{
+    if (bufferTypeLeak.empty()) {
+        return true;
+    }
+    if (bufferTypeLeak.size() > static_cast<size_t>(DMA_BUF_LEAK_TYPE_MAX_LEN)) {
+        return false;
+    }
+    for (char c : bufferTypeLeak) {
+        unsigned char uc = static_cast<unsigned char>(c);
+        if (c == '%' || uc < 0x20 || uc == 0x7F) {
+            return false;
+        }
+    }
+    return true;
+}
+
 sptr<Surface> Surface::CreateSurfaceAsProducer(sptr<IBufferProducer>& producer)
 {
     if (producer == nullptr) {
@@ -72,6 +91,8 @@ ProducerSurface::~ProducerSurface()
     Disconnect();
     auto utils = SurfaceUtils::GetInstance();
     utils->Remove(GetUniqueId());
+    delete[] region_.rects;
+    region_.rects = nullptr;
 }
 
 GSError ProducerSurface::GetProducerInitInfo(ProducerInitInfo& info)
@@ -278,8 +299,11 @@ GSError ProducerSurface::AddCacheLocked(sptr<BufferExtraData>& bedataimpl,
         
         if (!bufferTypeLeak_.empty()) {
             int fd = retval.buffer->GetFileDescriptor();
-            if (fd > 0) {
+            if (fd > 0 && IsBufferTypeLeakValid(bufferTypeLeak_)) {
                 ioctl(fd, DMA_BUF_SET_LEAK_TYPE, bufferTypeLeak_.c_str());
+            } else if (fd > 0) {
+                BLOGW("Invalid bufferTypeLeak_, skip DMA_BUF_SET_LEAK_TYPE, uniqueId: %{public}" PRIu64 ".",
+                    queueId_);
             }
         }
     } else {
@@ -1258,6 +1282,9 @@ GSError ProducerSurface::SetBufferName(const std::string &name)
 
 void ProducerSurface::SetRequestWidthAndHeight(int32_t width, int32_t height)
 {
+    if (width < 0 || height < 0) {
+        return;
+    }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     requestWidth_ = width;
     requestHeight_ = height;
@@ -1448,7 +1475,12 @@ GSError ProducerSurface::RequestAndDetachBuffer(sptr<SurfaceBuffer>& buffer, spt
         return ret;
     }
     isDisconnected_ = false;
-    UpdateCacheLocked(bedataimpl, retval, config);
+    GSError cacheRet = UpdateCacheLocked(bedataimpl, retval, config);
+    if (cacheRet != GSERROR_OK) {
+        BLOGE("UpdateCacheLocked failed, ret: %{public}d, buffer(%{public}u), uniqueId: %{public}" PRIu64 ".",
+            cacheRet, retval.sequence, queueId_);
+        return cacheRet;
+    }
     buffer = retval.buffer;
     fence = retval.fence;
 
@@ -1648,7 +1680,7 @@ GSError ProducerSurface::ProducerSurfaceUnlockAndFlushBuffer()
     sptr<SyncFence> acquireFence = SyncFence::InvalidFence();
     auto ret = FlushBuffer(mLockedBuffer_, acquireFence, config, false);
     if (ret != GSERROR_OK) {
-        BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRId64 ".", ret, GetUniqueId());
+        BLOGE("FlushBuffer failed, ret:%{public}d, uniqueId: %{public}" PRIu64 ".", ret, GetUniqueId());
         return ret;
     }
     mLockedBuffer_ = nullptr;
@@ -1680,6 +1712,11 @@ GSError ProducerSurface::SetAlphaType(GraphicAlphaType alphaType)
 
 GSError ProducerSurface::SetBufferTypeLeak(const std::string &bufferTypeLeak)
 {
+    if (!IsBufferTypeLeakValid(bufferTypeLeak)) {
+        BLOGE("Invalid bufferTypeLeak, length: %{public}zu, uniqueId: %{public}" PRIu64 ".",
+            bufferTypeLeak.size(), queueId_);
+        return GSERROR_INVALID_ARGUMENTS;
+    }
     std::lock_guard<std::mutex> lockGuard(mutex_);
     bufferTypeLeak_ = bufferTypeLeak;
     return GSERROR_OK;

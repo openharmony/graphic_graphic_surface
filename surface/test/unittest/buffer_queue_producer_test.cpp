@@ -851,9 +851,9 @@ HWTEST_F(BufferQueueProducerTest, SetTunnelLayerInfoRemote001, TestSize.Level0)
 HWTEST_F(BufferQueueProducerTest, GetPresentTimestampRemote, TestSize.Level0)
 {
     MessageParcel arguments;
-    arguments.WriteInt32(5);
+    arguments.WriteUint32(5);
+    arguments.WriteUint32(static_cast<uint32_t>(GraphicPresentTimestampType::GRAPHIC_DISPLAY_PTS_TIMESTAMP));
     MessageParcel reply;
-    reply.WriteInt32(6);
     MessageOption option;
     int32_t ret = bqp_->GetPresentTimestampRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
@@ -1037,7 +1037,10 @@ HWTEST_F(BufferQueueProducerTest, SetWhitePointBrightness001, TestSize.Level0)
     MessageOption option;
     int32_t ret = bqp_->SetHdrWhitePointBrightnessRemote(arguments, reply, option);
     EXPECT_EQ(ret, ERR_NONE);
-    ret = bqp_->SetSdrWhitePointBrightnessRemote(arguments, reply, option);
+    MessageParcel arguments2;
+    arguments2.WriteFloat(1);
+    MessageParcel reply2;
+    ret = bqp_->SetSdrWhitePointBrightnessRemote(arguments2, reply2, option);
     EXPECT_EQ(ret, ERR_NONE);
 }
 

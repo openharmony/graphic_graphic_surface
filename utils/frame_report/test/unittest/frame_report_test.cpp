@@ -57,8 +57,6 @@ void FrameReportTest::SetUp()
     Rosen::FrameReport::GetInstance().presentFenceSysTime_.store(0);
     Rosen::FrameReport::GetInstance().presentFenceSequence_.store(0);
     Rosen::FrameReport::GetInstance().lastReleaseSysTime_.store(0);
-    Rosen::FrameReport::GetInstance().activelyPid_.store(FR_DEFAULT_PID);
-    Rosen::FrameReport::GetInstance().activelyUniqueId_.store(FR_DEFAULT_UNIQUEID);
 }
 
 void FrameReportTest::TearDown() {}
@@ -117,7 +115,6 @@ HWTEST_F(FrameReportTest, HasGameScene001, Function | MediumTest | Level2)
  */
 HWTEST_F(FrameReportTest, IsActiveGameWithPid001, Function | MediumTest | Level2)
 {
-    Rosen::FrameReport::GetInstance().SetGameScene(FRT_GAME_PID, FRT_GAME_SCHED);
     bool result = Rosen::FrameReport::GetInstance().IsActiveGameWithPid(FRT_GAME_ERROR_PID);
     ASSERT_TRUE(!result);
 

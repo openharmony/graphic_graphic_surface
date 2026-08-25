@@ -1283,12 +1283,13 @@ int32_t BufferQueueProducer::RequestAndDetachBufferRemote(MessageParcel &argumen
     return ERR_NONE;
 }
 
-void BufferQueueProducer::ReportQueueBufferTimeIfNeeded(int64_t startTimeNs)
+void BufferQueueProducer::ReportQueueBufferTimeIfNeeded(int64_t startTimeNs, uint32_t sequence)
 {
     uint64_t uniqueId = GetUniqueId();
     int64_t endTimeNs = std::chrono::duration_cast<std::chrono::nanoseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     Rosen::FrameReport::GetInstance().SetQueueBufferTime(uniqueId, name_, (endTimeNs - startTimeNs));
+    Rosen::FrameReport::GetInstance().SetFlushBufferSequence(sequence);
     Rosen::FrameReport::GetInstance().Report(name_);
 }
 
@@ -1340,7 +1341,7 @@ int32_t BufferQueueProducer::AttachAndFlushBufferRemote(MessageParcel &arguments
     }
 
     if (isActiveGame) {
-        ReportQueueBufferTimeIfNeeded(startTimeNs);
+        ReportQueueBufferTimeIfNeeded(startTimeNs, buffer->GetSeqNum());
     }
     return ERR_NONE;
 }

@@ -1032,7 +1032,12 @@ int32_t OH_NativeWindow_Set3DMetadataValue(OHNativeWindow *window, OH_NativeBuff
             BLOGE("Set3DMetadata failed, size mismatch.");
             return OHOS::SURFACE_ERROR_INVALID_PARAM;
         }
-        VideoDimType videoDimType = static_cast<VideoDimType>(*metadata);
+        VideoDimType videoDimType;
+        errno_t err = memcpy_s(&videoDimType, sizeof(videoDimType), metadata, sizeof(VideoDimType));
+        if (err != 0) {
+            BLOGE("memcpy_s failed! , ret: %{public}d", err);
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
         ret = static_cast<GSError>(OH_NativeWindow_SetVideoDimensionType(window, videoDimType));
     } else {
         BLOGE("the 3D metadataKey does not support it.");

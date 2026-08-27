@@ -14,6 +14,8 @@
  */
 
 #include "surface_tunnel_handle.h"
+#include <cerrno>
+#include <unistd.h>
 #include <securec.h>
 #include "buffer_log.h"
 
@@ -82,7 +84,15 @@ GSError SurfaceTunnelHandle::SetHandle(const GraphicExtDataHandle *handle)
         BLOGE("AllocExtDataHandle failed");
         return GSERROR_INVALID_OPERATING;
     }
-    tunnelHandle_->fd = dup(handle->fd);
+    if (handle->fd >= 0) {
+        tunnelHandle_->fd = dup(handle->fd);
+        if (tunnelHandle_->fd < 0) {
+            BLOGE("dup fd failed, fd: %{public}d, errno: %{public}d", handle->fd, errno);
+            FreeExtDataHandle(tunnelHandle_);
+            tunnelHandle_ = nullptr;
+            return GSERROR_INVALID_OPERATING;
+        }
+    }
     for (uint32_t index = 0; index < handle->reserveInts; index++) {
         tunnelHandle_->reserve[index] = handle->reserve[index];
     }

@@ -281,8 +281,8 @@ HWTEST_F(BufferQueueConsumerTest, AddBranchCoverage001, TestSize.Level0)
     consumer->SetBufferHold(0);
     ASSERT_EQ(consumer->OnConsumerDied(), OHOS::GSERROR_INVALID_ARGUMENTS);
     ASSERT_EQ(consumer->GoBackground(), OHOS::GSERROR_INVALID_ARGUMENTS);
-    ASSERT_EQ(consumer->GetHdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
-    ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), OHOS::SURFACE_ERROR_UNKOWN);
+    ASSERT_EQ(consumer->GetHdrWhitePointBrightness(), 0.0f);
+    ASSERT_EQ(consumer->GetSdrWhitePointBrightness(), 0.0f);
     ASSERT_EQ(consumer->IsSurfaceBufferInCache(0, isInCache), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetGlobalAlpha(alpha), OHOS::SURFACE_ERROR_UNKOWN);
     ASSERT_EQ(consumer->GetFrameGravity(frameGravity), OHOS::SURFACE_ERROR_UNKOWN);
@@ -478,5 +478,35 @@ HWTEST_F(BufferQueueConsumerTest, GetAndResetSingleBufferMode002, TestSize.Level
     bqcNull->bufferQueue_ = nullptr;
     SingleBufferMode mode = bqcNull->GetAndResetSingleBufferMode();
     ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
+
+/*
+* Function: GetHdrWhitePointBrightness
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create BufferQueueConsumer with null bufferQueue
+*                  2. call GetHdrWhitePointBrightness and check ret is 0.0f (not error code)
+*/
+HWTEST_F(BufferQueueConsumerTest, GetHdrWhitePointBrightnessNull001, TestSize.Level0)
+{
+    sptr<BufferQueue> nullQueue = nullptr;
+    sptr<BufferQueueConsumer> bqcNull = new BufferQueueConsumer(nullQueue);
+    ASSERT_EQ(bqcNull->GetHdrWhitePointBrightness(), 0.0f);
+}
+
+/*
+* Function: GetSdrWhitePointBrightness
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. create BufferQueueConsumer with null bufferQueue
+*                  2. call GetSdrWhitePointBrightness and check ret is 0.0f (not error code)
+*/
+HWTEST_F(BufferQueueConsumerTest, GetSdrWhitePointBrightnessNull001, TestSize.Level0)
+{
+    sptr<BufferQueue> nullQueue = nullptr;
+    sptr<BufferQueueConsumer> bqcNull = new BufferQueueConsumer(nullQueue);
+    ASSERT_EQ(bqcNull->GetSdrWhitePointBrightness(), 0.0f);
 }
 }

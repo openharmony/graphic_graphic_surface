@@ -75,7 +75,11 @@ IDisplayBufferSptr GetOrResetDisplayBuffer()
         return nullptr;
     }
     sptr<IRemoteObject::DeathRecipient> recipient = new DisplayBufferDiedRecipient();
-    g_displayBuffer->AddDeathRecipient(recipient);
+    bool ret = g_displayBuffer->AddDeathRecipient(recipient);
+    if (!ret) {
+        g_displayBuffer = nullptr;
+    }
+    BLOGW("Get new displayBuffer, AddDeathRecipient:%{public}d", ret);
     return g_displayBuffer;
 }
 
@@ -131,7 +135,7 @@ uint32_t SurfaceBufferImpl::GenerateSequenceNumber(uint32_t& seqNum)
             break;
         }
 
-        if (seqNum == (startSeqNum - 1) % MAX_SEQUENCE_NUM) {
+        if (seqNum == (startSeqNum + MAX_SEQUENCE_NUM - 1) % MAX_SEQUENCE_NUM) {
             BLOGE("SurfaceBufferImpl GenerateSequenceNumber failed, no idle seq");
             seqNum = startSeqNum;
             break;
@@ -139,6 +143,46 @@ uint32_t SurfaceBufferImpl::GenerateSequenceNumber(uint32_t& seqNum)
     }
 
     return seqNum;
+}
+
+bool SurfaceBufferImpl::IsLocalSeqNum(uint32_t seqNum)
+{
+    return (seqNum & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (seqNum >> PID_BIT) == getpid();
+}
+
+void SurfaceBufferImpl::AcquireSeqBit(uint32_t seqNum)
+{
+    uint32_t idx = seqNum & MAX_SEQUENCE_NUM;
+    if (!IsLocalSeqNum(seqNum)) {
+        isSeqNumExist_.store(false);
+        return;
+    }
+    if (g_seqBitset.test(idx)) {
+        isSeqNumExist_.store(true);
+    } else {
+        isSeqNumExist_.store(false);
+        g_seqBitset.set(idx);
+    }
+}
+
+void SurfaceBufferImpl::ReleaseSeqBit(uint32_t seqNum)
+{
+    uint32_t idx = seqNum & MAX_SEQUENCE_NUM;
+    if (IsLocalSeqNum(seqNum) && !isSeqNumExist_.load()) {
+        g_seqBitset.reset(idx);
+    }
+}
+
+void SurfaceBufferImpl::UpdateSeqNumBitset(uint32_t newSeqNum)
+{
+    std::lock_guard<std::mutex> lock(g_seqNumMutex);
+    uint32_t oldSeqNum = sequenceNumber_;
+    if (newSeqNum == oldSeqNum) {
+        return;
+    }
+    sequenceNumber_ = newSeqNum;
+    ReleaseSeqBit(oldSeqNum);
+    AcquireSeqBit(newSeqNum);
 }
 
 void SurfaceBufferImpl::InitMemMgrMembers()
@@ -188,12 +232,7 @@ SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
         sequenceNumber_ = seqNum;
-        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid()) {
-            if (g_seqBitset.test(sequenceNumber_ & MAX_SEQUENCE_NUM)) {
-                isSeqNumExist_.store(true);
-            }
-            g_seqBitset.set(sequenceNumber_ & MAX_SEQUENCE_NUM);
-        }
+        AcquireSeqBit(sequenceNumber_);
         g_nextId++;
         // 0xFFFF is pid mask. 48 is pid offset.bufferId_ high 16bit is pid, low 16bit is Auto-increment id
         bufferId_ = ((static_cast<uint64_t>(getpid()) & 0xFFFF) << 48);
@@ -209,10 +248,7 @@ SurfaceBufferImpl::~SurfaceBufferImpl()
     NotifyBufferDestructorCallback();
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
-        if ((sequenceNumber_ & MAX_SEQUENCE_NUM) < MAX_SEQUENCE_NUM && (sequenceNumber_ >> PID_BIT) == getpid() &&
-            !isSeqNumExist_) {
-            g_seqBitset.reset(sequenceNumber_ & MAX_SEQUENCE_NUM);
-        }
+        ReleaseSeqBit(sequenceNumber_);
     }
     FreeBufferHandleLocked();
 }
@@ -728,11 +764,12 @@ GSError SurfaceBufferImpl::ReadFromBufferInfo(const RSBufferInfo &bufferInfo)
 }
 
 GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
-    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc)
+    std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
 {
     auto handle = ReadBufferHandle(parcel, readSafeFdFunc);
     SetBufferHandle(handle);
-    if (handle != nullptr) {
+    bool bufferHandleValid = GetBufferHandle() != nullptr;
+    if (bufferHandleValid) {
         std::lock_guard<std::mutex> lock(mutex_);
         if (!parcel.ReadBool(hasOriginalFields_) ||
             !parcel.ReadInt32(originalWidth_) ||
@@ -743,7 +780,7 @@ GSError SurfaceBufferImpl::ReadFromMessageParcel(MessageParcel &parcel,
             hasOriginalFields_ = false;
         }
     }
-    return handle ? GSERROR_OK : GSERROR_API_FAILED;
+    return bufferHandleValid ? GSERROR_OK : GSERROR_API_FAILED;
 }
 
 // return OH_NativeBuffer* is dangerous, need to refactor
@@ -1097,24 +1134,29 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallback() const
 
 GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parcel)
 {
+    uint32_t seqNum = 0;
+    {
+        std::lock_guard<std::mutex> seqLock(g_seqNumMutex);
+        seqNum = sequenceNumber_;
+    }
     std::lock_guard<std::mutex> lock(mutex_);
-    if (!parcel.WriteUint32(sequenceNumber_) || !parcel.WriteUint64(bufferId_)) {
-        BLOGE("%{public}s: write basic info failed, seq: %{public}u", __func__, sequenceNumber_);
+    if (!parcel.WriteUint32(seqNum) || !parcel.WriteUint64(bufferId_)) {
+        BLOGE("%{public}s: write basic info failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
 
     if (handle_ == nullptr) {
         if (!parcel.WriteBool(false)) {
-            BLOGE("%{public}s: write handle null flag failed, seq: %{public}u", __func__, sequenceNumber_);
+            BLOGE("%{public}s: write handle null flag failed, seq: %{public}u", __func__, seqNum);
             return GSERROR_API_FAILED;
         }
     } else {
         if (!parcel.WriteBool(true)) {
-            BLOGE("%{public}s: write handle flag failed, seq: %{public}u", __func__, sequenceNumber_);
+            BLOGE("%{public}s: write handle flag failed, seq: %{public}u", __func__, seqNum);
             return GSERROR_API_FAILED;
         }
         if (WriteBufferHandle(parcel, *handle_) == false) {
-            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, sequenceNumber_);
+            BLOGE("%{public}s: write buffer handle failed, seq: %{public}u", __func__, seqNum);
             return GSERROR_API_FAILED;
         }
     }
@@ -1122,56 +1164,55 @@ GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parc
     if (!parcel.WriteUint32(static_cast<uint32_t>(surfaceBufferColorGamut_)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(transform_)) ||
         !parcel.WriteUint32(static_cast<uint32_t>(scalingMode_))) {
-        BLOGE("%{public}s: write color/transform info failed, seq: %{public}u", __func__, sequenceNumber_);
+        BLOGE("%{public}s: write color/transform info failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
 
     if (!parcel.WriteInt32(surfaceBufferWidth_) || !parcel.WriteInt32(surfaceBufferHeight_)) {
-        BLOGE("%{public}s: write size info failed, seq: %{public}u", __func__, sequenceNumber_);
+        BLOGE("%{public}s: write size info failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
 
     if (!parcel.WriteBool(isReclaimed_.load())) {
-        BLOGE("%{public}s: write flags failed, seq: %{public}u", __func__, sequenceNumber_);
+        BLOGE("%{public}s: write flags failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
 
     if (!parcel.WriteInt32(crop_.x) || !parcel.WriteInt32(crop_.y) ||
         !parcel.WriteInt32(crop_.w) || !parcel.WriteInt32(crop_.h)) {
-        BLOGE("%{public}s: write crop info failed, seq: %{public}u", __func__, sequenceNumber_);
+        BLOGE("%{public}s: write crop info failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
 
     if (!parcel.WriteBool(syncFence_ != nullptr)) {
-        BLOGE("%{public}s: write sync fence flag failed, seq: %{public}u", __func__, sequenceNumber_);
+        BLOGE("%{public}s: write sync fence flag failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
     if (syncFence_ != nullptr) {
         if (!syncFence_->WriteToMessageParcel(parcel)) {
-            BLOGE("%{public}s: write sync fence failed, seq: %{public}u", __func__, sequenceNumber_);
+            BLOGE("%{public}s: write sync fence failed, seq: %{public}u", __func__, seqNum);
             return GSERROR_API_FAILED;
         }
     }
 
     if (!parcel.WriteUint32(static_cast<uint32_t>(videoDimType_))) {
-        BLOGE("%{public}s: write videoDimType_ info failed, seq: %{public}u", __func__, sequenceNumber_);
+        BLOGE("%{public}s: write videoDimType_ info failed, seq: %{public}u", __func__, seqNum);
         return GSERROR_API_FAILED;
     }
 
-    BLOGD("%{public}s success, seq: %{public}u", __func__, sequenceNumber_);
+    BLOGD("%{public}s success, seq: %{public}u", __func__, seqNum);
     return GSERROR_OK;
 }
 
 GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc)
 {
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        if (!parcel.ReadUint32(sequenceNumber_) || !parcel.ReadUint64(bufferId_)) {
-            BLOGE("%{public}s: read basic info failed", __func__);
-            return GSERROR_API_FAILED;
-        }
+    uint32_t newSeqNum = 0;
+    if (!parcel.ReadUint32(newSeqNum) || !parcel.ReadUint64(bufferId_)) {
+        BLOGE("%{public}s: read basic info failed", __func__);
+        return GSERROR_API_FAILED;
     }
+    UpdateSeqNumBitset(newSeqNum);
 
     bool hasHandle = false;
     if (!parcel.ReadBool(hasHandle)) {
@@ -1186,6 +1227,10 @@ GSError SurfaceBufferImpl::ReadAllPropertiesFromMessageParcel(MessageParcel &par
             return GSERROR_API_FAILED;
         }
         SetBufferHandle(handle);
+        if (GetBufferHandle() == nullptr) {
+            BLOGE("%{public}s: SetBufferHandle register buffer failed, seq: %{public}u", __func__, sequenceNumber_);
+            return GSERROR_API_FAILED;
+        }
     } else {
         std::lock_guard<std::mutex> lock(mutex_);
         FreeBufferHandleLocked();

@@ -260,7 +260,11 @@ bool SyncFence::IsValid() const
 sptr<SyncFence> SyncFence::ReadFromMessageParcel(MessageParcel &parcel,
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)>readSafeFdFunc)
 {
-    int32_t fence = parcel.ReadInt32();
+    int32_t fence = -1;
+    if (!parcel.ReadInt32(fence)) {
+        return INVALID_FENCE;
+    }
+
     if (fence < 0) {
         return INVALID_FENCE;
     }

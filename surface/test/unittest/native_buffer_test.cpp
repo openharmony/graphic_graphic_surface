@@ -1984,4 +1984,25 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig005, TestSize.Level0)
     delete sBuffer;
     sBuffer = nullptr;
 }
+
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue with size > META_DATA_MAX_SIZE (3000)
+*                  2. check ret is SURFACE_ERROR_INVALID_PARAM
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValueTooLarge001, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    constexpr int32_t metaDataMaxSize = 3000;
+    int32_t size = metaDataMaxSize + 1;
+    std::vector<uint8_t> data(size, 0);
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_STATIC_METADATA, size, data.data());
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+}
 }

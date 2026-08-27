@@ -5112,4 +5112,79 @@ HWTEST_F(ProducerSurfaceTest, SetSingleBufferMode002, TestSize.Level0)
     ret = pSurfaceTmp->SetSingleBufferMode(SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_EQ(ret, GSERROR_INVALID_ARGUMENTS);
 }
+
+/*
+* Function: SetBufferTypeLeak
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferTypeLeak with string containing '%' / control char
+*                  2. check ret is GSERROR_INVALID_ARGUMENTS and bufferTypeLeak_ unchanged
+*/
+HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakInvalid001, TestSize.Level0)
+{
+    std::string oldLeak = surface_->bufferTypeLeak_;
+    ASSERT_EQ(surface_->SetBufferTypeLeak("abc%def"), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->SetBufferTypeLeak(std::string("abc") + std::string(1, '\t') + "def"),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->SetBufferTypeLeak(std::string("abc") + std::string(1, '\x07') + "def"),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->SetBufferTypeLeak(std::string("abc") + std::string(1, '\x7f') + "def"),
+        OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_TRUE(surface_->bufferTypeLeak_ == oldLeak);
+}
+
+/*
+* Function: SetBufferTypeLeak
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferTypeLeak with too long string (> 127) and boundary (127)
+*                  2. check ret is GSERROR_INVALID_ARGUMENTS / GSERROR_OK
+*/
+HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakTooLong001, TestSize.Level0)
+{
+    constexpr int32_t maxLen = 127;
+    std::string tooLong(maxLen + 1, 'a');
+    ASSERT_EQ(surface_->SetBufferTypeLeak(tooLong), OHOS::GSERROR_INVALID_ARGUMENTS);
+    std::string valid(maxLen, 'a');
+    ASSERT_EQ(surface_->SetBufferTypeLeak(valid), OHOS::GSERROR_OK);
+    ASSERT_TRUE(surface_->bufferTypeLeak_ == valid);
+}
+
+/*
+* Function: SetBufferTypeLeak
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferTypeLeak with empty string (valid by design)
+*                  2. check ret is GSERROR_OK
+*/
+HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakEmpty001, TestSize.Level0)
+{
+    ASSERT_EQ(surface_->SetBufferTypeLeak(""), OHOS::GSERROR_OK);
+    ASSERT_TRUE(surface_->bufferTypeLeak_.empty());
+}
+
+/*
+* Function: SetRequestWidthAndHeight
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetRequestWidthAndHeight with negative width/height
+*                  2. check requestWidth_/requestHeight_ unchanged
+*                  3. call with valid values and check members updated
+*/
+HWTEST_F(ProducerSurfaceTest, SetRequestWidthAndHeightNegative001, TestSize.Level0)
+{
+    int32_t prevW = surface_->requestWidth_;
+    int32_t prevH = surface_->requestHeight_;
+    surface_->SetRequestWidthAndHeight(-1, 0x100);
+    ASSERT_EQ(surface_->requestWidth_, prevW);
+    surface_->SetRequestWidthAndHeight(0x100, -1);
+    ASSERT_EQ(surface_->requestHeight_, prevH);
+    surface_->SetRequestWidthAndHeight(0x100, 0x100);
+    ASSERT_EQ(surface_->requestWidth_, 0x100);
+    ASSERT_EQ(surface_->requestHeight_, 0x100);
+}
 }

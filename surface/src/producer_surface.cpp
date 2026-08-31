@@ -21,6 +21,7 @@
 #include <linux/dma-buf.h>
 
 #include "buffer_log.h"
+#include "parse_surface_int.h"
 #include "buffer_extra_data_impl.h"
 #include "buffer_producer_listener.h"
 #include "sync_fence.h"
@@ -220,9 +221,15 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
     std::vector<uint8_t> metaData;
     std::string value = GetUserData("ATTRKEY_COLORSPACE_INFO");
     if (!value.empty()) {
-        ret = MetadataHelper::SetColorSpaceType(buffer, static_cast<CM_ColorSpaceType>(atoi(value.c_str())));
-        if (ret != GSERROR_OK) {
-            return ret;
+        int32_t colorSpace = 0;
+        if (!ParseSurfaceInt32(value, colorSpace)) {
+            BLOGE("invalid ATTRKEY_COLORSPACE_INFO: %{public}s, uniqueId: %{public}" PRIu64 ".",
+                value.c_str(), queueId_);
+        } else {
+            ret = MetadataHelper::SetColorSpaceType(buffer, static_cast<CM_ColorSpaceType>(colorSpace));
+            if (ret != GSERROR_OK) {
+                return ret;
+            }
         }
     }
     value = GetUserData("OH_HDR_DYNAMIC_METADATA");
@@ -245,7 +252,13 @@ GSError ProducerSurface::SetMetadataValue(sptr<SurfaceBuffer>& buffer)
     }
     value = GetUserData("OH_HDR_METADATA_TYPE");
     if (!value.empty()) {
-        ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str())));
+        int32_t hdrType = 0;
+        if (!ParseSurfaceInt32(value, hdrType)) {
+            BLOGE("invalid OH_HDR_METADATA_TYPE: %{public}s, uniqueId: %{public}" PRIu64 ".",
+                value.c_str(), queueId_);
+        } else {
+            ret = MetadataHelper::SetHDRMetadataType(buffer, static_cast<CM_HDR_Metadata_Type>(hdrType));
+        }
     }
     return ret;
 }

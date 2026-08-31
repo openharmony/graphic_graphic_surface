@@ -21,6 +21,7 @@
 #include <cinttypes>
 #include <securec.h>
 #include "buffer_log.h"
+#include "parse_surface_int.h"
 #include "window.h"
 #include "surface_type.h"
 #include "surface_utils.h"
@@ -874,7 +875,12 @@ int32_t OH_NativeWindow_GetColorSpace(OHNativeWindow *window, OH_NativeBuffer_Co
             BLOGE("no colorspace!");
             return OHOS::SURFACE_ERROR_UNKOWN;
         }
-        colorSpaceType = static_cast<CM_ColorSpaceType_V1_0>(atoi(value.c_str()));
+        int32_t colorSpaceInt = 0;
+        if (!ParseSurfaceInt32(value, colorSpaceInt)) {
+            BLOGE("invalid ATTRKEY_COLORSPACE_INFO: %{public}s", value.c_str());
+            return OHOS::SURFACE_ERROR_UNKOWN;
+        }
+        colorSpaceType = static_cast<CM_ColorSpaceType_V1_0>(colorSpaceInt);
         auto it = std::find_if(NATIVE_COLORSPACE_TO_HDI_MAP.begin(), NATIVE_COLORSPACE_TO_HDI_MAP.end(),
             [colorSpaceType](const std::pair<OH_NativeBuffer_ColorSpace, CM_ColorSpaceType_V2_4>& element) {
                 return element.second == static_cast<CM_ColorSpaceType_V2_4>(colorSpaceType);
@@ -931,7 +937,12 @@ static GSError OH_NativeWindow_GetMatedataValueType(OHNativeWindow *window, int3
 {
     std::string value = window->surface->GetUserData("OH_HDR_METADATA_TYPE");
     CM_HDR_Metadata_Type hdrMetadataType = CM_METADATA_NONE;
-    hdrMetadataType = static_cast<CM_HDR_Metadata_Type>(atoi(value.c_str()));
+    int32_t hdrType = 0;
+    if (!ParseSurfaceInt32(value, hdrType)) {
+        BLOGE("invalid OH_HDR_METADATA_TYPE: %{public}s", value.c_str());
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    hdrMetadataType = static_cast<CM_HDR_Metadata_Type>(hdrType);
     auto it = std::find_if(NATIVE_METADATATYPE_TO_HDI_MAP.begin(), NATIVE_METADATATYPE_TO_HDI_MAP.end(),
     [hdrMetadataType](const std::pair<OH_NativeBuffer_MetadataType, CM_HDR_Metadata_Type>& element) {
         return element.second == hdrMetadataType;

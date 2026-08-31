@@ -24,6 +24,7 @@
 #include <securec.h>
 #include <sys/mman.h>
 #include "buffer_log.h"
+#include "parse_surface_int.h"
 #include "buffer_extra_data_impl.h"
 #include "surface_trace.h"
 #include "v1_1/buffer_handle_meta_key_type.h"
@@ -277,8 +278,15 @@ GSError SurfaceBufferImpl::Alloc(const BufferRequestConfig& config, const sptr<S
     }
 
     OHOS::HDI::Display::Buffer::V1_0::AllocInfo info = {config.width, config.height, config.usage, config.format};
-    static bool debugHebcDisabled =
-        std::atoi((system::GetParameter("persist.graphic.debug_hebc.disabled", "0")).c_str()) != 0;
+    static bool debugHebcDisabled = []() {
+        int32_t value = 0;
+        const std::string text = system::GetParameter("persist.graphic.debug_hebc.disabled", "0");
+        if (!ParseSurfaceInt32(text, value)) {
+            BLOGE("invalid persist.graphic.debug_hebc.disabled: %{public}s", text.c_str());
+            return false;
+        }
+        return value != 0;
+    }();
     if (debugHebcDisabled) {
         info.usage |= (BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA);
     }

@@ -60,6 +60,10 @@ ohos_unittest("surface_ipc_with_pts_test_st") {
     "cJSON:cjson_static",     
     "selinux_adapter:librestorecon"
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest surface_ipc_with_pts_test_st }}}
@@ -95,6 +99,10 @@ ohos_unittest("surface_ipc_with_invaild_pts_test_st") {
     "cJSON:cjson_static",     
     "selinux_adapter:librestorecon"
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest surface_ipc_with_invaild_pts_test_st }}}
@@ -130,5 +138,9 @@ ohos_unittest("surface_ipc_with_dropframe_test_st") {
     "cJSON:cjson_static",     
     "selinux_adapter:librestorecon"
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 ## SystemTest surface_ipc_with_dropframe_test_st }}}

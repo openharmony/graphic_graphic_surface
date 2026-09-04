@@ -53,6 +53,10 @@ ohos_unittest("native_window_buffer_test_st") {
     "access_token:libtoken_setproc",
     "bounds_checking_function:libsec_shared",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest native_window_buffer_test }}}
@@ -96,6 +100,10 @@ ohos_unittest("surface_ipc_test_st") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest surface_ipc_test }}}
@@ -117,6 +125,10 @@ ohos_unittest("native_window_clean_cache_test_st") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest surface_ipc_with_connect_strictly_test_st {{{
@@ -137,6 +149,10 @@ ohos_unittest("surface_ipc_with_connect_strictly_test_st") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest surface_ipc_with_connect_strictly_test_st }}}
@@ -157,6 +173,10 @@ ohos_unittest("surface_batch_opt_with_connect_strictly_test_st") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## SystemTest surface_ipc_with_connect_strictly_test_st }}}

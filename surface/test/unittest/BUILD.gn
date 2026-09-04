@@ -49,11 +49,18 @@ group("unittest") {
 ohos_unittest("producer_surface_delegator_test") {
   module_out_path = module_out_path
 
-  sources = [ "producer_surface_delegator_test.cpp" ]
+  sources = [
+    "producer_surface_delegator_test.cpp",
+    "delegator_mock.cpp",
+  ]
+
+  include_dirs = [
+    ".",
+    "../../include",
+  ]
 
   deps = [
     ":surface_test_common",
-    ":mock_dlfcn",
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
@@ -62,6 +69,10 @@ ohos_unittest("producer_surface_delegator_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest producer_surface_delegator_test }}}
@@ -70,11 +81,18 @@ ohos_unittest("producer_surface_delegator_test") {
 ohos_unittest("consumer_surface_delegator_test") {
   module_out_path = module_out_path
 
-  sources = [ "consumer_surface_delegator_test.cpp" ]
+  sources = [
+    "consumer_surface_delegator_test.cpp",
+    "delegator_mock.cpp",
+  ]
+
+  include_dirs = [
+    ".",
+    "../../include",
+  ]
 
   deps = [
     ":surface_test_common",
-    ":mock_dlfcn",
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
@@ -83,6 +101,10 @@ ohos_unittest("consumer_surface_delegator_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest consumer_surface_delegator_test }}}
@@ -190,6 +212,10 @@ ohos_unittest("buffer_queue_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest buffer_queue_test }}}
@@ -254,6 +280,10 @@ ohos_unittest("producer_surface_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest producer_surface_test }}}
@@ -442,7 +472,7 @@ config("surface_test_common_public_config") {
   ]
 }
 
-ohos_source_set("mock_dlfcn") {
+ohos_static_library("mock_dlfcn") {
   testonly = true
 
   sources = [ "delegator_mock.cpp" ]
@@ -468,6 +498,11 @@ ohos_source_set("mock_dlfcn") {
     "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ohos_static_library("surface_test_common") {

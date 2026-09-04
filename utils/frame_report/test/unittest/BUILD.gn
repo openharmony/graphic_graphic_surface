@@ -42,6 +42,10 @@ ohos_unittest("frame_report_test") {
     "hilog:libhilog",
     "ipc:ipc_core",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ohos_unittest("hwsched_reporter_test") {

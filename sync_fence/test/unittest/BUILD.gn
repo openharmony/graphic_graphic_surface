@@ -20,9 +20,11 @@ group("unittest") {
   testonly = true
 
   deps = [
-    ":native_fence_test",
     ":sync_fence_test",
   ]
+  if (!is_emulator) {
+    deps += [ ":native_fence_test" ]
+  }
 }
 
 ## UnitTest sync_fence_test {{{

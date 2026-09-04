@@ -1368,6 +1368,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes001, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
@@ -1419,7 +1420,9 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, TestSize.Level0)
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+#endif // OHOS_EMULATOR
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
@@ -1478,8 +1481,10 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, TestSize.Level0)
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+#endif // OHOS_EMULATOR
 
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
@@ -1538,6 +1543,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes004, TestSize.Level0)
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+#endif // OHOS_EMULATOR
 
 /*
  * Function: OH_NativeBuffer_WriteToParcel
@@ -1609,6 +1615,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel004, TestSize.Level0)
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
 
+#ifndef OHOS_EMULATOR
 /*
  * Function: OH_NativeBuffer_ReadFromParcel
  * Type: Function
@@ -1651,6 +1658,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel001, TestSize.Level0)
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
     OH_IPCParcel_Destroy(parcel);
 }
+#endif // OHOS_EMULATOR
 
 /*
  * Function: OH_NativeBuffer_ReadFromParcel

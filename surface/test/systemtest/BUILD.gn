@@ -19,16 +19,19 @@ module_out_path = "graphic_surface/graphic_surface/surface"
 group("unittest") {
   testonly = true
 
-  deps = [
-    ":native_window_buffer_test_st",
-    ":native_window_clean_cache_test_st",
-    ":native_window_test_st",
-    ":surface_batch_opt_with_connect_strictly_test_st",
-    ":surface_ipc_test_st",
-    ":surface_ipc_with_connect_strictly_test_st",
-    "attach_and_detach_buffer_test:systemtest",
-    "buffer_with_present_timestamp_test:systemtest",
-  ]
+  deps = []
+  if (!is_emulator) {
+    deps += [
+      ":native_window_buffer_test_st",
+      ":native_window_clean_cache_test_st",
+      ":native_window_test_st",
+      ":surface_batch_opt_with_connect_strictly_test_st",
+      ":surface_ipc_test_st",
+      ":surface_ipc_with_connect_strictly_test_st",
+      "attach_and_detach_buffer_test:systemtest",
+      "buffer_with_present_timestamp_test:systemtest",
+    ]
+  }
 }
 
 ## SystemTest native_window_buffer_test {{{

@@ -41,16 +41,20 @@ extern bool g_consumerSurfaceDelegatorQueueBufferNull;
 extern bool g_consumerSurfaceDelegatorDestroyNull;
 
 uintptr_t MockProducerSurfaceDelegatorCreate();
-void MockProducerSurfaceDelegatorDestroy();
-void MockProducerSurfaceDelegatorSetSurface();
-bool MockProducerSurfaceDelegatorSetClient();
-GSError MockProducerSurfaceDelegatorReleaseBuffer();
+void MockProducerSurfaceDelegatorDestroy(uintptr_t delegator);
+void MockProducerSurfaceDelegatorSetSurface(uintptr_t delegator, sptr<Surface> surface);
+bool MockProducerSurfaceDelegatorSetClient(uintptr_t delegator, sptr<IRemoteObject> client);
+GSError MockProducerSurfaceDelegatorReleaseBuffer(uintptr_t delegator,
+    const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence);
 uintptr_t MockConsumerSurfaceDelegatorCreate();
-bool MockConsumerSurfaceDelegatorSetClient();
-void MockConsumerSurfaceDelegatorSetSurface();
-GSError MockConsumerSurfaceDelegatorDequeueBuffer();
-GSError MockConsumerSurfaceDelegatorQueueBuffer();
-void MockConsumerSurfaceDelegatorDestroy();
+bool MockConsumerSurfaceDelegatorSetClient(uintptr_t delegator, sptr<IRemoteObject> client);
+void MockConsumerSurfaceDelegatorSetSurface(uintptr_t delegator, sptr<Surface> surface);
+GSError MockConsumerSurfaceDelegatorDequeueBuffer(uintptr_t delegator,
+    const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+    struct IBufferProducer::RequestBufferReturnValue& retval);
+GSError MockConsumerSurfaceDelegatorQueueBuffer(uintptr_t delegator,
+    sptr<SurfaceBuffer>& buffer, int32_t fenceFd);
+void MockConsumerSurfaceDelegatorDestroy(uintptr_t delegator);
 
 }  // namespace Rosen
 }  // namespace OHOS

@@ -22,34 +22,45 @@ group("unittest") {
   deps = [
     ":buffer_client_producer_remote_test",
     ":buffer_queue_consumer_test",
-    ":buffer_queue_producer_remote_test",
     ":buffer_queue_producer_test",
-    ":buffer_queue_test",
     ":buffer_utils_test",
-    ":consumer_surface_delegator_test",
     ":consumer_surface_test",
     ":delegator_adapter_test",
     ":metadata_helper_test",
     ":native_buffer_test",
     ":native_window_test",
-    ":producer_surface_delegator_test",
-    ":producer_surface_test",
     ":surface_buffer_impl_test",
     ":surface_test",
     ":surface_type_test",
     ":surface_utils_test",
   ]
+  if (!is_emulator) {
+    deps += [
+      ":buffer_queue_producer_remote_test",
+      ":buffer_queue_test",
+      ":consumer_surface_delegator_test",
+      ":producer_surface_delegator_test",
+      ":producer_surface_test",
+    ]
+  }
 }
 
 ## UnitTest producer_surface_delegator_test {{{
 ohos_unittest("producer_surface_delegator_test") {
   module_out_path = module_out_path
 
-  sources = [ "producer_surface_delegator_test.cpp" ]
+  sources = [
+    "producer_surface_delegator_test.cpp",
+    "delegator_mock.cpp",
+  ]
+
+  include_dirs = [
+    ".",
+    "../../include",
+  ]
 
   deps = [
     ":surface_test_common",
-    ":mock_dlfcn",
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
@@ -58,6 +69,10 @@ ohos_unittest("producer_surface_delegator_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest producer_surface_delegator_test }}}
@@ -66,11 +81,18 @@ ohos_unittest("producer_surface_delegator_test") {
 ohos_unittest("consumer_surface_delegator_test") {
   module_out_path = module_out_path
 
-  sources = [ "consumer_surface_delegator_test.cpp" ]
+  sources = [
+    "consumer_surface_delegator_test.cpp",
+    "delegator_mock.cpp",
+  ]
+
+  include_dirs = [
+    ".",
+    "../../include",
+  ]
 
   deps = [
     ":surface_test_common",
-    ":mock_dlfcn",
     "$graphic_surface_root/surface:surface_static",
   ]
   external_deps = [
@@ -79,6 +101,10 @@ ohos_unittest("consumer_surface_delegator_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest consumer_surface_delegator_test }}}
@@ -186,6 +212,10 @@ ohos_unittest("buffer_queue_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest buffer_queue_test }}}
@@ -250,6 +280,10 @@ ohos_unittest("producer_surface_test") {
     "ipc:ipc_single",
     "hilog:libhilog",
   ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ## UnitTest producer_surface_test }}}
@@ -352,6 +386,11 @@ ohos_unittest("native_buffer_test") {
     "$graphic_surface_root/surface:surface_static",
   ]
 
+  defines = []
+  if (is_emulator) {
+    defines += [ "OHOS_EMULATOR" ]
+  }
+
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
@@ -433,7 +472,7 @@ config("surface_test_common_public_config") {
   ]
 }
 
-ohos_source_set("mock_dlfcn") {
+ohos_static_library("mock_dlfcn") {
   testonly = true
 
   sources = [ "delegator_mock.cpp" ]
@@ -459,6 +498,11 @@ ohos_source_set("mock_dlfcn") {
     "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+  }
 }
 
 ohos_static_library("surface_test_common") {

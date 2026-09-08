@@ -68,11 +68,11 @@ void FrameReport::SetGameScene(int32_t pid, int32_t state)
     LOGI("FrameReport::SetGameScene pid = %{public}d state = %{public}d ", pid, state);
     switch (state) {
         case FR_GAME_BACKGROUND: {
-            sceneType_ &= ~FR_SCENE_GAME;
             if (activelyPid_.compare_exchange_strong(pid, FR_DEFAULT_PID)) {
                 LOGI("FrameReport::SetGameScene Game Background Current Pid = %{public}d "
                      "state = 0", pid);
                 activelyUniqueId_.store(FR_DEFAULT_UNIQUEID);
+                sceneType_ &= ~FR_SCENE_GAME;
             }
             break;
         }

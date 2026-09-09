@@ -112,7 +112,9 @@ public:
     void SetFlushTimestamp(uint64_t timestamp) override;
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
     void RegisterBufferDestructorCallback(std::function<void(uint64_t)> callBack) override;
+    void RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t)) override;
     void UnRegisterBufferDestructorCallback() override;
+    void UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t)) override;
     GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel) override;
     GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
         std::function<int(MessageParcel &parcel,
@@ -131,6 +133,7 @@ private:
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
     void NotifyBufferDestructorCallback() const;
+    void AddBufferDestructorCallback(void (*funcPtr)(uint64_t), std::function<void(uint64_t)> callBack);
     void RecordOriginalBufferHandleFields();
 
     BufferHandle *handle_ = nullptr;
@@ -163,8 +166,10 @@ private:
     sptr<SyncFence> syncFence_ = nullptr;
     std::atomic<uint64_t> lastFlushedTime_ = 0;
 
+    using BufferDtorCbPtr = void (*)(uint64_t);
     mutable std::mutex bufferDtorCbMutex_;
-    std::function<void(uint64_t)> bufferDtorCb_ = nullptr;
+    // first is the identity of the callback, nullptr means the callback carries no identity
+    std::vector<std::pair<BufferDtorCbPtr, std::function<void(uint64_t)>>> bufferDtorCbs_;
 
     bool hasOriginalFields_ = false;
     int32_t originalWidth_ = 0;

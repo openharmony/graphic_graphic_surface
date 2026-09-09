@@ -256,11 +256,30 @@ public:
         (void)handle;
         return nullptr;
     }
+    /**
+     * @brief Registers a callback which is called with the buffer id when this buffer is destructed.
+     *
+     * Multiple modules can register their own callbacks on the same buffer, and all of them are notified in
+     * registration order. A callback registered by this interface carries no identity, so registering it
+     * repeatedly adds it repeatedly, and the only way to remove it is UnRegisterBufferDestructorCallback,
+     * which removes the callbacks of other modules as well. The callbacks of one buffer are capped, and the
+     * registrations beyond the cap are dropped. Prefer RegisterBufferDestructorCallbackFunc, and use this
+     * interface only for a callback which can not decay to a plain function, such as a lambda with captures.
+     * A null callback is ignored.
+     * @param callBack The callback to be registered.
+     */
     virtual void RegisterBufferDestructorCallback(std::function<void(uint64_t)> callBack)
     {
         (void)callBack;
         return;
     }
+    /**
+     * @brief Unregisters all buffer destructor callbacks, including the ones registered by other modules.
+     *
+     * Use it only when the caller owns every registration of this buffer, otherwise the other modules are no
+     * longer notified when this buffer is destructed. Prefer UnRegisterBufferDestructorCallbackFunc when
+     * several modules register on the same buffer.
+     */
     virtual void UnRegisterBufferDestructorCallback()
     {
         return;
@@ -312,6 +331,32 @@ public:
     virtual SingleBufferMode GetAndResetSingleBufferMode()
     {
         return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+    /**
+     * @brief Registers a plain function as the buffer destructor callback.
+     *
+     * This is the recommended interface when several modules register on the same buffer. The function pointer
+     * is the identity of the registration: registering the same function again is ignored, and
+     * UnRegisterBufferDestructorCallbackFunc with the same function removes only this registration, so it
+     * never affects the callbacks of other modules. A null callback is ignored.
+     * @param callBack The function to be registered.
+     */
+    virtual void RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
+    {
+        (void)callBack;
+        return;
+    }
+    /**
+     * @brief Unregisters the callback registered by RegisterBufferDestructorCallbackFunc with the same function.
+     *
+     * Callbacks of other modules and callbacks registered by RegisterBufferDestructorCallback are kept.
+     * A null callback is ignored.
+     * @param callBack The function to be unregistered.
+     */
+    virtual void UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
+    {
+        (void)callBack;
+        return;
     }
 
 protected:

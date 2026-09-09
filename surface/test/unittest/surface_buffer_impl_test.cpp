@@ -26,6 +26,8 @@ using namespace testing::ext;
 
 namespace OHOS::Rosen {
 uint64_t gBufferId = UINT64_MAX;
+uint64_t gBufferId2 = UINT64_MAX;
+uint32_t gBufferDtorCbCount = 0;
 class SurfaceBufferImplTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -44,11 +46,18 @@ public:
     static inline int32_t val32 = 0;
     static inline int64_t val64 = 0;
     static void BufferDestructorCallBack(uint64_t bufferId);
+    static void BufferDestructorCallBack2(uint64_t bufferId);
 };
 
 void SurfaceBufferImplTest::BufferDestructorCallBack(uint64_t bufferId)
 {
     gBufferId = bufferId;
+    gBufferDtorCbCount++;
+}
+
+void SurfaceBufferImplTest::BufferDestructorCallBack2(uint64_t bufferId)
+{
+    gBufferId2 = bufferId;
 }
 
 void SurfaceBufferImplTest::SetUpTestCase()
@@ -57,6 +66,8 @@ void SurfaceBufferImplTest::SetUpTestCase()
     val32 = 0;
     val64 = 0;
     gBufferId = UINT64_MAX;
+    gBufferId2 = UINT64_MAX;
+    gBufferDtorCbCount = 0;
 }
 
 void SurfaceBufferImplTest::TearDownTestCase()
@@ -781,6 +792,205 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback001, TestSize.Le
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, UINT64_MAX);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback002
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. register two different callbacks, they stand for two users
+ *                  3. both callbacks are exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback002, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    gBufferId = UINT64_MAX;
+    gBufferId2 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallback(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallback(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
+    EXPECT_EQ(gBufferId2, bufferId);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback003
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. register the same function twice by RegisterBufferDestructorCallbackFunc
+ *                  3. the callback is exe only once when SurfaceBuffer is destructor
+ *                  4. register the same callback twice by RegisterBufferDestructorCallback
+ *                  5. the callback carries no identity, so it is exe twice
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback003, TestSize.Level0)
+{
+    gBufferDtorCbCount = 0;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferDtorCbCount, 1U);
+
+    gBufferDtorCbCount = 0;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        std::function<void(uint64_t)> callBack = &SurfaceBufferImplTest::BufferDestructorCallBack;
+        bufferTmp->RegisterBufferDestructorCallback(callBack);
+        bufferTmp->RegisterBufferDestructorCallback(callBack);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferDtorCbCount, 2U);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback004
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. register a lambda callback and a function callback
+ *                  3. both callbacks are exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback004, TestSize.Level0)
+{
+    uint64_t lambdaBufferId = UINT64_MAX;
+    uint32_t lambdaCbCount = 0;
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        uint64_t bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaBufferId, &lambdaCbCount](uint64_t id) {
+            lambdaBufferId = id;
+            lambdaCbCount++;
+        });
+        bufferTmp->RegisterBufferDestructorCallback(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp = nullptr;
+        EXPECT_EQ(gBufferId, bufferId);
+    }
+    EXPECT_EQ(lambdaCbCount, 1U);
+    EXPECT_NE(lambdaBufferId, UINT64_MAX);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback005
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. register more callbacks than the max num
+ *                  3. only the first max num callbacks are exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback005, TestSize.Level0)
+{
+    // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
+    constexpr uint32_t maxCbNum = 16;
+    uint32_t lambdaCbCount = 0;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        for (uint32_t i = 0; i < maxCbNum + 4; i++) {
+            bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+                lambdaCbCount++;
+            });
+        }
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(lambdaCbCount, maxCbNum);
+}
+
+/*
+ * Function: UnRegisterBufferDestructorCallback006
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register two callbacks of two users and one lambda callback
+ *                  2. unregister one callback by UnRegisterBufferDestructorCallbackFunc
+ *                  3. the unregistered callback is not exe, the others are exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback006, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    uint32_t lambdaCbCount = 0;
+    gBufferId = UINT64_MAX;
+    gBufferId2 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, UINT64_MAX);
+    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(lambdaCbCount, 1U);
+}
+
+/*
+ * Function: UnRegisterBufferDestructorCallback007
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register one callback
+ *                  2. unregister with nullptr and with a function which is not registered
+ *                  3. the registered callback is still exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback007, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    gBufferId = UINT64_MAX;
+    gBufferId2 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(nullptr);
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
+    EXPECT_EQ(gBufferId2, UINT64_MAX);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback008
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. register a lambda without capture and a lambda with capture
+ *                  3. both of them are exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback008, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    uint32_t lambdaCbCount = 0;
+    gBufferId2 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallback([](uint64_t id) {
+            gBufferId2 = id;
+        });
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(lambdaCbCount, 1U);
 }
 
 /*

@@ -84,6 +84,8 @@ constexpr uint64_t INVALID_PHYADDR = 0;
 constexpr uint32_t INVALID_SIZE = 0;
 constexpr uint64_t INVALID_USAGE = std::numeric_limits<std::uint64_t>::max();
 const std::string MEMMGR_SO = "libmemmgrclient.z.so";
+// upper limit of destructor callbacks of one buffer, avoid unlimited growth by repeated registration
+constexpr uint32_t MAX_BUFFER_DTOR_CB_NUM = 16;
 }
 
 sptr<SurfaceBuffer> SurfaceBuffer::Create()
@@ -94,7 +96,6 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
 
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
-    bufferDtorCb_ = nullptr;
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
 
@@ -181,7 +182,6 @@ void SurfaceBufferImpl::InitMemMgrMembers()
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 {
     metaDataCache_.clear();
-    bufferDtorCb_ = nullptr;
     if (IsReclaimed()) {
         TryResumeIfNeeded();
     }
@@ -1070,29 +1070,80 @@ BufferHandle* SurfaceBufferImpl::CloneBufferHandle(const BufferHandle* handle) c
 
 void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint64_t)> bufferDtorCb)
 {
-    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    if (bufferDtorCb_ == nullptr) {
-        bufferDtorCb_ = bufferDtorCb;
+    if (bufferDtorCb == nullptr) {
+        BLOGE("invalid buffer destructor callback.");
+        return;
     }
+    // a std::function callback carries no identity, it can not be deduplicated or unregistered individually
+    AddBufferDestructorCallback(nullptr, std::move(bufferDtorCb));
+}
+
+void SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
+{
+    if (bufferDtorCb == nullptr) {
+        BLOGE("invalid buffer destructor callback.");
+        return;
+    }
+    AddBufferDestructorCallback(bufferDtorCb, bufferDtorCb);
+}
+
+void SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
+    std::function<void(uint64_t)> bufferDtorCb)
+{
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    if (funcPtr != nullptr) {
+        for (const auto &registeredCb : bufferDtorCbs_) {
+            if (registeredCb.first == funcPtr) {
+                BLOGD("callback already registered, seq: %{public}u", sequenceNumber_);
+                return;
+            }
+        }
+    }
+    if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
+        BLOGE("too many callbacks, seq: %{public}u", sequenceNumber_);
+        return;
+    }
+    bufferDtorCbs_.emplace_back(funcPtr, std::move(bufferDtorCb));
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    bufferDtorCb_ = nullptr;
+    // clears every registration of this buffer, including the ones registered by other modules
+    bufferDtorCbs_.clear();
+}
+
+void SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
+{
+    if (bufferDtorCb == nullptr) {
+        BLOGE("invalid buffer destructor callback.");
+        return;
+    }
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end(); ++iter) {
+        if (iter->first == bufferDtorCb) {
+            bufferDtorCbs_.erase(iter);
+            return;
+        }
+    }
 }
 
 void SurfaceBufferImpl::NotifyBufferDestructorCallback() const
 {
-    std::function<void(uint64_t)> bufferDtorCb = nullptr;
+    std::vector<std::function<void(uint64_t)>> bufferDtorCbs;
     {
         std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-        if (bufferDtorCb_ == nullptr) {
+        if (bufferDtorCbs_.empty()) {
             return;
         }
-        bufferDtorCb = bufferDtorCb_;
+        for (const auto &registeredCb : bufferDtorCbs_) {
+            bufferDtorCbs.emplace_back(registeredCb.second);
+        }
     }
-    bufferDtorCb(bufferId_);
+    // callbacks are invoked without the lock held, they may access this buffer again
+    for (const auto &bufferDtorCb : bufferDtorCbs) {
+        bufferDtorCb(bufferId_);
+    }
 }
 
 GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parcel)

@@ -18,6 +18,7 @@
 #include <linux/dma-buf.h>
 #include <sys/ioctl.h>
 #include <cinttypes>
+#include <cstring>
 #include "surface_type.h"
 #include "buffer_log.h"
 #include "native_window.h"
@@ -253,6 +254,40 @@ int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_C
     if (ret == OHOS::GSERROR_HDI_ERROR) {
         return OHOS::SURFACE_ERROR_NOT_SUPPORT;
     } else if (ret != OHOS::SURFACE_ERROR_OK) {
+        return OHOS::SURFACE_ERROR_UNKOWN;
+    }
+    return OHOS::SURFACE_ERROR_OK;
+}
+
+int32_t OH_NativeBuffer_SetDmaBufferName(OH_NativeBuffer *buffer, const char *name)
+{
+    if (buffer == nullptr || name == nullptr) {
+        BLOGE("SetDmaBufferName failed: buffer or name is nullptr");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    size_t nameLen = strnlen(name, MAXIMUM_LENGTH_OF_DMA_BUFFER_NAME + 1);
+    if (nameLen == 0 || nameLen > MAXIMUM_LENGTH_OF_DMA_BUFFER_NAME) {
+        BLOGE("SetDmaBufferName failed: name is empty or too long");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    std::string nameStr(name, nameLen);
+    if (!IsDmaBufferNameValid(nameStr)) {
+        BLOGE("SetDmaBufferName failed: name must start with a letter and only contain letters or digits");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    sptr<SurfaceBuffer> sbuffer = OH_NativeBufferToSurfaceBuffer(buffer);
+    if (sbuffer == nullptr || sbuffer->GetBufferHandle() == nullptr) {
+        BLOGE("SetDmaBufferName failed: sbuffer or bufferHandle is nullptr");
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    int fd = sbuffer->GetBufferHandle()->fd;
+    if (fd <= 0) {
+        BLOGE("SetDmaBufferName failed: invalid fd %{public}d", fd);
+        return OHOS::SURFACE_ERROR_INVALID_PARAM;
+    }
+    int32_t ret = ioctl(fd, DMA_BUF_SET_NAME_A, nameStr.c_str());
+    if (ret != 0) {
+        BLOGE("SetDmaBufferName ioctl failed, ret: %{public}d", ret);
         return OHOS::SURFACE_ERROR_UNKOWN;
     }
     return OHOS::SURFACE_ERROR_OK;

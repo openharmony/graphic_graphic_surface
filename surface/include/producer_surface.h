@@ -539,6 +539,8 @@ public:
      * @return {@link GSERROR_OK} 0 - Success.
      */
     GSError SetBufferName(const std::string &name) override;
+    GSError SetDmaBufferName(const std::string &name) override;
+    std::string GetDmaBufferName() const override;
     /**
      * @brief Set the Request Width And Height for the surface.
      *
@@ -922,6 +924,7 @@ private:
     GSError AddCacheLocked(sptr<BufferExtraData> &bedataimpl,
         IBufferProducer::RequestBufferReturnValue &retval, BufferRequestConfig &config);
     GSError AddCacheLocked(sptr<SurfaceBuffer>& attachedBuffer);
+    void SetDmaBufferLabel(const sptr<SurfaceBuffer>& buffer, const BufferRequestConfig& config);
     GSError SetMetadataValue(sptr<SurfaceBuffer>& buffer);
     GSError CleanCacheLocked(bool cleanAll);
     void SetBufferConfigLocked(sptr<BufferExtraData>& bedataimpl,
@@ -958,6 +961,7 @@ private:
     std::map<std::string, OnUserDataChangeFunc> onUserDataChange_;
     std::mutex lockMutex_;
     std::string bufferName_ = "";
+    std::string dmaBufferName_ = "";
     int32_t requestWidth_ = 0;
     int32_t requestHeight_ = 0;
     GraphicTransformType lastSetTransformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;

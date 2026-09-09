@@ -742,6 +742,17 @@ public:
     {
         return "";
     }
+    
+    virtual GSError SetDmaBufferName(const std::string &name)
+    {
+        (void)name;
+        return GSERROR_NOT_SUPPORT;
+    }
+
+    virtual std::string GetDmaBufferName() const
+    {
+        return "";
+    }
 protected:
     Surface() = default;
     GameUpscaleProcessor gameUpscaleProcessor_ = nullptr;

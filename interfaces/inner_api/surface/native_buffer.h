@@ -270,6 +270,20 @@ int32_t OH_NativeBuffer_FromNativeWindowBuffer(OHNativeWindowBuffer *nativeWindo
 int32_t OH_NativeBuffer_SetColorSpace(OH_NativeBuffer *buffer, OH_NativeBuffer_ColorSpace colorSpace);
 
 /**
+ * @brief Set the dma buffer name of the OH_NativeBuffer.
+ *
+ * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer
+ * @param buffer Indicates the pointer to a <b>OH_NativeBuffer</b> instance.
+ * @param name Indicates the dma buffer name string. The name must start with a letter, only contain
+ * letters or digits, and be no longer than 64 bytes.
+ * @return {@link NATIVE_ERROR_OK} 0 - Success.
+ *     {@link NATIVE_ERROR_INVALID_ARGUMENTS} 40001000 - buffer is NULL or name invalid.
+ * @since 26.1.0
+ * @version 1.0
+ */
+int32_t OH_NativeBuffer_SetDmaBufferName(OH_NativeBuffer *buffer, const char *name);
+
+/**
  * @brief Get the color space of the OH_NativeBuffer.
  *
  * @syscap SystemCapability.Graphic.Graphic2D.NativeBuffer

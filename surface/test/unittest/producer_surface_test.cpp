@@ -4389,6 +4389,76 @@ HWTEST_F(ProducerSurfaceTest, SetBufferTypeLeakAndRequesBuffer, TestSize.Level0)
 }
 
 /*
+ * Function: SetDmaBufferName
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetDmaBufferName and GetDmaBufferName
+ */
+HWTEST_F(ProducerSurfaceTest, SetDmaBufferName, TestSize.Level0)
+{
+    std::string dmaBufferName = "validName123";
+    GSError ret = surface_->SetDmaBufferName(dmaBufferName);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(surface_->GetDmaBufferName(), dmaBufferName);
+}
+
+/*
+ * Function: SetDmaBufferName
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: SetDmaBufferName with invalid name
+ */
+HWTEST_F(ProducerSurfaceTest, SetDmaBufferNameInvalid, TestSize.Level0)
+{
+    ASSERT_EQ(surface_->SetDmaBufferName(""), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->SetDmaBufferName("1abc"), OHOS::GSERROR_INVALID_ARGUMENTS);
+    ASSERT_EQ(surface_->SetDmaBufferName("abc_123"), OHOS::GSERROR_INVALID_ARGUMENTS);
+    std::string tooLong = std::string(65, 'a');
+    ASSERT_EQ(surface_->SetDmaBufferName(tooLong), OHOS::GSERROR_INVALID_ARGUMENTS);
+}
+
+/*
+ * Function: SetDmaBufferNameAndRequestBuffer
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. preSetUp: set dmaBufferName.
+ *                  2. operation: call RequestBuffer.
+ *                  3. result: start calling RequestBuffer and return GSERROR_OK.
+ */
+HWTEST_F(ProducerSurfaceTest, SetDmaBufferNameAndRequestBuffer, TestSize.Level0)
+{
+    sptr<IConsumerSurface> cSurfTmp = IConsumerSurface::Create();
+    sptr<IBufferConsumerListener> listenerTmp = new BufferConsumerListener();
+    cSurfTmp->RegisterConsumerListener(listenerTmp);
+    sptr<IBufferProducer> producerTest = cSurfTmp->GetProducer();
+    sptr<ProducerSurface> pSurfaceTmpTest = new ProducerSurface(producerTest);
+    ASSERT_EQ(pSurfaceTmpTest->Init(), OHOS::GSERROR_OK);
+
+    GSError ret = pSurfaceTmpTest->SetDmaBufferName("test");
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_EQ(pSurfaceTmpTest->GetDmaBufferName(), "test");
+
+    BufferRequestConfig requestConfig = {
+        .width = 0x100,
+        .height = 0x100,
+        .strideAlignment = 0x8,
+        .format = GRAPHIC_PIXEL_FMT_RGBA_8888,
+        .usage = BUFFER_USAGE_CPU_READ | BUFFER_USAGE_CPU_WRITE | BUFFER_USAGE_MEM_DMA,
+        .timeout = 3000,
+        .sourceType = GRAPHIC_SOURCE_TYPE_BUTT,
+    };
+
+    sptr<SurfaceBuffer> buffer1;
+    int releaseFence = -1;
+    ret = pSurfaceTmpTest->RequestBuffer(buffer1, releaseFence, requestConfig);
+    ASSERT_EQ(ret, OHOS::GSERROR_OK);
+    ASSERT_NE(buffer1, nullptr);
+}
+
+/*
  * Function: GetAvailableBufferCount
  * Type: Function
  * Rank: Important(2)

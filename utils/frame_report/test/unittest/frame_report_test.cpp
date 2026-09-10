@@ -611,6 +611,7 @@ HWTEST_F(FrameReportTest, SceneTypeHwsched001, Function | MediumTest | Level2)
 HWTEST_F(FrameReportTest, SceneTypeBoth001, Function | MediumTest | Level2)
 {
     auto& fr = Rosen::FrameReport::GetInstance();
+    fr.activelyPid_.store(FRT_GAME_PID);
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
@@ -635,12 +636,13 @@ HWTEST_F(FrameReportTest, SceneTypeBoth001, Function | MediumTest | Level2)
 * Rank: Important(2)
 * EnvConditions: N/A
 * CaseDescription: 1. FRT_GAME_BACKGROUND with wrong pid: CAS fails, PID not cleared
-                   2.sceneType_ unconditionally cleared
-                   3.HasGameScene returns false despite stale PID
+                   2.sceneType_ not cleared
+                   3.HasGameScene still returns true
 */
 HWTEST_F(FrameReportTest, SceneTypeStalePid001, Function | MediumTest | Level2)
 {
     auto& fr = Rosen::FrameReport::GetInstance();
+    fr.activelyPid_.store(FRT_GAME_PID);
     fr.SetGameScene(FRT_GAME_PID, FRT_GAME_BACKGROUND);
     fr.SetGameScene(FRT_HWSCHED_PID, FRT_SCENE_BACKGROUND);
 
@@ -650,8 +652,8 @@ HWTEST_F(FrameReportTest, SceneTypeStalePid001, Function | MediumTest | Level2)
 
     fr.SetGameScene(FRT_GAME_PID + 1, FRT_GAME_BACKGROUND);
     ASSERT_TRUE(fr.activelyPid_.load() == FRT_GAME_PID);
-    ASSERT_TRUE(!(fr.sceneType_.load() & FRT_SCENE_GAME));
-    ASSERT_TRUE(!fr.HasGameScene());
+    ASSERT_TRUE(fr.sceneType_.load() & FRT_SCENE_GAME);
+    ASSERT_TRUE(fr.HasGameScene());
 
     // cleanup
     fr.DeletePidInfo();

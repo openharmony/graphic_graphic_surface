@@ -311,6 +311,78 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace002, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_SetDmaBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetDmaBufferName by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName001, TestSize.Level0)
+{
+    int32_t ret = OH_NativeBuffer_SetDmaBufferName(nullptr, "validName");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, nullptr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_SetDmaBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetDmaBufferName with invalid name
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName002, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "1abc");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "abc_123");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    std::string tooLong = std::string(65, 'a');
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, tooLong.c_str());
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_SetDmaBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetDmaBufferName with valid name
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName003, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "validName123");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+
+    std::string maxLen = std::string(64, 'a');
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, maxLen.c_str());
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
 * Function: OH_NativeBuffer_GetColorSpace
 * Type: Function
 * Rank: Important(2)

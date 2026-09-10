@@ -143,6 +143,10 @@ GSError ReadSurfaceBufferImplWithAllProperties(MessageParcel &parcel, uint32_t &
     std::function<int(MessageParcel &parcel, std::function<int(Parcel &)>readFdDefaultFunc)> readSafeFdFunc = nullptr);
 GSError WriteSurfaceBufferImplWithAllProperties(
     MessageParcel &parcel, uint32_t sequence, const sptr<SurfaceBuffer> &buffer);
+
+constexpr uint32_t MAXIMUM_LENGTH_OF_DMA_BUFFER_NAME = 64;
+
+bool IsDmaBufferNameValid(const std::string &name);
 } // namespace OHOS
 
 #endif // FRAMEWORKS_SURFACE_INCLUDE_BUFFER_UTILS_H

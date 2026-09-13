@@ -338,25 +338,31 @@ public:
      * This is the recommended interface when several modules register on the same buffer. The function pointer
      * is the identity of the registration: registering the same function again is ignored, and
      * UnRegisterBufferDestructorCallbackFunc with the same function removes only this registration, so it
-     * never affects the callbacks of other modules. A null callback is ignored.
+     * never affects the callbacks of other modules.
      * @param callBack The function to be registered.
+     * @return True if the callback is registered, or it has already been registered with the same function.
+     *         False if callBack is null, the callbacks of this buffer have reached the cap, or this buffer
+     *         does not implement the destructor callback. On false the caller must not rely on being notified
+     *         when this buffer is destructed, and should roll back the state which depends on that callback.
      */
-    virtual void RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
+    virtual bool RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
     {
         (void)callBack;
-        return;
+        return false;
     }
     /**
      * @brief Unregisters the callback registered by RegisterBufferDestructorCallbackFunc with the same function.
      *
      * Callbacks of other modules and callbacks registered by RegisterBufferDestructorCallback are kept.
-     * A null callback is ignored.
      * @param callBack The function to be unregistered.
+     * @return True if a registration of callBack is removed. False if callBack is null, or no registration of
+     *         it is found. The latter also reveals that the registration was never in place, for example it
+     *         was dropped by the cap when it was registered.
      */
-    virtual void UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
+    virtual bool UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
     {
         (void)callBack;
-        return;
+        return false;
     }
 
 protected:

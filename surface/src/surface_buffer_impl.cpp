@@ -1074,36 +1074,40 @@ void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint
         BLOGE("invalid buffer destructor callback.");
         return;
     }
-    // a std::function callback carries no identity, it can not be deduplicated or unregistered individually
-    AddBufferDestructorCallback(nullptr, std::move(bufferDtorCb));
+    // a std::function callback carries no identity, it can not be deduplicated or unregistered individually.
+    // this interface returns void, so a registration dropped by the cap can not be reported to the caller,
+    // use RegisterBufferDestructorCallbackFunc when the caller needs to know whether it is registered
+    (void)AddBufferDestructorCallback(nullptr, std::move(bufferDtorCb));
 }
 
-void SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
+bool SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
 {
     if (bufferDtorCb == nullptr) {
         BLOGE("invalid buffer destructor callback.");
-        return;
+        return false;
     }
-    AddBufferDestructorCallback(bufferDtorCb, bufferDtorCb);
+    return AddBufferDestructorCallback(bufferDtorCb, bufferDtorCb);
 }
 
-void SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
+bool SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
     std::function<void(uint64_t)> bufferDtorCb)
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     if (funcPtr != nullptr) {
         for (const auto &registeredCb : bufferDtorCbs_) {
             if (registeredCb.first == funcPtr) {
+                // registering the same function again is idempotent, the registration is already in place
                 BLOGD("callback already registered, seq: %{public}u", sequenceNumber_);
-                return;
+                return true;
             }
         }
     }
     if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
         BLOGE("too many callbacks, seq: %{public}u", sequenceNumber_);
-        return;
+        return false;
     }
     bufferDtorCbs_.emplace_back(funcPtr, std::move(bufferDtorCb));
+    return true;
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
@@ -1113,19 +1117,22 @@ void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
     bufferDtorCbs_.clear();
 }
 
-void SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
+bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
 {
     if (bufferDtorCb == nullptr) {
         BLOGE("invalid buffer destructor callback.");
-        return;
+        return false;
     }
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end(); ++iter) {
         if (iter->first == bufferDtorCb) {
             bufferDtorCbs_.erase(iter);
-            return;
+            return true;
         }
     }
+    // nothing is removed, it was never registered, or it was dropped by the cap when it was registered
+    BLOGD("callback is not registered, seq: %{public}u", sequenceNumber_);
+    return false;
 }
 
 void SurfaceBufferImpl::NotifyBufferDestructorCallback() const

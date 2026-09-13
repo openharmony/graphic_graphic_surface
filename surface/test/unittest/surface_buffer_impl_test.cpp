@@ -27,7 +27,10 @@ using namespace testing::ext;
 namespace OHOS::Rosen {
 uint64_t gBufferId = UINT64_MAX;
 uint64_t gBufferId2 = UINT64_MAX;
+uint64_t gBufferId3 = UINT64_MAX;
 uint32_t gBufferDtorCbCount = 0;
+// records the invocation order of the destructor callbacks, they must run in registration order
+std::vector<uint32_t> gBufferDtorCbOrder;
 class SurfaceBufferImplTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -47,6 +50,7 @@ public:
     static inline int64_t val64 = 0;
     static void BufferDestructorCallBack(uint64_t bufferId);
     static void BufferDestructorCallBack2(uint64_t bufferId);
+    static void BufferDestructorCallBack3(uint64_t bufferId);
 };
 
 void SurfaceBufferImplTest::BufferDestructorCallBack(uint64_t bufferId)
@@ -60,6 +64,11 @@ void SurfaceBufferImplTest::BufferDestructorCallBack2(uint64_t bufferId)
     gBufferId2 = bufferId;
 }
 
+void SurfaceBufferImplTest::BufferDestructorCallBack3(uint64_t bufferId)
+{
+    gBufferId3 = bufferId;
+}
+
 void SurfaceBufferImplTest::SetUpTestCase()
 {
     buffer = nullptr;
@@ -67,7 +76,9 @@ void SurfaceBufferImplTest::SetUpTestCase()
     val64 = 0;
     gBufferId = UINT64_MAX;
     gBufferId2 = UINT64_MAX;
+    gBufferId3 = UINT64_MAX;
     gBufferDtorCbCount = 0;
+    gBufferDtorCbOrder.clear();
 }
 
 void SurfaceBufferImplTest::TearDownTestCase()
@@ -991,6 +1002,300 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback008, TestSize.Le
     }
     EXPECT_EQ(gBufferId2, bufferId);
     EXPECT_EQ(lambdaCbCount, 1U);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback009
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register a null function by RegisterBufferDestructorCallbackFunc
+ *                  2. unregister by both interfaces on a buffer which has no callback registered
+ *                  3. the null callback is not exe, and the list is still usable after being cleared
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback009, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    // a null function pointer is ignored by the identity based register interface
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(nullptr);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, UINT64_MAX);
+
+    // unregistering on an empty callback list is harmless, and the list still works afterwards
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->UnRegisterBufferDestructorCallback();
+        bufferTmp->RegisterBufferDestructorCallback(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback010
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register three callbacks in order
+ *                  2. they are exe in registration order when SurfaceBuffer is destructor
+ *                  3. register a function and then a lambda, the function is exe first
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback010, TestSize.Level0)
+{
+    gBufferDtorCbOrder.clear();
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        for (uint32_t i = 0; i < 3; i++) {
+            uint32_t order = i + 1;
+            bufferTmp->RegisterBufferDestructorCallback([order](uint64_t) {
+                gBufferDtorCbOrder.emplace_back(order);
+            });
+        }
+        bufferTmp = nullptr;
+    }
+    ASSERT_EQ(gBufferDtorCbOrder.size(), 3U);
+    EXPECT_EQ(gBufferDtorCbOrder[0], 1U);
+    EXPECT_EQ(gBufferDtorCbOrder[1], 2U);
+    EXPECT_EQ(gBufferDtorCbOrder[2], 3U);
+
+    // the two register interfaces share one list, so the order is kept across them
+    uint64_t bufferId = 0;
+    bool funcRanFirst = false;
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallback([&funcRanFirst, bufferId](uint64_t) {
+            funcRanFirst = (gBufferId == bufferId);
+        });
+        bufferTmp = nullptr;
+    }
+    EXPECT_TRUE(funcRanFirst);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback011
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register a callback which calls back into this buffer
+ *                  2. the callback unregisters a registered function and registers a new one
+ *                  3. no deadlock, and the snapshot of this round is not changed by the callback
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback011, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    uint32_t reentrantCount = 0;
+    gBufferId2 = UINT64_MAX;
+    gBufferId3 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        SurfaceBuffer *rawBuffer = bufferTmp.GetRefPtr();
+        bufferTmp->RegisterBufferDestructorCallback([rawBuffer, &reentrantCount](uint64_t) {
+            reentrantCount++;
+            // the callbacks run without the lock held, calling back into this buffer must not deadlock
+            rawBuffer->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+            rawBuffer->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack3);
+        });
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(reentrantCount, 1U);
+    // CallBack2 is unregistered during the notification, but it is already in the snapshot of this round
+    EXPECT_EQ(gBufferId2, bufferId);
+    // CallBack3 is registered during the notification, so it is not in the snapshot of this round
+    EXPECT_EQ(gBufferId3, UINT64_MAX);
+}
+
+/*
+ * Function: UnRegisterBufferDestructorCallback012
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register two functions and one lambda
+ *                  2. call the unparameterized UnRegisterBufferDestructorCallback
+ *                  3. every registration is cleared, none of them is exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback012, TestSize.Level0)
+{
+    uint32_t lambdaCbCount = 0;
+    gBufferId = UINT64_MAX;
+    gBufferId2 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        // the unparameterized interface clears every registration, including the identity based ones
+        bufferTmp->UnRegisterBufferDestructorCallback();
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, UINT64_MAX);
+    EXPECT_EQ(gBufferId2, UINT64_MAX);
+    EXPECT_EQ(lambdaCbCount, 0U);
+}
+
+/*
+ * Function: UnRegisterBufferDestructorCallback013
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl and register three functions
+ *                  2. unregister the middle one twice, and then unregister the last one
+ *                  3. only the first callback is exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback013, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    gBufferId = UINT64_MAX;
+    gBufferId2 = UINT64_MAX;
+    gBufferId3 = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack3);
+        // erase the middle element, then erase it again, nothing is found and it must be harmless
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+        // erase the last element
+        bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack3);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
+    EXPECT_EQ(gBufferId2, UINT64_MAX);
+    EXPECT_EQ(gBufferId3, UINT64_MAX);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback014
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. fill the callback list up to the max num by the anonymous interface
+ *                  2. an identity based registration is dropped as well when the list is full
+ *                  3. a repeated identity based registration is dropped by the deduplication check
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback014, TestSize.Level0)
+{
+    // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
+    constexpr uint32_t maxCbNum = 16;
+    uint64_t bufferId = 0;
+    uint32_t lambdaCbCount = 0;
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        for (uint32_t i = 0; i < maxCbNum; i++) {
+            bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+                lambdaCbCount++;
+            });
+        }
+        // the list is already full, so this identity based registration is dropped
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(lambdaCbCount, maxCbNum);
+    EXPECT_EQ(gBufferId, UINT64_MAX);
+
+    // the deduplication check runs before the cap check, a repeated function is dropped by it
+    lambdaCbCount = 0;
+    gBufferDtorCbCount = 0;
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        for (uint32_t i = 0; i < maxCbNum - 1; i++) {
+            bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+                lambdaCbCount++;
+            });
+        }
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(lambdaCbCount, maxCbNum - 1);
+    EXPECT_EQ(gBufferId, bufferId);
+    EXPECT_EQ(gBufferDtorCbCount, 1U);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback015
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl with a sequence number, which is the other constructor
+ *                  2. register a function and a lambda
+ *                  3. both of them are exe when SurfaceBuffer is destructor
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback015, TestSize.Level0)
+{
+    uint64_t bufferId = 0;
+    uint32_t lambdaCbCount = 0;
+    gBufferId = UINT64_MAX;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl(1U);
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
+    EXPECT_EQ(lambdaCbCount, 1U);
+}
+
+/*
+ * Function: RegisterBufferDestructorCallback016
+ * Type: Function
+ * Rank: Important(2)
+ * EnvConditions: N/A
+ * CaseDescription: 1. new SurfaceBufferImpl
+ *                  2. check the return value of the identity based register and unregister interfaces
+ *                  3. the return value tells the caller whether the registration is really in place
+ */
+HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Level0)
+{
+    // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
+    constexpr uint32_t maxCbNum = 16;
+    sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+    // a null callback is rejected by both interfaces
+    EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(nullptr));
+    EXPECT_FALSE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(nullptr));
+    // nothing is registered yet, so unregistering a valid function returns false as well
+    EXPECT_FALSE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
+
+    // the first registration succeeds, and registering the same function again succeeds idempotently
+    EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
+    EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
+    // unregistering it succeeds once, the second time nothing is found so it returns false
+    EXPECT_TRUE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
+    EXPECT_FALSE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
+
+    // fill the list up to the cap, then the identity based registration is dropped and returns false
+    for (uint32_t i = 0; i < maxCbNum; i++) {
+        bufferTmp->RegisterBufferDestructorCallback([](uint64_t) {});
+    }
+    EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
+
+    // after clearing every registration the list accepts new callbacks again
+    bufferTmp->UnRegisterBufferDestructorCallback();
+    EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
+    // leave no callback behind, so that the destruction of this buffer touches no global state
+    bufferTmp->UnRegisterBufferDestructorCallback();
+    bufferTmp = nullptr;
 }
 
 /*

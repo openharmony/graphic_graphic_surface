@@ -1088,31 +1088,40 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback010, TestSize.Le
  * EnvConditions: N/A
  * CaseDescription: 1. new SurfaceBufferImpl and register a callback which calls back into this buffer
  *                  2. the callback unregisters a registered function and registers a new one
- *                  3. no deadlock, and the snapshot of this round is not changed by the callback
+ *                  3. no deadlock, and the batch being notified is not changed by the callback
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback011, TestSize.Level0)
 {
     uint64_t bufferId = 0;
     uint32_t reentrantCount = 0;
+    bool reentrantUnregRet = true;
+    bool reentrantRegRet = false;
     gBufferId2 = UINT64_MAX;
     gBufferId3 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
         SurfaceBuffer *rawBuffer = bufferTmp.GetRefPtr();
-        bufferTmp->RegisterBufferDestructorCallback([rawBuffer, &reentrantCount](uint64_t) {
+        bufferTmp->RegisterBufferDestructorCallback(
+            [rawBuffer, &reentrantCount, &reentrantUnregRet, &reentrantRegRet](uint64_t) {
             reentrantCount++;
             // the callbacks run without the lock held, calling back into this buffer must not deadlock
-            rawBuffer->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
-            rawBuffer->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack3);
+            reentrantUnregRet =
+                rawBuffer->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
+            reentrantRegRet =
+                rawBuffer->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack3);
         });
         bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
         bufferTmp = nullptr;
     }
     EXPECT_EQ(reentrantCount, 1U);
-    // CallBack2 is unregistered during the notification, but it is already in the snapshot of this round
+    // the registry is transferred out before the first callback runs, so it is already empty when the lambda
+    // unregisters CallBack2 and there is nothing left to remove
+    EXPECT_FALSE(reentrantUnregRet);
+    // CallBack2 still runs, it was taken away with the registry before the notification started
     EXPECT_EQ(gBufferId2, bufferId);
-    // CallBack3 is registered during the notification, so it is not in the snapshot of this round
+    // CallBack3 goes into the emptied registry during the notification, so it is not in the batch being notified
+    EXPECT_TRUE(reentrantRegRet);
     EXPECT_EQ(gBufferId3, UINT64_MAX);
 }
 

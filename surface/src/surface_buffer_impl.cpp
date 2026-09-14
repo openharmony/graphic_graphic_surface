@@ -1143,21 +1143,24 @@ bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtor
     return false;
 }
 
-void SurfaceBufferImpl::NotifyBufferDestructorCallback() const
+void SurfaceBufferImpl::NotifyBufferDestructorCallback()
 {
-    std::vector<std::function<void(uint64_t)>> bufferDtorCbs;
+    // declared as the same type as the registry so that the two can be swapped, a vector of std::function can not
+    // be swapped with a vector of pairs
+    std::vector<std::pair<BufferDtorCbPtr, std::function<void(uint64_t)>>> bufferDtorCbs;
     {
         std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
         if (bufferDtorCbs_.empty()) {
             return;
         }
-        for (const auto &registeredCb : bufferDtorCbs_) {
-            bufferDtorCbs.emplace_back(registeredCb.second);
-        }
+        // the registry is transferred out instead of copying every std::function under the lock, copying a lambda
+        // with captures allocates. this is safe because the only caller is the destructor, so the buffer is going
+        // away and no registration left behind here is ever notified
+        bufferDtorCbs_.swap(bufferDtorCbs);
     }
     // callbacks are invoked without the lock held, they may access this buffer again
-    for (const auto &bufferDtorCb : bufferDtorCbs) {
-        bufferDtorCb(bufferId_);
+    for (const auto &registeredCb : bufferDtorCbs) {
+        registeredCb.second(bufferId_);
     }
 }
 

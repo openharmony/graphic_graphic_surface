@@ -132,7 +132,9 @@ private:
     GSError GetImageLayout(void *layout);
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
-    void NotifyBufferDestructorCallback() const;
+    // not const because it transfers bufferDtorCbs_ out by swap, it is private and non virtual and its only caller
+    // is the destructor, so dropping const does not touch the vtable layout or any caller
+    void NotifyBufferDestructorCallback();
     bool AddBufferDestructorCallback(void (*funcPtr)(uint64_t), std::function<void(uint64_t)> callBack);
     void RecordOriginalBufferHandleFields();
 

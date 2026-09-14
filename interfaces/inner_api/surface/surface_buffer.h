@@ -262,7 +262,7 @@ public:
      * Multiple modules can register their own callbacks on the same buffer, and all of them are notified in
      * registration order. A callback registered by this interface carries no identity, so registering it
      * repeatedly adds it repeatedly, and it can only be removed by UnRegisterBufferDestructorCallback, which
-     * removes every callback registered by this interface while keeping the ones registered by
+     * removes one callback registered by this interface per call while keeping every callback registered by
      * RegisterBufferDestructorCallbackFunc. The callbacks of one buffer are capped, and the registrations
      * beyond the cap are dropped. Prefer RegisterBufferDestructorCallbackFunc, and use this interface only
      * for a callback which can not decay to a plain function, such as a lambda with captures.
@@ -275,12 +275,14 @@ public:
         return;
     }
     /**
-     * @brief Unregisters the callbacks registered by RegisterBufferDestructorCallback on this buffer.
+     * @brief Unregisters a callback registered by RegisterBufferDestructorCallback on this buffer.
      *
      * The callbacks registered by RegisterBufferDestructorCallbackFunc carry an identity and are kept here, so
-     * the modules using that interface are still notified when this buffer is destructed. A callback registered
-     * by RegisterBufferDestructorCallback carries no identity, so every one of them is removed, including the
-     * ones registered by other modules through the same interface. Prefer the pair of
+     * the modules using that interface are still notified when this buffer is destructed. The callbacks
+     * registered by RegisterBufferDestructorCallback carry no identity and can not be told apart, so one call
+     * removes the earliest one of them, which may be the one registered by another module through the same
+     * interface. A caller which registered several callbacks through RegisterBufferDestructorCallback has to
+     * call this once per registration to remove all of them. Prefer the pair of
      * RegisterBufferDestructorCallbackFunc and UnRegisterBufferDestructorCallbackFunc when several modules
      * register on the same buffer.
      */

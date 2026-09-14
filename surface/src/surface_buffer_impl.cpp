@@ -1135,13 +1135,13 @@ bool SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
         for (const auto &registeredCb : bufferDtorCbs_) {
             if (registeredCb.first == funcPtr) {
                 // registering the same function again is idempotent, the registration is already in place
-                BLOGD("callback already registered, seq: %{public}u", sequenceNumber_);
+                BLOGD("callback already registered, bufferId: %{public}" PRIu64, bufferId_);
                 return true;
             }
         }
     }
     if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
-        BLOGE("too many callbacks, seq: %{public}u", sequenceNumber_);
+        BLOGE("too many callbacks, bufferId: %{public}" PRIu64, bufferId_);
         return false;
     }
     bufferDtorCbs_.emplace_back(funcPtr, std::move(bufferDtorCb));
@@ -1151,13 +1151,15 @@ bool SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    // removes only the registrations made by RegisterBufferDestructorCallback, they are the ones carrying no
-    // identity, so the identity based registrations of other modules are kept and still notified on destruction
-    for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end();) {
+    // removes the earliest registration made by RegisterBufferDestructorCallback, they are the ones carrying no
+    // identity, so the identity based registrations of other modules are kept and still notified on destruction.
+    // the registrations carrying no identity can not be told apart, so one call removes one of them and a caller
+    // which registered several has to call this once per registration, the loop shape matches the identity based
+    // UnRegisterBufferDestructorCallbackFunc below, which also stops as soon as its entry is erased
+    for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end(); ++iter) {
         if (iter->first == nullptr) {
-            iter = bufferDtorCbs_.erase(iter);
-        } else {
-            ++iter;
+            bufferDtorCbs_.erase(iter);
+            break;
         }
     }
 }
@@ -1176,7 +1178,7 @@ bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtor
         }
     }
     // nothing is removed, it was never registered, or it was dropped by the cap when it was registered
-    BLOGD("callback is not registered, seq: %{public}u", sequenceNumber_);
+    BLOGD("callback is not registered, bufferId: %{public}" PRIu64, bufferId_);
     return false;
 }
 
@@ -1197,6 +1199,12 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallback()
     }
     // callbacks are invoked without the lock held, they may access this buffer again
     for (const auto &registeredCb : bufferDtorCbs) {
+        // an empty std::function would throw std::bad_function_call, and throwing out of a destructor terminates
+        // the process, so it is skipped here even though both register interfaces reject a null callback
+        if (registeredCb.second == nullptr) {
+            BLOGE("invalid buffer destructor callback, bufferId: %{public}" PRIu64, bufferId_);
+            continue;
+        }
         registeredCb.second(bufferId_);
     }
 }

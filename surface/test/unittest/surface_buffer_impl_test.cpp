@@ -1148,7 +1148,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback012, TestSize.
             lambdaCbCount++;
         });
         bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2);
-        // the unparameterized interface removes only the registrations carrying no identity, so the two identity
+        // the unparameterized interface removes only the registration carrying no identity, so the two identity
         // based ones survive and their modules are still notified
         bufferTmp->UnRegisterBufferDestructorCallback();
         bufferTmp = nullptr;
@@ -1302,8 +1302,11 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Le
     }
     EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
 
-    // after removing every identity less registration the list accepts new callbacks again
-    bufferTmp->UnRegisterBufferDestructorCallback();
+    // one call removes one identity less registration, so draining the list takes one call per registration,
+    // and only then does the list accept new callbacks again
+    for (uint32_t i = 0; i < maxCbNum; i++) {
+        bufferTmp->UnRegisterBufferDestructorCallback();
+    }
     EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
     // the unparameterized interface keeps the identity based registration, so remove it by its own function
     // to leave no callback behind and keep the global state clean for the next case
@@ -1318,7 +1321,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Le
  * EnvConditions: N/A
  * CaseDescription: 1. new SurfaceBufferImpl and register two functions only
  *                  2. the unparameterized UnRegisterBufferDestructorCallback removes none of them
- *                  3. register two more lambdas, the same call removes both of them and both functions survive
+ *                  3. register two lambdas, one call removes the earliest one only and the other is still exe
+ *                  4. one call per registration drains them, the identity based registration is kept
  */
 HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback017, TestSize.Level0)
 {
@@ -1341,13 +1345,36 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback017, TestSize.
         bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
             lambdaCbCount++;
         });
-        // both of them are removed, which is the residual limitation of an interface carrying no identity,
-        // while the identity based registrations are still in place
+        // they can not be told apart, so one call removes the earliest one only, which is the residual limitation
+        // of an interface carrying no identity, while the identity based registrations are still in place
         bufferTmp->UnRegisterBufferDestructorCallback();
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, bufferId);
     EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(gBufferDtorCbCount, 1U);
+    // the second registration carrying no identity survived the single call and is still exe on destruction
+    EXPECT_EQ(lambdaCbCount, 1U);
+
+    // one call per registration drains them all, and the identity based registration is kept all along
+    lambdaCbCount = 0;
+    gBufferId = UINT64_MAX;
+    gBufferDtorCbCount = 0;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        bufferId = bufferTmp->GetBufferId();
+        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp->UnRegisterBufferDestructorCallback();
+        bufferTmp->UnRegisterBufferDestructorCallback();
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(gBufferId, bufferId);
     EXPECT_EQ(gBufferDtorCbCount, 1U);
     EXPECT_EQ(lambdaCbCount, 0U);
 }

@@ -88,15 +88,10 @@ constexpr uint64_t INVALID_PHYADDR = 0;
 constexpr uint32_t INVALID_SIZE = 0;
 constexpr uint64_t INVALID_USAGE = std::numeric_limits<std::uint64_t>::max();
 const std::string MEMMGR_SO = "libmemmgrclient.z.so";
-// upper limit of destructor callbacks of one buffer, avoid unlimited growth by repeated registration
+// upper limit of the identity based destructor callbacks of one buffer, avoid unlimited growth by repeated
+// registration. RegisterBufferDestructorCallback does not draw on this limit, it has a single slot of its own, so
+// the two register interfaces can not squeeze each other out
 constexpr uint32_t MAX_BUFFER_DTOR_CB_NUM = 32;
-// part of MAX_BUFFER_DTOR_CB_NUM reserved for the registrations carrying no identity, which are the ones made
-// by RegisterBufferDestructorCallback. the identity based registrations stop earlier, at MAX_BUFFER_DTOR_CB_NUM
-// minus this quota, so the reserved slots stay available and the anonymous interface still succeeds when the
-// identity based ones have taken everything else
-constexpr uint32_t LEGACY_BUFFER_DTOR_CB_NUM = 4;
-static_assert(LEGACY_BUFFER_DTOR_CB_NUM < MAX_BUFFER_DTOR_CB_NUM,
-    "the reserved quota must leave room for the identity based registrations");
 }
 
 sptr<SurfaceBuffer> SurfaceBuffer::Create()
@@ -107,6 +102,7 @@ sptr<SurfaceBuffer> SurfaceBuffer::Create()
 
 SurfaceBufferImpl::SurfaceBufferImpl()
 {
+    bufferDtorCb_ = nullptr;
     {
         std::lock_guard<std::mutex> lock(g_seqNumMutex);
 
@@ -233,6 +229,7 @@ void SurfaceBufferImpl::InitMemMgrMembers()
 SurfaceBufferImpl::SurfaceBufferImpl(uint32_t seqNum)
 {
     metaDataCache_.clear();
+    bufferDtorCb_ = nullptr;
     if (IsReclaimed()) {
         TryResumeIfNeeded();
     }
@@ -1118,13 +1115,16 @@ void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint
         BLOGE("invalid buffer destructor callback.");
         return;
     }
-    // a std::function callback carries no identity, it can not be deduplicated, and it is removed one at a
-    // time by UnRegisterBufferDestructorCallback instead of individually. it draws on a quota of its own which
-    // is reserved within the cap, so it still succeeds when the identity based registrations have taken
-    // everything else. this interface returns void, so a registration dropped by that quota can not be
-    // reported to the caller, use RegisterBufferDestructorCallbackFunc when the caller needs to know whether
-    // it is registered
-    (void)AddBufferDestructorCallback(nullptr, std::move(bufferDtorCb));
+    // this interface keeps the single slot it has on master, and that slot is kept apart from the identity based
+    // registry of RegisterBufferDestructorCallbackFunc below, so neither of the two interfaces can squeeze the
+    // other one out and the identity based registrations never cost this one its slot. a std::function callback
+    // carries no identity, so a second caller can not be told apart from the first one and is dropped here, and
+    // this interface returns void so that can not be reported to the caller, use
+    // RegisterBufferDestructorCallbackFunc when several modules register on the same buffer
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    if (bufferDtorCb_ == nullptr) {
+        bufferDtorCb_ = std::move(bufferDtorCb);
+    }
 }
 
 bool SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
@@ -1133,60 +1133,31 @@ bool SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb
         BLOGE("invalid buffer destructor callback.");
         return false;
     }
-    return AddBufferDestructorCallback(bufferDtorCb, bufferDtorCb);
-}
-
-bool SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
-    std::function<void(uint64_t)> bufferDtorCb)
-{
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    if (funcPtr == nullptr) {
-        // the registrations carrying no identity are counted on their own, they are bounded by the quota
-        // reserved for them and are never squeezed out by the identity based ones
-        uint32_t anonymousNum = 0;
-        for (const auto &registeredCb : bufferDtorCbs_) {
-            if (registeredCb.first == nullptr) {
-                anonymousNum++;
-            }
-        }
-        if (anonymousNum >= LEGACY_BUFFER_DTOR_CB_NUM) {
-            BLOGE("too many anonymous callbacks, bufferId: %{public}" PRIu64, bufferId_);
-            return false;
-        }
-        bufferDtorCbs_.emplace_back(nullptr, std::move(bufferDtorCb));
-        return true;
-    }
     for (const auto &registeredCb : bufferDtorCbs_) {
-        if (registeredCb.first == funcPtr) {
+        if (registeredCb.first == bufferDtorCb) {
             // registering the same function again is idempotent, the registration is already in place
             BLOGD("callback already registered, bufferId: %{public}" PRIu64, bufferId_);
             return true;
         }
     }
-    // the slots reserved for the registrations carrying no identity are not available here, so this stops
-    // before MAX_BUFFER_DTOR_CB_NUM and keeps the reserved quota intact
-    if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM - LEGACY_BUFFER_DTOR_CB_NUM) {
+    // the whole limit belongs to this interface, the single slot of RegisterBufferDestructorCallback is separate
+    // and is not counted here
+    if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
         BLOGE("too many callbacks, bufferId: %{public}" PRIu64, bufferId_);
         return false;
     }
-    bufferDtorCbs_.emplace_back(funcPtr, std::move(bufferDtorCb));
+    bufferDtorCbs_.emplace_back(bufferDtorCb, bufferDtorCb);
     return true;
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
 {
+    // clears the single slot of RegisterBufferDestructorCallback and leaves the identity based registrations of
+    // RegisterBufferDestructorCallbackFunc alone, so the modules using that interface are still notified when this
+    // buffer is destructed. there is no loop here because this interface never had more than one slot
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    // removes the earliest registration made by RegisterBufferDestructorCallback, they are the ones carrying no
-    // identity, so the identity based registrations of other modules are kept and still notified on destruction.
-    // the registrations carrying no identity can not be told apart, so one call removes one of them and a caller
-    // which registered several has to call this once per registration, the loop shape matches the identity based
-    // UnRegisterBufferDestructorCallbackFunc below, which also stops as soon as its entry is erased
-    for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end(); ++iter) {
-        if (iter->first == nullptr) {
-            bufferDtorCbs_.erase(iter);
-            break;
-        }
-    }
+    bufferDtorCb_ = nullptr;
 }
 
 bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
@@ -1212,15 +1183,18 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallback()
     // declared as the same type as the registry so that the two can be swapped, a vector of std::function can not
     // be swapped with a vector of pairs
     std::vector<std::pair<BufferDtorCbPtr, std::function<void(uint64_t)>>> bufferDtorCbs;
+    std::function<void(uint64_t)> bufferDtorCb = nullptr;
     {
         std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-        if (bufferDtorCbs_.empty()) {
+        if (bufferDtorCbs_.empty() && bufferDtorCb_ == nullptr) {
             return;
         }
-        // the registry is transferred out instead of copying every std::function under the lock, copying a lambda
-        // with captures allocates. this is safe because the only caller is the destructor, so the buffer is going
-        // away and no registration left behind here is ever notified
+        // both registries are transferred out instead of copying every std::function under the lock, copying a
+        // lambda with captures allocates. this is safe because the only caller is the destructor, so the buffer is
+        // going away and no registration left behind here is ever notified. taking the two of them together also
+        // keeps a callback which calls back into this buffer from changing the batch being notified
         bufferDtorCbs_.swap(bufferDtorCbs);
+        bufferDtorCb = std::move(bufferDtorCb_);
     }
     // callbacks are invoked without the lock held, they may access this buffer again
     for (const auto &registeredCb : bufferDtorCbs) {
@@ -1231,6 +1205,12 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallback()
             continue;
         }
         registeredCb.second(bufferId_);
+    }
+    // the single slot of RegisterBufferDestructorCallback goes after the identity based ones, which are notified in
+    // registration order. no production caller uses this interface, so the order between the two registries is not
+    // observable in practice, and it is the same for every buffer
+    if (bufferDtorCb != nullptr) {
+        bufferDtorCb(bufferId_);
     }
 }
 

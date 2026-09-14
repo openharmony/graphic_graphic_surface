@@ -90,6 +90,13 @@ constexpr uint64_t INVALID_USAGE = std::numeric_limits<std::uint64_t>::max();
 const std::string MEMMGR_SO = "libmemmgrclient.z.so";
 // upper limit of destructor callbacks of one buffer, avoid unlimited growth by repeated registration
 constexpr uint32_t MAX_BUFFER_DTOR_CB_NUM = 32;
+// part of MAX_BUFFER_DTOR_CB_NUM reserved for the registrations carrying no identity, which are the ones made
+// by RegisterBufferDestructorCallback. the identity based registrations stop earlier, at MAX_BUFFER_DTOR_CB_NUM
+// minus this quota, so the reserved slots stay available and the anonymous interface still succeeds when the
+// identity based ones have taken everything else
+constexpr uint32_t LEGACY_BUFFER_DTOR_CB_NUM = 4;
+static_assert(LEGACY_BUFFER_DTOR_CB_NUM < MAX_BUFFER_DTOR_CB_NUM,
+    "the reserved quota must leave room for the identity based registrations");
 }
 
 sptr<SurfaceBuffer> SurfaceBuffer::Create()
@@ -1111,10 +1118,12 @@ void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint
         BLOGE("invalid buffer destructor callback.");
         return;
     }
-    // a std::function callback carries no identity, it can not be deduplicated, and it is removed as a class by
-    // UnRegisterBufferDestructorCallback instead of individually. this interface returns void, so a registration
-    // dropped by the cap can not be reported to the caller, use RegisterBufferDestructorCallbackFunc when the
-    // caller needs to know whether it is registered
+    // a std::function callback carries no identity, it can not be deduplicated, and it is removed one at a
+    // time by UnRegisterBufferDestructorCallback instead of individually. it draws on a quota of its own which
+    // is reserved within the cap, so it still succeeds when the identity based registrations have taken
+    // everything else. this interface returns void, so a registration dropped by that quota can not be
+    // reported to the caller, use RegisterBufferDestructorCallbackFunc when the caller needs to know whether
+    // it is registered
     (void)AddBufferDestructorCallback(nullptr, std::move(bufferDtorCb));
 }
 
@@ -1131,16 +1140,32 @@ bool SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
     std::function<void(uint64_t)> bufferDtorCb)
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    if (funcPtr != nullptr) {
+    if (funcPtr == nullptr) {
+        // the registrations carrying no identity are counted on their own, they are bounded by the quota
+        // reserved for them and are never squeezed out by the identity based ones
+        uint32_t anonymousNum = 0;
         for (const auto &registeredCb : bufferDtorCbs_) {
-            if (registeredCb.first == funcPtr) {
-                // registering the same function again is idempotent, the registration is already in place
-                BLOGD("callback already registered, bufferId: %{public}" PRIu64, bufferId_);
-                return true;
+            if (registeredCb.first == nullptr) {
+                anonymousNum++;
             }
         }
+        if (anonymousNum >= LEGACY_BUFFER_DTOR_CB_NUM) {
+            BLOGE("too many anonymous callbacks, bufferId: %{public}" PRIu64, bufferId_);
+            return false;
+        }
+        bufferDtorCbs_.emplace_back(nullptr, std::move(bufferDtorCb));
+        return true;
     }
-    if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
+    for (const auto &registeredCb : bufferDtorCbs_) {
+        if (registeredCb.first == funcPtr) {
+            // registering the same function again is idempotent, the registration is already in place
+            BLOGD("callback already registered, bufferId: %{public}" PRIu64, bufferId_);
+            return true;
+        }
+    }
+    // the slots reserved for the registrations carrying no identity are not available here, so this stops
+    // before MAX_BUFFER_DTOR_CB_NUM and keeps the reserved quota intact
+    if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM - LEGACY_BUFFER_DTOR_CB_NUM) {
         BLOGE("too many callbacks, bufferId: %{public}" PRIu64, bufferId_);
         return false;
     }
@@ -1177,7 +1202,7 @@ bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtor
             return true;
         }
     }
-    // nothing is removed, it was never registered, or it was dropped by the cap when it was registered
+    // nothing is removed, it was never registered, or it was dropped by the limit when it was registered
     BLOGD("callback is not registered, bufferId: %{public}" PRIu64, bufferId_);
     return false;
 }

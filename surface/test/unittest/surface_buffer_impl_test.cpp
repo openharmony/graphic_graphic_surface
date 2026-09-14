@@ -12,6 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <array>
+#include <cstddef>
+#include <utility>
 #include <securec.h>
 #include <gtest/gtest.h>
 #include <fcntl.h>
@@ -68,6 +71,34 @@ void SurfaceBufferImplTest::BufferDestructorCallBack3(uint64_t bufferId)
 {
     gBufferId3 = bufferId;
 }
+
+// keep the same values as MAX_BUFFER_DTOR_CB_NUM and LEGACY_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
+constexpr uint32_t MAX_CB_NUM = 32;
+constexpr uint32_t LEGACY_CB_NUM = 4;
+// the slots left to the identity based registrations, plus one so that the last one is past their own limit
+constexpr uint32_t SLOT_CB_NUM = MAX_CB_NUM - LEGACY_CB_NUM + 1;
+
+// the identity of a registration is its function pointer, so filling the identity based registrations up to
+// their own limit needs that many distinct addresses, and one template instantiation gives exactly one. each
+// instantiation bumps its own counter, which keeps the linker from folding them into a single function under
+// --icf=all, and lets a case check that every registered one of them was really invoked
+std::array<uint32_t, SLOT_CB_NUM> gSlotCallBackHits = {};
+
+template<uint32_t N>
+void SlotBufferDestructorCallBack(uint64_t bufferId)
+{
+    (void)bufferId;
+    gSlotCallBackHits[N]++;
+    gBufferDtorCbCount++;
+}
+
+template<std::size_t... I>
+constexpr std::array<void (*)(uint64_t), sizeof...(I)> MakeSlotCallBacks(std::index_sequence<I...>)
+{
+    return { &SlotBufferDestructorCallBack<static_cast<uint32_t>(I)>... };
+}
+
+constexpr auto gSlotCallBacks = MakeSlotCallBacks(std::make_index_sequence<SLOT_CB_NUM> {});
 
 void SurfaceBufferImplTest::SetUpTestCase()
 {
@@ -898,24 +929,23 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback004, TestSize.Le
  * Rank: Important(2)
  * EnvConditions: N/A
  * CaseDescription: 1. new SurfaceBufferImpl
- *                  2. register more callbacks than the max num
- *                  3. only the first max num callbacks are exe when SurfaceBuffer is destructor
+ *                  2. register more callbacks than the quota of the anonymous interface
+ *                  3. only the first quota num callbacks are exe when SurfaceBuffer is destructor
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback005, TestSize.Level0)
 {
-    // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
-    constexpr uint32_t maxCbNum = 32;
     uint32_t lambdaCbCount = 0;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
-        for (uint32_t i = 0; i < maxCbNum + 4; i++) {
+        for (uint32_t i = 0; i < LEGACY_CB_NUM + 4; i++) {
             bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
                 lambdaCbCount++;
             });
         }
         bufferTmp = nullptr;
     }
-    EXPECT_EQ(lambdaCbCount, maxCbNum);
+    // the registrations past the quota are dropped, and this interface returns void so it reports nothing
+    EXPECT_EQ(lambdaCbCount, LEGACY_CB_NUM);
 }
 
 /*
@@ -1196,50 +1226,72 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback013, TestSize.
  * Type: Function
  * Rank: Important(2)
  * EnvConditions: N/A
- * CaseDescription: 1. fill the callback list up to the max num by the anonymous interface
- *                  2. an identity based registration is dropped as well when the list is full
- *                  3. a repeated identity based registration is dropped by the deduplication check
+ * CaseDescription: 1. the anonymous interface is bounded by a quota of its own, the rest of them are dropped
+ *                  2. a full anonymous quota still leaves the rest of the cap to the identity based ones
+ *                  3. the identity based registrations stop at the cap minus the reserved quota
+ *                  4. a repeated one is caught by the deduplication check instead, and the reserved quota is
+ *                     still free at that point, so the anonymous interface still succeeds there
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback014, TestSize.Level0)
 {
-    // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
-    constexpr uint32_t maxCbNum = 32;
     uint64_t bufferId = 0;
     uint32_t lambdaCbCount = 0;
     gBufferId = UINT64_MAX;
-    {
-        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
-        for (uint32_t i = 0; i < maxCbNum; i++) {
-            bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
-                lambdaCbCount++;
-            });
-        }
-        // the list is already full, so this identity based registration is dropped
-        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
-        bufferTmp = nullptr;
-    }
-    EXPECT_EQ(lambdaCbCount, maxCbNum);
-    EXPECT_EQ(gBufferId, UINT64_MAX);
-
-    // the deduplication check runs before the cap check, a repeated function is dropped by it
-    lambdaCbCount = 0;
+    gBufferId2 = UINT64_MAX;
     gBufferDtorCbCount = 0;
-    gBufferId = UINT64_MAX;
+    gSlotCallBackHits.fill(0);
+    // the registrations are told apart by their function pointer, so the slot callbacks used below have to
+    // stay distinct, a linker which folds identical functions together would silently break the filling
+    for (uint32_t i = 1; i < SLOT_CB_NUM; i++) {
+        ASSERT_NE(gSlotCallBacks[i], gSlotCallBacks[0]) << "slot callbacks were folded into one function";
+    }
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
-        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
-        for (uint32_t i = 0; i < maxCbNum - 1; i++) {
+        // register past the quota of the anonymous interface, only the first LEGACY_CB_NUM of them are kept
+        for (uint32_t i = 0; i < LEGACY_CB_NUM + 4; i++) {
             bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
                 lambdaCbCount++;
             });
         }
-        bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
+        // the quota belongs to the anonymous interface alone and does not eat into the rest of the cap, so
+        // these identity based registrations still succeed
+        EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
+        EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
         bufferTmp = nullptr;
     }
-    EXPECT_EQ(lambdaCbCount, maxCbNum - 1);
+    EXPECT_EQ(lambdaCbCount, LEGACY_CB_NUM);
     EXPECT_EQ(gBufferId, bufferId);
+    EXPECT_EQ(gBufferId2, bufferId);
     EXPECT_EQ(gBufferDtorCbCount, 1U);
+
+    lambdaCbCount = 0;
+    gBufferDtorCbCount = 0;
+    {
+        sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
+        // take every slot which is left to the identity based registrations, each of them a distinct function
+        for (uint32_t i = 0; i < MAX_CB_NUM - LEGACY_CB_NUM; i++) {
+            EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[i]));
+        }
+        // one past their own limit is refused, the reserved quota is not available to them
+        EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[MAX_CB_NUM - LEGACY_CB_NUM]));
+        // the deduplication check runs before the limit is checked, so a function which is already in place
+        // still succeeds even though their limit has been reached
+        EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[0]));
+        // the reserved quota is untouched by all of the above, this is what keeps the anonymous interface
+        // usable once the identity based registrations have taken everything else
+        bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
+            lambdaCbCount++;
+        });
+        bufferTmp = nullptr;
+    }
+    EXPECT_EQ(lambdaCbCount, 1U);
+    EXPECT_EQ(gBufferDtorCbCount, MAX_CB_NUM - LEGACY_CB_NUM);
+    // every registration which was accepted is invoked exactly once, the one which was refused never is
+    for (uint32_t i = 0; i < MAX_CB_NUM - LEGACY_CB_NUM; i++) {
+        EXPECT_EQ(gSlotCallBackHits[i], 1U);
+    }
+    EXPECT_EQ(gSlotCallBackHits[MAX_CB_NUM - LEGACY_CB_NUM], 0U);
 }
 
 /*
@@ -1277,11 +1329,13 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback015, TestSize.Le
  * CaseDescription: 1. new SurfaceBufferImpl
  *                  2. check the return value of the identity based register and unregister interfaces
  *                  3. the return value tells the caller whether the registration is really in place
+ *                  4. freeing one slot makes the list accept a new one again, and the quota reserved for the
+ *                     anonymous interface stays usable all along
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Level0)
 {
-    // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
-    constexpr uint32_t maxCbNum = 32;
+    gBufferDtorCbCount = 0;
+    gSlotCallBackHits.fill(0);
     sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
     // a null callback is rejected by both interfaces
     EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(nullptr));
@@ -1296,22 +1350,33 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Le
     EXPECT_TRUE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
     EXPECT_FALSE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack));
 
-    // fill the list up to the cap, then the identity based registration is dropped and returns false
-    for (uint32_t i = 0; i < maxCbNum; i++) {
-        bufferTmp->RegisterBufferDestructorCallback([](uint64_t) {});
+    // fill the identity based registrations up to their own limit, then a further one is dropped and returns
+    // false, which is how the caller learns that it will not be notified
+    for (uint32_t i = 0; i < MAX_CB_NUM - LEGACY_CB_NUM; i++) {
+        EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[i]));
     }
-    EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
+    EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[MAX_CB_NUM - LEGACY_CB_NUM]));
 
-    // one call removes one identity less registration, so draining the list takes one call per registration,
-    // and only then does the list accept new callbacks again
-    for (uint32_t i = 0; i < maxCbNum; i++) {
-        bufferTmp->UnRegisterBufferDestructorCallback();
-    }
+    // freeing one of them makes the list accept a new identity based registration again
+    EXPECT_TRUE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(gSlotCallBacks[0]));
     EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
-    // the unparameterized interface keeps the identity based registration, so remove it by its own function
-    // to leave no callback behind and keep the global state clean for the next case
+    // the list is at their limit again, so the one which was refused before is still refused now
+    EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[MAX_CB_NUM - LEGACY_CB_NUM]));
+
+    // the quota reserved for the anonymous interface is untouched by all of the above, so it still succeeds
+    bufferTmp->RegisterBufferDestructorCallback([](uint64_t) {});
+    // unregistering a function which was never accepted returns false, and the unparameterized interface
+    // removes the anonymous registration only
+    EXPECT_FALSE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(gSlotCallBacks[MAX_CB_NUM - LEGACY_CB_NUM]));
+    bufferTmp->UnRegisterBufferDestructorCallback();
+
+    // leave nothing behind, so that destructing this buffer notifies nobody and the global counter stays clean
+    for (uint32_t i = 1; i < MAX_CB_NUM - LEGACY_CB_NUM; i++) {
+        EXPECT_TRUE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(gSlotCallBacks[i]));
+    }
     EXPECT_TRUE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
     bufferTmp = nullptr;
+    EXPECT_EQ(gBufferDtorCbCount, 0U);
 }
 
 /*

@@ -263,9 +263,13 @@ public:
      * registration order. A callback registered by this interface carries no identity, so registering it
      * repeatedly adds it repeatedly, and it can only be removed by UnRegisterBufferDestructorCallback, which
      * removes one callback registered by this interface per call while keeping every callback registered by
-     * RegisterBufferDestructorCallbackFunc. The callbacks of one buffer are capped, and the registrations
-     * beyond the cap are dropped. Prefer RegisterBufferDestructorCallbackFunc, and use this interface only
-     * for a callback which can not decay to a plain function, such as a lambda with captures.
+     * RegisterBufferDestructorCallbackFunc. This interface draws on a small quota of its own, which is
+     * reserved within the cap of one buffer and is never taken by RegisterBufferDestructorCallbackFunc, so a
+     * registration made here still succeeds once the identity based registrations have reached their own
+     * limit. The registrations beyond that quota are dropped, and since this interface returns void the
+     * caller can not tell a dropped one from a registered one. Prefer RegisterBufferDestructorCallbackFunc,
+     * and use this interface only for a callback which can not decay to a plain function, such as a lambda
+     * with captures.
      * A null callback is ignored.
      * @param callBack The callback to be registered.
      */
@@ -347,9 +351,11 @@ public:
      * never affects the callbacks of other modules.
      * @param callBack The function to be registered.
      * @return True if the callback is registered, or it has already been registered with the same function.
-     *         False if callBack is null, the callbacks of this buffer have reached the cap, or this buffer
-     *         does not implement the destructor callback. On false the caller must not rely on being notified
-     *         when this buffer is destructed, and should roll back the state which depends on that callback.
+     *         False if callBack is null, the identity based registrations of this buffer have reached their
+     *         limit, which is the cap of one buffer minus the quota reserved for
+     *         RegisterBufferDestructorCallback, or this buffer does not implement the destructor callback.
+     *         On false the caller must not rely on being notified when this buffer is destructed, and should
+     *         roll back the state which depends on that callback.
      */
     virtual bool RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
     {
@@ -363,7 +369,7 @@ public:
      * @param callBack The function to be unregistered.
      * @return True if a registration of callBack is removed. False if callBack is null, or no registration of
      *         it is found. The latter also reveals that the registration was never in place, for example it
-     *         was dropped by the cap when it was registered.
+     *         was dropped by the limit when it was registered.
      */
     virtual bool UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
     {

@@ -1074,9 +1074,10 @@ void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint
         BLOGE("invalid buffer destructor callback.");
         return;
     }
-    // a std::function callback carries no identity, it can not be deduplicated or unregistered individually.
-    // this interface returns void, so a registration dropped by the cap can not be reported to the caller,
-    // use RegisterBufferDestructorCallbackFunc when the caller needs to know whether it is registered
+    // a std::function callback carries no identity, it can not be deduplicated, and it is removed as a class by
+    // UnRegisterBufferDestructorCallback instead of individually. this interface returns void, so a registration
+    // dropped by the cap can not be reported to the caller, use RegisterBufferDestructorCallbackFunc when the
+    // caller needs to know whether it is registered
     (void)AddBufferDestructorCallback(nullptr, std::move(bufferDtorCb));
 }
 
@@ -1113,8 +1114,15 @@ bool SurfaceBufferImpl::AddBufferDestructorCallback(void (*funcPtr)(uint64_t),
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
 {
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-    // clears every registration of this buffer, including the ones registered by other modules
-    bufferDtorCbs_.clear();
+    // removes only the registrations made by RegisterBufferDestructorCallback, they are the ones carrying no
+    // identity, so the identity based registrations of other modules are kept and still notified on destruction
+    for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end();) {
+        if (iter->first == nullptr) {
+            iter = bufferDtorCbs_.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
 }
 
 bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))

@@ -311,6 +311,78 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetColorSpace002, TestSize.Level0)
 }
 
 /*
+* Function: OH_NativeBuffer_SetDmaBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetDmaBufferName by abnormal input
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName001, TestSize.Level0)
+{
+    int32_t ret = OH_NativeBuffer_SetDmaBufferName(nullptr, "validName");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, nullptr);
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_SetDmaBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetDmaBufferName with invalid name
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName002, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "1abc");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "abc_123");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    std::string tooLong = std::string(65, 'a');
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, tooLong.c_str());
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
+
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
+* Function: OH_NativeBuffer_SetDmaBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetDmaBufferName with valid name
+*                  2. check ret
+*/
+HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName003, TestSize.Level0)
+{
+    OH_NativeBuffer* nativeBuffer = OH_NativeBuffer_Alloc(&config);
+    ASSERT_NE(nativeBuffer, nullptr);
+
+    int32_t ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, "validName123");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+
+    std::string maxLen = std::string(64, 'a');
+    ret = OH_NativeBuffer_SetDmaBufferName(nativeBuffer, maxLen.c_str());
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+
+    EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
+}
+
+/*
 * Function: OH_NativeBuffer_GetColorSpace
 * Type: Function
 * Rank: Important(2)
@@ -1368,6 +1440,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes001, TestSize.Level0)
     ASSERT_EQ(ret, OHOS::GSERROR_INVALID_ARGUMENTS);
 }
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
@@ -1419,7 +1492,9 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes002, TestSize.Level0)
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+#endif // OHOS_EMULATOR
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
@@ -1478,8 +1553,10 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes003, TestSize.Level0)
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+#endif // OHOS_EMULATOR
 
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_MapPlanes
 * Type: Function
@@ -1538,6 +1615,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferMapPlanes004, TestSize.Level0)
     nativeWindow = nullptr;
     nativeWindowBuffer = nullptr;
 }
+#endif // OHOS_EMULATOR
 
 /*
  * Function: OH_NativeBuffer_WriteToParcel
@@ -1609,6 +1687,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_WriteToParcel004, TestSize.Level0)
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
 
+#ifndef OHOS_EMULATOR
 /*
  * Function: OH_NativeBuffer_ReadFromParcel
  * Type: Function
@@ -1651,6 +1730,7 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_ReadFromParcel001, TestSize.Level0)
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
     OH_IPCParcel_Destroy(parcel);
 }
+#endif // OHOS_EMULATOR
 
 /*
  * Function: OH_NativeBuffer_ReadFromParcel
@@ -1983,5 +2063,26 @@ HWTEST_F(NativeBufferTest, OH_NativeBuffer_MapAndGetConfig005, TestSize.Level0)
     ASSERT_NE(testConfig.usage, config.usage);
     delete sBuffer;
     sBuffer = nullptr;
+}
+
+/*
+* Function: OH_NativeBuffer_SetMetadataValue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeBuffer_SetMetadataValue with size > META_DATA_MAX_SIZE (3000)
+*                  2. check ret is SURFACE_ERROR_INVALID_PARAM
+*/
+HWTEST_F(NativeBufferTest, OH_NativeBuffer_SetMetadataValueTooLarge001, TestSize.Level0)
+{
+    if (buffer == nullptr) {
+        buffer = OH_NativeBuffer_Alloc(&config);
+        ASSERT_NE(buffer, nullptr);
+    }
+    constexpr int32_t metaDataMaxSize = 3000;
+    int32_t size = metaDataMaxSize + 1;
+    std::vector<uint8_t> data(size, 0);
+    int32_t ret = OH_NativeBuffer_SetMetadataValue(buffer, OH_HDR_STATIC_METADATA, size, data.data());
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_INVALID_PARAM);
 }
 }

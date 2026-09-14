@@ -132,6 +132,10 @@ private:
     GSError GetImageLayout(void *layout);
     static void InitMemMgrMembers();
     static uint32_t GenerateSequenceNumber(uint32_t& seqNum);
+    static bool IsLocalSeqNum(uint32_t seqNum);
+    void AcquireSeqBit(uint32_t seqNum);
+    void ReleaseSeqBit(uint32_t seqNum);
+    void UpdateSeqNumBitset(uint32_t newSeqNum);
     // not const because it transfers bufferDtorCbs_ out by swap, it is private and non virtual and its only caller
     // is the destructor, so dropping const does not touch the vtable layout or any caller
     void NotifyBufferDestructorCallback();

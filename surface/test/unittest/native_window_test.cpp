@@ -312,6 +312,62 @@ HWTEST_F(NativeWindowTest, HandleOpt002, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt with
+                    OH_NATIVEWINDOW_SET_DMABUFFER_NAME and valid name
+*                  2. check ret and stored name
+*/
+HWTEST_F(NativeWindowTest, HandleOptSetDmaBufferNameValid, TestSize.Level0)
+{
+    OHOS::sptr<OHOS::Surface> surface = nativeWindow->surface;
+    ASSERT_NE(surface, nullptr);
+
+    int32_t ret = OH_NativeWindow_NativeWindowHandleOpt(
+        nativeWindow, OH_NATIVEWINDOW_SET_DMABUFFER_NAME, "validName123");
+    ASSERT_EQ(ret, OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(surface->GetDmaBufferName(), "validName123");
+}
+
+/*
+* Function: OH_NativeWindow_NativeWindowHandleOpt
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt with
+                    OH_NATIVEWINDOW_SET_DMABUFFER_NAME and invalid name
+*                  2. check stored name is not changed
+*/
+HWTEST_F(NativeWindowTest, HandleOptSetDmaBufferNameInvalid, TestSize.Level0)
+{
+    OHOS::sptr<OHOS::Surface> surface = nativeWindow->surface;
+    ASSERT_NE(surface, nullptr);
+
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(
+        nativeWindow, OH_NATIVEWINDOW_SET_DMABUFFER_NAME, "validName123"), OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(surface->GetDmaBufferName(), "validName123");
+
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(
+        nativeWindow, OH_NATIVEWINDOW_SET_DMABUFFER_NAME, "1abc"), OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(surface->GetDmaBufferName(), "validName123");
+
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(
+        nativeWindow, OH_NATIVEWINDOW_SET_DMABUFFER_NAME, "abc_123"), OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(surface->GetDmaBufferName(), "validName123");
+
+    std::string tooLong(65, 'a');
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(
+        nativeWindow, OH_NATIVEWINDOW_SET_DMABUFFER_NAME, tooLong.c_str()), OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(surface->GetDmaBufferName(), "validName123");
+
+    ASSERT_EQ(OH_NativeWindow_NativeWindowHandleOpt(
+        nativeWindow, OH_NATIVEWINDOW_SET_DMABUFFER_NAME, ""), OHOS::SURFACE_ERROR_OK);
+    ASSERT_EQ(surface->GetDmaBufferName(), "validName123");
+}
+
+/*
+* Function: OH_NativeWindow_NativeWindowHandleOpt
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
 * CaseDescription: 1. call OH_NativeWindow_NativeWindowHandleOpt by different param
 *                  2. check ret
  */

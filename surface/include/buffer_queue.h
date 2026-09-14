@@ -16,6 +16,7 @@
 #ifndef FRAMEWORKS_SURFACE_INCLUDE_BUFFER_QUEUE_H
 #define FRAMEWORKS_SURFACE_INCLUDE_BUFFER_QUEUE_H
 
+#include <atomic>
 #include <map>
 #include <list>
 #include <vector>
@@ -214,7 +215,7 @@ public:
     GSError SetProducerCacheCleanFlag(bool flag);
     inline void ConsumerRequestCpuAccess(bool on)
     {
-        isCpuAccessable_ = on;
+        isCpuAccessable_.store(on);
     }
 
     GSError AttachBufferToQueue(sptr<SurfaceBuffer> buffer, InvokerType invokerType);
@@ -247,7 +248,7 @@ public:
     GSError GetRequestBufferNoblockMode(bool &noblock);
     uint32_t GetAvailableBufferCount();
 
-    void SetConnectedPidLocked(int32_t connectedPid);
+    void SetConnectedPid(int32_t connectedPid);
     void SetListenerSeqAndFenceCallingPid(int32_t listenerSeqAndFenceCallingPid);
     GSError RequestAndDetachBuffer(const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
         struct IBufferProducer::RequestBufferReturnValue& retval);
@@ -315,7 +316,7 @@ private:
     GSError SetProducerCacheCleanFlagLocked(bool flag, std::unique_lock<std::mutex> &lock);
     GSError AttachBufferUpdateStatus(std::unique_lock<std::mutex> &lock, uint32_t sequence,
         int32_t timeOut, std::map<uint32_t, BufferElement>::iterator &mapIter);
-    void AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool needMap);
+    GSError AttachBufferUpdateBufferInfo(sptr<SurfaceBuffer>& buffer, bool needMap);
     void ListenerBufferReleasedCb(sptr<SurfaceBuffer> &buffer, const sptr<SyncFence> &fence,
         bool isOnReleaseBufferWithSequenceAndFence,
         std::vector<std::pair<uint32_t, sptr<SyncFence>>> &requestBuffersAndFences);
@@ -428,7 +429,7 @@ private:
     sptr<SyncFence> preBufferReleasedFence_;
     sptr<ConsumerSurfaceDelegator> sptrCSurfaceDelegator_;
     std::mutex delegatorMutex_;
-    bool isCpuAccessable_ = false;
+    std::atomic<bool> isCpuAccessable_{false};
     GraphicTransformType transformHint_ = GraphicTransformType::GRAPHIC_ROTATE_NONE;
     bool isBufferHold_ = false;
     bool isBatch_ = false;

@@ -15,6 +15,7 @@
 
 #include "native_window.h"
 
+#include "buffer_utils.h"
 #include <cstdint>
 #include <cstring>
 #include <map>
@@ -415,6 +416,29 @@ static void HandleNativeWindowSetSurfaceAppFrameworkType(OHNativeWindow *window,
     window->surface->SetSurfaceAppFrameworkType(typeStr);
 }
 
+static void HandleNativeWindowSetDmaBufferName(OHNativeWindow *window, va_list args)
+{
+    const char* name = va_arg(args, const char*);
+    if (name == nullptr) {
+        BLOGE("SetDmaBufferName failed: name is nullptr");
+        return;
+    }
+    size_t nameLen = strnlen(name, MAXIMUM_LENGTH_OF_DMA_BUFFER_NAME + 1);
+    if (nameLen == 0 || nameLen > MAXIMUM_LENGTH_OF_DMA_BUFFER_NAME) {
+        BLOGE("SetDmaBufferName failed: name is empty or too long");
+        return;
+    }
+    std::string nameStr(name, nameLen);
+    if (!IsDmaBufferNameValid(nameStr)) {
+        BLOGE("SetDmaBufferName failed: name must start with a letter and only contain letters or digits");
+        return;
+    }
+    GSError ret = window->surface->SetDmaBufferName(nameStr);
+    if (ret != GSERROR_OK) {
+        BLOGE("SetDmaBufferName failed, ret: %{public}d", ret);
+    }
+}
+
 static void HandleNativeWindowGetUsage(OHNativeWindow *window, va_list args)
 {
     uint64_t *value = va_arg(args, uint64_t*);
@@ -547,6 +571,7 @@ static std::map<int, std::function<void(OHNativeWindow*, va_list)>> operationMap
     {SET_HDR_WHITE_POINT_BRIGHTNESS, HandleNativeWindowSetHdrWhitePointBrightness},
     {SET_SDR_WHITE_POINT_BRIGHTNESS, HandleNativeWindowSetSdrWhitePointBrightness},
     {SET_DESIRED_PRESENT_TIMESTAMP, HandleNativeWindowSetDesiredPresentTimestamp},
+    {OH_NATIVEWINDOW_SET_DMABUFFER_NAME, HandleNativeWindowSetDmaBufferName},
 };
 
 static int32_t InternalHandleNativeWindowOpt(OHNativeWindow *window, int code, va_list args)

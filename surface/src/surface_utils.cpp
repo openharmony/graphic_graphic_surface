@@ -226,7 +226,7 @@ void SurfaceUtils::ComputeTransformByMatrix(GraphicTransformType& transform,
 void SurfaceUtils::ComputeTransformMatrix(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || matrixSize > MATRIX_ARRAY_SIZE) {
         return;
     }
     float tx = 0.f;
@@ -349,7 +349,7 @@ void SurfaceUtils::ComputeTransformByMatrixV2(GraphicTransformType& transform,
 void SurfaceUtils::ComputeTransformMatrixV2(float matrix[MATRIX_ARRAY_SIZE], uint32_t matrixSize,
     sptr<SurfaceBuffer>& buffer, GraphicTransformType& transform, const Rect& crop)
 {
-    if (buffer == nullptr) {
+    if (buffer == nullptr || matrixSize > MATRIX_ARRAY_SIZE) {
         return;
     }
     float tx = 0.f;

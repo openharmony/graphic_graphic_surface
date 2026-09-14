@@ -42,20 +42,21 @@ uintptr_t MockProducerSurfaceDelegatorCreate()
     return 0x16;
 }
 
-void MockProducerSurfaceDelegatorDestroy()
+void MockProducerSurfaceDelegatorDestroy(uintptr_t delegator)
 {
 }
 
-void MockProducerSurfaceDelegatorSetSurface()
+void MockProducerSurfaceDelegatorSetSurface(uintptr_t delegator, sptr<Surface> surface)
 {
 }
 
-bool MockProducerSurfaceDelegatorSetClient()
+bool MockProducerSurfaceDelegatorSetClient(uintptr_t delegator, sptr<IRemoteObject> client)
 {
     return true;
 }
 
-GSError MockProducerSurfaceDelegatorReleaseBuffer()
+GSError MockProducerSurfaceDelegatorReleaseBuffer(uintptr_t delegator,
+    const sptr<SurfaceBuffer>& buffer, const sptr<SyncFence>& fence)
 {
     return GSERROR_OK;
 }
@@ -65,26 +66,29 @@ uintptr_t MockConsumerSurfaceDelegatorCreate()
     return 0x11;
 }
 
-bool MockConsumerSurfaceDelegatorSetClient()
+bool MockConsumerSurfaceDelegatorSetClient(uintptr_t delegator, sptr<IRemoteObject> client)
 {
     return true;
 }
 
-void MockConsumerSurfaceDelegatorSetSurface()
+void MockConsumerSurfaceDelegatorSetSurface(uintptr_t delegator, sptr<Surface> surface)
 {
 }
 
-GSError MockConsumerSurfaceDelegatorDequeueBuffer()
-{
-    return GSERROR_OK;
-}
-
-GSError MockConsumerSurfaceDelegatorQueueBuffer()
+GSError MockConsumerSurfaceDelegatorDequeueBuffer(uintptr_t delegator,
+    const BufferRequestConfig& config, sptr<BufferExtraData>& bedata,
+    struct IBufferProducer::RequestBufferReturnValue& retval)
 {
     return GSERROR_OK;
 }
 
-void MockConsumerSurfaceDelegatorDestroy()
+GSError MockConsumerSurfaceDelegatorQueueBuffer(uintptr_t delegator,
+    sptr<SurfaceBuffer>& buffer, int32_t fenceFd)
+{
+    return GSERROR_OK;
+}
+
+void MockConsumerSurfaceDelegatorDestroy(uintptr_t delegator)
 {
 }
 

@@ -314,7 +314,7 @@ GSError BufferQueueConsumer::GoBackground()
 float BufferQueueConsumer::GetHdrWhitePointBrightness() const
 {
     if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
+        return 0.0f;
     }
     return bufferQueue_->GetHdrWhitePointBrightness();
 }
@@ -322,7 +322,7 @@ float BufferQueueConsumer::GetHdrWhitePointBrightness() const
 float BufferQueueConsumer::GetSdrWhitePointBrightness() const
 {
     if (bufferQueue_ == nullptr) {
-        return SURFACE_ERROR_UNKOWN;
+        return 0.0f;
     }
     return bufferQueue_->GetSdrWhitePointBrightness();
 }

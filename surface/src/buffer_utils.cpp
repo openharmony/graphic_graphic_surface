@@ -32,6 +32,23 @@ namespace {
 constexpr size_t BLOCK_SIZE = 1024 * 1024; // 1 MB block size
 }
 
+bool IsDmaBufferNameValid(const std::string &name)
+{
+    if (name.empty() || name.size() > MAXIMUM_LENGTH_OF_DMA_BUFFER_NAME) {
+        return false;
+    }
+    char first = name[0];
+    if (!((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z'))) {
+        return false;
+    }
+    for (char c : name) {
+        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))) {
+            return false;
+        }
+    }
+    return true;
+}
+
 GSError WriteFileDescriptor(MessageParcel &parcel, int32_t fd)
 {
     if (fd >= 0 && fcntl(fd, F_GETFL) == -1 && errno == EBADF) {

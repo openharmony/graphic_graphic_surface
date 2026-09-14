@@ -12,10 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <atomic>
+#include <chrono>
 #include <fcntl.h>
 #include <map>
 #include <surface.h>
 #include <sys/mman.h>
+#include <thread>
 #include <gtest/gtest.h>
 
 #include "buffer_consumer_listener.h"
@@ -1070,6 +1073,57 @@ HWTEST_F(BufferQueueTest, AttachBufferUpdateStatus, TestSize.Level0)
 }
 
 /*
+* Function: AttachBufferUpdateStatus
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. a buffer in cache is left in BUFFER_STATE_REQUESTED so the wait branch is exercised
+*                  2. while AttachBufferUpdateStatus is blocked in wait_for (lock released),
+*                     another thread calls OnConsumerDied -> ClearLocked which clears bufferQueueCache_
+*                  3. the waiter must wake via waitAttachCon_ notify, re-find the entry by sequence,
+*                     find it gone, and return SURFACE_ERROR_BUFFER_STATE_INVALID instead of
+*                     dereferencing the now-invalid mapIter (use-after-free)
+*/
+HWTEST_F(BufferQueueTest, AttachBufferUpdateStatusClearLockedRace, TestSize.Level0)
+{
+    sptr<BufferQueue> localBq = new BufferQueue("attachRace");
+    sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
+    localBq->RegisterConsumerListener(listener);
+    ASSERT_EQ(localBq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
+
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        ASSERT_EQ(localBq->AllocBuffer(buffer, nullptr, requestConfig, lock), GSERROR_OK);
+    }
+    uint32_t sequence = buffer->GetSeqNum();
+    ASSERT_NE(localBq->bufferQueueCache_.find(sequence), localBq->bufferQueueCache_.end());
+
+    std::atomic<bool> attachStarted { false };
+    std::atomic<GSError> attachRet { GSERROR_OK };
+    std::thread attachThread([&localBq, &sequence, &attachStarted, &attachRet]() {
+        std::unique_lock<std::mutex> lock(localBq->mutex_);
+        auto mapIter = localBq->bufferQueueCache_.find(sequence);
+        attachStarted.store(true);
+        attachRet.store(localBq->AttachBufferUpdateStatus(lock, sequence, 1000, mapIter));
+    });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ASSERT_TRUE(attachStarted.load());
+
+    std::thread clearThread([&localBq]() {
+        localBq->OnConsumerDied();
+    });
+    clearThread.join();
+    attachThread.join();
+
+    EXPECT_EQ(attachRet.load(), SURFACE_ERROR_BUFFER_STATE_INVALID);
+    EXPECT_EQ(localBq->bufferQueueCache_.find(sequence), localBq->bufferQueueCache_.end());
+}
+
+/*
 * Function: AttachBuffer
 * Type: Function
 * Rank: Important(2)
@@ -1093,8 +1147,9 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer001, TestSize.Level0)
 * Type: Function
 * Rank: Important(2)
 * EnvConditions: N/A
-* CaseDescription: 1. call AttachBuffer, DetachBuffer and check ret
- */
+* CaseDescription: 1. allocate real BufferHandle via AllocBuffer then DetachBuffer to free queue slot
+*                  2. call AttachBuffer, DetachBuffer and check ret
+*/
 HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, TestSize.Level0)
 {
     bq->CleanCache(false, nullptr);
@@ -1102,8 +1157,21 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, TestSize.Level0)
     EXPECT_EQ(bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
     sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
     ASSERT_NE(buffer, nullptr);
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        ASSERT_EQ(bq->AllocBuffer(buffer, nullptr, requestConfig, lock), GSERROR_OK);
+    }
+    ASSERT_EQ(bq->DetachBuffer(buffer), GSERROR_OK);
     GSError ret = bq->AttachBuffer(buffer, timeOut);
     sptr<SurfaceBuffer> buffer1 = SurfaceBuffer::Create();
+    ASSERT_NE(buffer1, nullptr);
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        ASSERT_EQ(bq->AllocBuffer(buffer1, nullptr, requestConfig, lock), GSERROR_OK);
+    }
+    ASSERT_EQ(bq->DetachBuffer(buffer1), GSERROR_OK);
     EXPECT_EQ(bq->GetUsedSize(), 1);
     ASSERT_EQ(ret, GSERROR_OK);
     EXPECT_EQ(bq->AttachBuffer(buffer1, timeOut), GSERROR_OK);
@@ -1119,6 +1187,142 @@ HWTEST_F(BufferQueueTest, AttachBufferAndDetachBuffer002, TestSize.Level0)
         EXPECT_EQ(bq->AllocBuffer(buffer1, nullptr, requestConfig, lock), GSERROR_OK);
     }
     EXPECT_EQ(bq->DetachBuffer(buffer1), GSERROR_OK);
+}
+
+/*
+* Function: AttachBufferUpdateBufferInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. construct a SurfaceBuffer without BufferHandle so Map() will fail
+*                  2. call AttachBufferUpdateBufferInfo with needMap=true
+*                  3. check that the return value is not GSERROR_OK (Map error propagated)
+*/
+HWTEST_F(BufferQueueTest, AttachBufferUpdateBufferInfoMapFail001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = bq->AttachBufferUpdateBufferInfo(buffer, true);
+    EXPECT_NE(ret, GSERROR_OK);
+}
+
+/*
+* Function: AttachBufferUpdateBufferInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. construct a SurfaceBuffer without BufferHandle
+*                  2. call AttachBufferUpdateBufferInfo with needMap=false (skip Map)
+*                  3. check that the return value is GSERROR_OK
+*/
+HWTEST_F(BufferQueueTest, AttachBufferUpdateBufferInfoNoMap001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = bq->AttachBufferUpdateBufferInfo(buffer, false);
+    EXPECT_EQ(ret, GSERROR_OK);
+}
+
+/*
+* Function: AttachBufferToQueue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. construct a SurfaceBuffer without BufferHandle so Map() will fail
+*                  2. call AttachBufferToQueue with PRODUCER_INVOKER and check ret is not GSERROR_OK
+*                  3. check that the buffer is NOT added to bufferQueueCache_ (GetUsedSize unchanged)
+*/
+HWTEST_F(BufferQueueTest, AttachBufferToQueueMapFailNotInQueue001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    EXPECT_EQ(bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
+    uint32_t usedSizeBefore = bq->GetUsedSize();
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = bq->AttachBufferToQueue(buffer, InvokerType::PRODUCER_INVOKER);
+    EXPECT_NE(ret, GSERROR_OK);
+    EXPECT_EQ(bq->GetUsedSize(), usedSizeBefore);
+}
+
+/*
+* Function: AttachBufferUpdateBufferInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. allocate a real BufferHandle via AllocBuffer then DetachBuffer to free queue slot
+*                  2. corrupt surface buffer width/height to verify they get reset afterwards
+*                  3. call AttachBufferUpdateBufferInfo with needMap=true (Map succeeds, handle already mapped)
+*                  4. check that ret is GSERROR_OK and width/height are synced with GetWidth()/GetHeight()
+*/
+HWTEST_F(BufferQueueTest, AttachBufferUpdateBufferInfoSuccess001, TestSize.Level0)
+{
+    bq->CleanCache(false, nullptr);
+    EXPECT_EQ(bq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    {
+        std::mutex mutex;
+        std::unique_lock<std::mutex> lock(mutex);
+        ASSERT_EQ(bq->AllocBuffer(buffer, nullptr, requestConfig, lock), GSERROR_OK);
+    }
+    ASSERT_EQ(bq->DetachBuffer(buffer), GSERROR_OK);
+    buffer->SetSurfaceBufferWidth(0);
+    buffer->SetSurfaceBufferHeight(0);
+    GSError ret = bq->AttachBufferUpdateBufferInfo(buffer, true);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(buffer->GetSurfaceBufferWidth(), buffer->GetWidth());
+    EXPECT_EQ(buffer->GetSurfaceBufferHeight(), buffer->GetHeight());
+    EXPECT_EQ(buffer->GetSurfaceBufferWidth(), requestConfig.width);
+    EXPECT_EQ(buffer->GetSurfaceBufferHeight(), requestConfig.height);
+}
+
+/*
+* Function: AttachBufferUpdateBufferInfo
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. construct a SurfaceBuffer without BufferHandle (GetWidth/Height return -1)
+*                  2. call AttachBufferUpdateBufferInfo with needMap=false (skip Map)
+*                  3. check ret is GSERROR_OK and width/height are synced to GetWidth()/GetHeight() (=-1)
+*/
+HWTEST_F(BufferQueueTest, AttachBufferUpdateBufferInfoSetSize001, TestSize.Level0)
+{
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    EXPECT_EQ(buffer->GetSurfaceBufferWidth(), 0);
+    EXPECT_EQ(buffer->GetSurfaceBufferHeight(), 0);
+    GSError ret = bq->AttachBufferUpdateBufferInfo(buffer, false);
+    EXPECT_EQ(ret, GSERROR_OK);
+    EXPECT_EQ(buffer->GetSurfaceBufferWidth(), buffer->GetWidth());
+    EXPECT_EQ(buffer->GetSurfaceBufferHeight(), buffer->GetHeight());
+}
+
+/*
+* Function: AttachBufferToQueue
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. use a local BufferQueue with detachReserveSlotNum_ preset to 1
+*                  2. attach a SurfaceBuffer without BufferHandle (Map fails) as CONSUMER_INVOKER
+*                  3. check ret is not GSERROR_OK, buffer not in cache, detachReserveSlotNum_ restored
+*/
+HWTEST_F(BufferQueueTest, AttachBufferToQueueMapFailRestoreReserveSlot001, TestSize.Level0)
+{
+    sptr<BufferQueue> tmpBq = new BufferQueue("testReserveSlotRestore");
+    ASSERT_NE(tmpBq, nullptr);
+    EXPECT_EQ(tmpBq->SetQueueSize(SURFACE_MAX_QUEUE_SIZE), GSERROR_OK);
+    tmpBq->CleanCache(false, nullptr);
+    tmpBq->detachReserveSlotNum_ = 1;
+    uint32_t reserveBefore = tmpBq->detachReserveSlotNum_;
+
+    sptr<SurfaceBuffer> buffer = SurfaceBuffer::Create();
+    ASSERT_NE(buffer, nullptr);
+    GSError ret = tmpBq->AttachBufferToQueue(buffer, InvokerType::CONSUMER_INVOKER);
+    EXPECT_NE(ret, GSERROR_OK);
+    EXPECT_EQ(tmpBq->detachReserveSlotNum_, reserveBefore);
+    EXPECT_FALSE(tmpBq->IsCached(buffer->GetSeqNum()));
+
+    tmpBq->detachReserveSlotNum_ = 0;
 }
 
 /*
@@ -1764,7 +1968,8 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndReuseBuffer001, TestSize.Leve
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bqTest->RegisterConsumerListener(listener);
     // Create thread for requesting buffer
-    std::thread requestThread([&]() {
+    std::thread requestThread([&stopRequest, &bqTest, &requestConfigTest, &retval, &retval1,
+        &retval2, &retval3, &conditionMet, &cv]() {
         while (!stopRequest) {
             GSError ret = bqTest->RequestBuffer(requestConfigTest, bedata, retval);
             ASSERT_EQ(ret, OHOS::GSERROR_OK);
@@ -1802,9 +2007,9 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndReuseBuffer001, TestSize.Leve
     });
 
     // Create a thread to release the buffer
-    std::thread releaseThread([&]() {
+    std::thread releaseThread([&mtx, &cv, &conditionMet, &stopRelease, &bqTest, &retval]() {
         std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&]() { return conditionMet || stopRelease; });
+        cv.wait(lock, [&conditionMet, &stopRelease]() { return conditionMet || stopRelease; });
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (conditionMet) {
             sptr<SyncFence> acquireFence = SyncFence::INVALID_FENCE;
@@ -1867,7 +2072,8 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndStatusWrong001, TestSize.Leve
     sptr<IBufferConsumerListener> listener = new BufferConsumerListener();
     bqTest->RegisterConsumerListener(listener);
     // Create thread for requesting buffer
-    std::thread requestThread([&]() {
+    std::thread requestThread([&stopRequest, &bqTest, &requestConfigTest, &retval, &retval1,
+        &retval2, &retval3, &conditionMet, &cv]() {
         while (!stopRequest) {
             uint32_t i = 0;
             // 5:首次RequestBuffer概率性失败，设置重试
@@ -1908,9 +2114,9 @@ HWTEST_F(BufferQueueTest, ReqBufferWithBlockModeAndStatusWrong001, TestSize.Leve
     });
 
     // Create a thread to set status wrong
-    std::thread releaseThread([&]() {
+    std::thread releaseThread([&mtx, &cv, &conditionMet, &stopRelease, &bqTest]() {
         std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&]() { return conditionMet || stopRelease; });
+        cv.wait(lock, [&conditionMet, &stopRelease]() { return conditionMet || stopRelease; });
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (conditionMet) {
             bqTest->SetStatus(false);
@@ -3587,6 +3793,26 @@ HWTEST_F(BufferQueueTest, GetAndResetSingleBufferMode001, TestSize.Level0)
     SingleBufferMode mode = bq->GetAndResetSingleBufferMode();
     ASSERT_EQ(mode, SingleBufferMode::SINGLE_BUFFER_MODE_TO_SINGLE);
     ASSERT_EQ(bq->singleBufferMode_, SingleBufferMode::SINGLE_BUFFER_MODE_NONE);
+}
+
+/*
+* Function: SetBufferName
+* Type: Function
+* Rank: Important(2)
+* EnvConditions: N/A
+* CaseDescription: 1. call SetBufferName with name length exceeds maximum (64)
+*                  2. check ret is GSERROR_OUT_OF_RANGE
+*                  3. call with boundary length (64) and check ret is GSERROR_OK
+*/
+HWTEST_F(BufferQueueTest, SetBufferNameTooLong001, TestSize.Level0)
+{
+    BufferQueue *bqTmp = new BufferQueue("testBufferNameInvalid");
+    constexpr uint32_t maxLen = 64;
+    std::string tooLongName(maxLen + 1, 'a');
+    ASSERT_EQ(bqTmp->SetBufferName(tooLongName), OHOS::GSERROR_OUT_OF_RANGE);
+    std::string validName(maxLen, 'a');
+    ASSERT_EQ(bqTmp->SetBufferName(validName), OHOS::GSERROR_OK);
+    bqTmp = nullptr;
 }
 
 /*

@@ -904,7 +904,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback004, TestSize.Le
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback005, TestSize.Level0)
 {
     // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
-    constexpr uint32_t maxCbNum = 16;
+    constexpr uint32_t maxCbNum = 32;
     uint32_t lambdaCbCount = 0;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
@@ -1194,7 +1194,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback013, TestSize.
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback014, TestSize.Level0)
 {
     // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
-    constexpr uint32_t maxCbNum = 16;
+    constexpr uint32_t maxCbNum = 32;
     uint64_t bufferId = 0;
     uint32_t lambdaCbCount = 0;
     gBufferId = UINT64_MAX;
@@ -1272,7 +1272,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback015, TestSize.Le
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Level0)
 {
     // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
-    constexpr uint32_t maxCbNum = 16;
+    constexpr uint32_t maxCbNum = 32;
     sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
     // a null callback is rejected by both interfaces
     EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(nullptr));

@@ -85,7 +85,7 @@ constexpr uint32_t INVALID_SIZE = 0;
 constexpr uint64_t INVALID_USAGE = std::numeric_limits<std::uint64_t>::max();
 const std::string MEMMGR_SO = "libmemmgrclient.z.so";
 // upper limit of destructor callbacks of one buffer, avoid unlimited growth by repeated registration
-constexpr uint32_t MAX_BUFFER_DTOR_CB_NUM = 16;
+constexpr uint32_t MAX_BUFFER_DTOR_CB_NUM = 32;
 }
 
 sptr<SurfaceBuffer> SurfaceBuffer::Create()

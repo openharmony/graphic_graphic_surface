@@ -29,11 +29,11 @@ using namespace testing::ext;
 
 namespace OHOS::Rosen {
 uint64_t gBufferId = UINT64_MAX;
-uint64_t gBufferId2 = UINT64_MAX;
-uint64_t gBufferId3 = UINT64_MAX;
-uint32_t gBufferDtorCbCount = 0;
+uint64_t g_bufferId2 = UINT64_MAX;
+uint64_t g_bufferId3 = UINT64_MAX;
+uint32_t g_bufferDtorCbCount = 0;
 // records the invocation order of the destructor callbacks, they must run in registration order
-std::vector<uint32_t> gBufferDtorCbOrder;
+std::vector<uint32_t> g_bufferDtorCbOrder;
 class SurfaceBufferImplTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -59,17 +59,17 @@ public:
 void SurfaceBufferImplTest::BufferDestructorCallBack(uint64_t bufferId)
 {
     gBufferId = bufferId;
-    gBufferDtorCbCount++;
+    g_bufferDtorCbCount++;
 }
 
 void SurfaceBufferImplTest::BufferDestructorCallBack2(uint64_t bufferId)
 {
-    gBufferId2 = bufferId;
+    g_bufferId2 = bufferId;
 }
 
 void SurfaceBufferImplTest::BufferDestructorCallBack3(uint64_t bufferId)
 {
-    gBufferId3 = bufferId;
+    g_bufferId3 = bufferId;
 }
 
 // keep the same value as MAX_BUFFER_DTOR_CB_NUM in surface_buffer_impl.cpp
@@ -82,15 +82,15 @@ constexpr uint32_t SLOT_CB_NUM = MAX_CB_NUM + 1;
 // instantiation bumps its own counter and records its own index, which keeps the linker from folding them into
 // a single function under --icf=all, and lets a case check that every registered one of them was really invoked
 // and in which order
-std::array<uint32_t, SLOT_CB_NUM> gSlotCallBackHits = {};
+std::array<uint32_t, SLOT_CB_NUM> g_slotCallBackHits = {};
 
 template<uint32_t N>
 void SlotBufferDestructorCallBack(uint64_t bufferId)
 {
     (void)bufferId;
-    gSlotCallBackHits[N]++;
-    gBufferDtorCbCount++;
-    gBufferDtorCbOrder.emplace_back(N);
+    g_slotCallBackHits[N]++;
+    g_bufferDtorCbCount++;
+    g_bufferDtorCbOrder.emplace_back(N);
 }
 
 template<std::size_t... I>
@@ -107,10 +107,10 @@ void SurfaceBufferImplTest::SetUpTestCase()
     val32 = 0;
     val64 = 0;
     gBufferId = UINT64_MAX;
-    gBufferId2 = UINT64_MAX;
-    gBufferId3 = UINT64_MAX;
-    gBufferDtorCbCount = 0;
-    gBufferDtorCbOrder.clear();
+    g_bufferId2 = UINT64_MAX;
+    g_bufferId3 = UINT64_MAX;
+    g_bufferDtorCbCount = 0;
+    g_bufferDtorCbOrder.clear();
 }
 
 void SurfaceBufferImplTest::TearDownTestCase()
@@ -851,7 +851,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback002, TestSize.Le
 {
     uint64_t bufferId = 0;
     gBufferId = UINT64_MAX;
-    gBufferId2 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
@@ -861,7 +861,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback002, TestSize.Le
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, bufferId);
-    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(g_bufferId2, bufferId);
 }
 
 /*
@@ -878,16 +878,16 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback002, TestSize.Le
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback003, TestSize.Level0)
 {
-    gBufferDtorCbCount = 0;
+    g_bufferDtorCbCount = 0;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
         bufferTmp->RegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack);
         bufferTmp = nullptr;
     }
-    EXPECT_EQ(gBufferDtorCbCount, 1U);
+    EXPECT_EQ(g_bufferDtorCbCount, 1U);
 
-    gBufferDtorCbCount = 0;
+    g_bufferDtorCbCount = 0;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         std::function<void(uint64_t)> callBack = &SurfaceBufferImplTest::BufferDestructorCallBack;
@@ -896,7 +896,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback003, TestSize.Le
         bufferTmp->RegisterBufferDestructorCallback(callBack);
         bufferTmp = nullptr;
     }
-    EXPECT_EQ(gBufferDtorCbCount, 1U);
+    EXPECT_EQ(g_bufferDtorCbCount, 1U);
 }
 
 /*
@@ -943,8 +943,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback004, TestSize.Le
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback005, TestSize.Level0)
 {
     uint32_t lambdaCbCount = 0;
-    gBufferDtorCbCount = 0;
-    gSlotCallBackHits.fill(0);
+    g_bufferDtorCbCount = 0;
+    g_slotCallBackHits.fill(0);
     // the registrations are told apart by their function pointer, so the slot callbacks used below have to stay
     // distinct, a linker which folds identical functions together would silently break the filling
     for (uint32_t i = 1; i < SLOT_CB_NUM; i++) {
@@ -965,8 +965,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback005, TestSize.Le
         bufferTmp = nullptr;
     }
     EXPECT_EQ(lambdaCbCount, 1U);
-    EXPECT_EQ(gBufferDtorCbCount, MAX_CB_NUM);
-    EXPECT_EQ(gSlotCallBackHits[MAX_CB_NUM], 0U);
+    EXPECT_EQ(g_bufferDtorCbCount, MAX_CB_NUM);
+    EXPECT_EQ(g_slotCallBackHits[MAX_CB_NUM], 0U);
 }
 
 /*
@@ -983,7 +983,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback006, TestSize.
     uint64_t bufferId = 0;
     uint32_t lambdaCbCount = 0;
     gBufferId = UINT64_MAX;
-    gBufferId2 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
@@ -996,7 +996,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback006, TestSize.
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, UINT64_MAX);
-    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(g_bufferId2, bufferId);
     EXPECT_EQ(lambdaCbCount, 1U);
 }
 
@@ -1013,7 +1013,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback007, TestSize.
 {
     uint64_t bufferId = 0;
     gBufferId = UINT64_MAX;
-    gBufferId2 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
@@ -1023,7 +1023,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback007, TestSize.
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, bufferId);
-    EXPECT_EQ(gBufferId2, UINT64_MAX);
+    EXPECT_EQ(g_bufferId2, UINT64_MAX);
 }
 
 /*
@@ -1040,21 +1040,21 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback008, TestSize.Le
 {
     uint64_t bufferId = 0;
     uint32_t lambdaCbCount = 0;
-    gBufferId2 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
         // a lambda without capture decays to a plain function pointer, so it can use the identity based
         // interface and does not need the single slot, which is left to the one with captures
         EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc([](uint64_t id) {
-            gBufferId2 = id;
+            g_bufferId2 = id;
         }));
         bufferTmp->RegisterBufferDestructorCallback([&lambdaCbCount](uint64_t) {
             lambdaCbCount++;
         });
         bufferTmp = nullptr;
     }
-    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(g_bufferId2, bufferId);
     EXPECT_EQ(lambdaCbCount, 1U);
 }
 
@@ -1104,7 +1104,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback009, TestSize.Le
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback010, TestSize.Level0)
 {
-    gBufferDtorCbOrder.clear();
+    g_bufferDtorCbOrder.clear();
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         // three modules register in order, each of them a distinct function which records its own index
@@ -1113,10 +1113,10 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback010, TestSize.Le
         }
         bufferTmp = nullptr;
     }
-    ASSERT_EQ(gBufferDtorCbOrder.size(), 3U);
-    EXPECT_EQ(gBufferDtorCbOrder[0], 0U);
-    EXPECT_EQ(gBufferDtorCbOrder[1], 1U);
-    EXPECT_EQ(gBufferDtorCbOrder[2], 2U);
+    ASSERT_EQ(g_bufferDtorCbOrder.size(), 3U);
+    EXPECT_EQ(g_bufferDtorCbOrder[0], 0U);
+    EXPECT_EQ(g_bufferDtorCbOrder[1], 1U);
+    EXPECT_EQ(g_bufferDtorCbOrder[2], 2U);
 
     // the two register interfaces have separate registries and the identity based one is notified first, so a
     // callback registered by RegisterBufferDestructorCallbackFunc runs before the anonymous one
@@ -1150,8 +1150,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback011, TestSize.Le
     uint32_t reentrantCount = 0;
     bool reentrantUnregRet = true;
     bool reentrantRegRet = false;
-    gBufferId2 = UINT64_MAX;
-    gBufferId3 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
+    g_bufferId3 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
@@ -1173,10 +1173,10 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback011, TestSize.Le
     // unregisters CallBack2 and there is nothing left to remove
     EXPECT_FALSE(reentrantUnregRet);
     // CallBack2 still runs, it was taken away with the registry before the notification started
-    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(g_bufferId2, bufferId);
     // CallBack3 goes into the emptied registry during the notification, so it is not in the batch being notified
     EXPECT_TRUE(reentrantRegRet);
-    EXPECT_EQ(gBufferId3, UINT64_MAX);
+    EXPECT_EQ(g_bufferId3, UINT64_MAX);
 }
 
 /*
@@ -1193,7 +1193,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback012, TestSize.
     uint64_t bufferId = 0;
     uint32_t lambdaCbCount = 0;
     gBufferId = UINT64_MAX;
-    gBufferId2 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
@@ -1208,7 +1208,7 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback012, TestSize.
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, bufferId);
-    EXPECT_EQ(gBufferId2, bufferId);
+    EXPECT_EQ(g_bufferId2, bufferId);
     EXPECT_EQ(lambdaCbCount, 0U);
 }
 
@@ -1225,8 +1225,8 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback013, TestSize.
 {
     uint64_t bufferId = 0;
     gBufferId = UINT64_MAX;
-    gBufferId2 = UINT64_MAX;
-    gBufferId3 = UINT64_MAX;
+    g_bufferId2 = UINT64_MAX;
+    g_bufferId3 = UINT64_MAX;
     {
         sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
         bufferId = bufferTmp->GetBufferId();
@@ -1241,8 +1241,8 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback013, TestSize.
         bufferTmp = nullptr;
     }
     EXPECT_EQ(gBufferId, bufferId);
-    EXPECT_EQ(gBufferId2, UINT64_MAX);
-    EXPECT_EQ(gBufferId3, UINT64_MAX);
+    EXPECT_EQ(g_bufferId2, UINT64_MAX);
+    EXPECT_EQ(g_bufferId3, UINT64_MAX);
 }
 
 /*
@@ -1258,8 +1258,8 @@ HWTEST_F(SurfaceBufferImplTest, UnRegisterBufferDestructorCallback013, TestSize.
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback014, TestSize.Level0)
 {
-    gBufferDtorCbCount = 0;
-    gSlotCallBackHits.fill(0);
+    g_bufferDtorCbCount = 0;
+    g_slotCallBackHits.fill(0);
     // the registrations are told apart by their function pointer, so the slot callbacks used below have to
     // stay distinct, a linker which folds identical functions together would silently break the filling
     for (uint32_t i = 1; i < SLOT_CB_NUM; i++) {
@@ -1278,13 +1278,13 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback014, TestSize.Le
         EXPECT_TRUE(bufferTmp->RegisterBufferDestructorCallbackFunc(gSlotCallBacks[0]));
         bufferTmp = nullptr;
     }
-    EXPECT_EQ(gBufferDtorCbCount, MAX_CB_NUM);
+    EXPECT_EQ(g_bufferDtorCbCount, MAX_CB_NUM);
     // every registration which was accepted is invoked exactly once, the one which was refused never is, and
     // the repeated one is not invoked a second time
     for (uint32_t i = 0; i < MAX_CB_NUM; i++) {
-        EXPECT_EQ(gSlotCallBackHits[i], 1U);
+        EXPECT_EQ(g_slotCallBackHits[i], 1U);
     }
-    EXPECT_EQ(gSlotCallBackHits[MAX_CB_NUM], 0U);
+    EXPECT_EQ(g_slotCallBackHits[MAX_CB_NUM], 0U);
 }
 
 /*
@@ -1327,8 +1327,8 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback015, TestSize.Le
  */
 HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Level0)
 {
-    gBufferDtorCbCount = 0;
-    gSlotCallBackHits.fill(0);
+    g_bufferDtorCbCount = 0;
+    g_slotCallBackHits.fill(0);
     sptr<SurfaceBuffer> bufferTmp = new SurfaceBufferImpl();
     // a null callback is rejected by both interfaces
     EXPECT_FALSE(bufferTmp->RegisterBufferDestructorCallbackFunc(nullptr));
@@ -1370,7 +1370,7 @@ HWTEST_F(SurfaceBufferImplTest, RegisterBufferDestructorCallback016, TestSize.Le
     }
     EXPECT_TRUE(bufferTmp->UnRegisterBufferDestructorCallbackFunc(&SurfaceBufferImplTest::BufferDestructorCallBack2));
     bufferTmp = nullptr;
-    EXPECT_EQ(gBufferDtorCbCount, 0U);
+    EXPECT_EQ(g_bufferDtorCbCount, 0U);
 }
 
 /*

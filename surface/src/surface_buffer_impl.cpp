@@ -1115,15 +1115,9 @@ void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint
         BLOGE("invalid buffer destructor callback.");
         return;
     }
-    // this interface keeps the single slot it has on master, and that slot is kept apart from the identity based
-    // registry of RegisterBufferDestructorCallbackFunc below, so neither of the two interfaces can squeeze the
-    // other one out and the identity based registrations never cost this one its slot. a std::function callback
-    // carries no identity, so a second caller can not be told apart from the first one and is dropped here, and
-    // this interface returns void so that can not be reported to the caller, use
-    // RegisterBufferDestructorCallbackFunc when several modules register on the same buffer
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     if (bufferDtorCb_ == nullptr) {
-        bufferDtorCb_ = std::move(bufferDtorCb);
+        bufferDtorCb_ = bufferDtorCb;
     }
 }
 
@@ -1136,13 +1130,10 @@ bool SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     for (const auto &registeredCb : bufferDtorCbs_) {
         if (registeredCb.first == bufferDtorCb) {
-            // registering the same function again is idempotent, the registration is already in place
             BLOGD("callback already registered, bufferId: %{public}" PRIu64, bufferId_);
             return true;
         }
     }
-    // the whole limit belongs to this interface, the single slot of RegisterBufferDestructorCallback is separate
-    // and is not counted here
     if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
         BLOGE("too many callbacks, bufferId: %{public}" PRIu64, bufferId_);
         return false;
@@ -1153,9 +1144,6 @@ bool SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
 {
-    // clears the single slot of RegisterBufferDestructorCallback and leaves the identity based registrations of
-    // RegisterBufferDestructorCallbackFunc alone, so the modules using that interface are still notified when this
-    // buffer is destructed. there is no loop here because this interface never had more than one slot
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     bufferDtorCb_ = nullptr;
 }
@@ -1173,15 +1161,12 @@ bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtor
             return true;
         }
     }
-    // nothing is removed, it was never registered, or it was dropped by the limit when it was registered
     BLOGD("callback is not registered, bufferId: %{public}" PRIu64, bufferId_);
     return false;
 }
 
 void SurfaceBufferImpl::NotifyBufferDestructorCallback()
 {
-    // declared as the same type as the registry so that the two can be swapped, a vector of std::function can not
-    // be swapped with a vector of pairs
     std::vector<std::pair<BufferDtorCbPtr, std::function<void(uint64_t)>>> bufferDtorCbs;
     std::function<void(uint64_t)> bufferDtorCb = nullptr;
     {
@@ -1189,26 +1174,20 @@ void SurfaceBufferImpl::NotifyBufferDestructorCallback()
         if (bufferDtorCbs_.empty() && bufferDtorCb_ == nullptr) {
             return;
         }
-        // both registries are transferred out instead of copying every std::function under the lock, copying a
-        // lambda with captures allocates. this is safe because the only caller is the destructor, so the buffer is
-        // going away and no registration left behind here is ever notified. taking the two of them together also
-        // keeps a callback which calls back into this buffer from changing the batch being notified
+        // swapped out instead of copied, copying a std::function with captures allocates
         bufferDtorCbs_.swap(bufferDtorCbs);
         bufferDtorCb = std::move(bufferDtorCb_);
     }
-    // callbacks are invoked without the lock held, they may access this buffer again
+    // invoked with no lock held, a callback may access this buffer again
     for (const auto &registeredCb : bufferDtorCbs) {
         // an empty std::function would throw std::bad_function_call, and throwing out of a destructor terminates
-        // the process, so it is skipped here even though both register interfaces reject a null callback
+        // the process
         if (registeredCb.second == nullptr) {
             BLOGE("invalid buffer destructor callback, bufferId: %{public}" PRIu64, bufferId_);
             continue;
         }
         registeredCb.second(bufferId_);
     }
-    // the single slot of RegisterBufferDestructorCallback goes after the identity based ones, which are notified in
-    // registration order. no production caller uses this interface, so the order between the two registries is not
-    // observable in practice, and it is the same for every buffer
     if (bufferDtorCb != nullptr) {
         bufferDtorCb(bufferId_);
     }

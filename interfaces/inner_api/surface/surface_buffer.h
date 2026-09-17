@@ -256,11 +256,13 @@ public:
         (void)handle;
         return nullptr;
     }
+    // Not recommended for new code, use RegisterBufferDestructorCallbackFunc instead.
     virtual void RegisterBufferDestructorCallback(std::function<void(uint64_t)> callBack)
     {
         (void)callBack;
         return;
     }
+    // Not recommended for new code, use UnRegisterBufferDestructorCallbackFunc instead.
     virtual void UnRegisterBufferDestructorCallback()
     {
         return;
@@ -312,6 +314,20 @@ public:
     virtual SingleBufferMode GetAndResetSingleBufferMode()
     {
         return SingleBufferMode::SINGLE_BUFFER_MODE_NONE;
+    }
+    // Registers a plain function as the buffer destructor callback, several modules can register on the
+    // same buffer and all of them are notified when this buffer is destructed.
+    virtual bool RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
+    {
+        (void)callBack;
+        return false;
+    }
+    // Unregisters the callback registered by RegisterBufferDestructorCallbackFunc with the same function,
+    // the callbacks of other modules are kept.
+    virtual bool UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t))
+    {
+        (void)callBack;
+        return false;
     }
 
 protected:

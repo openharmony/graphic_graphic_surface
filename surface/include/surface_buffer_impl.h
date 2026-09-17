@@ -112,7 +112,9 @@ public:
     void SetFlushTimestamp(uint64_t timestamp) override;
     BufferHandle* CloneBufferHandle(const BufferHandle* handle) const override;
     void RegisterBufferDestructorCallback(std::function<void(uint64_t)> callBack) override;
+    bool RegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t)) override;
     void UnRegisterBufferDestructorCallback() override;
+    bool UnRegisterBufferDestructorCallbackFunc(void (*callBack)(uint64_t)) override;
     GSError WriteAllPropertiesToMessageParcel(MessageParcel &parcel) override;
     GSError ReadAllPropertiesFromMessageParcel(MessageParcel &parcel,
         std::function<int(MessageParcel &parcel,
@@ -134,7 +136,9 @@ private:
     void AcquireSeqBit(uint32_t seqNum);
     void ReleaseSeqBit(uint32_t seqNum);
     void UpdateSeqNumBitset(uint32_t newSeqNum);
-    void NotifyBufferDestructorCallback() const;
+    // not const because it transfers both registries out under the lock, it is private and non virtual and its
+    // only caller is the destructor, so dropping const does not touch the vtable layout or any caller
+    void NotifyBufferDestructorCallback();
     void RecordOriginalBufferHandleFields();
 
     BufferHandle *handle_ = nullptr;
@@ -167,7 +171,17 @@ private:
     sptr<SyncFence> syncFence_ = nullptr;
     std::atomic<uint64_t> lastFlushedTime_ = 0;
 
+    using BufferDtorCbPtr = void (*)(uint64_t);
+    // protects both registries below, they are taken together in NotifyBufferDestructorCallback so that neither
+    // of them is changed while a batch is being notified
     mutable std::mutex bufferDtorCbMutex_;
+    // the registrations made by RegisterBufferDestructorCallbackFunc, first is the identity which finds the entry
+    // again on unregister. this registry is separate from bufferDtorCb_ below, so the two register interfaces can
+    // not take the slots of each other and neither of them can squeeze the other one out
+    std::vector<std::pair<BufferDtorCbPtr, std::function<void(uint64_t)>>> bufferDtorCbs_;
+    // the single slot of RegisterBufferDestructorCallback, kept as it is on master. a registration is dropped when
+    // the slot is already taken, this interface carries no identity so two callers can not be told apart here, use
+    // RegisterBufferDestructorCallbackFunc when several modules register on the same buffer
     std::function<void(uint64_t)> bufferDtorCb_ = nullptr;
 
     bool hasOriginalFields_ = false;

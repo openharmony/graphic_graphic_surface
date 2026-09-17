@@ -88,6 +88,10 @@ constexpr uint64_t INVALID_PHYADDR = 0;
 constexpr uint32_t INVALID_SIZE = 0;
 constexpr uint64_t INVALID_USAGE = std::numeric_limits<std::uint64_t>::max();
 const std::string MEMMGR_SO = "libmemmgrclient.z.so";
+// upper limit of the identity based destructor callbacks of one buffer, avoid unlimited growth by repeated
+// registration. RegisterBufferDestructorCallback does not draw on this limit, it has a single slot of its own, so
+// the two register interfaces can not squeeze each other out
+constexpr uint32_t MAX_BUFFER_DTOR_CB_NUM = 32;
 }
 
 sptr<SurfaceBuffer> SurfaceBuffer::Create()
@@ -1107,10 +1111,35 @@ BufferHandle* SurfaceBufferImpl::CloneBufferHandle(const BufferHandle* handle) c
 
 void SurfaceBufferImpl::RegisterBufferDestructorCallback(std::function<void(uint64_t)> bufferDtorCb)
 {
+    if (bufferDtorCb == nullptr) {
+        BLOGE("invalid buffer destructor callback.");
+        return;
+    }
     std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
     if (bufferDtorCb_ == nullptr) {
         bufferDtorCb_ = bufferDtorCb;
     }
+}
+
+bool SurfaceBufferImpl::RegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
+{
+    if (bufferDtorCb == nullptr) {
+        BLOGE("invalid buffer destructor callback.");
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    for (const auto &registeredCb : bufferDtorCbs_) {
+        if (registeredCb.first == bufferDtorCb) {
+            BLOGD("callback already registered, bufferId: %{public}" PRIu64, bufferId_);
+            return true;
+        }
+    }
+    if (bufferDtorCbs_.size() >= MAX_BUFFER_DTOR_CB_NUM) {
+        BLOGE("too many callbacks, bufferId: %{public}" PRIu64, bufferId_);
+        return false;
+    }
+    bufferDtorCbs_.emplace_back(bufferDtorCb, bufferDtorCb);
+    return true;
 }
 
 void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
@@ -1119,17 +1148,49 @@ void SurfaceBufferImpl::UnRegisterBufferDestructorCallback()
     bufferDtorCb_ = nullptr;
 }
 
-void SurfaceBufferImpl::NotifyBufferDestructorCallback() const
+bool SurfaceBufferImpl::UnRegisterBufferDestructorCallbackFunc(void (*bufferDtorCb)(uint64_t))
 {
+    if (bufferDtorCb == nullptr) {
+        BLOGE("invalid buffer destructor callback.");
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
+    for (auto iter = bufferDtorCbs_.begin(); iter != bufferDtorCbs_.end(); ++iter) {
+        if (iter->first == bufferDtorCb) {
+            bufferDtorCbs_.erase(iter);
+            return true;
+        }
+    }
+    BLOGD("callback is not registered, bufferId: %{public}" PRIu64, bufferId_);
+    return false;
+}
+
+void SurfaceBufferImpl::NotifyBufferDestructorCallback()
+{
+    std::vector<std::pair<BufferDtorCbPtr, std::function<void(uint64_t)>>> bufferDtorCbs;
     std::function<void(uint64_t)> bufferDtorCb = nullptr;
     {
         std::lock_guard<std::mutex> lock(bufferDtorCbMutex_);
-        if (bufferDtorCb_ == nullptr) {
+        if (bufferDtorCbs_.empty() && bufferDtorCb_ == nullptr) {
             return;
         }
-        bufferDtorCb = bufferDtorCb_;
+        // swapped out instead of copied, copying a std::function with captures allocates
+        bufferDtorCbs_.swap(bufferDtorCbs);
+        bufferDtorCb = std::move(bufferDtorCb_);
     }
-    bufferDtorCb(bufferId_);
+    // invoked with no lock held, a callback may access this buffer again
+    for (const auto &registeredCb : bufferDtorCbs) {
+        // an empty std::function would throw std::bad_function_call, and throwing out of a destructor terminates
+        // the process
+        if (registeredCb.second == nullptr) {
+            BLOGE("invalid buffer destructor callback, bufferId: %{public}" PRIu64, bufferId_);
+            continue;
+        }
+        registeredCb.second(bufferId_);
+    }
+    if (bufferDtorCb != nullptr) {
+        bufferDtorCb(bufferId_);
+    }
 }
 
 GSError SurfaceBufferImpl::WriteAllPropertiesToMessageParcel(MessageParcel& parcel)

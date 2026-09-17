@@ -761,17 +761,19 @@ int32_t BufferQueueProducer::SetLppShareFdRemote(MessageParcel &arguments, Messa
         reply.WriteInt32(GSERROR_INVALID_ARGUMENTS);
         return ERR_INVALID_VALUE;
     }
+    static constexpr uint64_t LPP_FD_SERVICE = (static_cast<uint64_t >(LOG_DOMAIN) << 32 | 2);
+    fdsan_exchange_owner_tag(fd, 0, LPP_FD_SERVICE);
     bool state = false;
     if (!arguments.ReadBool(state)) {
-        close(fd);
+        fdsan_close_with_tag(fd, LPP_FD_SERVICE);
         return GSERROR_BINDER;
     }
     GSError sRet = SetLppShareFd(fd, state);
     if (!reply.WriteInt32(sRet)) {
-        close(fd);
+        fdsan_close_with_tag(fd, LPP_FD_SERVICE);
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    close(fd);
+    fdsan_close_with_tag(fd, LPP_FD_SERVICE);
     return ERR_NONE;
 }
 

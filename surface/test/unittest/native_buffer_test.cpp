@@ -359,6 +359,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName002, TestSize.Level0)
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
 
+#ifndef OHOS_EMULATOR
 /*
 * Function: OH_NativeBuffer_SetDmaBufferName
 * Type: Function
@@ -381,6 +382,7 @@ HWTEST_F(NativeBufferTest, OHNativeBufferSetDmaBufferName003, TestSize.Level0)
 
     EXPECT_EQ(OH_NativeBuffer_Unreference(nativeBuffer), OHOS::GSERROR_OK);
 }
+#endif // OHOS_EMULATOR
 
 /*
 * Function: OH_NativeBuffer_GetColorSpace

@@ -1723,8 +1723,10 @@ GSError ProducerSurface::SetLppShareFd(int fd, bool state)
     if (lppFd == -1) {
         return GSERROR_NO_MEM;
     }
+    static constexpr uint64_t LPP_FD_CLIENT = (static_cast<uint64_t >(LOG_DOMAIN) << 32 | 1);
+    fdsan_exchange_owner_tag(fd, 0, LPP_FD_CLIENT);
     GSError ret = producer_->SetLppShareFd(lppFd, state);
-    close(lppFd);
+    fdsan_close_with_tag(lppFd, LPP_FD_CLIENT);
     return ret;
 }
 
